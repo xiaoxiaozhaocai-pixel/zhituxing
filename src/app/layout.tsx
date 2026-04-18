@@ -1,55 +1,36 @@
 import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
 import './globals.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import FreeQuotaBadge from '@/components/FreeQuotaBadge';
 
 export const metadata: Metadata = {
   title: {
-    default: '新应用 | 扣子编程',
-    template: '%s | 扣子编程',
+    default: '职途星——你的AI职业规划助手',
+    template: '%s | 职途星',
   },
   description:
-    '扣子编程是一款一站式云端 Vibe Coding 开发平台。通过对话轻松构建智能体、工作流和网站，实现从创意到上线的无缝衔接。',
+    '职途星是基于全行业真实招聘JD的AI职业规划助手，为大学生提供一站式求职服务。',
   keywords: [
-    '扣子编程',
-    'Coze Code',
-    'Vibe Coding',
-    'AI 编程',
-    '智能体搭建',
-    '工作流搭建',
-    '网站搭建',
-    '网站部署',
-    '全栈开发',
-    'AI 工程师',
+    '职途星',
+    'AI职业规划',
+    '大学生求职',
+    '岗位查询',
+    '模拟面试',
+    '职业规划',
+    '应届生求职',
+    '全行业岗位',
   ],
-  authors: [{ name: 'Coze Code Team', url: 'https://code.coze.cn' }],
-  generator: 'Coze Code',
-  // icons: {
-  //   icon: '',
-  // },
+  authors: [{ name: '职途星团队' }],
+  generator: '职途星',
   openGraph: {
-    title: '扣子编程 | 你的 AI 工程师已就位',
+    title: '职途星——你的AI职业规划助手',
     description:
-      '我正在使用扣子编程 Vibe Coding，让创意瞬间上线。告别拖拽，拥抱心流。',
-    url: 'https://code.coze.cn',
-    siteName: '扣子编程',
+      '基于500万+全行业真实职业数据智能分析，为你推荐最适合的职业方向。',
     locale: 'zh_CN',
     type: 'website',
-    // images: [
-    //   {
-    //     url: '',
-    //     width: 1200,
-    //     height: 630,
-    //     alt: '扣子编程 - 你的 AI 工程师',
-    //   },
-    // ],
   },
-  // twitter: {
-  //   card: 'summary_large_image',
-  //   title: 'Coze Code | Your AI Engineer is Here',
-  //   description:
-  //     'Build and deploy full-stack applications through AI conversation. No env setup, just flow.',
-  //   // images: [''],
-  // },
   robots: {
     index: true,
     follow: true,
@@ -64,10 +45,13 @@ export default function RootLayout({
   const isDev = process.env.COZE_PROJECT_ENV === 'DEV';
 
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body className={`antialiased`}>
         {isDev && <Inspector />}
+        <Navbar />
+        <FreeQuotaBadge />
         {children}
+        <Footer />
       </body>
     </html>
   );
