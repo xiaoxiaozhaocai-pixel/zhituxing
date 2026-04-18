@@ -2,17 +2,36 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
+function selectBotId(message: string): string {
+  const jobsBotId = process.env.COZE_BOT_ID_JOBS || '7629654356933050409';
+  const interviewBotId = process.env.COZE_BOT_ID_INTERVIEW || '7622676506535788607';
+  
+  const messageLower = message.toLowerCase();
+  
+  // 模拟面试相关问题
+  if (
+    messageLower.includes('模拟面试') ||
+    messageLower.includes('面试') ||
+    messageLower.includes('面经')
+  ) {
+    return interviewBotId;
+  }
+  
+  // 默认使用岗位百科智能体
+  return jobsBotId;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { message, conversationId } = await request.json();
 
     const apiKey = process.env.COZE_API_KEY;
-    const botId = process.env.COZE_BOT_ID;
+    const botId = selectBotId(message);
 
-    if (!apiKey || !botId) {
+    if (!apiKey) {
       return new Response(
         JSON.stringify({ 
-          error: '智能体配置中，请设置COZE_API_KEY和COZE_BOT_ID环境变量' 
+          error: '请设置COZE_API_KEY环境变量' 
         }),
         {
           status: 500,
