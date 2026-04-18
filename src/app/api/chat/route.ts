@@ -6,18 +6,16 @@ export async function POST(request: NextRequest) {
   try {
     const { message, conversationId } = await request.json();
 
-    const apiKey = process.env.COZE_API_KEY || '';
-    const botId = process.env.COZE_BOT_ID || '';
+    const apiKey = process.env.COZE_API_KEY;
+    const botId = process.env.COZE_BOT_ID;
 
     if (!apiKey || !botId) {
-      // 如果没有配置API密钥，返回一个友好的错误
       return new Response(
         JSON.stringify({ 
-          error: '智能体配置中，请联系管理员设置COZE_API_KEY和COZE_BOT_ID环境变量',
-          fallback: true 
+          error: '智能体配置中，请设置COZE_API_KEY和COZE_BOT_ID环境变量' 
         }),
         {
-          status: 200,
+          status: 500,
           headers: { 'Content-Type': 'application/json' },
         }
       );
@@ -31,7 +29,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         bot_id: botId,
-        conversation_id: conversationId,
+        conversation_id: conversationId || '',
         stream: true,
         auto_save_history: true,
         additional_messages: [
@@ -45,7 +43,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Coze API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Coze API Error:', response.status, errorText);
+      return new Response(
+        JSON.stringify({ 
+          error: `API调用失败: ${response.status}`,
+          details: errorText 
+        }),
+        {
+          status: response.status,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     return new Response(response.body, {
@@ -56,14 +65,11 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Coze API Error:', error);
+    console.error('Chat API Error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to connect to AI assistant',
-        fallback: true 
-      }),
+      JSON.stringify({ error: 'Failed to connect to AI assistant' }),
       {
-        status: 200,
+        status: 500,
         headers: { 'Content-Type': 'application/json' },
       }
     );
