@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, FileText, BookOpen, GraduationCap, Briefcase, Loader2, Eye } from 'lucide-react';
+import { Calendar, FileText, BookOpen, GraduationCap, Briefcase, Loader2, Eye, Sparkles, ArrowRight } from 'lucide-react';
 
 const categories = [
   { id: 'all', name: '全部', icon: <BookOpen className="w-4 h-4" /> },
@@ -129,6 +129,19 @@ export default function ResourcesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      {/* 职业规划提示 */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100 mb-8">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <Link href="/career-planning" className="flex items-center justify-center gap-2 text-purple-700 hover:text-purple-900 transition-colors">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              先生成你的职业规划，获得更精准的个性化技能推荐
+            </span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="text-center mb-12">

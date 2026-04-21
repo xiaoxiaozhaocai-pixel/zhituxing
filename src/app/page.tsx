@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Target, TrendingUp, Gift, Users, Zap, Star, ThumbsUp, ChevronRight, Sparkles, Briefcase, MessageSquare } from 'lucide-react';
+import { Check, Target, TrendingUp, Gift, Users, Zap, Star, ThumbsUp, ChevronRight, Sparkles, Briefcase, MessageSquare, GraduationCap, Calendar } from 'lucide-react';
 
 const hotTags = [
   'Java开发', 'Python开发', '前端开发', '产品经理', 'UI设计',
@@ -13,29 +13,57 @@ const hotTags = [
   '教师', '护士', '工程师', '管培生', '行政', '数据分析师', '测试工程师'
 ];
 
-const features = [
+// 职业规划核心优势
+const careerPlanningAdvantages = [
   {
-    icon: <Check className="w-10 h-10" />,
-    title: '多维度匹配性格/能力/兴趣',
-    description: '覆盖互联网/金融/制造/教育/医疗等15+主流行业，匹配最适合你的岗位',
-    buttonText: '立即匹配',
-    buttonLink: '/assistant',
-    gradient: 'from-blue-500 to-blue-600'
-  },
-  {
-    icon: <Target className="w-10 h-10" />,
-    title: '定制大学分阶段成长路径',
-    description: '根据目标岗位，定制大一到大四分阶段成长计划，不走弯路',
-    buttonText: '查看示例',
-    buttonLink: '/assistant',
+    icon: <Calendar className="w-8 h-8" />,
+    title: '分年级定制',
+    description: '大一到大四，不同阶段不同规划',
     gradient: 'from-purple-500 to-purple-600'
   },
   {
-    icon: <TrendingUp className="w-10 h-10" />,
-    title: 'AI模拟面试+成功率测算',
-    description: '基于真实招聘要求，精准测算岗位应聘成功率，AI模拟真实面试场景',
+    icon: <Target className="w-8 h-8" />,
+    title: '6维精准匹配',
+    description: '人格、专业、能力、兴趣、价值观、风险承受力',
+    gradient: 'from-indigo-500 to-indigo-600'
+  },
+  {
+    icon: <Check className="w-8 h-8" />,
+    title: '可落地行动项',
+    description: '每个建议都带可点击的执行按钮',
+    gradient: 'from-blue-500 to-blue-600'
+  },
+  {
+    icon: <TrendingUp className="w-8 h-8" />,
+    title: '动态更新',
+    description: '每月自动复盘，规划随你成长',
+    gradient: 'from-green-500 to-green-600'
+  }
+];
+
+const features = [
+  {
+    icon: <GraduationCap className="w-10 h-10" />,
+    title: 'AI职业规划',
+    description: '30秒生成专属大学四年职业规划，精准匹配专业、年级和兴趣',
+    buttonText: '立即生成',
+    buttonLink: '/career-planning',
+    gradient: 'from-purple-500 to-purple-600'
+  },
+  {
+    icon: <Briefcase className="w-10 h-10" />,
+    title: '全行业岗位百科',
+    description: '覆盖互联网/金融/制造/教育/医疗等15+主流行业，匹配最适合你的岗位',
+    buttonText: '查询岗位',
+    buttonLink: '/jobs',
+    gradient: 'from-blue-500 to-blue-600'
+  },
+  {
+    icon: <MessageSquare className="w-10 h-10" />,
+    title: 'AI模拟面试',
+    description: '基于真实招聘要求，AI模拟真实面试场景，精准测算应聘成功率',
     buttonText: '免费体验',
-    buttonLink: '/assistant',
+    buttonLink: '/assistant?bot=interview',
     gradient: 'from-green-500 to-green-600'
   }
 ];
@@ -168,26 +196,26 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Banner Section */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-blue-100 py-16 md:py-24 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-purple-50 via-white to-indigo-100 py-16 md:py-24 relative overflow-hidden">
         {/* 装饰背景 */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200/20 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200/20 rounded-full blur-3xl" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            AI驱动的职业规划 <span className="text-[#165DFF]">助你找到理想工作</span>
+            AI生成你的专属 <span className="text-[#722ED1]">大学四年职业规划</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-10">
-            基于500万+<span className="font-semibold text-[#165DFF]">全行业真实职业数据</span>智能分析，
-            多维度匹配你的性格、能力和兴趣，为你推荐最适合的职业方向，并提供个性化学习路径
+            30秒搞定，精准匹配你的<span className="font-semibold text-[#722ED1]">专业、年级和兴趣</span>，
+            为你推荐最适合的职业方向，并提供个性化学习路径
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-            <Link href="/assistant">
-              <Button className="bg-gradient-to-r from-[#165DFF] to-[#4080FF] hover:from-[#165DFF]/90 hover:to-[#4080FF]/90 text-white text-lg px-10 py-7 h-auto rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1">
-                立即免费使用
+            <Link href="/career-planning">
+              <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white text-lg px-10 py-7 h-auto rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-1">
+                立即生成我的规划
               </Button>
             </Link>
           </div>
@@ -351,6 +379,36 @@ export default function HomePage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 职业规划核心优势 Section */}
+      <section className="py-16 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-12 text-center flex items-center justify-center gap-2">
+            <Sparkles className="w-6 h-6 text-[#722ED1]" />
+            职业规划核心优势
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {careerPlanningAdvantages.map((item, index) => (
+              <Card 
+                key={index}
+                className="bg-white border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white shadow-lg flex-shrink-0`}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
+                      <p className="text-gray-600 text-sm">{item.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

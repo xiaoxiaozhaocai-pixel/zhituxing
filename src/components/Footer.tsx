@@ -26,8 +26,8 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-gray-900 mb-4">快速链接</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-sm text-gray-600 hover:text-[#165DFF]">
-                  首页
+                <Link href="/career-planning" className="text-sm text-gray-600 hover:text-[#722ED1]">
+                  AI职业规划
                 </Link>
               </li>
               <li>
@@ -41,7 +41,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/membership" className="text-sm text-gray-600 hover:text-[#165DFF]">
+                <Link href="/membership" className="text-sm text-gray-600 hover:text-[#FF7D00]">
                   会员中心
                 </Link>
               </li>

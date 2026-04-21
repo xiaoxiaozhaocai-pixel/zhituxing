@@ -17,11 +17,21 @@ import {
   Loader2,
   UserCircle,
   Sparkles,
-  Upload
+  Upload,
+  GraduationCap
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const menuItems = [
+  {
+    id: 'career-planning',
+    title: '我的职业规划',
+    description: '生成和管理职业规划报告',
+    icon: <GraduationCap className="w-6 h-6 text-[#722ED1]" />,
+    href: '/career-planning/my-reports',
+    highlight: true,
+    color: '#722ED1'
+  },
   {
     id: 'info',
     title: '我的信息',
@@ -183,8 +193,12 @@ export default function ProfilePage() {
         <div className="space-y-4">
           {menuItems.map((item) => (
             <Link key={item.id} href={item.href}>
-              <Card className={`border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-md cursor-pointer ${
-                item.highlight ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-[#165DFF]/30 hover:border-[#165DFF]/50' : ''
+              <Card className={`border-2 border-gray-100 hover:shadow-md cursor-pointer transition-all duration-300 ${
+                item.highlight && item.color === '#722ED1' 
+                  ? 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 hover:border-purple-300'
+                  : item.highlight
+                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-[#165DFF]/30 hover:border-[#165DFF]/50'
+                    : 'hover:border-[#165DFF]/20'
               }`}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -196,7 +210,12 @@ export default function ProfilePage() {
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                           {item.title}
                           {item.highlight && (
-                            <span className="bg-[#165DFF] text-white text-xs px-2 py-0.5 rounded-full">NEW</span>
+                            <span 
+                              className="text-white text-xs px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: item.color || '#FF7D00' }}
+                            >
+                              NEW
+                            </span>
                           )}
                         </h3>
                         <p className="text-gray-600 text-sm">

@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { name: '首页', href: '/', icon: <Home className="w-5 h-5" /> },
+  { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-5 h-5" />, highlight: true, color: '#722ED1' },
   { name: '全行业岗位百科', href: '/jobs', icon: <Briefcase className="w-5 h-5" /> },
   { name: 'AI职业助手', href: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
   { name: '会员中心', href: '/membership', icon: <Crown className="w-5 h-5" />, highlight: true },
@@ -92,6 +93,7 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center space-x-1">
               {navItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                const itemColor = item.color || (item.highlight ? '#FF7D00' : '#165DFF');
                 return (
                   <Link
                     key={item.name}
@@ -100,9 +102,10 @@ export default function Navbar() {
                       item.highlight
                         ? 'bg-[#FF7D00] text-white hover:bg-[#e67000]'
                         : isActive
-                          ? 'bg-[#165DFF] text-white'
+                          ? `bg-[${itemColor}] text-white`
                           : 'text-gray-700 hover:bg-gray-100'
                     }`}
+                    style={isActive && item.color ? { backgroundColor: item.color } : undefined}
                   >
                     {item.icon}
                     {item.name}

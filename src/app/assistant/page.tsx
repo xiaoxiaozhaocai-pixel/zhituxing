@@ -359,6 +359,19 @@ export default function AssistantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 职业规划提示 */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <Link href="/career-planning" className="flex items-center justify-center gap-2 text-purple-700 hover:text-purple-900 transition-colors">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              先生成你的职业规划，获得更精准的个性化建议
+            </span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+
       {/* 顶部额度提示条 */}
       {user && (
         <div className={`sticky top-0 z-10 px-4 py-3 border-b transition-colors ${
