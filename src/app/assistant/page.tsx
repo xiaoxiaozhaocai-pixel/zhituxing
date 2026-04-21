@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Send, Bot, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -73,11 +75,13 @@ const bots: BotConfig[] = [
 function ChatWindow({ 
   bot, 
   isActive, 
-  onActivate 
+  onActivate,
+  onQuotaExceeded 
 }: { 
   bot: BotConfig; 
   isActive: boolean;
   onActivate: () => void;
+  onQuotaExceeded: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -109,17 +113,40 @@ function ChatWindow({
     setIsLoading(true);
 
     try {
+      // 获取用户ID用于传递
+      const meResponse = await fetch('/api/auth/me');
+      const meData = await meResponse.json();
+      const userId = meData.success ? meData.user.id : null;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (userId) {
+        headers['x-user-id'] = userId;
+      }
+
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           message: messageText,
           botType: bot.id,
           conversationId: localStorage.getItem(`conversationId_${bot.id}`) || undefined
         }),
       });
+
+      // 检查配额是否超限
+      if (response.status === 403) {
+        const data = await response.json();
+        if (data.error === 'quota_exceeded') {
+          onQuotaExceeded();
+          // 移除刚添加的用户消息
+          setMessages(prev => prev.slice(0, -1));
+          setIsLoading(false);
+          return;
+        }
+      }
 
       if (response.ok && response.body) {
         const reader = response.body.getReader();
@@ -137,7 +164,7 @@ function ChatWindow({
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
+          const chunk = decoder.decode(value, { stream: true });
           fullContent += chunk;
           
           setMessages(prev => {
@@ -191,7 +218,7 @@ function ChatWindow({
         onClick={handleTabClick}
         className={`w-full px-4 py-3 flex items-center gap-3 transition-all ${
           isActive 
-            ? 'bg-white border-b-2 border-' + bot.id 
+            ? 'bg-white border-b-2' 
             : 'bg-gray-50 hover:bg-gray-100'
         }`}
         style={{ 
@@ -306,7 +333,17 @@ function ChatWindow({
 
 export default function AssistantPage() {
   const [activeBot, setActiveBot] = useState('jobs');
-  const [freeQuota] = useState(5);
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const { user, quota, refreshQuota } = useAuth();
+
+  // 配额用完时调用
+  const handleQuotaExceeded = () => {
+    refreshQuota();
+    setShowQuotaDialog(true);
+  };
+
+  // 获取显示的配额
+  const displayQuota = quota?.is_member ? '无限' : (quota?.remaining ?? '加载中');
 
   return (
     <div className="min-h-screen bg-gray-50 py-6">
@@ -321,13 +358,32 @@ export default function AssistantPage() {
               三大智能体协同服务，助你求职无忧
             </p>
           </div>
-          <Link
-            href="/membership"
-            className="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
-          >
-            <span className="text-gray-600 text-sm">本月剩余免费次数：</span>
-            <span className="text-lg font-bold text-[#165DFF]">{freeQuota}/5</span>
-          </Link>
+          
+          {/* 配额显示 */}
+          {user ? (
+            <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg shadow-sm border">
+              {quota?.is_member ? (
+                <>
+                  <span className="text-gray-600 text-sm">会员专享</span>
+                  <span className="text-lg font-bold text-[#FF7D00]">无限次使用</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-gray-600 text-sm">本月剩余：</span>
+                  <span className={`text-lg font-bold ${(quota?.remaining ?? 0) <= 0 ? 'text-red-500' : 'text-[#165DFF]'}`}>
+                    {displayQuota}/5
+                  </span>
+                </>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/auth"
+              className="flex items-center space-x-2 px-4 py-2 bg-[#165DFF] text-white rounded-lg hover:bg-[#165DFF]/90 transition-colors"
+            >
+              <span>登录 / 注册</span>
+            </Link>
+          )}
         </div>
 
         {/* 三个智能体窗口 */}
@@ -346,6 +402,7 @@ export default function AssistantPage() {
                 bot={bot} 
                 isActive={activeBot === bot.id}
                 onActivate={() => setActiveBot(bot.id)}
+                onQuotaExceeded={handleQuotaExceeded}
               />
             </Card>
           ))}
@@ -367,6 +424,36 @@ export default function AssistantPage() {
           </div>
         </div>
       </div>
+
+      {/* 配额用完弹窗 */}
+      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-[#FF7D00]" />
+              本月免费次数已用完
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+              <p>您本月的5次免费AI服务已全部使用完毕</p>
+              <div className="space-y-2">
+                <p className="font-medium text-gray-900">解锁更多次数：</p>
+                <div className="flex flex-col gap-2">
+                  <Link href="/membership" onClick={() => setShowQuotaDialog(false)}>
+                    <Button className="w-full bg-[#FF7D00] hover:bg-[#e67000] text-white">
+                      开通会员 - 无限次使用
+                    </Button>
+                  </Link>
+                  <Link href="/profile/invite" onClick={() => setShowQuotaDialog(false)}>
+                    <Button variant="outline" className="w-full">
+                      邀请好友 - 每次获得3次免费次数
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

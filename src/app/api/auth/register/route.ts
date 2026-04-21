@@ -5,7 +5,7 @@ import { execSql } from '@/lib/exec-sql';
 // 注册
 export async function POST(request: NextRequest) {
   try {
-    const { phone, password, code, nickname } = await request.json();
+    const { phone, password, code, nickname, invite_code } = await request.json();
 
     // 验证必填项
     if (!phone || !password || !code) {
@@ -77,13 +77,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 查找邀请人（如果有邀请码）
+    let inviterId: string | null = null;
+    if (invite_code) {
+      const inviterResult = await execSql(
+        `SELECT id FROM users WHERE invite_code = '${invite_code}' LIMIT 1`
+      );
+      if (inviterResult && inviterResult.length > 0) {
+        inviterId = (inviterResult[0] as { id: string }).id;
+      }
+    }
+
     // 加密密码
     const hashedPassword = await bcrypt.hash(password, 10);
     const userNickname = nickname || `用户${phone.slice(-4)}`;
+    
+    // 生成用户的邀请码
+    const userInviteCode = `U${phone.slice(-6)}`;
 
-    // 创建用户（不使用RETURNING）
+    // 创建用户
     await execSql(
-      `INSERT INTO users (phone, password, nickname) VALUES ('${phone}', '${hashedPassword}', '${userNickname}')`
+      `INSERT INTO users (phone, password, nickname, invite_code, monthly_quota, quota_reset_time) 
+       VALUES ('${phone}', '${hashedPassword}', '${userNickname}', '${userInviteCode}', 5, DATE_TRUNC('month', NOW()) + INTERVAL '1 month' - INTERVAL '1 second')`
     );
 
     // 查询新创建的用户
@@ -105,17 +120,62 @@ export async function POST(request: NextRequest) {
       created_at: string;
     };
 
+    // 如果有邀请人，创建邀请记录并自动发放奖励
+    if (inviterId) {
+      // 创建邀请记录
+      await execSql(
+        `INSERT INTO invites (inviter_id, invitee_id, invite_code, reward_quota, reward_days, reward_status, claimed_at)
+         VALUES ('${inviterId}', '${newUser.id}', '${invite_code}', 3, 7, 'claimed', NOW())`
+      );
+
+      // 自动发放奖励给邀请人
+      await execSql(
+        `UPDATE users SET monthly_quota = monthly_quota + 3 WHERE id = '${inviterId}'`
+      );
+
+      // 检查并延长邀请人的会员时间
+      const inviterResult = await execSql(
+        `SELECT member_expire_time FROM users WHERE id = '${inviterId}' LIMIT 1`
+      );
+      
+      if (inviterResult && inviterResult.length > 0) {
+        const inviter = inviterResult[0] as { member_expire_time: string };
+        const now = new Date();
+        let newExpireTime: Date;
+
+        if (inviter.member_expire_time) {
+          const currentExpire = new Date(inviter.member_expire_time);
+          newExpireTime = new Date(currentExpire.getTime() + 7 * 24 * 60 * 60 * 1000);
+        } else {
+          newExpireTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        }
+
+        await execSql(
+          `UPDATE users SET 
+            member_type = 'monthly',
+            member_expire_time = '${newExpireTime.toISOString()}'
+           WHERE id = '${inviterId}'`
+        );
+      }
+
+      // 自动给被邀请人发放奖励（注册即可获得3次免费次数）
+      await execSql(
+        `UPDATE users SET monthly_quota = monthly_quota + 3 WHERE id = '${newUser.id}'`
+      );
+    }
+
     // 返回用户信息
     const userInfo = {
       id: newUser.id,
       phone: newUser.phone,
       nickname: newUser.nickname,
-      created_at: newUser.created_at
+      created_at: newUser.created_at,
+      invite_reward: inviterId ? { quota: 3, message: '注册奖励：+3次AI次数' } : null
     };
 
     return NextResponse.json({
       success: true,
-      message: '注册成功',
+      message: inviterId ? '注册成功，获得3次免费AI次数！' : '注册成功',
       user: userInfo
     });
 

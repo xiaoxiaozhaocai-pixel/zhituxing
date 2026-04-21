@@ -1,4 +1,8 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,8 +12,11 @@ import {
   Users,
   Settings,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  MessageSquare,
+  Loader2
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const menuItems = [
   {
@@ -20,10 +27,17 @@ const menuItems = [
     href: '/profile/membership'
   },
   {
+    id: 'history',
+    title: '我的对话',
+    description: '查看AI对话历史记录',
+    icon: <MessageSquare className="w-6 h-6 text-[#165DFF]" />,
+    href: '/profile/history'
+  },
+  {
     id: 'reports',
     title: '我的报告',
     description: '查看和下载职业规划报告',
-    icon: <FileText className="w-6 h-6 text-[#165DFF]" />,
+    icon: <FileText className="w-6 h-6 text-purple-500" />,
     href: '/profile/reports'
   },
   {
@@ -50,6 +64,64 @@ const menuItems = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { user, loading, logout, quota } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await logout();
+    router.push('/');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const getMemberBadge = () => {
+    if (quota?.is_member) {
+      return (
+        <span className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A00] text-white text-sm font-medium px-3 py-1 rounded-full">
+          {quota.member_type === 'yearly' ? '年费会员' : '月费会员'}
+        </span>
+      );
+    }
+    return (
+      <span className="bg-gray-100 text-gray-600 text-sm font-medium px-3 py-1 rounded-full">
+        普通用户
+      </span>
+    );
+  };
+
+  const getQuotaDisplay = () => {
+    if (quota?.is_member) {
+      return (
+        <span className="text-sm text-[#FF7D00] font-medium">
+          会员专享：无限次使用
+        </span>
+      );
+    }
+    return (
+      <span className={`text-sm font-medium ${(quota?.remaining ?? 0) <= 0 ? 'text-red-500' : 'text-gray-500'}`}>
+        本月剩余免费次数：{quota?.remaining ?? 0}/5
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,18 +140,20 @@ export default function ProfilePage() {
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 bg-[#165DFF] rounded-full flex items-center justify-center">
-                <span className="text-white text-2xl font-bold">张</span>
+                <span className="text-white text-2xl font-bold">
+                  {user.nickname?.charAt(0) || user.phone.slice(-4)}
+                </span>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">张三</h2>
-                <p className="text-gray-600">计算机专业 · 大三</p>
-                <div className="flex items-center mt-2 space-x-2">
-                  <span className="bg-[#165DFF]/10 text-[#165DFF] text-sm font-medium px-3 py-1 rounded-full">
-                    普通会员
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    本月剩余免费次数：5/5
-                  </span>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {user.nickname || `用户${user.phone.slice(-4)}`}
+                </h2>
+                <p className="text-gray-600">
+                  {user.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}
+                </p>
+                <div className="flex items-center mt-2 space-x-2 flex-wrap gap-2">
+                  {getMemberBadge()}
+                  {getQuotaDisplay()}
                 </div>
               </div>
             </div>
@@ -119,8 +193,14 @@ export default function ProfilePage() {
           <Button
             variant="ghost"
             className="w-full border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+            onClick={handleLogout}
+            disabled={loggingOut}
           >
-            <LogOut className="w-5 h-5 mr-2" />
+            {loggingOut ? (
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            ) : (
+              <LogOut className="w-5 h-5 mr-2" />
+            )}
             退出登录
           </Button>
         </div>
