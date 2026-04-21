@@ -17,6 +17,8 @@ interface User {
   avatar_url?: string;
   created_at: string;
   quota?: QuotaInfo;
+  role?: string;
+  is_vip?: boolean;
 }
 
 interface AuthContextType {

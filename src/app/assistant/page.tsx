@@ -25,6 +25,8 @@ interface BotConfig {
   gradient: string;
   welcomeMessage: string;
   quickQuestions: string[];
+  isDefault?: boolean;
+  isVipOnly?: boolean;
 }
 
 const jobsWelcome = `👋 你好！我是「职途星——职搭子」，大学生专属的全行业岗位JD库助手~所有信息均来自真实招聘JD，拒绝空泛鸡汤！

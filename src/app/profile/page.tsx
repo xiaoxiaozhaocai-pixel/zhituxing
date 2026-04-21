@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Loader2,
   UserCircle,
-  Sparkles
+  Sparkles,
+  Upload
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -27,6 +28,14 @@ const menuItems = [
     description: '完善个人信息，获得精准AI建议',
     icon: <Sparkles className="w-6 h-6 text-[#165DFF]" />,
     href: '/profile/info',
+    highlight: true
+  },
+  {
+    id: 'jd-submissions',
+    title: '我的JD提交',
+    description: '查看JD提交记录和审核状态',
+    icon: <Upload className="w-6 h-6 text-[#FF7D00]" />,
+    href: '/profile/jd-submissions',
     highlight: true
   },
   {

@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 
 // 行业列表（与数据库值对应）
 const industries = [
@@ -142,8 +143,18 @@ export default function JobsPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#165DFF] to-[#4080FF] text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">全行业岗位百科</h1>
-          <p className="text-blue-100 text-lg">收录10000+真实校招/应届生岗位JD，助你找到最适合自己的工作</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-3">全行业岗位百科</h1>
+              <p className="text-blue-100 text-lg">收录10000+真实校招/应届生岗位JD，助你找到最适合自己的工作</p>
+            </div>
+            <Link href="/jobs/submit">
+              <Button className="bg-[#FF7D00] hover:bg-[#FF7D00]/90 text-white h-11 px-6 shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                <Upload className="w-4 h-4 mr-2" />
+                上传JD
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
