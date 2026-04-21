@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +41,62 @@ interface UserProfile {
   internship_experience?: string;
   project_experience?: string;
   awards?: string;
+}
+
+// 格式化JSON内容为可读文本
+function formatJsonContent(jsonStr: string): ReactNode {
+  try {
+    // 尝试解析JSON
+    const parsed = JSON.parse(jsonStr);
+    
+    // 递归提取所有文本内容
+    const extractText = (obj: unknown, indent: number = 0): React.ReactNode => {
+      if (typeof obj === 'string') return obj;
+      if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+      if (obj === null || obj === undefined) return null;
+      
+      if (Array.isArray(obj)) {
+        return obj.map((item, index) => (
+          <span key={index}>
+            {extractText(item, indent)}
+            {index < obj.length - 1 && <br />}
+          </span>
+        ));
+      }
+      
+      if (typeof obj === 'object') {
+        const entries = Object.entries(obj as object);
+        return entries.map(([key, value], index) => (
+          <span key={key}>
+            {'  '.repeat(indent)}
+            <span className="text-purple-600 font-medium">{key}: </span>
+            {typeof value === 'object' && value !== null ? (
+              <>
+                {extractText(value, indent + 1)}
+              </>
+            ) : (
+              <span className="text-gray-800">{extractText(value)}</span>
+            )}
+            {index < entries.length - 1 && <br />}
+          </span>
+        ));
+      }
+      
+      return null;
+    };
+    
+    return extractText(parsed);
+  } catch (e) {
+    // 如果不是有效JSON，显示原始文本
+    return jsonStr;
+  }
+}
+
+// 检查是否为JSON格式
+function isJsonFormat(str: string): boolean {
+  const trimmed = str.trim();
+  return (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+         (trimmed.startsWith('[') && trimmed.endsWith(']'));
 }
 
 export default function CareerPlanningPage() {
@@ -309,7 +365,11 @@ export default function CareerPlanningPage() {
               >
                 {generatedContent ? (
                   <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                    {generatedContent}
+                    {isJsonFormat(generatedContent) ? (
+                      formatJsonContent(generatedContent)
+                    ) : (
+                      generatedContent
+                    )}
                     {generating && (
                       <span className="inline-block w-2 h-5 bg-purple-600 animate-pulse ml-1" />
                     )}

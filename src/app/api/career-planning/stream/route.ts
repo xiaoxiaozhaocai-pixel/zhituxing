@@ -3,7 +3,8 @@
  * 调用Coze平台职业规划智能体，通过SSE协议返回流式响应
  * 
  * 环境变量配置：
- * - CAREER_AGENT_TOKEN: 认证Token
+ * - CAREER_AGENT_API: API地址（可选）
+ * - CAREER_AGENT_TOKEN: 认证Token（必填）
  * - CAREER_AGENT_PROJECT_ID: 项目ID（可选）
  */
 
@@ -11,106 +12,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // 职业规划智能体API配置
 const CAREER_AGENT_API = process.env.CAREER_AGENT_API || 'https://7xwsb63bkk.coze.site/stream_run';
-const CAREER_AGENT_TOKEN = process.env.CAREER_AGENT_TOKEN || '';
+const CAREER_AGENT_TOKEN = process.env.CAREER_AGENT_TOKEN || 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjNiYjBlZTQ5LTU1MWMtNGJlNi1iYjljLWFkNGRkYTBiMWNlZCJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbIkxudVM4eG9qNUtnUFNvVEszWHZ2VHZNMUZCNmxvSGIyIl0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzc2NzgyMzA5LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NjMxMjA5OTE3NDI0NDAyNDgyIiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NjMxMjIxOTA5OTcxMDA5NTYyIn0.MIyP55GMHeOT7jB_XBPD0i-BhSJSc0wJNdEPe2n4oqG_6Hf46If6Dyr6TSWQFEVN5BS5j4OSV19wTAyz2haf6XztQXSUgX7lv7t046--CZI_JjsnhXmYh4tKUi8us-5_kC_-p7pO9gdGLUiI4Yf1PT46IBVuLtqkCQDv_vVzqB68oTBz563TZC95rKVmeXR2-TGM21Uy_Tjfy-15qAGdSMSCOmy7kl-ZcHtoD2p_79zYFjymE0pCagfg2jtRUL5go-8JS1IG6XqNG8oPLnNbZk0ahYh06nivj138-Fy-PjZ-gkFC78T80o1OwRg-Ooz8p5zp-xVJBAPSE-ntECf-og';
 const PROJECT_ID = process.env.CAREER_AGENT_PROJECT_ID || '7631200707550609418';
-
-// 模拟职业规划内容（用于演示）
-const DEMO_PLAN = `
-【职业规划报告】
-
-一、职业方向推荐
-
-基于您的专业背景和年级，我为您推荐以下职业方向：
-
-1. 前端开发工程师
-   - 匹配度：92%
-   - 行业：互联网/IT
-   - 薪资范围：15K-30K
-   - 核心技能：React/Vue、TypeScript、前端工程化
-
-2. 后端开发工程师
-   - 匹配度：88%
-   - 行业：互联网/IT
-   - 薪资范围：18K-35K
-   - 核心技能：Java/Python、数据库、微服务
-
-3. 全栈工程师
-   - 匹配度：85%
-   - 行业：互联网/IT
-   - 薪资范围：20K-40K
-   - 核心技能：前端+后端+DevOps
-
-4. 技术产品经理
-   - 匹配度：80%
-   - 行业：互联网
-   - 薪资范围：25K-45K
-   - 核心技能：技术背景、产品思维、沟通协调
-
-二、核心竞争力分析
-
-您的专业背景为您奠定了扎实的技术基础，结合当前阶段的学习，您应该重点培养以下能力：
-
-• 编程基础：数据结构、算法、设计模式
-• 前端技能：主流框架、组件化开发、性能优化
-• 工程能力：Git协作、自动化测试、CI/CD
-• 软技能：技术文档、技术分享、团队协作
-
-三、各年级行动计划
-
-【当前阶段 - 夯实基础】
-• 深入学习一门主流前端框架（React或Vue）
-• 完成2-3个完整项目，积累项目经验
-• 学习TypeScript，提升代码质量
-• 准备面试，每日刷题1-2道
-
-【下一阶段 - 项目实战】
-• 参与开源项目，积累开源贡献经验
-• 完成一个全栈项目，展示端到端能力
-• 学习前端工程化：Webpack/Vite、CI/CD
-• 准备实习或校招面试
-
-【冲刺阶段 - 就业准备】
-• 系统复习计算机基础知识
-• 准备简历和面试作品集
-• 参加校招宣讲会，了解企业需求
-• 拿到心仪offer！
-
-四、技能提升路径
-
-第一阶段（1-3个月）：
-• 精通React/Vue框架核心原理
-• 掌握TypeScript高级特性
-• 学习前端工程化工具链
-
-第二阶段（4-6个月）：
-• 学习Node.js后端开发
-• 掌握数据库设计与优化
-• 完成全栈项目实战
-
-第三阶段（7-12个月）：
-• 学习微服务架构
-• 了解容器化技术Docker/K8s
-• 准备高级工程师面试
-
-五、求职准备建议
-
-1. 简历优化
-   • 突出项目经验和个人贡献
-   • 量化成果（如：性能提升50%）
-   • 展示技术深度和广度
-
-2. 面试准备
-   • 系统复习前端核心知识点
-   • 练习算法和数据结构
-   • 准备项目讲解和系统设计
-
-3. 求职渠道
-   • 实习僧、Boss直聘、拉勾网
-   • 目标公司官网招聘页
-   • 学长学姐内推
-
-祝您求职顺利，早日拿到心仪的offer！
-`;
 
 // 生成会话ID
 function generateSessionId(): string {
@@ -184,14 +87,14 @@ async function callRealApi(requestBody: object): Promise<Response> {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'text/event-stream',
             'Authorization': `Bearer ${CAREER_AGENT_TOKEN}`
           },
           body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
-          controller.enqueue(`data: ${JSON.stringify({ error: `API请求失败: ${response.status}` })}\n\n`);
+          const errorText = await response.text();
+          controller.enqueue(`data: ${JSON.stringify({ error: `API请求失败: ${response.status}`, details: errorText })}\n\n`);
           controller.close();
           return;
         }
@@ -205,44 +108,87 @@ async function callRealApi(requestBody: object): Promise<Response> {
 
         const decoder = new TextDecoder();
         let buffer = '';
+        let isDone = false;
 
         while (true) {
           const { done, value } = await reader.read();
           
           if (done) {
-            controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
+            if (!isDone) {
+              controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
+            }
             break;
           }
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+          // 解码数据
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim();
-              if (data && data !== '[DONE]') {
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.content || parsed.text || parsed.message?.content || '';
-                  if (content) {
-                    controller.enqueue(`data: ${JSON.stringify({ content })}\n\n`);
-                  }
-                } catch (e) {
-                  if (data) {
-                    controller.enqueue(`data: ${JSON.stringify({ content: data })}\n\n`);
-                  }
+          // 按双换行分割SSE消息
+          const messages = buffer.split(/\r?\n\r?\n/);
+          buffer = messages.pop() || '';
+
+          for (const message of messages) {
+            if (!message.trim()) continue;
+            
+            const lines = message.split(/\r?\n/);
+            let eventType = '';
+            let dataStr = '';
+
+            for (const line of lines) {
+              if (line.startsWith('event:')) {
+                eventType = line.slice(6).trim();
+              } else if (line.startsWith('data:')) {
+                dataStr = line.slice(5).trim();
+              }
+            }
+
+            if (dataStr && dataStr !== '[DONE]') {
+              try {
+                const parsed = JSON.parse(dataStr);
+                
+                // 提取content.answer中的内容
+                let answer = '';
+                if (parsed.content?.answer) {
+                  answer = parsed.content.answer;
                 }
+                
+                // 检查是否结束
+                if (parsed.finish === true || eventType === 'message_end' || parsed.type === 'message_end') {
+                  isDone = true;
+                } else if (answer) {
+                  // 发送提取的内容
+                  controller.enqueue(`data: ${JSON.stringify({ content: answer })}\n\n`);
+                }
+              } catch (e) {
+                // 非JSON数据，忽略
               }
             }
           }
         }
-
-        controller.close();
+        
+        // 确保发送完成信号
+        if (!isDone) {
+          try {
+            controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
+          } catch (e) {
+            // 忽略，可能已经关闭
+          }
+        }
       } catch (error) {
         console.error('流式请求错误:', error);
-        controller.enqueue(`data: ${JSON.stringify({ error: '服务暂时不可用' })}\n\n`);
-        controller.close();
+        try {
+          controller.enqueue(`data: ${JSON.stringify({ error: '服务暂时不可用' })}\n\n`);
+        } catch (e) {
+          // 忽略
+        }
+      } finally {
+        // 确保关闭
+        try {
+          controller.close();
+        } catch (e) {
+          // 忽略
+        }
       }
     }
   });
@@ -259,18 +205,25 @@ async function callRealApi(requestBody: object): Promise<Response> {
 
 // 流式输出演示内容
 async function streamDemoContent(major: string, grade: string, city: string): Promise<Response> {
+  const demoReport = `{
+  "basic_version": {
+    "core_conclusion": {
+      "top_jobs": [
+        {"job_name":"前端开发工程师","match_score":92,"industry":"互联网/IT","city":"北京","salary_range":"18-30K","match_reason":"计算机专业对口，北京互联网企业需求旺盛"},
+        {"job_name":"Java开发工程师","match_score":90,"industry":"互联网/软件","city":"北京","salary_range":"18-28K","match_reason":"技术栈匹配，岗位需求量大"},
+        {"job_name":"算法工程师","match_score":85,"industry":"人工智能","city":"北京","salary_range":"25-40K","match_reason":"专业背景契合，AI领域发展前景好"}
+      ],
+      "skill_gaps": ["大型项目经验","分布式系统设计","团队协作能力"],
+      "suggested_learning": ["Spring Cloud微服务","Kubernetes容器化","系统设计思维"]
+    }
+  }
+}`;
+
   // 根据用户输入调整内容
-  let content = DEMO_PLAN;
-  
-  if (major) {
-    content = content.replace(/计算机科学与技术/g, major);
-  }
-  if (grade) {
-    content = content.replace(/大三/g, grade);
-  }
-  if (city) {
-    content = content.replace(/北京/g, city);
-  }
+  let content = demoReport;
+  if (major) content = content.replace(/计算机/g, major);
+  if (grade) content = content.replace(/大三/g, grade);
+  if (city) content = content.replace(/北京/g, city);
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -282,7 +235,6 @@ async function streamDemoContent(major: string, grade: string, city: string): Pr
         if (index < chars.length) {
           controller.enqueue(`data: ${JSON.stringify({ content: chars[index] })}\n\n`);
           index++;
-          
           // 控制打字速度
           const delay = chars[index - 1] === '\n' ? 30 : 3;
           setTimeout(sendChar, delay);
