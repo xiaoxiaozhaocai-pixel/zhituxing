@@ -5,9 +5,23 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, FileText, Users, Briefcase, Bell, Settings, Shield, CreditCard, MessageSquare } from 'lucide-react';
+import { Loader2, FileText, Users, Briefcase, Bell, Settings, Shield, CreditCard, MessageSquare, RefreshCw } from 'lucide-react';
 
 const adminMenu = [
+  {
+    title: 'JD同步管理',
+    description: '同步官方公开招聘数据',
+    icon: <RefreshCw className="w-8 h-8" />,
+    href: '/admin/jd-sync',
+    color: 'from-cyan-500 to-blue-600'
+  },
+  {
+    title: 'JD审核管理',
+    description: '审核用户提交的JD',
+    icon: <Briefcase className="w-8 h-8" />,
+    href: '/admin/jd-review',
+    color: 'from-orange-500 to-orange-600'
+  },
   {
     title: '文章管理',
     description: '管理求职干货文章',

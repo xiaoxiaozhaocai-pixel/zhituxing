@@ -5,7 +5,7 @@
 - **项目名称**: 职途星——你的AI职业规划助手
 - **目标用户**: 全国所有专业的大学生/应届生（核心转化用户：大三、大四、研三求职人群）
 - **核心价值**: 基于全行业真实招聘JD，提供「每月5次免费AI服务+低门槛会员无限次+增值付费服务」的一站式求职平台
-- **主色调**: 蓝色(#165DFF)、橙色(#FF7D00)（会员/付费按钮强调色）
+- **主色调**: 蓝色(#165DFF)、橙色(#FF7D00)（会员/付费按钮强调色）、紫色(#722ED1)（职业规划功能强调色）
 
 ## 技术栈
 
@@ -32,7 +32,9 @@
 │   │   ├── faq/             # 常见问题页面
 │   │   ├── contact/         # 联系我们页面
 │   │   ├── profile/         # 个人中心页面
-│   │   └── career-planning/ # 职业规划页面
+│   │   ├── career-planning/ # 职业规划页面
+│   │   └── admin/           # 后台管理页面
+│   │       └── jd-sync/     # JD同步管理页面
 │   ├── components/          # 自定义组件
 │   │   ├── ui/              # Shadcn UI 组件库
 │   │   ├── ProfileGuideBar.tsx        # 全局顶部引导条
@@ -41,6 +43,7 @@
 │   │   └── ProfileGuideProvider.tsx   # 引导组件整合提供者
 │   ├── hooks/               # 自定义 Hooks
 │   └── lib/                 # 工具库
+│       └── jd-sync-service.ts         # JD同步服务
 ├── next.config.ts           # Next.js 配置
 └── package.json            # 项目依赖管理
 ```
@@ -70,6 +73,32 @@ pnpm ts-check    # TypeScript类型检查
 | /api/career-planning/generate | POST | 生成职业规划报告 |
 | /api/career-planning/my-reports | GET | 获取我的报告列表 |
 | /api/career-planning/report/[id] | GET | 获取报告详情 |
+| /api/jd-sync/sync | POST | 触发JD数据同步 |
+| /api/admin/jd-sync/logs | GET | 获取同步日志列表 |
+| /api/admin/jd-sync/trigger | POST | 手动触发同步 |
+
+## JD同步管理功能
+
+### 功能说明
+
+1. **同步服务** (`src/lib/jd-sync-service.ts`)
+   - 支持官方公开招聘API对接（24365就业平台、中国公共招聘网、广西人才网上）
+   - 内置模拟数据用于演示
+   - 自动去重逻辑避免重复数据
+   - 同步日志记录
+
+2. **后台管理页面** (`src/app/admin/jd-sync/page.tsx`)
+   - 展示岗位总数、今日同步数、上次同步时间
+   - 支持手动触发同步（官方API或模拟数据）
+   - 同步日志列表查看
+   - 数据来源说明
+
+3. **数据库表**
+   - `jd_sync_logs`: 同步日志表，记录每次同步的时间、来源、成功/失败数量
+
+### 模拟数据
+
+已内置15条模拟岗位数据，覆盖互联网、金融、制造、医疗、教育等行业，用于演示和测试。
 
 ## 个人信息引导全链路功能
 
