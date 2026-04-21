@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 调用真实API
-async function callRealApi(requestBody: any): Promise<Response> {
+async function callRealApi(requestBody: object): Promise<Response> {
   const stream = new ReadableStream({
     async start(controller) {
       try {

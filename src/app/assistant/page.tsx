@@ -144,6 +144,21 @@ const bots: BotConfig[] = [
     ]
   },
   {
+    id: 'interview',
+    name: 'AI模拟面试',
+    description: '模拟真实面试场景',
+    icon: <Briefcase className="w-5 h-5" />,
+    color: 'text-[#722ED1]',
+    gradient: 'from-purple-500 to-purple-600',
+    welcomeMessage: '您好！我是您的AI模拟面试官。我会根据您的求职意向，模拟真实面试场景，包括自我介绍、项目经历、专业知识、行为面试等多个环节。\n\n请先告诉我：\n1. 您应聘的岗位是什么？\n2. 您的专业背景是什么？\n3. 有没有相关的实习或项目经验？',
+    quickQuestions: [
+      '我想面试前端岗位',
+      '我想面试产品经理',
+      '我想面试后端开发',
+      '开始模拟面试'
+    ]
+  },
+  {
     id: 'assessment',
     name: '专业能力测评',
     description: '20道题精准定位短板',
@@ -262,10 +277,18 @@ export default function AssistantPage() {
         headers['x-user-id'] = userId;
       }
 
-      const response = await fetch('/api/chat', {
+      // 判断是否是模拟面试
+      const isInterview = activeBot === 'interview';
+      const apiUrl = isInterview ? '/api/interview' : '/api/chat';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
+        body: JSON.stringify(isInterview ? {
+          message: messageText,
+          sessionId: localStorage.getItem('interviewSessionId') || undefined,
+          jobType: localStorage.getItem('interviewJobType') || undefined
+        } : {
           message: messageText,
           botType: activeBot,
           conversationId: localStorage.getItem(`conversationId_${activeBot}`) || undefined
@@ -311,7 +334,11 @@ export default function AssistantPage() {
 
         const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
         if (conversationIdMatch) {
-          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
+          if (isInterview) {
+            localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
+          } else {
+            localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
+          }
         }
         
         // 确保免责文案已添加
