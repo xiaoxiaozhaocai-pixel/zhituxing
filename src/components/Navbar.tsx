@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { name: '首页', href: '/' },
@@ -23,10 +24,10 @@ const navItems = [
 ];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [freeQuota] = useState(5);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +36,11 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = '/';
+  };
 
   return (
     <>
@@ -85,14 +91,14 @@ export default function Navbar() {
               </Link>
 
               {/* Auth Buttons */}
-              {isLoggedIn ? (
+              {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center space-x-2">
                       <div className="w-8 h-8 bg-[#165DFF] rounded-full flex items-center justify-center">
                         <User className="w-4 h-4 text-white" />
                       </div>
-                      <span className="text-sm font-medium">张三</span>
+                      <span className="text-sm font-medium">{user.nickname}</span>
                       <ChevronDown className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -114,7 +120,7 @@ export default function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-red-600"
-                      onClick={() => setIsLoggedIn(false)}
+                      onClick={handleLogout}
                     >
                       退出登录
                     </DropdownMenuItem>
@@ -122,19 +128,19 @@ export default function Navbar() {
                 </DropdownMenu>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setIsLoggedIn(true)}
-                    className="text-[#165DFF] hover:text-[#165DFF] hover:bg-[#165DFF]/10"
-                  >
-                    登录
-                  </Button>
-                  <Button
-                    className="bg-[#165DFF] hover:bg-[#165DFF]/90 text-white"
-                    onClick={() => setIsLoggedIn(true)}
-                  >
-                    注册
-                  </Button>
+                  <Link href="/auth">
+                    <Button
+                      variant="ghost"
+                      className="text-[#165DFF] hover:text-[#165DFF] hover:bg-[#165DFF]/10"
+                    >
+                      登录
+                    </Button>
+                  </Link>
+                  <Link href="/auth">
+                    <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90 text-white">
+                      注册
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -184,38 +190,34 @@ export default function Navbar() {
 
               {/* Auth Buttons */}
               <div className="pt-4 border-t space-y-2">
-                {isLoggedIn ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full text-red-600"
-                    onClick={() => {
-                      setIsLoggedIn(false);
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    退出登录
-                  </Button>
-                ) : (
+                {user ? (
                   <>
+                    <div className="px-4 py-2 text-center">
+                      <span className="font-medium">{user.nickname}</span>
+                    </div>
                     <Button
                       variant="ghost"
-                      className="w-full"
+                      className="w-full text-red-600"
                       onClick={() => {
-                        setIsLoggedIn(true);
+                        handleLogout();
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      登录
+                      退出登录
                     </Button>
-                    <Button
-                      className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white"
-                      onClick={() => {
-                        setIsLoggedIn(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      注册
-                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full">
+                        登录
+                      </Button>
+                    </Link>
+                    <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white">
+                        注册
+                      </Button>
+                    </Link>
                   </>
                 )}
               </div>

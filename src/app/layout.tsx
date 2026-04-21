@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
+import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
   title: {
@@ -48,10 +49,12 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className={`antialiased`}>
         {isDev && <Inspector />}
-        <Navbar />
-        <FreeQuotaBadge />
-        {children}
-        <Footer />
+        <Providers>
+          <Navbar />
+          <FreeQuotaBadge />
+          {children}
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
