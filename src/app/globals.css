@@ -134,4 +134,61 @@
 
 body {
   @apply font-sans;
+  scroll-behavior: smooth;
+}
+
+/* 全局交互优化样式 */
+
+/* 链接hover效果 */
+a {
+  @apply transition-colors duration-300;
+}
+a:hover:not(.no-underline) {
+  @apply text-[#165DFF] underline underline-offset-2;
+}
+
+/* 按钮统一hover效果 */
+.btn-hover-effect {
+  @apply transition-all duration-300;
+}
+.btn-hover-effect:hover {
+  @apply shadow-lg -translate-y-0.5;
+}
+
+/* 卡片统一hover效果 */
+.card-hover-effect {
+  @apply transition-all duration-300;
+}
+.card-hover-effect:hover {
+  @apply shadow-[0_8px_24px_rgba(22,93,255,0.12)] -translate-y-1;
+}
+
+/* 输入框聚焦状态 */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply ring-2 ring-[#165DFF]/30 border-[#165DFF];
+}
+
+/* 页面过渡动画 */
+.page-enter {
+  @apply opacity-0;
+}
+.page-enter-active {
+  @apply opacity-100 transition-opacity duration-300;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
 }

@@ -148,8 +148,8 @@ export default function ResourcesPage() {
               onClick={() => setActiveCategory(category.id)}
               className={`flex items-center space-x-2 px-5 py-2.5 rounded-full transition-all duration-300 ${
                 activeCategory === category.id
-                  ? 'bg-[#165DFF] text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF]'
+                  ? 'bg-[#165DFF] text-white shadow-lg shadow-blue-500/30'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
               }`}
             >
               {category.icon}
@@ -168,40 +168,36 @@ export default function ResourcesPage() {
             {filteredResources.map((resource) => (
               <Card
                 key={resource.id}
-                className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.12)] hover:-translate-y-2 relative"
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2">
-                        {resource.title}
-                      </CardTitle>
-                      <CardDescription className="mt-2 line-clamp-2">
-                        {resource.summary}
-                      </CardDescription>
-                    </div>
-                    {'isFeatured' in resource && resource.isFeatured && (
-                      <span className="bg-orange-500 text-white text-xs font-medium px-2 py-1 rounded ml-2">
-                        精选
-                      </span>
-                    )}
-                  </div>
+                {'isFeatured' in resource && resource.isFeatured && (
+                  <span className="absolute top-3 right-3 bg-[#FF7D00] text-white text-xs font-medium px-2.5 py-1 rounded-full shadow-sm z-10">
+                    精选
+                  </span>
+                )}
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2 pr-16">
+                    {resource.title}
+                  </CardTitle>
+                  <CardDescription className="mt-2 line-clamp-2 text-gray-500">
+                    {resource.summary}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center justify-between text-sm text-gray-400">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-3.5 h-3.5" />
                       {formatDate(resource.createdAt)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-3.5 h-3.5" />
                       {resource.views}
                     </span>
                   </div>
                 </CardContent>
                 <CardFooter>
                   <Link href={`/resources/${resource.id}`} className="w-full">
-                    <Button className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white">
+                    <Button className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 hover:shadow-lg hover:-translate-y-0.5 text-white transition-all duration-300">
                       查看详情
                     </Button>
                   </Link>

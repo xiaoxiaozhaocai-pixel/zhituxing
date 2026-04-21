@@ -20,6 +20,8 @@ interface Notification {
   recipients: string;
 }
 
+type NotificationType = 'system' | 'activity' | 'member';
+
 export default function AdminNotificationsPage() {
   const { isAuthenticated } = useAuth();
   const [showSendDialog, setShowSendDialog] = useState(false);
@@ -178,7 +180,7 @@ export default function AdminNotificationsPage() {
               <select 
                 className="w-full px-3 py-2 border rounded-lg"
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as NotificationType })}
               >
                 <option value="system">系统通知</option>
                 <option value="activity">活动通知</option>

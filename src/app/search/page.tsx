@@ -246,7 +246,7 @@ function SearchContent() {
             {/* Results Summary */}
             <div className="mb-6">
               <p className="text-gray-600">
-                {query && <span>关键词 "<strong>{query}</strong>"</span>}
+                {query && <span>关键词 &quot;<strong>{query}</strong>&quot;</span>}
                 找到 <strong>{totalResults}</strong> 个结果
               </p>
             </div>

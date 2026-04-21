@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, User, ChevronDown, Bell } from 'lucide-react';
+import { Menu, X, User, ChevronDown, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,16 +11,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { usePathname } from 'next/navigation';
 
 const navItems = [
-  { name: '首页', href: '/' },
-  { name: '全行业岗位百科', href: '/jobs' },
-  { name: 'AI职业助手', href: '/assistant' },
-  { name: '会员中心', href: '/membership', highlight: true },
-  { name: '求职干货', href: '/resources' },
-  { name: '使用流程', href: '/guide' },
-  { name: '常见问题', href: '/faq' },
-  { name: '联系我们', href: '/contact' },
+  { name: '首页', href: '/', icon: <Home className="w-5 h-5" /> },
+  { name: '全行业岗位百科', href: '/jobs', icon: <Briefcase className="w-5 h-5" /> },
+  { name: 'AI职业助手', href: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
+  { name: '会员中心', href: '/membership', icon: <Crown className="w-5 h-5" />, highlight: true },
+  { name: '求职干货', href: '/resources', icon: <BookOpen className="w-5 h-5" /> },
+  { name: '使用流程', href: '/guide', icon: <Compass className="w-5 h-5" /> },
+  { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-5 h-5" /> },
+  { name: '联系我们', href: '/contact', icon: <Phone className="w-5 h-5" /> },
 ];
 
 export default function Navbar() {
@@ -29,6 +30,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [freeQuota] = useState(5);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,19 +90,25 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-gray-100 ${
-                    item.highlight
-                      ? 'bg-[#FF7D00] text-white hover:bg-[#e67000]'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      item.highlight
+                        ? 'bg-[#FF7D00] text-white hover:bg-[#e67000]'
+                        : isActive
+                          ? 'bg-[#165DFF] text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Right Section */}
@@ -218,27 +226,34 @@ export default function Navbar() {
               {/* Free Quota Badge */}
               <Link
                 href="/membership"
-                className="flex items-center justify-center space-x-1 px-4 py-2 bg-gray-100 rounded-lg text-sm"
+                className="flex items-center justify-center space-x-1 px-4 py-2.5 bg-gradient-to-r from-[#165DFF] to-[#4080FF] rounded-lg text-sm text-white shadow-lg"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <span className="text-gray-600">本月剩余免费次数：</span>
-                <span className="font-bold text-[#165DFF]">{freeQuota}/5</span>
+                <Sparkles className="w-4 h-4" />
+                <span>本月剩余免费次数：</span>
+                <span className="font-bold text-lg">{freeQuota}/5</span>
               </Link>
 
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`block px-4 py-3 rounded-lg text-base font-medium ${
-                    item.highlight
-                      ? 'bg-[#FF7D00] text-white text-center'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium ${
+                      item.highlight
+                        ? 'bg-[#FF7D00] text-white text-center'
+                        : isActive
+                          ? 'bg-[#165DFF] text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </Link>
+                );
+              })}
 
               {/* Auth Buttons */}
               <div className="pt-4 border-t space-y-2">

@@ -165,10 +165,10 @@ function JobsPage() {
                 placeholder="搜索岗位名称、技能标签，如：Java开发、Python、数据分析..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 text-base"
+                className="pl-10 h-12 text-base rounded-lg border-2 border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all duration-300"
               />
             </div>
-            <Button type="submit" className="h-12 px-8 bg-[#165DFF] hover:bg-[#165DFF]/90">
+            <Button type="submit" className="h-12 px-8 bg-[#165DFF] hover:bg-[#165DFF]/90 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <Search className="w-4 h-4 mr-2" />
               智能查询
             </Button>
@@ -335,16 +335,16 @@ function JobsPage() {
           {filteredJobs.map((job) => (
             <Card
               key={job.id}
-              className="cursor-pointer hover:border-[#165DFF] hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
+              className="cursor-pointer hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
               onClick={() => handleJobClick(job.name)}
             >
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-base font-bold text-[#165DFF] group-hover:text-[#165DFF]/80 line-clamp-1">
+                  <h3 className="text-base font-bold text-[#165DFF] group-hover:text-[#165DFF]/80 transition-colors line-clamp-1">
                     {job.name}
                   </h3>
                   {job.friendliness === '极度友好' && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs whitespace-nowrap">
+                    <Badge className="bg-green-100 text-green-700 text-xs whitespace-nowrap rounded-full px-2 py-0.5 border border-green-200">
                       应届友好
                     </Badge>
                   )}
@@ -353,7 +353,7 @@ function JobsPage() {
                 <div className="space-y-2 text-sm text-gray-600 mb-4">
                   <p className="flex items-center gap-2">
                     <span className="w-16 text-gray-500">薪资</span>
-                    <span className="font-medium text-[#FF7D00]">{job.salary}</span>
+                    <span className="font-bold text-[#FF7D00]">{job.salary}</span>
                   </p>
                   <p className="flex items-center gap-2">
                     <span className="w-16 text-gray-500">城市</span>
@@ -367,15 +367,15 @@ function JobsPage() {
 
                 <div className="flex flex-wrap gap-1 mb-3">
                   {job.tags.slice(0, 3).map((tag, idx) => (
-                    <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                    <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">
                       {tag}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1 text-green-600 text-sm">
+                <div className="flex items-center gap-1 text-green-600 text-sm group-hover:text-[#165DFF] transition-colors">
                   <Sparkles className="w-4 h-4" />
-                  <span>AI深度分析</span>
+                  <span className="group-hover:underline">AI深度分析</span>
                 </div>
               </CardContent>
             </Card>

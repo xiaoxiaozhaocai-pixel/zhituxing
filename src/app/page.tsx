@@ -200,7 +200,9 @@ export default function HomePage() {
             <span>每月免费5次AI服务</span>
           </p>
           <p className="text-sm text-green-600 font-medium">
-            无需注册，立即体验
+            <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium border border-green-200">
+              无需注册，立即体验
+            </span>
           </p>
         </div>
       </section>
@@ -212,7 +214,7 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group"
+                className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] hover:-translate-y-2 group"
               >
                 <CardHeader className="pb-4">
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
@@ -265,7 +267,7 @@ export default function HomePage() {
                 <button
                   key={index}
                   onClick={() => handleTagClick(tag)}
-                  className="px-5 py-2.5 bg-white border-2 border-gray-200 rounded-full text-gray-700 font-medium hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] transition-all duration-300 hover:shadow-md active:scale-95"
+                  className="px-5 py-2.5 bg-white border-2 border-gray-200 rounded-full text-gray-700 font-medium hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
                 >
                   {tag}
                 </button>
@@ -364,7 +366,7 @@ export default function HomePage() {
             {userReviews.map((review, index) => (
               <Card 
                 key={index} 
-                className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-lg"
+                className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.12)] hover:-translate-y-1"
               >
                 <CardContent className="pt-6">
                   {/* 评分 */}
