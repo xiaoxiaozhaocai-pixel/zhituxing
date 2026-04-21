@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +16,11 @@ import {
   AlertCircle, 
   ChevronRight,
   Edit3,
-  Zap
+  Zap,
+  BookOpen,
+  Target,
+  TrendingUp,
+  ListChecks
 } from 'lucide-react';
 
 // 年级选项
@@ -33,6 +37,10 @@ interface UserProfile {
   graduation_year?: number;
   city?: string;
   job_intention?: string;
+  skills?: string;
+  internship_experience?: string;
+  project_experience?: string;
+  awards?: string;
 }
 
 export default function CareerPlanningPage() {
@@ -40,6 +48,8 @@ export default function CareerPlanningPage() {
   const { user, loading: authLoading } = useAuth();
   
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState('');
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -50,6 +60,8 @@ export default function CareerPlanningPage() {
     grade: '',
     city: ''
   });
+
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -63,6 +75,13 @@ export default function CareerPlanningPage() {
       fetchUserProfile();
     }
   }, [user]);
+
+  // 自动滚动到最新内容
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
+  }, [generatedContent]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -118,14 +137,94 @@ export default function CareerPlanningPage() {
     doGenerate();
   };
 
-  // 执行生成
+  // 执行流式生成
   const doGenerate = async () => {
     if (!user) return;
     
-    setLoading(true);
+    setGenerating(true);
+    setGeneratedContent('');
     setMessage(null);
     
     try {
+      // 调用流式API
+      const response = await fetch('/api/career-planning/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          major: form.major || userProfile?.major || '',
+          grade: form.grade,
+          city: form.city || userProfile?.city || '',
+          skills: userProfile?.skills || '',
+          personality: userProfile?.personality_type || '',
+          workExperience: userProfile?.internship_experience || '',
+          awards: userProfile?.awards || ''
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('请求失败');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('无法读取响应');
+      }
+
+      const decoder = new TextDecoder();
+      let fullContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.error) {
+                throw new Error(data.error);
+              }
+              
+              if (data.content) {
+                fullContent += data.content;
+                setGeneratedContent(fullContent);
+              }
+              
+              if (data.done) {
+                break;
+              }
+            } catch (e) {
+              // 忽略解析错误
+            }
+          }
+        }
+      }
+
+      // 生成完成后，保存报告
+      if (fullContent) {
+        await saveReport(fullContent);
+      }
+      
+    } catch (error) {
+      console.error('生成失败:', error);
+      setMessage({ type: 'error', text: '生成失败，请稍后重试' });
+      setGenerating(false);
+    }
+  };
+
+  // 保存报告
+  const saveReport = async (content: string) => {
+    if (!user) return;
+    
+    try {
+      // 先调用保存接口
       const response = await fetch('/api/career-planning/generate', {
         method: 'POST',
         headers: {
@@ -133,9 +232,10 @@ export default function CareerPlanningPage() {
           'x-user-id': user.id.toString()
         },
         body: JSON.stringify({
-          major: form.major,
+          major: form.major || userProfile?.major || '',
           grade: form.grade,
-          city: form.city
+          city: form.city || userProfile?.city || '',
+          content: content // 传递生成的内容
         })
       });
 
@@ -146,16 +246,22 @@ export default function CareerPlanningPage() {
         // 跳转到报告页
         setTimeout(() => {
           router.push(`/career-planning/report/${data.data.report_id}`);
-        }, 1000);
+        }, 1500);
       } else {
-        setMessage({ type: 'error', text: data.message || '生成失败' });
+        setMessage({ type: 'error', text: data.message || '保存失败' });
       }
     } catch (error) {
-      console.error('生成失败:', error);
-      setMessage({ type: 'error', text: '网络错误，请稍后重试' });
+      console.error('保存失败:', error);
+      setMessage({ type: 'error', text: '保存失败' });
     } finally {
-      setLoading(false);
+      setGenerating(false);
     }
+  };
+
+  // 关闭生成结果，重新开始
+  const resetGeneration = () => {
+    setGeneratedContent('');
+    setMessage(null);
   };
 
   if (authLoading || profileLoading) {
@@ -168,6 +274,80 @@ export default function CareerPlanningPage() {
 
   const hasProfile = userProfile && (userProfile.major || userProfile.grade);
 
+  // 正在生成状态
+  if (generating || generatedContent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* 标题 */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">
+              <Sparkles className="w-4 h-4" />
+              AI智能生成中...
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              正在生成您的专属职业规划
+            </h1>
+            <p className="text-gray-500">
+              基于 {form.major || userProfile?.major || '未知专业'} · {form.grade}
+            </p>
+          </div>
+
+          {/* 生成内容展示 */}
+          <Card className="mb-6 border-purple-200 shadow-lg">
+            <CardHeader className="pb-3 border-b bg-purple-50/50">
+              <CardTitle className="flex items-center gap-2 text-purple-700">
+                <BookOpen className="w-5 h-5" />
+                职业规划报告
+                {generating && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div 
+                ref={contentRef}
+                className="min-h-[400px] max-h-[600px] overflow-y-auto prose prose-purple max-w-none"
+              >
+                {generatedContent ? (
+                  <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    {generatedContent}
+                    {generating && (
+                      <span className="inline-block w-2 h-5 bg-purple-600 animate-pulse ml-1" />
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
+                    <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                    <p>正在思考中，请稍候...</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 操作按钮 */}
+          {!generating && generatedContent && (
+            <div className="flex justify-center gap-4">
+              <Button 
+                onClick={resetGeneration}
+                variant="outline"
+                className="border-purple-300 text-purple-700"
+              >
+                重新生成
+              </Button>
+              <Link href="/career-planning/my-reports">
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  查看完整报告
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 默认表单页面
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <div className="max-w-3xl mx-auto px-4 py-12">
@@ -183,6 +363,34 @@ export default function CareerPlanningPage() {
           <p className="text-gray-500 text-lg">
             30秒完成，开启你的大学职业成长之路
           </p>
+        </div>
+
+        {/* 功能介绍 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm">
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
+              <Target className="w-5 h-5 text-purple-600" />
+            </div>
+            <span className="text-sm font-medium text-gray-700 text-center">精准匹配</span>
+          </div>
+          <div className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
+            </div>
+            <span className="text-sm font-medium text-gray-700 text-center">成长路径</span>
+          </div>
+          <div className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3">
+              <ListChecks className="w-5 h-5 text-green-600" />
+            </div>
+            <span className="text-sm font-medium text-gray-700 text-center">行动清单</span>
+          </div>
+          <div className="flex flex-col items-center p-4 bg-white rounded-xl shadow-sm">
+            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-3">
+              <Sparkles className="w-5 h-5 text-orange-600" />
+            </div>
+            <span className="text-sm font-medium text-gray-700 text-center">实时更新</span>
+          </div>
         </div>
 
         {/* 用户信息读取区 */}
