@@ -103,8 +103,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 调用扣子API
-    const response = await fetch('https://api.coze.cn/v1/chat', {
+    // 调用扣子API (使用 v3 版本)
+    const response = await fetch('https://api.coze.cn/v3/chat', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
