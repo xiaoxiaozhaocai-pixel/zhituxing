@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Zap, FileDown, BookOpen, Headphones } from 'lucide-react';
+import { Check, Zap, FileDown, BookOpen, Headphones, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const membershipBenefits = [
   {
@@ -64,12 +66,50 @@ const membershipPlans = [
 ];
 
 export default function MembershipPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string>('wechat');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubscribe = (planId: string) => {
+    if (!isAuthenticated) {
+      router.push('/auth');
+      return;
+    }
     setSelectedPlan(planId);
     setShowPaymentModal(true);
+  };
+
+  const handlePayment = async () => {
+    if (!selectedPlan) return;
+
+    setIsProcessing(true);
+    try {
+      const res = await fetch('/api/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: selectedPlan,
+          paymentMethod
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // 跳转到支付页面
+        router.push(`/payment/${data.data.orderNo}`);
+      } else {
+        alert(data.error || '创建订单失败');
+      }
+    } catch (error) {
+      console.error('支付失败:', error);
+      alert('支付失败，请稍后重试');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -167,21 +207,59 @@ export default function MembershipPage() {
             <CardHeader>
               <CardTitle className="text-xl font-bold text-center">支付方式</CardTitle>
               <CardDescription className="text-center">
-                选择{membershipPlans.find(p => p.id === selectedPlan)?.title}
+                选择{membershipPlans.find(p => p.id === selectedPlan)?.title} - {membershipPlans.find(p => p.id === selectedPlan)?.price}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex gap-3">
+                <button
+                  className={`flex-1 py-4 rounded-lg border-2 transition-all ${
+                    paymentMethod === 'wechat'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setPaymentMethod('wechat')}
+                >
+                  <div className="text-center">
+                    <div className="w-10 h-10 bg-green-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                      <span className="text-white text-xl">W</span>
+                    </div>
+                    <span className="text-sm font-medium">微信支付</span>
+                  </div>
+                </button>
+                <button
+                  className={`flex-1 py-4 rounded-lg border-2 transition-all ${
+                    paymentMethod === 'alipay'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setPaymentMethod('alipay')}
+                >
+                  <div className="text-center">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                      <span className="text-white text-xl">A</span>
+                    </div>
+                    <span className="text-sm font-medium">支付宝</span>
+                  </div>
+                </button>
+              </div>
               <Button
-                className="w-full py-6 h-auto text-lg bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => setShowPaymentModal(false)}
+                className={`w-full py-6 text-lg ${
+                  paymentMethod === 'wechat'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                } text-white`}
+                onClick={handlePayment}
+                disabled={isProcessing}
               >
-                微信支付
-              </Button>
-              <Button
-                className="w-full py-6 h-auto text-lg bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => setShowPaymentModal(false)}
-              >
-                支付宝支付
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    正在创建订单...
+                  </>
+                ) : (
+                  <>确认支付 ¥{membershipPlans.find(p => p.id === selectedPlan)?.price.replace('¥', '')}</>
+                )}
               </Button>
             </CardContent>
             <CardFooter>
@@ -189,6 +267,7 @@ export default function MembershipPage() {
                 variant="ghost"
                 className="w-full"
                 onClick={() => setShowPaymentModal(false)}
+                disabled={isProcessing}
               >
                 取消
               </Button>

@@ -1,77 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // 获取文章列表
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
-    const featured = searchParams.get('featured');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = parseInt(searchParams.get('page') || '1');
+    const offset = (page - 1) * limit;
 
-    let whereClause = `WHERE is_published = TRUE`;
+    let query = supabase
+      .from('articles')
+      .select('*')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
     if (category) {
-      whereClause += ` AND category = '${category}'`;
-    }
-    if (featured === 'true') {
-      whereClause += ` AND is_featured = TRUE`;
+      query = query.eq('category', category);
     }
 
-    const result = await execSql(
-      `SELECT id, title, summary, cover_image, category, tags, views, is_featured, author, created_at
-       FROM articles
-       ${whereClause}
-       ORDER BY is_featured DESC, created_at DESC
-       LIMIT ${limit} OFFSET ${offset}`
-    );
+    const { data: articles, error, count } = await query;
 
-    // 获取总数
-    const countResult = await execSql(
-      `SELECT COUNT(*) as total FROM articles ${whereClause}`
-    );
-    const total = countResult && countResult.length > 0 
-      ? parseInt((countResult[0] as { total: string }).total) || 0 
-      : 0;
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
       data: {
-        articles: (result || []).map((a: unknown) => {
-          const article = a as {
-            id: string;
-            title: string;
-            summary: string | null;
-            cover_image: string | null;
-            category: string;
-            tags: string[] | null;
-            views: number;
-            is_featured: boolean;
-            author: string | null;
-            created_at: string;
-          };
-          return {
-            id: article.id,
-            title: article.title,
-            summary: article.summary,
-            coverImage: article.cover_image,
-            category: article.category,
-            tags: article.tags || [],
-            views: article.views,
-            isFeatured: article.is_featured,
-            author: article.author,
-            createdAt: article.created_at
-          };
-        }),
-        total
+        articles: (articles || []).map(a => ({
+          id: a.id,
+          title: a.title,
+          summary: a.summary,
+          category: a.category,
+          tags: a.tags || [],
+          views: a.views || 0,
+          isFeatured: a.is_featured || false,
+          isPublished: a.is_published,
+          createdAt: a.created_at
+        })),
+        total: count || 0,
+        page,
+        limit
       }
     });
 
   } catch (error) {
-    console.error('获取文章失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    console.error('获取文章列表失败:', error);
+    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
+  }
+}
+
+// 创建文章
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { title, summary, category, tags, content } = body;
+
+    if (!title || !category) {
+      return NextResponse.json({ success: false, error: '缺少必填字段' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('articles')
+      .insert({
+        title,
+        summary: summary || '',
+        category,
+        tags: tags || [],
+        content: content || '',
+        views: 0,
+        is_featured: false,
+        is_published: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data });
+
+  } catch (error) {
+    console.error('创建文章失败:', error);
+    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
   }
 }

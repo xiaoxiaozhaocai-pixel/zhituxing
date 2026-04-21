@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { createClient } from '@supabase/supabase-js';
 
-// 获取文章详情
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// 获取单个文章
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -9,65 +14,101 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 先获取文章
-    const result = await execSql(
-      `SELECT id, title, summary, content, cover_image, category, tags, views, is_featured, author, source, created_at, updated_at
-       FROM articles
-       WHERE id = '${id}' AND is_published = TRUE`
-    );
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!result || result.length === 0) {
-      return NextResponse.json(
-        { error: '文章不存在' },
-        { status: 404 }
-      );
+    if (error || !data) {
+      return NextResponse.json({ success: false, error: '文章不存在' }, { status: 404 });
     }
 
     // 增加浏览量
-    await execSql(
-      `UPDATE articles SET views = views + 1 WHERE id = '${id}'`
-    );
-
-    const article = result[0] as {
-      id: string;
-      title: string;
-      summary: string | null;
-      content: string;
-      cover_image: string | null;
-      category: string;
-      tags: string[] | null;
-      views: number;
-      is_featured: boolean;
-      author: string | null;
-      source: string | null;
-      created_at: string;
-      updated_at: string;
-    };
+    await supabase
+      .from('articles')
+      .update({ views: (data.views || 0) + 1 })
+      .eq('id', id);
 
     return NextResponse.json({
       success: true,
       data: {
-        id: article.id,
-        title: article.title,
-        summary: article.summary,
-        content: article.content,
-        coverImage: article.cover_image,
-        category: article.category,
-        tags: article.tags || [],
-        views: article.views + 1,
-        isFeatured: article.is_featured,
-        author: article.author,
-        source: article.source,
-        createdAt: article.created_at,
-        updatedAt: article.updated_at
+        id: data.id,
+        title: data.title,
+        summary: data.summary,
+        category: data.category,
+        tags: data.tags || [],
+        content: data.content,
+        views: (data.views || 0) + 1,
+        isFeatured: data.is_featured,
+        isPublished: data.is_published,
+        createdAt: data.created_at
       }
     });
 
   } catch (error) {
     console.error('获取文章详情失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
+  }
+}
+
+// 更新文章
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const { title, summary, category, tags, content, isFeatured } = body;
+
+    const { data, error } = await supabase
+      .from('articles')
+      .update({
+        title,
+        summary,
+        category,
+        tags,
+        content,
+        is_featured: isFeatured
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data });
+
+  } catch (error) {
+    console.error('更新文章失败:', error);
+    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
+  }
+}
+
+// 删除文章
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const { error } = await supabase
+      .from('articles')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+
+  } catch (error) {
+    console.error('删除文章失败:', error);
+    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
   }
 }

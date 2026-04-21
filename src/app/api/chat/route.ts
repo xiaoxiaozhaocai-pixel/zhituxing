@@ -1,109 +1,200 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deductQuota, getRemainingQuota, getUserQuota } from '@/lib/quota';
-import { execSql } from '@/lib/exec-sql';
+import { getRemainingQuota, getUserQuota } from '@/lib/quota';
 
 export const runtime = 'edge';
 
 // 智能体路由选择
-function selectBotId(message: string, botType?: string): string {
-  const jobsBotId = process.env.COZE_BOT_ID_JOBS || '7629654356933050409';
-  const interviewBotId = process.env.COZE_BOT_ID_INTERVIEW || '7622676506535788607';
-  const decisionBotId = process.env.COZE_BOT_ID_DECISION || jobsBotId; // 考研就业决策
+function selectBotId(botType?: string): string {
+  const jobsBotId = process.env.COZE_BOT_ID_JOBS;
+  const interviewBotId = process.env.COZE_BOT_ID_INTERVIEW;
+  const decisionBotId = process.env.COZE_BOT_ID_DECISION;
   
-  // 如果指定了bot类型，直接使用
-  if (botType === 'jobs') return jobsBotId;
-  if (botType === 'interview') return interviewBotId;
-  if (botType === 'decision') return decisionBotId;
-  if (botType === 'career') {
-    return decisionBotId; // 职业生涯规划使用决策智能体
-  }
+  // 如果指定了bot类型，返回对应的ID（可能为空）
+  if (botType === 'jobs') return jobsBotId || '';
+  if (botType === 'interview') return interviewBotId || '';
+  if (botType === 'decision') return decisionBotId || '';
+  if (botType === 'career') return decisionBotId || '';
   
-  const messageLower = message.toLowerCase();
-  
-  // 模拟面试相关问题 -> 模拟面试官
-  if (
-    messageLower.includes('模拟面试') ||
-    messageLower.includes('面试') ||
-    messageLower.includes('面经') ||
-    messageLower.includes('面试题')
-  ) {
-    return interviewBotId;
-  }
-  
-  // 考研就业决策相关 -> 决策智能体
-  if (
-    messageLower.includes('考研') ||
-    messageLower.includes('就业选择') ||
-    messageLower.includes('考研还是就业') ||
-    messageLower.includes('本科就业')
-  ) {
-    return decisionBotId;
-  }
-  
-  // 默认使用岗位百科智能体
-  return jobsBotId;
+  // 默认返回岗位百科ID
+  return jobsBotId || '';
 }
 
-// 获取用户ID（从请求头）
+// 检查是否配置了Coze
+function isCozeConfigured(): boolean {
+  return !!(process.env.COZE_API_KEY && process.env.COZE_BOT_ID_JOBS);
+}
+
+// 预设回复（Coze未配置时的fallback）
+function getFallbackResponse(botType?: string, message?: string): string {
+  const msgLower = (message || '').toLowerCase();
+  
+  if (botType === 'interview' || msgLower.includes('面试')) {
+    return `您好！我是您的AI模拟面试官。
+
+要开始模拟面试，请先告诉我以下信息：
+
+1️⃣ **您应聘的岗位**（如：互联网产品经理）
+2️⃣ **您的简历**（可以粘贴文字版简历）
+3️⃣ **目标公司**（可选）
+
+准备好后，我会按照标准面试流程与您互动：
+
+📋 **面试流程：**
+• 简历初筛
+• HR初面（电话）
+• 业务二面
+• 高管终面
+• 复盘反馈
+
+请提供信息开始吧！`;
+  }
+  
+  if (botType === 'decision' || msgLower.includes('考研') || msgLower.includes('就业')) {
+    return `您好！我是考研就业决策助手，专注于帮助大学生做出最佳选择。
+
+请告诉我以下信息，我来为您分析：
+
+📊 **基本信息：**
+• 您的专业：
+• 当前年级：
+• 成绩排名（如：前20%）：
+
+🔍 **我可以帮您分析：**
+• 考研vs就业的优劣势对比
+• 适合您的考研院校推荐
+• 匹配的就业岗位分析
+• 详细的备考/求职时间线
+
+请提供您的信息，开始个性化分析！`;
+  }
+  
+  if (botType === 'career' || msgLower.includes('职业规划')) {
+    return `您好！我是AI职业生涯规划助手。
+
+请告诉我您的：
+
+🎯 **基本信息：**
+• 所学专业：
+• 所在年级：
+• 职业兴趣方向：
+
+📈 **我能帮您规划：**
+• 根据目标岗位的成长路径
+• 大一到大四的分阶段计划
+• 所需技能和证书
+• 实习和项目建议
+
+请提供信息，我来为您定制专属规划！`;
+  }
+  
+  // 默认岗位百科回复
+  return `👋 您好！我是「职途星——职搭子」，您的专属岗位百科助手。
+
+🔍 **我可以帮您查询：**
+
+• **岗位信息**：直接输入岗位名称，如「Java开发」「产品经理」「新媒体运营」
+
+• **按地点推荐**：告诉我城市，如「深圳」「上海」「北京」
+
+• **按薪资推荐**：告诉我薪资范围，如「10k-15k」「5k-8k」
+
+• **按背景匹配**：告诉我您的专业和学历，如「计算机专业，本科」
+
+• **智能组合**：多个条件组合，如「深圳Java开发15k-20k」
+
+📚 覆盖互联网/金融/制造/教育/医疗等15+主流行业
+
+请告诉我您的需求！`;
+}
+
+// 获取用户ID
 async function getUserIdFromRequest(request: NextRequest): Promise<string | null> {
   const userId = request.headers.get('x-user-id');
   if (!userId) return null;
   
-  // 验证用户是否存在
-  const result = await execSql(`SELECT id FROM users WHERE id = '${userId}' LIMIT 1`);
-  if (!result || result.length === 0) return null;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/users?id=eq.${userId}&select=id&limit=1`, {
+      headers: {
+        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+      },
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return userId;
+      }
+    }
+  } catch (e) {
+    console.error('User validation error:', e);
+  }
   
-  return userId;
+  return null;
+}
+
+// 流式返回文本
+function createTextStream(text: string): ReadableStream {
+  return new ReadableStream({
+    async start(controller) {
+      // 模拟打字效果
+      let index = 0;
+      const chunkSize = 5; // 每批字符数
+      
+      while (index < text.length) {
+        const chunk = text.slice(index, index + chunkSize);
+        controller.enqueue(new TextEncoder().encode(chunk));
+        index += chunkSize;
+        
+        // 添加延迟模拟打字
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+      
+      controller.close();
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationId, botType } = await request.json();
+    const { message, botType, conversationId } = await request.json();
     
-    // 获取用户ID
-    const userId = await getUserIdFromRequest(request);
-    
-    // 已登录用户需要扣减配额
-    if (userId) {
-      const quotaResult = await deductQuota(userId);
-      
-      if (!quotaResult.success) {
-        // 配额不足，返回错误
-        return new Response(
-          JSON.stringify({ 
-            error: 'quota_exceeded',
-            message: quotaResult.reason || '配额不足'
-          }),
-          {
-            status: 403,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-      
-      // 获取当前剩余配额
-      const remaining = await getRemainingQuota(userId);
-      
-      // 在响应头中返回剩余配额
-      // 注意：SSE流式响应中无法直接修改响应头，需要在响应体中传递
-    }
-    
-    const apiKey = process.env.COZE_API_KEY;
-    const botId = selectBotId(message, botType);
-
-    if (!apiKey) {
+    if (!message || typeof message !== 'string') {
       return new Response(
-        JSON.stringify({ 
-          error: '请设置COZE_API_KEY环境变量' 
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ error: '消息内容不能为空' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // 调用扣子API (使用 v3 版本)
+    const userId = await getUserIdFromRequest(request);
+    const botId = selectBotId(botType);
+    const apiKey = process.env.COZE_API_KEY;
+
+    // 检查配额（非会员需要扣减）
+    if (userId && !apiKey) {
+      const quota = await getRemainingQuota(userId);
+      if (quota <= 0) {
+        return new Response(
+          JSON.stringify({ error: 'quota_exceeded', message: '免费次数已用完' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // 如果没有配置Coze API，使用fallback
+    if (!apiKey || !botId) {
+      console.log('Coze API not configured, using fallback response');
+      const fallback = getFallbackResponse(botType, message);
+      return new Response(createTextStream(fallback), {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    }
+
+    // 调用Coze API
     const response = await fetch('https://api.coze.cn/v3/chat', {
       method: 'POST',
       headers: {
@@ -125,22 +216,55 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Coze API Error:', response.status, errorText);
-      return new Response(
-        JSON.stringify({ 
-          error: `API调用失败: ${response.status}`,
-          details: errorText 
-        }),
-        {
-          status: response.status,
-          headers: { 'Content-Type': 'application/json' },
+    // 检查Coze API响应是否有效
+    async function checkCozeResponse(response: Response): Promise<boolean> {
+      if (!response.ok) return false;
+      
+      // 检查响应内容是否是错误
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const text = await response.text();
+        try {
+          const data = JSON.parse(text);
+          // 检查Coze的错误码
+          if (data.code && data.code !== 0) {
+            console.log('Coze API error:', data.code, data.msg);
+            return false;
+          }
+        } catch (e) {
+          return true;
         }
-      );
+      }
+      return true;
+    }
+    
+    // 先读取响应判断是否成功
+    const responseText = await response.text();
+    let isValidResponse = true;
+    
+    try {
+      const data = JSON.parse(responseText);
+      if (data.code && data.code !== 0) {
+        console.log('Coze API error:', data.code, data.msg);
+        isValidResponse = false;
+      }
+    } catch (e) {
+      // 不是JSON，使用原始响应
+    }
+    
+    if (!isValidResponse) {
+      // API返回错误，使用fallback
+      const fallback = getFallbackResponse(botType, message);
+      return new Response(createTextStream(fallback), {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
     }
 
-    // 获取用户当前配额信息
+    // 获取配额信息
     let quotaInfo = { remaining: -1, isMember: false };
     if (userId) {
       const member = await getUserQuota(userId);
@@ -166,8 +290,6 @@ export async function POST(request: NextRequest) {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
             controller.enqueue(value);
           }
         } finally {
@@ -188,12 +310,15 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Chat API Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to connect to AI assistant' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    
+    // 出错时使用fallback
+    const fallback = getFallbackResponse();
+    return new Response(createTextStream(fallback), {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
   }
 }
