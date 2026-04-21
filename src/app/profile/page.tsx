@@ -38,7 +38,8 @@ const menuItems = [
     description: '完善个人信息，获得精准AI建议',
     icon: <Sparkles className="w-6 h-6 text-[#165DFF]" />,
     href: '/profile/info',
-    highlight: true
+    highlight: true,
+    badge: '完善得精准规划'
   },
   {
     id: 'jd-submissions',
@@ -96,12 +97,36 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, loading, logout, quota } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [profileCheckDone, setProfileCheckDone] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth');
     }
   }, [user, loading, router]);
+
+  // 检查用户是否已完善个人信息
+  useEffect(() => {
+    if (user) {
+      checkProfile();
+    }
+  }, [user]);
+
+  const checkProfile = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch('/api/user/profile', {
+        headers: { 'x-user-id': user.id.toString() }
+      });
+      const data = await response.json();
+      setHasProfile(data.code === 200 && (data.data?.major || data.data?.grade));
+    } catch (error) {
+      setHasProfile(false);
+    } finally {
+      setProfileCheckDone(true);
+    }
+  };
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -189,6 +214,30 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
+        {/* 完善信息引导卡片 - 未完善时显示 */}
+        {!hasProfile && profileCheckDone && (
+          <Card className="mb-8 bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 hover:shadow-lg transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-7 h-7 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">完善你的个人信息</h3>
+                    <p className="text-gray-600 text-sm">完善专业、年级等信息，获得更精准的AI服务和职业规划</p>
+                  </div>
+                </div>
+                <Link href="/profile/info">
+                  <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg">
+                    立即完善
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Menu Grid */}
         <div className="space-y-4">
           {menuItems.map((item) => (
@@ -209,12 +258,19 @@ export default function ProfilePage() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                           {item.title}
-                          {item.highlight && (
+                          {/* 未完善信息时显示红点提示 */}
+                          {!hasProfile && profileCheckDone && item.id === 'info' && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                          )}
+                          {item.highlight && !(!hasProfile && profileCheckDone && item.id === 'info') && (
                             <span 
                               className="text-white text-xs px-2 py-0.5 rounded-full"
                               style={{ backgroundColor: item.color || '#FF7D00' }}
                             >
-                              NEW
+                              {item.id === 'info' ? '完善得精准规划' : 'NEW'}
                             </span>
                           )}
                         </h3>

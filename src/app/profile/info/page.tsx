@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,8 @@ import {
   X,
   Plus,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 
 // MBTI类型列表
@@ -73,6 +75,24 @@ export default function ProfileInfoPage() {
     project_experience: '',
     awards: ''
   });
+
+  // 计算信息完善度
+  const completionPercent = useMemo(() => {
+    const fields = [
+      form.personality_type,
+      form.major,
+      form.grade,
+      form.graduation_year,
+      form.city,
+      form.job_intention,
+      form.skills.length > 0 ? form.skills.join(',') : '',
+      form.internship_experience,
+      form.project_experience,
+      form.awards
+    ];
+    const filledCount = fields.filter(f => f && f.toString().trim().length > 0).length;
+    return Math.round((filledCount / fields.length) * 100);
+  }, [form]);
 
   // 页面加载时获取用户信息
   useEffect(() => {
@@ -232,9 +252,13 @@ export default function ProfileInfoPage() {
         )}
         
         {/* 页面标题 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">我的个人信息</h1>
-          <p className="text-gray-500 mt-1">完善您的个人信息，获得更精准的AI个性化建议</p>
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">
+            <Sparkles className="w-4 h-4" />
+            个人信息将严格保护，仅用于生成更精准的职业规划
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">完善你的个人信息</h1>
+          <p className="text-gray-500">以下信息仅用于生成更精准的职业规划，我们将严格保护你的隐私</p>
         </div>
 
         <div className="space-y-6">
@@ -330,6 +354,7 @@ export default function ProfileInfoPage() {
                     onChange={(e) => updateField('city', e.target.value)}
                     placeholder="如：深圳、上海"
                   />
+                  <p className="text-xs text-gray-400">我们将为你推荐该城市的热门岗位和薪资</p>
                 </div>
 
                 {/* 求职意向 */}
@@ -344,6 +369,7 @@ export default function ProfileInfoPage() {
                     onChange={(e) => updateField('job_intention', e.target.value)}
                     placeholder="如：互联网产品经理"
                   />
+                  <p className="text-xs text-gray-400">帮助我们更精准地为你匹配合适的岗位方向</p>
                 </div>
               </div>
             </CardContent>
@@ -391,6 +417,7 @@ export default function ProfileInfoPage() {
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+                <p className="text-xs text-gray-400">我们将分析你的技能缺口，给出针对性提升建议</p>
               </div>
             </CardContent>
           </Card>
@@ -449,6 +476,47 @@ export default function ProfileInfoPage() {
                   rows={3}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* 进度提示 */}
+          <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+            <CardContent className="p-6">
+              {/* 进度条 */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">当前信息完善度：</span>
+                  <span className={`font-bold ${completionPercent === 100 ? 'text-green-600' : 'text-purple-600'}`}>
+                    {completionPercent}%
+                  </span>
+                </div>
+                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${completionPercent === 100 ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-purple-500 to-indigo-500'}`}
+                    style={{ width: `${completionPercent}%` }}
+                  />
+                </div>
+              </div>
+              
+              {/* 完善度提示 */}
+              {completionPercent === 100 ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-medium">信息已完善，快去生成你的专属职业规划吧！</span>
+                  </div>
+                  <Link href="/career-planning">
+                    <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      立即生成规划
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  {completionPercent < 50 ? '完善度较低，建议至少填写专业和年级' : '完善度较好，再完善一些信息规划会更精准'}
+                </p>
+              )}
             </CardContent>
           </Card>
 

@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
 import FloatingMembershipButton from '@/components/FloatingMembershipButton';
+import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
@@ -51,11 +52,13 @@ export default function RootLayout({
       <body className={`antialiased`}>
         {isDev && <Inspector />}
         <Providers>
-          <Navbar />
-          <FreeQuotaBadge />
-          <FloatingMembershipButton />
-          {children}
-          <Footer />
+          <ProfileGuideProvider>
+            <Navbar />
+            <FreeQuotaBadge />
+            <FloatingMembershipButton />
+            {children}
+            <Footer />
+          </ProfileGuideProvider>
         </Providers>
       </body>
     </html>

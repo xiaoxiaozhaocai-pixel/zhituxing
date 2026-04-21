@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import GenerateGuideModal from '@/components/GenerateGuideModal';
 import { 
   Sparkles, 
   Loader2, 
@@ -42,6 +43,7 @@ export default function CareerPlanningPage() {
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [showGuideModal, setShowGuideModal] = useState(false);
   
   const [form, setForm] = useState({
     major: '',
@@ -97,13 +99,28 @@ export default function CareerPlanningPage() {
   };
 
   // 生成职业规划
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!user) return;
     
     if (!form.grade) {
       setMessage({ type: 'error', text: '请选择年级' });
       return;
     }
+    
+    // 检查是否已完善个人信息，未完善则弹出引导
+    const hasProfile = userProfile && (userProfile.major || userProfile.grade);
+    if (!hasProfile) {
+      setShowGuideModal(true);
+      return;
+    }
+    
+    // 已完善信息，直接生成
+    doGenerate();
+  };
+
+  // 执行生成
+  const doGenerate = async () => {
+    if (!user) return;
     
     setLoading(true);
     setMessage(null);
@@ -310,6 +327,16 @@ export default function CareerPlanningPage() {
           <p>结果仅供参考，具体求职决策请结合实际情况</p>
         </div>
       </div>
+
+      {/* 生成前置引导弹窗 */}
+      <GenerateGuideModal
+        show={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+        onContinue={() => {
+          setShowGuideModal(false);
+          doGenerate();
+        }}
+      />
     </div>
   );
 }

@@ -361,12 +361,20 @@ export default function AssistantPage() {
     <div className="min-h-screen bg-gray-50">
       {/* 职业规划提示 */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <Link href="/career-planning" className="flex items-center justify-center gap-2 text-purple-700 hover:text-purple-900 transition-colors">
-            <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              先生成你的职业规划，获得更精准的个性化建议
-            </span>
+        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2 text-sm">
+          <span className="text-purple-700">
+            💡 先生成你的职业规划，获得更精准的个性化建议
+          </span>
+          <span className="text-gray-300">|</span>
+          <span className="text-purple-700">
+            完善信息，精准度提升100%
+          </span>
+          <Link href="/profile/info" className="text-[#165DFF] underline hover:text-[#165DFF]/80 ml-2">
+            完善信息
+          </Link>
+          <span className="text-gray-300">|</span>
+          <Link href="/career-planning" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
+            立即生成
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
