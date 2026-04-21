@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload, Send, X, MessageCircle, User } from 'lucide-react';
 
 // 行业列表（与数据库值对应）
 const industries = [
@@ -45,6 +46,13 @@ interface Job {
   jdContent: string;
 }
 
+// 聊天消息类型
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 export default function JobsPage() {
   const router = useRouter();
   
@@ -64,6 +72,13 @@ export default function JobsPage() {
     total: 0,
     totalPages: 0
   });
+
+  // 职搭子聊天状态
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 获取岗位数据
   const fetchJobs = useCallback(async () => {
@@ -112,6 +127,120 @@ export default function JobsPage() {
     fetchJobs();
   }, [fetchJobs]);
 
+  // 初始化职搭子欢迎消息
+  useEffect(() => {
+    if (showAssistant && messages.length === 0) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: `👋 你好！我是「职搭子」，全行业岗位百科的专属助手~
+
+✨ 我能帮你：
+🔍 解读岗位JD：分析某个岗位的具体要求和发展前景
+📊 薪资对比：对比不同岗位、行业的薪资水平
+🎯 求职建议：根据你的背景推荐适合的岗位
+💼 简历优化：告诉你投某类岗位需要注意什么
+
+直接问我任何关于岗位和求职的问题吧！`,
+          timestamp: new Date()
+        }
+      ]);
+    }
+  }, [showAssistant]);
+
+  // 滚动到底部
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // 发送消息
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isTyping) return;
+
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: inputMessage.trim(),
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsTyping(true);
+
+    try {
+      const response = await fetch('/api/partner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage.content })
+      });
+
+      if (!response.ok) throw new Error('请求失败');
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('无法读取响应');
+
+      const decoder = new TextDecoder();
+      let fullContent = '';
+      let done = false;
+
+      // 添加一个空的assistant消息用于流式更新
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: '',
+        timestamp: new Date()
+      }]);
+
+      while (!done) {
+        const { done: streamDone, value } = await reader.read();
+        done = streamDone;
+
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.error) {
+                  fullContent = `抱歉，服务暂时不可用: ${data.error}`;
+                  done = true;
+                  break;
+                }
+                if (data.content) {
+                  fullContent += data.content;
+                  // 实时更新最后一条消息
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = {
+                      ...updated[updated.length - 1],
+                      content: fullContent
+                    };
+                    return updated;
+                  });
+                }
+                if (data.done) {
+                  done = true;
+                }
+              } catch (e) {
+                // 忽略解析错误
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('职搭子对话失败:', error);
+      setMessages(prev => [...prev.slice(0, -1), {
+        role: 'assistant',
+        content: '抱歉，我遇到了一些问题，请稍后再试。',
+        timestamp: new Date()
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   // 搜索
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,12 +277,22 @@ export default function JobsPage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-3">全行业岗位百科</h1>
               <p className="text-blue-100 text-lg">收录10000+真实校招/应届生岗位JD，助你找到最适合自己的工作</p>
             </div>
-            <Link href="/jobs/submit">
-              <Button className="bg-[#FF7D00] hover:bg-[#FF7D00]/90 text-white h-11 px-6 shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                <Upload className="w-4 h-4 mr-2" />
-                上传JD
+            <div className="flex gap-3">
+              <Button 
+                variant="outline"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 h-11 px-6"
+                onClick={() => setShowAssistant(true)}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                问职搭子
               </Button>
-            </Link>
+              <Link href="/jobs/submit">
+                <Button className="bg-[#FF7D00] hover:bg-[#FF7D00]/90 text-white h-11 px-6 shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                  <Upload className="w-4 h-4 mr-2" />
+                  上传JD
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -384,6 +523,82 @@ export default function JobsPage() {
           </div>
         )}
       </div>
+
+      {/* 职搭子对话浮窗 */}
+      <Dialog open={showAssistant} onOpenChange={setShowAssistant}>
+        <DialogContent className="max-w-lg w-full max-h-[70vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-blue-600" />
+                </div>
+                职搭子
+              </DialogTitle>
+              <span className="text-xs text-gray-500">岗位百科专属助手</span>
+            </div>
+          </DialogHeader>
+          
+          {/* 消息列表 */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+            {messages.map((msg, index) => (
+              <div 
+                key={index} 
+                className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+              >
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-blue-600" />
+                  </div>
+                )}
+                <div 
+                  className={`max-w-[80%] rounded-2xl px-4 py-3 whitespace-pre-wrap ${
+                    msg.role === 'user' 
+                      ? 'bg-[#165DFF] text-white rounded-tr-sm' 
+                      : 'bg-gray-100 text-gray-800 rounded-tl-sm'
+                  }`}
+                >
+                  {msg.content}
+                  {isTyping && msg.role === 'assistant' && index === messages.length - 1 && (
+                    <span className="inline-block ml-2 animate-pulse">...</span>
+                  )}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-gray-600" />
+                  </div>
+                )}
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+          
+          {/* 输入框 */}
+          <div className="p-4 border-t flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                placeholder="问我任何关于岗位和求职的问题..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                disabled={isTyping}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleSendMessage} 
+                disabled={!inputMessage.trim() || isTyping}
+                className="bg-[#165DFF] hover:bg-[#165DFF]/90"
+              >
+                {isTyping ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
