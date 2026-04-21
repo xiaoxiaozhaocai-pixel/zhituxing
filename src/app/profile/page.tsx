@@ -14,11 +14,21 @@ import {
   LogOut,
   ChevronRight,
   MessageSquare,
-  Loader2
+  Loader2,
+  UserCircle,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const menuItems = [
+  {
+    id: 'info',
+    title: '我的信息',
+    description: '完善个人信息，获得精准AI建议',
+    icon: <Sparkles className="w-6 h-6 text-[#165DFF]" />,
+    href: '/profile/info',
+    highlight: true
+  },
   {
     id: 'membership',
     title: '我的会员',
@@ -164,16 +174,21 @@ export default function ProfilePage() {
         <div className="space-y-4">
           {menuItems.map((item) => (
             <Link key={item.id} href={item.href}>
-              <Card className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-md cursor-pointer">
+              <Card className={`border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-md cursor-pointer ${
+                item.highlight ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-[#165DFF]/30 hover:border-[#165DFF]/50' : ''
+              }`}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
+                      <div className={`w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center ${item.highlight ? 'bg-white' : ''}`}>
                         {item.icon}
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                           {item.title}
+                          {item.highlight && (
+                            <span className="bg-[#165DFF] text-white text-xs px-2 py-0.5 rounded-full">NEW</span>
+                          )}
                         </h3>
                         <p className="text-gray-600 text-sm">
                           {item.description}

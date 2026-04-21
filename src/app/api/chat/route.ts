@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRemainingQuota, getUserQuota } from '@/lib/quota';
+import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
@@ -133,6 +134,79 @@ async function getUserIdFromRequest(request: NextRequest): Promise<string | null
   return null;
 }
 
+// 获取用户个人信息并构建上下文
+async function getUserProfileContext(userId: string): Promise<string> {
+  try {
+    const result = await execSql(
+      `SELECT personality_type, major, grade, graduation_year, city, 
+              job_intention, skills, internship_experience, project_experience, awards
+       FROM user_profiles 
+       WHERE user_id = '${userId}' 
+       LIMIT 1`
+    );
+
+    if (!result || result.length === 0) {
+      return '';
+    }
+
+    const profile = result[0] as {
+      personality_type: string | null;
+      major: string | null;
+      grade: string | null;
+      graduation_year: number | null;
+      city: string | null;
+      job_intention: string | null;
+      skills: string | null;
+      internship_experience: string | null;
+      project_experience: string | null;
+      awards: string | null;
+    };
+
+    // 构建用户信息上下文
+    const contextParts: string[] = [];
+    
+    if (profile.personality_type) {
+      contextParts.push(`人格测评结果：${profile.personality_type}`);
+    }
+    if (profile.major) {
+      contextParts.push(`专业：${profile.major}`);
+    }
+    if (profile.grade) {
+      contextParts.push(`年级：${profile.grade}`);
+    }
+    if (profile.graduation_year) {
+      contextParts.push(`毕业年份：${profile.graduation_year}年`);
+    }
+    if (profile.city) {
+      contextParts.push(`意向工作城市：${profile.city}`);
+    }
+    if (profile.job_intention) {
+      contextParts.push(`求职意向：${profile.job_intention}`);
+    }
+    if (profile.skills) {
+      contextParts.push(`已掌握技能：${profile.skills}`);
+    }
+    if (profile.internship_experience) {
+      contextParts.push(`实习经历：${profile.internship_experience}`);
+    }
+    if (profile.project_experience) {
+      contextParts.push(`项目经历：${profile.project_experience}`);
+    }
+    if (profile.awards) {
+      contextParts.push(`获奖情况：${profile.awards}`);
+    }
+
+    if (contextParts.length === 0) {
+      return '';
+    }
+
+    return `\n【用户个人信息（已保存）】\n${contextParts.join('\n')}\n请基于以上用户信息提供个性化建议。\n---\n`;
+  } catch (error) {
+    console.error('获取用户个人信息失败:', error);
+    return '';
+  }
+}
+
 // 流式返回文本
 function createTextStream(text: string): ReadableStream {
   return new ReadableStream({
@@ -169,6 +243,15 @@ export async function POST(request: NextRequest) {
     const userId = await getUserIdFromRequest(request);
     const botId = selectBotId(botType);
     const apiKey = process.env.COZE_API_KEY;
+
+    // 获取用户个人信息上下文
+    let userContext = '';
+    if (userId) {
+      userContext = await getUserProfileContext(userId);
+    }
+
+    // 构建最终消息（用户上下文 + 用户输入）
+    const finalMessage = userContext + message;
 
     // 检查配额（非会员需要扣减）
     if (userId && !apiKey) {
@@ -209,7 +292,7 @@ export async function POST(request: NextRequest) {
         additional_messages: [
           {
             role: 'user',
-            content: message,
+            content: finalMessage,
             content_type: 'text',
           },
         ],

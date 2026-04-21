@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown } from 'lucide-react';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
@@ -179,7 +180,9 @@ export default function AssistantPage() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [hasProfile, setHasProfile] = useState(false);
   const { user, quota, refreshQuota } = useAuth();
+  const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -192,6 +195,33 @@ export default function AssistantPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // 检查用户个人信息状态
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!user) {
+        setHasProfile(false);
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/user/profile', {
+          headers: {
+            'x-user-id': user.id.toString()
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setHasProfile(data.data?.hasProfile === true);
+        }
+      } catch (error) {
+        console.error('检查个人信息失败:', error);
+      }
+    };
+    
+    checkProfile();
+  }, [user]);
 
   // 初始化欢迎消息
   useEffect(() => {
@@ -485,6 +515,28 @@ export default function AssistantPage() {
 
           {/* 输入框 */}
           <div className="p-4 border-t bg-white">
+            {/* 个人信息状态提示 */}
+            {hasProfile ? (
+              <div className="mb-3 px-3 py-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-700">
+                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span>已自动读取您的个人信息，提供更精准的个性化建议</span>
+              </div>
+            ) : user ? (
+              <div className="mb-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Sparkles className="w-4 h-4 text-[#165DFF] flex-shrink-0" />
+                  <span>完善个人信息，获得更精准的AI建议</span>
+                </div>
+                <Link 
+                  href="/profile/info"
+                  className="flex items-center gap-1 text-[#165DFF] hover:text-[#165DFF]/80 font-medium"
+                >
+                  去填写
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            ) : null}
+            
             <div className="flex gap-3">
               <Input
                 ref={inputRef}
