@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight } from 'lucide-react';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
@@ -68,6 +68,21 @@ const assessmentWelcome = `👋 你好！我是「职途星——专业能力测
 🔍 短板分析：完成测评后，精准定位你的能力薄弱环节
 📝 提升建议：针对每个短板，提供具体的学习路径和资源推荐
 💡 请告诉我你的专业、年级，我来为你定制专属测评方案！`;
+
+const partnerWelcome = `嗨！你好呀！👋 我是你的「职搭子」——大学生求职路上的好朋友！
+
+✨ 不管你有什么求职困惑，都可以找我聊聊：
+💼 简历优化：帮你打磨简历，让HR眼前一亮
+🎤 面试技巧：传授面试秘诀，自信应对每一场面试
+🗺️ 职业规划：一起探索你的职业方向
+💪 心理支持：求职路上难免迷茫，我在这里给你打气！
+
+🎯 我的特点是：
+• 有问必答，不灌鸡汤
+• 分享真实的求职经验
+• 根据你的情况给出针对性建议
+
+你现在的求职困惑是什么呢？直接告诉我吧~`;
 
 const competencyWelcome = `👋 你好！我是「职途星——胜任力评估助手」，为你提供可视化能力雷达图和动态成长追踪。
 ✨ 我能帮你做什么：
@@ -144,18 +159,18 @@ const bots: BotConfig[] = [
     ]
   },
   {
-    id: 'interview',
-    name: 'AI模拟面试',
-    description: '模拟真实面试场景',
-    icon: <Briefcase className="w-5 h-5" />,
-    color: 'text-[#722ED1]',
-    gradient: 'from-purple-500 to-purple-600',
-    welcomeMessage: '您好！我是您的AI模拟面试官。我会根据您的求职意向，模拟真实面试场景，包括自我介绍、项目经历、专业知识、行为面试等多个环节。\n\n请先告诉我：\n1. 您应聘的岗位是什么？\n2. 您的专业背景是什么？\n3. 有没有相关的实习或项目经验？',
+    id: 'partner',
+    name: '求职职搭子',
+    description: '随时聊求职困惑',
+    icon: <MessageCircle className="w-5 h-5" />,
+    color: 'text-[#165DFF]',
+    gradient: 'from-blue-500 to-blue-600',
+    welcomeMessage: partnerWelcome,
     quickQuestions: [
-      '我想面试前端岗位',
-      '我想面试产品经理',
-      '我想面试后端开发',
-      '开始模拟面试'
+      '我的简历怎么写？',
+      '面试紧张怎么办？',
+      '职业方向迷茫',
+      '求职压力大求安慰'
     ]
   },
   {
@@ -277,22 +292,36 @@ export default function AssistantPage() {
         headers['x-user-id'] = userId;
       }
 
-      // 判断是否是模拟面试
+      // 判断是否是模拟面试或职搭子
       const isInterview = activeBot === 'interview';
-      const apiUrl = isInterview ? '/api/interview' : '/api/chat';
+      const isPartner = activeBot === 'partner';
+      
+      let apiUrl = '/api/chat';
+      let requestBody: object = {
+        message: messageText,
+        botType: activeBot,
+        conversationId: localStorage.getItem(`conversationId_${activeBot}`) || undefined
+      };
+      
+      if (isInterview) {
+        apiUrl = '/api/interview';
+        requestBody = {
+          message: messageText,
+          sessionId: localStorage.getItem('interviewSessionId') || undefined,
+          jobType: localStorage.getItem('interviewJobType') || undefined
+        };
+      } else if (isPartner) {
+        apiUrl = '/api/partner';
+        requestBody = {
+          message: messageText,
+          sessionId: localStorage.getItem('partnerSessionId') || undefined
+        };
+      }
       
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify(isInterview ? {
-          message: messageText,
-          sessionId: localStorage.getItem('interviewSessionId') || undefined,
-          jobType: localStorage.getItem('interviewJobType') || undefined
-        } : {
-          message: messageText,
-          botType: activeBot,
-          conversationId: localStorage.getItem(`conversationId_${activeBot}`) || undefined
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.status === 403) {
@@ -336,6 +365,8 @@ export default function AssistantPage() {
         if (conversationIdMatch) {
           if (isInterview) {
             localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
+          } else if (isPartner) {
+            localStorage.setItem('partnerSessionId', conversationIdMatch[1]);
           } else {
             localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
           }
