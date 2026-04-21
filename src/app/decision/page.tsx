@@ -45,7 +45,7 @@ const upgradePrompt = `
 ✅ 考研备考/求职准备详细时间线
 ✅ 可下载PDF格式完整报告
 
-👉 [立即开通会员，低至9.9元/月](http://localhost:5000/membership)
+👉 [立即开通会员，学期会员仅29.9元/6个月](http://localhost:5000/membership)
 `;
 
 const sharePrompt = (inviteCode: string) => `
@@ -53,7 +53,7 @@ const sharePrompt = (inviteCode: string) => `
 🎉 **分享这份报告给同学，双方都能获得奖励！**
 
 分享成功后你将获得：**3次免费AI次数+7天会员**
-好友通过你的分享链接注册并首次使用，也将获得3次免费AI次数
+好友通过你的分享链接注册并首次使用，也将获得3次免费AI次数+7天会员
 
 📱 分享方式：
 [复制分享链接]

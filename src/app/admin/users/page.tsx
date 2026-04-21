@@ -181,7 +181,7 @@ export default function AdminUsersPage() {
                           ) : (
                             <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white">
                               <Crown className="w-3 h-3 mr-1" />
-                              {user.memberType === 'monthly' ? '月卡会员' : '年卡会员'}
+                              {user.memberType === 'trial' ? '体验会员' : user.memberType === 'semester' ? '学期会员' : user.memberType === 'yearly' ? '年度会员' : '会员'}
                             </Badge>
                           )}
                         </td>

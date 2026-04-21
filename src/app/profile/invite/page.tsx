@@ -10,10 +10,9 @@ import { Gift, Users, Trophy, Copy, Share2, CheckCircle, Loader2 } from 'lucide-
 import { useAuth } from '@/hooks/useAuth';
 
 const inviteRules = [
-  '邀请1位好友注册并完成首次AI提问，你和好友各获得3次免费AI次数+7天会员',
-  '累计邀请3位好友，额外获得30天会员',
-  '累计邀请10位好友，额外获得90天会员+1次简历精修服务',
-  '注册即送3次免费AI次数，好友注册时填写你的邀请码双方都能获得奖励'
+  '邀请1位好友注册并完成首次AI提问，双方各获得3次AI次数+7天会员',
+  '累计邀请3人，额外获得30天会员',
+  '累计邀请10人，额外获得90天会员+1次免费简历精修服务'
 ];
 
 interface InviteRecord {

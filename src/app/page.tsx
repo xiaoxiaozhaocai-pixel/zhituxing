@@ -66,7 +66,7 @@ const whyChooseUs = [
     icon: <Gift className="w-6 h-6" />,
     gradient: 'from-green-500 to-green-600',
     title: '学生友好定价',
-    description: '基础功能永久免费，会员低至9.9元/月，比线下咨询便宜99%'
+    description: '基础功能永久免费，学期会员仅29.9元/6个月，远低于竞品同类服务的30%'
   },
   {
     number: '4',
@@ -95,7 +95,7 @@ const userReviews = [
   {
     name: '王五',
     school: '某普通本科',
-    content: '9.9元的月卡太值了，无限次用AI模拟面试，面试的时候一点都不慌！',
+    content: '学期会员才29.9元，6个月无限用AI服务，比线下求职咨询便宜太多了！',
     rating: 5,
     likes: 89
   }

@@ -8,20 +8,36 @@ const supabase = createClient(
 
 // 会员套餐配置
 const membershipPlans = {
-  monthly: {
-    name: '月卡会员',
+  trial: {
+    name: '体验会员',
     days: 30,
     price: 9.9
   },
-  quarterly: {
-    name: '季卡会员',
-    days: 90,
-    price: 19.9
+  semester: {
+    name: '学期会员',
+    days: 180,
+    price: 29.9
   },
   yearly: {
-    name: '年卡会员',
+    name: '年度会员',
     days: 365,
     price: 49.9
+  },
+  // 增值付费服务
+  'resume-refine': {
+    name: '1v1简历精修',
+    days: 0,
+    price: 39.9
+  },
+  'interview-review': {
+    name: '1v1模拟面试复盘',
+    days: 0,
+    price: 59.9
+  },
+  'career-report': {
+    name: '专属职业规划定制报告',
+    days: 0,
+    price: 99.9
   }
 };
 

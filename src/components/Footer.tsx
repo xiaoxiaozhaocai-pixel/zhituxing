@@ -107,11 +107,11 @@ export default function Footer() {
               <span className="text-gray-400">|</span>
               <span className="text-gray-600">营业执照</span>
               <span className="text-gray-400">|</span>
-              <span className="text-gray-600">ICP备案号：待补充</span>
+              <span className="text-gray-600">ICP备案号：桂ICP备XXXXXXXX号</span>
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-4 text-center">
-            免责声明：所有AI生成内容仅供参考，不构成任何求职建议。请谨慎决策。
+            严格遵循《个人信息保护法》《数据安全法》，用户数据全流程加密存储。AI生成内容仅供参考，不构成求职决策建议。
           </p>
         </div>
       </div>

@@ -37,7 +37,7 @@ export default function AdminNotificationsPage() {
     {
       id: '2',
       title: '会员专属活动',
-      content: '新年特惠，月卡会员买一送一！',
+      content: '新年特惠，学期会员限时优惠！',
       type: 'member',
       sentAt: '2024-01-10 09:00:00',
       recipients: '会员用户'
