@@ -1,5 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import bcrypt from 'bcryptjs';
+
+// 直接执行SQL查询
+async function execSql(sql: string): Promise<unknown[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!baseUrl || !serviceKey) {
+    console.error('Missing config:', { baseUrl, hasServiceKey: !!serviceKey });
+    return [];
+  }
+
+  try {
+    // 调用exec_sql RPC函数
+    const response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ sql_query: sql })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('SQL执行失败:', errorText);
+      return [];
+    }
+
+    const data = await response.json();
+    console.log('SQL执行结果:', data);
+    
+    // 处理返回的数据 - 可能是字符串或对象数组
+    if (typeof data === 'string') {
+      return JSON.parse(data);
+    } else if (Array.isArray(data)) {
+      return data;
+    } else if (data && typeof data === 'object') {
+      // 如果返回的是单个对象，可能是{result: ...}格式
+      return [data];
+    }
+    return [];
+  } catch (error) {
+    console.error('SQL执行异常:', error);
+    return [];
+  }
+}
 
 // 发送验证码
 export async function POST(request: NextRequest) {
@@ -19,40 +67,52 @@ export async function POST(request: NextRequest) {
     // 设置过期时间（5分钟后）
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
-    // 先删除该手机号之前的验证码
-    await supabase
-      .from('verification_codes')
-      .delete()
-      .eq('phone', phone)
-      .eq('used', false);
+    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    // 先删除旧验证码
+    const deleteUrl = `${baseUrl}/rest/v1/verification_codes?phone=eq.${phone}&used=eq.false`;
+    await fetch(deleteUrl, {
+      method: 'DELETE',
+      headers: {
+        'apikey': serviceKey || '',
+        'Authorization': `Bearer ${serviceKey || ''}`
+      }
+    });
 
-    // 保存新验证码
-    const { error: insertError } = await supabase
-      .from('verification_codes')
-      .insert({
+    // 插入新验证码
+    const insertUrl = `${baseUrl}/rest/v1/verification_codes`;
+    const response = await fetch(insertUrl, {
+      method: 'POST',
+      headers: {
+        'apikey': serviceKey || '',
+        'Authorization': `Bearer ${serviceKey || ''}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
         phone,
         code,
         type,
         expires_at: expiresAt,
         used: false
-      });
+      })
+    });
 
-    if (insertError) {
-      console.error('保存验证码失败:', insertError);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('插入验证码失败:', errorText);
       return NextResponse.json(
         { error: '发送验证码失败' },
         { status: 500 }
       );
     }
 
-    // TODO: 实际应该调用短信API发送验证码
-    // 这里为了演示，直接返回验证码
     console.log(`验证码已发送至 ${phone}: ${code}`);
 
     return NextResponse.json({
       success: true,
       message: '验证码已发送',
-      // 开发环境下返回验证码，方便测试
       code: process.env.NODE_ENV === 'development' ? code : undefined
     });
 

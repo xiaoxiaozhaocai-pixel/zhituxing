@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 import bcrypt from 'bcryptjs';
+import { execSql } from '@/lib/exec-sql';
 
 // 注册
 export async function POST(request: NextRequest) {
@@ -32,22 +32,22 @@ export async function POST(request: NextRequest) {
     }
 
     // 查询验证码
-    const { data: verification, error: verifyError } = await supabase
-      .from('verification_codes')
-      .select('*')
-      .eq('phone', phone)
-      .eq('type', 'register')
-      .eq('used', false)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    const verifyResult = await execSql(
+      `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'register' AND used = false ORDER BY created_at DESC LIMIT 1`
+    );
 
-    if (verifyError || !verification) {
+    if (!verifyResult || verifyResult.length === 0) {
       return NextResponse.json(
         { error: '请先获取验证码' },
         { status: 400 }
       );
     }
+
+    const verification = verifyResult[0] as {
+      id: string;
+      code: string;
+      expires_at: string;
+    };
 
     // 检查验证码是否过期
     if (new Date(verification.expires_at) < new Date()) {
@@ -66,48 +66,46 @@ export async function POST(request: NextRequest) {
     }
 
     // 标记验证码已使用
-    await supabase
-      .from('verification_codes')
-      .update({ used: true })
-      .eq('id', verification.id);
-
-    // 加密密码
-    const hashedPassword = await bcrypt.hash(password, 10);
+    await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
 
     // 检查用户是否已存在
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('phone', phone)
-      .single();
-
-    if (existingUser) {
+    const userCheck = await execSql(`SELECT id FROM users WHERE phone = '${phone}' LIMIT 1`);
+    if (userCheck && userCheck.length > 0) {
       return NextResponse.json(
         { error: '该手机号已注册，请直接登录' },
         { status: 400 }
       );
     }
 
-    // 创建用户
-    const { data: newUser, error: createError } = await supabase
-      .from('users')
-      .insert({
-        phone,
-        password: hashedPassword,
-        nickname: nickname || `用户${phone.slice(-4)}`
-      })
-      .select()
-      .single();
+    // 加密密码
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userNickname = nickname || `用户${phone.slice(-4)}`;
 
-    if (createError) {
-      console.error('创建用户失败:', createError);
+    // 创建用户（不使用RETURNING）
+    await execSql(
+      `INSERT INTO users (phone, password, nickname) VALUES ('${phone}', '${hashedPassword}', '${userNickname}')`
+    );
+
+    // 查询新创建的用户
+    const userResult = await execSql(
+      `SELECT id, phone, nickname, created_at FROM users WHERE phone = '${phone}' LIMIT 1`
+    );
+
+    if (!userResult || userResult.length === 0) {
       return NextResponse.json(
         { error: '注册失败' },
         { status: 500 }
       );
     }
 
-    // 返回用户信息（不包含密码）
+    const newUser = userResult[0] as {
+      id: string;
+      phone: string;
+      nickname: string;
+      created_at: string;
+    };
+
+    // 返回用户信息
     const userInfo = {
       id: newUser.id,
       phone: newUser.phone,

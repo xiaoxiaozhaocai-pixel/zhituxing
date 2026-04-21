@@ -98,6 +98,98 @@
    2. preload, preconnect, dns-prefetch 通过 ReactDOM 的 preload、preconnect、dns-prefetch 方法引入
    3. json-ld 可阅读 https://nextjs.org/docs/app/guides/json-ld
 
+## Supabase 数据库配置
+
+### 数据库表结构
+
+```sql
+-- 用户表
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone VARCHAR(20) UNIQUE NOT NULL,
+  password VARCHAR(255),
+  nickname VARCHAR(100),
+  avatar_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 验证码表
+CREATE TABLE verification_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone VARCHAR(20) NOT NULL,
+  code VARCHAR(10) NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX idx_users_phone ON users(phone);
+CREATE INDEX idx_verification_codes_phone ON verification_codes(phone);
+```
+
+### RPC函数
+
+```sql
+CREATE OR REPLACE FUNCTION exec_sql(query TEXT)
+RETURNS TEXT AS
+$$
+DECLARE
+  result TEXT;
+  row_data RECORD;
+  is_select BOOLEAN;
+BEGIN
+  is_select := upper(substring(query from 1 for 6)) = 'SELECT';
+  
+  IF is_select THEN
+    result := '[';
+    FOR row_data IN EXECUTE query LOOP
+      IF result != '[' THEN
+        result := result || ',';
+      END IF;
+      result := result || row_to_json(row_data)::TEXT;
+    END LOOP;
+    result := result || ']';
+  ELSE
+    EXECUTE query;
+    result := '[{"affected": true}]';
+  END IF;
+  
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### RLS策略
+
+```sql
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_codes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all on users" ON users FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on verification_codes" ON verification_codes FOR ALL USING (true) WITH CHECK (true);
+```
+
+### 环境变量
+
+使用 Coze 平台提供的 Supabase 配置：
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+## API 接口清单
+
+| 接口 | 方法 | 功能 |
+|------|------|------|
+| /api/auth/send-code | POST | 发送验证码 |
+| /api/auth/register | POST | 用户注册 |
+| /api/auth/login | POST | 用户登录 |
+| /api/auth/logout | POST | 退出登录 |
+| /api/auth/me | GET | 获取当前用户 |
+| /api/chat | POST | AI智能体对话 |
+
 ## UI 设计与组件规范 (UI & Styling Standards)
 
 - 模板默认预装核心组件库 `shadcn/ui`，位于`src/components/ui/`目录下
