@@ -22,17 +22,52 @@ interface BotConfig {
   icon: React.ReactNode;
   color: string;
   gradient: string;
+  welcomeMessage: string;
   quickQuestions: string[];
 }
+
+const jobsWelcome = `👋 你好！我是「职途星——职搭子」，大学生专属的全行业岗位JD库助手~所有信息均来自真实招聘JD，拒绝空泛鸡汤！
+✨ 我能帮你做什么：
+🔍 岗位查询：直接输入「Java开发」「产品经理」「新媒体运营」「HRBP」
+📍 按地点推荐：告诉我「深圳」「上海」「北京」，推荐当地岗位
+💰 按薪资推荐：告诉我「10k-15k」「5k-8k」，推荐符合的岗位
+🎓 按背景匹配：告诉我「计算机专业」「本科学历」，匹配适合的岗位
+🔀 智能组合：多个条件组合，如「深圳薪资10k-15k」「会计专业，本科」
+📚 收录500万+真实JD：覆盖互联网/金融/制造/教育/医疗等15+主流行业
+💡 现在就告诉我你的需求吧！`;
+
+const interviewWelcome = `你好呀 👋 我是职途星——你的专属AI面试官，专为全行业求职者打造，能1:1还原企业各岗位招聘的真实面试全流程体验。
+面试会严格按照「简历初筛→HR初面（电话）→业务二面（部门负责人面）→高管终面→结果反馈+专属能力提升复盘」的固定顺序进行，上一环节通过后才能进入下一环节，帮你循序渐进打磨面试能力~
+请你先告诉我这3个信息，我就能为你定制专属的模拟面试方案啦：
+1. 你应聘的岗位全称（记得标注行业、方向和层级哦，比如：互联网行业产品经理、制造业工艺工程师、市场营销总监）
+2. 该岗位的完整官方JD
+3. 你的个人求职简历`;
+
+const careerWelcome = `👋 你好！我是「职途星——你的AI职业生涯规划助手」，专为大学生打造的个性化职业规划工具，所有建议均基于全行业真实招聘数据。
+✨ 我能帮你做什么：
+🎯 岗位匹配：告诉我你的专业、年级和兴趣，推荐最适合你的3-5个岗位
+📈 成长路径：根据目标岗位，定制大一到大四的分阶段成长计划
+✅ 成功率测算：评估你应聘目标岗位的匹配度，给出针对性提升建议
+📝 求职指导：解答简历、面试、校招等通用求职问题
+💡 请告诉我你的专业、年级和求职意向，我来为你生成专属规划！`;
+
+const decisionWelcome = `👋 你好！我是「职途星——考研就业决策助手」，专为大三、大四学生打造的升学就业对比工具。
+✨ 我能帮你做什么：
+⚖️ 利弊分析：基于你的专业、成绩和兴趣，对比考研和就业的优劣势
+📅 时间规划：生成考研备考或求职准备的详细时间线
+🎓 院校推荐：根据你的专业和成绩，推荐适合的考研院校和专业
+💼 岗位推荐：如果选择就业，推荐最适合你的岗位和成长路径
+💡 请告诉我你的专业、年级和成绩排名，我来为你生成个性化决策建议！`;
 
 const bots: BotConfig[] = [
   {
     id: 'jobs',
     name: '岗位百科',
-    description: '查询各行业岗位信息',
+    description: '全行业岗位JD查询',
     icon: <Briefcase className="w-5 h-5" />,
     color: 'text-[#165DFF]',
     gradient: 'from-blue-500 to-blue-600',
+    welcomeMessage: jobsWelcome,
     quickQuestions: [
       'Java开发工程师前景如何？',
       '产品经理需要哪些技能？',
@@ -47,6 +82,7 @@ const bots: BotConfig[] = [
     icon: <GraduationCap className="w-5 h-5" />,
     color: 'text-[#00B42A]',
     gradient: 'from-green-500 to-green-600',
+    welcomeMessage: interviewWelcome,
     quickQuestions: [
       '帮我模拟面试HR岗位',
       '如何回答"你为什么离职"',
@@ -57,15 +93,31 @@ const bots: BotConfig[] = [
   {
     id: 'career',
     name: '职业规划',
-    description: '制定专属职业规划',
+    description: '制定专属成长路径',
     icon: <Sparkles className="w-5 h-5" />,
     color: 'text-[#722ED1]',
     gradient: 'from-purple-500 to-purple-600',
+    welcomeMessage: careerWelcome,
     quickQuestions: [
       '计算机专业职业规划',
       '考研还是找工作？',
       '如何提升职场竞争力',
       '职业发展路径建议'
+    ]
+  },
+  {
+    id: 'decision',
+    name: '考研决策',
+    description: '考研vs就业对比',
+    icon: <Sparkles className="w-5 h-5" />,
+    color: 'text-[#FF7D00]',
+    gradient: 'from-orange-500 to-orange-600',
+    welcomeMessage: decisionWelcome,
+    quickQuestions: [
+      '考研真的能提升竞争力吗？',
+      '文科生适合考研还是就业？',
+      '计算机专业考研vs就业',
+      '本科就业好还是考研好？'
     ]
   }
 ];
@@ -95,18 +147,11 @@ export default function AssistantPage() {
     if (messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: `你好！我是${currentBot.name}，很高兴为你服务！
-
-你可以这样问我：
-• 了解某个岗位的发展前景和薪资水平
-• 查询某个行业的工作内容和技能要求
-• 获取求职建议和面试技巧
-
-有什么我可以帮到你的吗？`,
+        content: currentBot.welcomeMessage,
         timestamp: new Date()
       }]);
     }
-  }, [activeBot]);
+  }, [activeBot, currentBot.welcomeMessage]);
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -272,7 +317,7 @@ export default function AssistantPage() {
             AI职业助手
           </h1>
           <p className="text-gray-600 text-sm">
-            三大智能体协同服务，助你求职无忧
+            四大智能体协同服务，助你求职无忧
           </p>
         </div>
 
@@ -410,6 +455,10 @@ export default function AssistantPage() {
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
             <span>职业生涯规划</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600"></div>
+            <span>考研就业决策</span>
           </div>
         </div>
       </div>

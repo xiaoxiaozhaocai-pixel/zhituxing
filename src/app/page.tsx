@@ -284,7 +284,7 @@ export default function HomePage() {
               免费体验AI岗位查询
             </h2>
             <p className="text-gray-600">
-              输入任意行业任意岗位名称，一键获取100%真实招聘JD信息
+              👋 你好！我是「职途星——职搭子」，大学生专属的全行业岗位JD库助手~所有信息均来自真实招聘JD，拒绝空泛鸡汤！
             </p>
           </div>
           
@@ -300,7 +300,7 @@ export default function HomePage() {
                 
                 {/* 示例对话气泡 */}
                 <div className="flex-1 space-y-4">
-                  <p className="text-gray-600 mb-4">试试这样问：</p>
+                  <p className="text-gray-600 mb-4">✨ 我能帮你做什么：</p>
                   <div className="space-y-3">
                     {sampleQuestions.map((q, i) => (
                       <button
