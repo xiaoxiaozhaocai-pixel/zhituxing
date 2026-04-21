@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Loader2, Briefcase, FileText, MapPin, DollarSign, Eye } from 'lucide-react';
+import { Search, Loader2, Briefcase, FileText, MapPin, Clock, X, History, Eye } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SearchResult {
   id: string;
@@ -17,9 +18,16 @@ interface SearchResult {
   views?: number;
 }
 
+interface SearchHistory {
+  id: string;
+  keyword: string;
+  createdAt: string;
+}
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const initialQuery = searchParams.get('q') || '';
 
   const [query, setQuery] = useState(initialQuery);
@@ -31,12 +39,33 @@ function SearchContent() {
   });
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [histories, setHistories] = useState<SearchHistory[]>([]);
+  const [focused, setFocused] = useState(false);
 
   const performSearch = useCallback(async (q: string, type: 'all' | 'jobs' | 'articles') => {
     if (!q || q.trim().length < 2) return;
 
     setLoading(true);
     setSearched(true);
+    setShowHistory(false);
+
+    // 保存搜索历史
+    if (isAuthenticated && user) {
+      try {
+        await fetch('/api/search/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            keyword: q.trim(),
+            searchType: type
+          })
+        });
+      } catch (error) {
+        console.error('保存搜索历史失败:', error);
+      }
+    }
 
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&type=${type}`);
@@ -50,13 +79,29 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, user]);
+
+  // 获取搜索历史
+  const fetchHistories = useCallback(async () => {
+    if (!isAuthenticated) return;
+
+    try {
+      const res = await fetch('/api/search/history?limit=10');
+      const data = await res.json();
+      if (data.success) {
+        setHistories(data.data.histories || []);
+      }
+    } catch (error) {
+      console.error('获取搜索历史失败:', error);
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (initialQuery) {
       performSearch(initialQuery, activeTab);
     }
-  }, []);
+    fetchHistories();
+  }, [initialQuery, activeTab, performSearch, fetchHistories]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +110,27 @@ function SearchContent() {
       return;
     }
     setQuery(inputValue);
+    setShowHistory(false);
     router.push(`/search?q=${encodeURIComponent(inputValue)}`);
     performSearch(inputValue, activeTab);
+  };
+
+  const handleHistoryClick = (keyword: string) => {
+    setInputValue(keyword);
+    setQuery(keyword);
+    setShowHistory(false);
+    router.push(`/search?q=${encodeURIComponent(keyword)}`);
+    performSearch(keyword, activeTab);
+  };
+
+  const handleDeleteHistory = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await fetch(`/api/search/history/${id}`, { method: 'DELETE' });
+      setHistories(histories.filter(h => h.id !== id));
+    } catch (error) {
+      console.error('删除搜索历史失败:', error);
+    }
   };
 
   const handleTabChange = (tab: 'all' | 'jobs' | 'articles') => {
@@ -91,23 +155,61 @@ function SearchContent() {
       {/* Search Header */}
       <div className="bg-white border-b py-6">
         <div className="max-w-4xl mx-auto px-4">
-          <form onSubmit={handleSearch} className="flex gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="搜索岗位、文章..."
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              />
+          <form onSubmit={handleSearch} className="relative">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onFocus={() => {
+                    setFocused(true);
+                    setShowHistory(true);
+                  }}
+                  onBlur={() => setFocused(false)}
+                  placeholder="搜索岗位、文章..."
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                />
+                
+                {/* Search History Dropdown */}
+                {showHistory && histories.length > 0 && !searched && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-200 shadow-lg z-10 overflow-hidden">
+                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                        <History className="w-3 h-3" />
+                        搜索历史
+                      </p>
+                    </div>
+                    {histories.map((history) => (
+                      <div
+                        key={history.id}
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between group"
+                        onClick={() => handleHistoryClick(history.keyword)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-700">{history.keyword}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteHistory(history.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-opacity"
+                        >
+                          <X className="w-4 h-4 text-gray-400" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+              >
+                搜索
+              </button>
             </div>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              搜索
-            </button>
           </form>
 
           {/* Tabs */}

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, FileText, Users, Briefcase, Bell, Settings, Shield } from 'lucide-react';
+import { Loader2, FileText, Users, Briefcase, Bell, Settings, Shield, CreditCard, MessageSquare } from 'lucide-react';
 
 const adminMenu = [
   {
@@ -30,18 +30,25 @@ const adminMenu = [
     color: 'from-green-500 to-green-600'
   },
   {
+    title: '订单管理',
+    description: '管理会员订单',
+    icon: <CreditCard className="w-8 h-8" />,
+    href: '/admin/orders',
+    color: 'from-cyan-500 to-cyan-600'
+  },
+  {
+    title: '工单管理',
+    description: '处理用户反馈',
+    icon: <MessageSquare className="w-8 h-8" />,
+    href: '/admin/feedback',
+    color: 'from-indigo-500 to-indigo-600'
+  },
+  {
     title: '消息通知',
     description: '发送系统通知',
     icon: <Bell className="w-8 h-8" />,
     href: '/admin/notifications',
     color: 'from-purple-500 to-purple-600'
-  },
-  {
-    title: '反馈管理',
-    description: '查看用户反馈',
-    icon: <Settings className="w-8 h-8" />,
-    href: '/admin/feedback',
-    color: 'from-gray-500 to-gray-600'
   },
   {
     title: '系统设置',
