@@ -1,42 +1,81 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { Send, Loader2, GraduationCap, Briefcase, TrendingUp, Target, Sparkles } from 'lucide-react';
+import { Send, Loader2, GraduationCap, Briefcase, TrendingUp, Target, Sparkles, Share2, Download, Crown, AlertCircle, Copy, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  isReport?: boolean;
+  isFullVersion?: boolean;
 }
 
+const decisionWelcome = `👋 你好！我是「职途星——考研就业决策助手」，专为大三、大四学生打造的升学就业对比工具。
+
+✨ 我能帮你做什么：
+⚖️ 利弊分析：基于你的专业、成绩和兴趣，对比考研和就业的优劣势
+📅 时间规划：生成考研备考或求职准备的详细时间线
+🎓 院校推荐：根据你的专业和成绩，推荐适合的考研院校和专业
+💼 岗位推荐：如果选择就业，推荐最适合你的岗位和成长路径
+💡 请告诉我你的专业、年级和成绩排名，我来为你生成个性化决策建议！`;
+
+const quickQuestions = [
+  '大三现在准备考研来得及吗？',
+  '计算机专业考研还是就业好？',
+  '文科专业考研有必要吗？',
+  '考研二战还是找工作？',
+  '本科双非考研能上985吗？',
+  '考公和考研怎么选？',
+  '2027年考研难度预测？',
+  '生成我的考研备考计划'
+];
+
+const upgradePrompt = `
+---
+⚠️ **以上为基础版分析内容**
+
+开通会员即可解锁：
+✅ 结合你的专业/年级/成绩的个性化决策报告
+✅ 3-5所目标考研院校推荐（含录取分数线/报录比）
+✅ 3-5个匹配就业岗位推荐（含薪资/成长路径）
+✅ 考研备考/求职准备详细时间线
+✅ 可下载PDF格式完整报告
+
+👉 [立即开通会员，低至9.9元/月](http://localhost:5000/membership)
+`;
+
+const sharePrompt = (inviteCode: string) => `
+---
+🎉 **分享这份报告给同学，双方都能获得奖励！**
+
+分享成功后你将获得：**3次免费AI次数+7天会员**
+好友通过你的分享链接注册并首次使用，也将获得3次免费AI次数
+
+📱 分享方式：
+[复制分享链接]
+
+或扫描下方二维码分享给好友：
+`;
+
 export default function DecisionPage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, quota, refreshQuota } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // 初始化欢迎消息
-  useEffect(() => {
-    if (!authLoading && messages.length === 0) {
-      setMessages([
-        {
-          role: 'assistant',
-          content: `你好！我是**考研就业决策助手**，可以帮助你分析考研和直接就业的利弊，为你做出最适合的选择提供参考。
-
-请告诉我你的基本情况，比如：
-- 你的专业是什么？
-- 你的学历背景？
-- 你的职业规划方向？
-- 你对考研有什么顾虑？
-
-我会根据你的具体情况，给出客观的分析建议。`
-        }
-      ]);
-    }
-  }, [authLoading]);
+  const isMember = quota?.is_member;
+  const remainingQuota = quota?.remaining ?? 0;
+  const quotaExhausted = !isMember && remainingQuota <= 0;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,6 +85,21 @@ export default function DecisionPage() {
     scrollToBottom();
   }, [messages, streamingContent]);
 
+  // 初始化欢迎消息
+  useEffect(() => {
+    if (!authLoading && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: decisionWelcome
+      }]);
+    }
+  }, [authLoading]);
+
+  const handleQuotaExceeded = () => {
+    refreshQuota();
+    setShowQuotaDialog(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
@@ -53,6 +107,11 @@ export default function DecisionPage() {
     if (!isAuthenticated) {
       alert('请先登录后再使用');
       window.location.href = '/auth';
+      return;
+    }
+
+    if (quotaExhausted) {
+      handleQuotaExceeded();
       return;
     }
 
@@ -70,10 +129,20 @@ export default function DecisionPage() {
           'x-user-id': user!.id
         },
         body: JSON.stringify({
-          message: userMessage.content,
+          message: input.trim(),
           botType: 'decision'
         })
       });
+
+      if (response.status === 403) {
+        const data = await response.json();
+        if (data.error === 'quota_exceeded') {
+          handleQuotaExceeded();
+          setMessages(prev => prev.slice(0, -1));
+          setLoading(false);
+          return;
+        }
+      }
 
       if (!response.ok) {
         throw new Error('请求失败');
@@ -96,7 +165,14 @@ export default function DecisionPage() {
 
       // 流式结束后添加到消息列表
       if (fullContent) {
-        setMessages(prev => [...prev, { role: 'assistant', content: fullContent }]);
+        // 非会员添加升级提示
+        const finalContent = !isMember ? fullContent + upgradePrompt : fullContent;
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: finalContent,
+          isReport: true,
+          isFullVersion: isMember
+        }]);
       }
       setStreamingContent('');
 
@@ -112,12 +188,20 @@ export default function DecisionPage() {
     }
   };
 
-  const quickQuestions = [
-    '考研真的能提升就业竞争力吗？',
-    '本科就业好还是考研好？',
-    '文科生适合考研还是就业？',
-    '计算机专业考研 vs 就业怎么选？'
-  ];
+  const handleShare = () => {
+    setShowShareDialog(true);
+  };
+
+  const copyShareLink = async () => {
+    const shareLink = `${window.location.origin}/decision?ref=${user?.id || 'guest'}`;
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert('复制失败，请手动复制');
+    }
+  };
 
   if (authLoading) {
     return (
@@ -129,17 +213,66 @@ export default function DecisionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* 顶部额度提示条 */}
+      {user && (
+        <div className={`sticky top-0 z-10 px-4 py-3 border-b transition-colors ${
+          quotaExhausted 
+            ? 'bg-orange-50 border-orange-200' 
+            : 'bg-white border-gray-200'
+        }`}>
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {isMember ? (
+                <>
+                  <Crown className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="text-gray-700">
+                    <strong className="text-[#FF7D00]">会员专享</strong> 无限次决策分析
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-gray-600 text-sm">本月剩余免费次数：</span>
+                  <span className={`text-lg font-bold ${quotaExhausted ? 'text-red-500' : 'text-[#165DFF]'}`}>
+                    {remainingQuota}/5
+                  </span>
+                </>
+              )}
+            </div>
+            
+            {quotaExhausted ? (
+              <Link href="/membership">
+                <Button size="sm" className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
+                  开通会员 无限使用
+                </Button>
+              </Link>
+            ) : !isMember && (
+              <Link href="/membership">
+                <Button size="sm" variant="outline" className="text-[#FF7D00] border-[#FF7D00] hover:bg-orange-50">
+                  开通会员 解锁完整版
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
               <Target className="w-6 h-6 text-white" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">考研就业决策助手</h1>
               <p className="text-gray-500 text-sm">基于你的情况，帮你分析最佳选择</p>
             </div>
+            {isMember && (
+              <div className="ml-auto flex items-center gap-2">
+                <Crown className="w-5 h-5 text-[#FF7D00]" />
+                <span className="text-sm font-medium text-[#FF7D00]">完整版</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -155,8 +288,8 @@ export default function DecisionPage() {
               {/* Avatar */}
               <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${
                 message.role === 'user'
-                  ? 'bg-blue-600'
-                  : 'bg-gradient-to-br from-purple-500 to-blue-500'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600'
+                  : 'bg-gradient-to-br from-orange-500 to-orange-600'
               }`}>
                 {message.role === 'user' ? (
                   <span className="text-white text-sm font-medium">
@@ -171,12 +304,35 @@ export default function DecisionPage() {
               <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
                 <div className={`rounded-2xl px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                     : 'bg-white border border-gray-200 text-gray-800'
                 }`}>
                   <div className="prose prose-sm max-w-none whitespace-pre-wrap">
                     {message.content}
                   </div>
+                  
+                  {/* 报告操作按钮 */}
+                  {message.role === 'assistant' && message.isReport && isMember && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2 justify-end">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                        onClick={handleShare}
+                      >
+                        <Share2 className="w-4 h-4 mr-1" />
+                        分享得奖励
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        下载PDF
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -185,14 +341,14 @@ export default function DecisionPage() {
           {/* Streaming Content */}
           {streamingContent && (
             <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full flex-shrink-0 bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex-shrink-0 bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                 <Target className="w-5 h-5 text-white" />
               </div>
               <div className="max-w-[80%]">
                 <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
                   <div className="prose prose-sm max-w-none whitespace-pre-wrap">
                     {streamingContent}
-                    <span className="inline-block w-2 h-4 bg-blue-600 animate-pulse ml-1" />
+                    <span className="inline-block w-2 h-4 bg-orange-500 animate-pulse ml-1" />
                   </div>
                 </div>
               </div>
@@ -202,11 +358,11 @@ export default function DecisionPage() {
           {/* Loading */}
           {loading && !streamingContent && (
             <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full flex-shrink-0 bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex-shrink-0 bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                 <Target className="w-5 h-5 text-white" />
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
               </div>
             </div>
           )}
@@ -215,16 +371,16 @@ export default function DecisionPage() {
         </div>
       </div>
 
-      {/* Quick Questions */}
+      {/* 快捷提问按钮 - 仅首次对话显示 */}
       {messages.length <= 1 && !loading && (
         <div className="max-w-4xl mx-auto w-full px-4 pb-4">
           <p className="text-sm text-gray-500 mb-3">试试这些问题：</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {quickQuestions.map((q, i) => (
               <button
                 key={i}
                 onClick={() => setInput(q)}
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-600 hover:bg-gray-50 hover:border-blue-300 transition-colors"
+                className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-all text-left line-clamp-2"
               >
                 {q}
               </button>
@@ -247,14 +403,14 @@ export default function DecisionPage() {
                   handleSubmit(e);
                 }
               }}
-              placeholder="输入你的问题..."
+              placeholder="输入你的专业、年级和成绩排名，我来帮你分析..."
               rows={1}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none max-h-32"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none resize-none max-h-32"
             />
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -269,6 +425,102 @@ export default function DecisionPage() {
           </p>
         </div>
       </div>
+
+      {/* 额度用完弹窗 */}
+      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-[#FF7D00]" />
+              本月免费次数已用完
+            </DialogTitle>
+            <div className="space-y-4 pt-4">
+              <p className="text-gray-600">
+                您本月的5次免费决策分析已全部使用完毕
+              </p>
+              <div className="space-y-3">
+                <p className="font-medium text-gray-900">解锁完整版决策报告：</p>
+                <div className="flex flex-col gap-2">
+                  <Link href="/membership" onClick={() => setShowQuotaDialog(false)}>
+                    <Button className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
+                      <Crown className="w-4 h-4 mr-2" />
+                      开通会员 - 无限次+完整版报告
+                    </Button>
+                  </Link>
+                  <Link href="/profile/invite" onClick={() => setShowQuotaDialog(false)}>
+                    <Button variant="outline" className="w-full">
+                      <Share2 className="w-4 h-4 mr-2" />
+                      邀请好友 - 每次获得3次免费次数
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* 分享弹窗 */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-[#FF7D00]" />
+              分享得奖励
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <p className="text-orange-800 font-medium mb-2">🎉 分享奖励规则</p>
+              <ul className="text-sm text-orange-700 space-y-1">
+                <li>• 分享成功后你将获得：<strong>3次免费AI次数+7天会员</strong></li>
+                <li>• 好友通过你的链接注册并首次使用，也将获得3次免费AI次数</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="font-medium text-gray-900">分享链接</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/decision?ref=${user?.id || ''}`}
+                  readOnly
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                />
+                <Button 
+                  onClick={copyShareLink}
+                  className={copied ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      已复制
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-1" />
+                      复制
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-4 pt-4">
+              <Button variant="outline" className="flex-1">
+                <Share2 className="w-4 h-4 mr-2" />
+                微信
+              </Button>
+              <Button variant="outline" className="flex-1">
+                分享到QQ
+              </Button>
+              <Button variant="outline" className="flex-1">
+                朋友圈
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
