@@ -1,161 +1,151 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, X, Sparkles, Loader2 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useEffect } from 'react';
+import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
+// 行业列表
 const industries = [
-  '全部', '互联网/电商', '金融（银行/证券/保险）', '制造（汽车/电子/机械）',
-  '教育（K12/高等教育/职业教育）', '医疗（医院/医药/器械）', '零售（商超/电商零售）',
-  '地产（住宅/商业地产）', '物流（快递/供应链）', '广告/传媒', '新能源（光伏/风电）',
-  '化工', '建筑', '律所', '国企（综合类）', '外企（外资制造业/服务业）'
+  '全部', '互联网', '金融', '制造', '教育', '医疗', '电商', '传媒', 
+  '房地产', '新能源', '汽车', '快消', '物流', '咨询', '法律', 
+  '国企', '外企', '创业公司', '公务员/事业单位'
 ];
 
-const jobCategories = [
-  '全部', '技术类（前端/后端/测试/运维）', '产品类（产品经理/产品运营）',
-  '运营类（用户/内容/活动/电商）', '市场类（品牌/新媒体/推广）',
-  '职能类（HR/行政/财务/法务/采购）', '销售类（To B/To C/商务）',
-  '设计类（UI/UX/平面）', '管培生类'
-];
-
+// 城市列表
 const cities = [
-  '全国', '北京', '上海', '广州', '深圳', '杭州', '成都', '武汉', '西安', '南京',
-  '重庆', '天津', '苏州', '长沙', '青岛', '郑州', '大连', '厦门', '合肥', '济南', '福州'
+  '全国', '北京', '上海', '广州', '深圳', '成都', '杭州', '重庆', '武汉', 
+  '西安', '苏州', '天津', '南京', '长沙', '郑州', '东莞', '青岛', '沈阳', 
+  '合肥', '佛山', '宁波', '昆明', '福州', '无锡', '厦门', '济南', '大连', 
+  '哈尔滨', '温州', '石家庄', '南宁'
 ];
 
-const companyTypes = ['全部', '民营企业', '国有企业', '外资企业', '上市公司', '事业单位'];
+// 企业类型
+const companyTypes = ['全部', '民营企业', '国有企业', '外资企业', '上市公司', '事业单位', '创业公司'];
 
-const friendlinessLevels = [
-  '全部', '极度友好', '友好', '一般', '不友好'
-];
+// 接口返回的岗位数据类型
+interface Job {
+  id: number;
+  name: string;
+  industry: string;
+  city: string;
+  companyType: string;
+  salary: string;
+  salaryMin: number;
+  salaryMax: number;
+  skills: string[];
+  friendliness: string;
+  isFreshFriendly: boolean;
+  jdContent: string;
+}
 
-const mockJobs = [
-  { id: 1, name: 'Java开发工程师', industry: '互联网/电商', city: '北京', companyType: '民营企业', salary: '15-25K', friendliness: '极度友好', tags: ['后端开发', 'Spring', '微服务'] },
-  { id: 2, name: '产品经理', industry: '互联网/电商', city: '上海', companyType: '上市公司', salary: '20-35K', friendliness: '友好', tags: ['产品设计', '数据分析', '项目管理'] },
-  { id: 3, name: '前端开发工程师', industry: '互联网/电商', city: '深圳', companyType: '外资企业', salary: '18-30K', friendliness: '极度友好', tags: ['React', 'Vue', 'TypeScript'] },
-  { id: 4, name: 'HRBP', industry: '互联网/电商', city: '杭州', companyType: '民营企业', salary: '12-20K', friendliness: '友好', tags: ['人力资源', '组织发展', '招聘'] },
-  { id: 5, name: 'UI设计师', industry: '广告/传媒', city: '北京', companyType: '民营企业', salary: '10-18K', friendliness: '极度友好', tags: ['UI设计', 'Figma', '视觉设计'] },
-  { id: 6, name: '新媒体运营', industry: '广告/传媒', city: '广州', companyType: '民营企业', salary: '8-15K', friendliness: '友好', tags: ['内容运营', '社交媒体', '文案策划'] },
-  { id: 7, name: '管培生', industry: '国企（综合类）', city: '上海', companyType: '国有企业', salary: '10-18K', friendliness: '极度友好', tags: ['轮岗培训', '管理培训', '储备干部'] },
-  { id: 8, name: '数据分析师', industry: '金融（银行/证券/保险）', city: '深圳', companyType: '上市公司', salary: '15-28K', friendliness: '友好', tags: ['Python', 'SQL', '数据可视化'] },
-  { id: 9, name: 'Python开发工程师', industry: '互联网/电商', city: '成都', companyType: '民营企业', salary: '14-24K', friendliness: '极度友好', tags: ['Python', 'Django', 'AI应用'] },
-  { id: 10, name: '销售经理', industry: '零售（商超/电商零售）', city: '武汉', companyType: '民营企业', salary: '12-20K', friendliness: '一般', tags: ['B2B销售', '客户开发', '商务谈判'] },
-  { id: 11, name: '行政专员', industry: '教育（K12/高等教育/职业教育）', city: '西安', companyType: '事业单位', salary: '6-10K', friendliness: '极度友好', tags: ['行政事务', '后勤管理', '文件处理'] },
-  { id: 12, name: '会计', industry: '金融（银行/证券/保险）', city: '南京', companyType: '国有企业', salary: '8-14K', friendliness: '友好', tags: ['财务核算', '税务申报', '财务报表'] },
-  { id: 13, name: '护士', industry: '医疗（医院/医药/器械）', city: '重庆', companyType: '事业单位', salary: '7-12K', friendliness: '极度友好', tags: ['临床护理', '医疗护理', '患者管理'] },
-  { id: 14, name: '教师', industry: '教育（K12/高等教育/职业教育）', city: '天津', companyType: '事业单位', salary: '8-15K', friendliness: '极度友好', tags: ['学科教学', '班级管理', '教学研究'] },
-  { id: 15, name: '电商运营', industry: '零售（商超/电商零售）', city: '杭州', companyType: '民营企业', salary: '10-18K', friendliness: '友好', tags: ['电商运营', '店铺管理', '营销推广'] },
-  { id: 16, name: '机械工程师', industry: '制造（汽车/电子/机械）', city: '苏州', companyType: '外资企业', salary: '12-20K', friendliness: '友好', tags: ['机械设计', '工艺规划', '设备维护'] },
-  { id: 17, name: '法务专员', industry: '律所', city: '北京', companyType: '民营企业', salary: '10-18K', friendliness: '一般', tags: ['合同审核', '法律咨询', '合规管理'] },
-  { id: 18, name: '供应链管理', industry: '物流（快递/供应链）', city: '上海', companyType: '上市公司', salary: '12-22K', friendliness: '友好', tags: ['供应链优化', '仓储物流', '采购管理'] },
-  { id: 19, name: '品牌经理', industry: '广告/传媒', city: '广州', companyType: '民营企业', salary: '15-28K', friendliness: '一般', tags: ['品牌策略', '市场推广', '媒体关系'] },
-  { id: 20, name: '工艺工程师', industry: '新能源（光伏/风电）', city: '深圳', companyType: '上市公司', salary: '13-22K', friendliness: '友好', tags: ['工艺开发', '生产优化', '质量控制'] },
-  { id: 21, name: '算法工程师', industry: '互联网/电商', city: '北京', companyType: '上市公司', salary: '25-45K', friendliness: '友好', tags: ['机器学习', '深度学习', 'NLP'] },
-  { id: 22, name: '测试工程师', industry: '互联网/电商', city: '杭州', companyType: '民营企业', salary: '12-20K', friendliness: '极度友好', tags: ['功能测试', '自动化测试', '性能测试'] },
-  { id: 23, name: '运维工程师', industry: '互联网/电商', city: '上海', companyType: '民营企业', salary: '14-24K', friendliness: '友好', tags: ['Linux', 'Docker', 'K8s'] },
-  { id: 24, name: '商务拓展', industry: '互联网/电商', city: '北京', companyType: '外资企业', salary: '15-28K', friendliness: '一般', tags: ['商务合作', '渠道拓展', '客户关系'] },
-];
-
-function JobsPage() {
+export default function JobsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('query') || '');
-  const [showFilters, setShowFilters] = useState(false);
+  // 状态
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     industry: '全部',
-    jobCategory: '全部',
-    city: '全部',
+    city: '全国',
     companyType: '全部',
-    friendliness: '全部',
+    freshOnly: false
+  });
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 20,
+    total: 0,
+    totalPages: 0
   });
 
-  // 从URL参数初始化搜索词
-  useEffect(() => {
-    const query = searchParams.get('query');
-    if (query) {
-      setSearchQuery(query);
-    }
-  }, [searchParams]);
-
-  // 筛选后的岗位列表
-  const filteredJobs = useMemo(() => {
-    return mockJobs.filter(job => {
-      // 搜索词匹配
-      const searchMatch = searchQuery.trim() === '' || 
-        job.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      // 行业匹配
-      const industryMatch = filters.industry === '全部' || job.industry === filters.industry;
-
-      // 城市匹配
-      const cityMatch = filters.city === '全国' || filters.city === '全部' || job.city === filters.city;
-
-      // 企业类型匹配
-      const companyMatch = filters.companyType === '全部' || job.companyType === filters.companyType;
-
-      // 友好度匹配
-      let friendlinessMatch = true;
-      if (filters.friendliness !== '全部') {
-        friendlinessMatch = job.friendliness === filters.friendliness;
+  // 获取岗位数据
+  const fetchJobs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        pageSize: pagination.pageSize.toString()
+      });
+      
+      if (filters.industry !== '全部') {
+        params.set('industry', filters.industry);
       }
+      if (filters.city !== '全国') {
+        params.set('city', filters.city);
+      }
+      if (filters.companyType !== '全部') {
+        params.set('companyType', filters.companyType);
+      }
+      if (filters.freshOnly) {
+        params.set('freshOnly', 'true');
+      }
+      if (searchQuery) {
+        params.set('keyword', searchQuery);
+      }
+      
+      const response = await fetch(`/api/jobs?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setJobs(data.data);
+        setPagination(prev => ({
+          ...prev,
+          total: data.total,
+          totalPages: data.totalPages
+        }));
+      }
+    } catch (error) {
+      console.error('获取岗位数据失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [pagination.page, filters, searchQuery]);
 
-      return searchMatch && industryMatch && cityMatch && companyMatch && friendlinessMatch;
-    });
-  }, [searchQuery, filters]);
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
 
+  // 搜索
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // 搜索时跳转到AI助手页面
-    if (searchQuery.trim()) {
-      router.push(`/assistant?query=${encodeURIComponent(searchQuery)}`);
-    }
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchJobs();
   };
 
+  // 跳转到AI助手
   const handleJobClick = (jobName: string) => {
     router.push(`/assistant?query=${encodeURIComponent(jobName)}`);
   };
 
-  const handleReset = () => {
-    setSearchQuery('');
-    setFilters({
-      industry: '全部',
-      jobCategory: '全部',
-      city: '全部',
-      companyType: '全部',
-      friendliness: '全部',
-    });
+  // 分页
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setPagination(prev => ({ ...prev, page: newPage }));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
-  // 检查是否有激活的筛选条件
-  const hasActiveFilters = filters.industry !== '全部' || filters.jobCategory !== '全部' || 
-    filters.city !== '全部' || filters.companyType !== '全部' || filters.friendliness !== '全部';
+  // 筛选变化
+  const handleFilterChange = (key: string, value: string | boolean) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-            全行业岗位百科
-          </h1>
-          <p className="text-gray-600">覆盖15+主流行业，8大岗位类别，支持智能搜索</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#4080FF] text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">全行业岗位百科</h1>
+          <p className="text-blue-100 text-lg">收录10000+真实校招/应届生岗位JD，助你找到最适合自己的工作</p>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
@@ -172,253 +162,194 @@ function JobsPage() {
               <Search className="w-4 h-4 mr-2" />
               智能查询
             </Button>
-            <Button 
-              type="button"
-              variant="outline" 
-              className="h-12 md:hidden"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              筛选
-            </Button>
           </form>
+        </div>
 
-          {/* Quick Filter Tags */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            <span className="text-sm text-gray-500">快捷筛选：</span>
-            <button
-              onClick={() => setFilters({ ...filters, industry: '互联网/电商' })}
-              className={`text-sm px-3 py-1 rounded-full transition-colors ${
-                filters.industry === '互联网/电商' 
-                  ? 'bg-[#165DFF] text-white' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              互联网/电商
-            </button>
-            <button
-              onClick={() => setFilters({ ...filters, city: '北京' })}
-              className={`text-sm px-3 py-1 rounded-full transition-colors ${
-                filters.city === '北京' 
-                  ? 'bg-[#165DFF] text-white' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              北京
-            </button>
-            <button
-              onClick={() => setFilters({ ...filters, companyType: '上市公司' })}
-              className={`text-sm px-3 py-1 rounded-full transition-colors ${
-                filters.companyType === '上市公司' 
-                  ? 'bg-[#165DFF] text-white' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              上市公司
-            </button>
-            <button
-              onClick={() => setFilters({ ...filters, friendliness: '极度友好' })}
-              className={`text-sm px-3 py-1 rounded-full transition-colors ${
-                filters.friendliness === '极度友好' 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              应届生友好
-            </button>
-            {hasActiveFilters && (
-              <button
-                onClick={handleReset}
-                className="text-sm px-3 py-1 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1"
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* 行业筛选 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">行业</label>
+              <select
+                value={filters.industry}
+                onChange={(e) => handleFilterChange('industry', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
               >
-                <X className="w-3 h-3" />
-                清除筛选
-              </button>
-            )}
+                {industries.map(ind => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 城市筛选 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">城市</label>
+              <select
+                value={filters.city}
+                onChange={(e) => handleFilterChange('city', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+              >
+                {cities.map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 企业类型 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">企业类型</label>
+              <select
+                value={filters.companyType}
+                onChange={(e) => handleFilterChange('companyType', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+              >
+                {companyTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 应届生友好 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+              <label className="flex items-center h-10 px-3 rounded-lg border border-gray-200 hover:border-[#165DFF] cursor-pointer transition-all">
+                <input
+                  type="checkbox"
+                  checked={filters.freshOnly}
+                  onChange={(e) => handleFilterChange('freshOnly', e.target.checked)}
+                  className="w-4 h-4 text-[#165DFF] rounded border-gray-300 focus:ring-[#165DFF]"
+                />
+                <span className="ml-2 text-sm">仅显示应届友好岗位</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        {/* Advanced Filters */}
-        {showFilters && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 md:hidden">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">行业大类</label>
-                <Select
-                  value={filters.industry}
-                  onValueChange={(value) => setFilters({ ...filters, industry: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {industries.map((industry) => (
-                      <SelectItem key={industry} value={industry}>
-                        {industry}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">工作城市</label>
-                <Select
-                  value={filters.city}
-                  onValueChange={(value) => setFilters({ ...filters, city: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">企业类型</label>
-                <Select
-                  value={filters.companyType}
-                  onValueChange={(value) => setFilters({ ...filters, companyType: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companyTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">应届生友好度</label>
-                <Select
-                  value={filters.friendliness}
-                  onValueChange={(value) => setFilters({ ...filters, friendliness: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {friendlinessLevels.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+        {/* Stats */}
+        <div className="bg-blue-50 rounded-lg p-4 mb-6 flex items-center justify-between">
+          <div className="text-blue-800">
+            共找到 <span className="font-bold text-xl">{pagination.total.toLocaleString()}</span> 个岗位
           </div>
-        )}
-
-        {/* Results Summary */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
-            共找到 <span className="font-bold text-[#165DFF]">{filteredJobs.length}</span> 个相关岗位
-          </p>
-          {searchQuery && (
-            <p className="text-sm text-gray-500">
-              搜索关键词：<span className="font-medium">{searchQuery}</span>
-            </p>
-          )}
+          <div className="text-blue-600 text-sm">
+            第 {pagination.page} / {pagination.totalPages} 页
+          </div>
         </div>
 
         {/* Jobs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {filteredJobs.map((job) => (
-            <Card
-              key={job.id}
-              className="cursor-pointer hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
-              onClick={() => handleJobClick(job.name)}
-            >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-base font-bold text-[#165DFF] group-hover:text-[#165DFF]/80 transition-colors line-clamp-1">
-                    {job.name}
-                  </h3>
-                  {job.friendliness === '极度友好' && (
-                    <Badge className="bg-green-100 text-green-700 text-xs whitespace-nowrap rounded-full px-2 py-0.5 border border-green-200">
-                      应届友好
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="space-y-2 text-sm text-gray-600 mb-4">
-                  <p className="flex items-center gap-2">
-                    <span className="w-16 text-gray-500">薪资</span>
-                    <span className="font-bold text-[#FF7D00]">{job.salary}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-16 text-gray-500">城市</span>
-                    <span>{job.city}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <span className="w-16 text-gray-500">企业</span>
-                    <span className="truncate">{job.companyType}</span>
-                  </p>
-                </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="text-center py-20 text-gray-500">
+            <p className="text-lg">未找到符合条件的岗位</p>
+            <p className="text-sm mt-2">试试调整筛选条件</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {jobs.map((job) => (
+              <Card
+                key={job.id}
+                className="cursor-pointer hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
+                onClick={() => handleJobClick(job.name)}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-base font-bold text-[#165DFF] group-hover:text-[#165DFF]/80 transition-colors line-clamp-1">
+                      {job.name}
+                    </h3>
+                    {job.isFreshFriendly && (
+                      <Badge className="bg-green-100 text-green-700 text-xs whitespace-nowrap rounded-full px-2 py-0.5 border border-green-200">
+                        应届友好
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <p className="flex items-center gap-2">
+                      <span className="w-16 text-gray-500">薪资</span>
+                      <span className="font-bold text-[#FF7D00]">{job.salary}</span>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="w-16 text-gray-500">城市</span>
+                      <span>{job.city}</span>
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <span className="w-16 text-gray-500">企业</span>
+                      <span className="truncate">{job.companyType}</span>
+                    </p>
+                  </div>
 
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {job.tags.slice(0, 3).map((tag, idx) => (
-                    <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {job.skills.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
 
-                <div className="flex items-center gap-1 text-green-600 text-sm group-hover:text-[#165DFF] transition-colors">
-                  <Sparkles className="w-4 h-4" />
-                  <span className="group-hover:underline">AI深度分析</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredJobs.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-            <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">未找到匹配的岗位</h3>
-            <p className="text-gray-500 mb-4">试试调整筛选条件或搜索其他关键词</p>
-            <Button variant="outline" onClick={handleReset}>重置筛选</Button>
+                  <div className="flex items-center gap-1 text-green-600 text-sm group-hover:text-[#165DFF] transition-colors">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="group-hover:underline">AI深度分析</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
 
-        {/* AI Query Hint */}
-        <Card className="border-2 border-[#165DFF]/30 bg-gradient-to-r from-[#165DFF]/5 to-transparent">
-          <CardContent className="p-6 text-center">
-            <Sparkles className="w-8 h-8 text-[#165DFF] mx-auto mb-3" />
-            <h3 className="font-semibold text-gray-900 mb-2">没找到想要的岗位？</h3>
-            <p className="text-gray-600 mb-4">试试让AI帮你搜索，获取更精准的岗位推荐和薪资分析</p>
-            <Button 
-              className="bg-[#165DFF] hover:bg-[#165DFF]/90"
-              onClick={() => router.push('/assistant')}
+        {/* Pagination */}
+        {!loading && jobs.length > 0 && (
+          <div className="flex items-center justify-center gap-2 mt-8">
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={pagination.page <= 1}
+              className="border-2 hover:border-[#165DFF] transition-all"
             >
-              去问AI助手
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              上一页
             </Button>
-          </CardContent>
-        </Card>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                let pageNum;
+                if (pagination.totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (pagination.page <= 3) {
+                  pageNum = i + 1;
+                } else if (pagination.page >= pagination.totalPages - 2) {
+                  pageNum = pagination.totalPages - 4 + i;
+                } else {
+                  pageNum = pagination.page - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={pagination.page === pageNum ? "default" : "outline"}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-10 ${pagination.page === pageNum ? 'bg-[#165DFF]' : ''} border-2 hover:border-[#165DFF] transition-all`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages}
+              className="border-2 hover:border-[#165DFF] transition-all"
+            >
+              下一页
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
-  );
-}
-
-export default function JobsPageWrapper() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    }>
-      <JobsPage />
-    </Suspense>
   );
 }
