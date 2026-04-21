@@ -103,11 +103,6 @@ export default function HomePage() {
                 立即免费使用
               </Button>
             </Link>
-            <Link href="/membership">
-              <Button className="bg-[#FF7D00] hover:bg-[#e67000] text-white text-lg px-8 py-6 h-auto rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                开通会员 无限次使用
-              </Button>
-            </Link>
           </div>
           <p className="text-sm text-gray-500">
             已有10000+大学生使用职途星找到心仪工作 | 每月免费5次AI服务
@@ -188,9 +183,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-          <p className="text-center text-sm text-gray-500 mt-4">
-            每月免费5次AI服务，开通会员享无限次使用+专属特权
-          </p>
         </div>
       </section>
 

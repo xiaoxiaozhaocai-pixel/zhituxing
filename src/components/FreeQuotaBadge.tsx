@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function FreeQuotaBadge() {
   const [freeQuota] = useState(5);
   const [isVisible, setIsVisible] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +16,11 @@ export default function FreeQuotaBadge() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // 只在AI助手页面显示
+  if (!pathname.startsWith('/assistant')) {
+    return null;
+  }
 
   return (
     <Link
