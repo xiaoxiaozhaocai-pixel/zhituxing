@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, User, ChevronDown } from 'lucide-react';
+import { Menu, X, User, ChevronDown, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,10 +24,11 @@ const navItems = [
 ];
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [freeQuota] = useState(5);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +37,29 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // 获取未读通知数
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!isAuthenticated) return;
+      try {
+        const res = await fetch('/api/notifications', {
+          headers: { 'x-user-id': user!.id }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setUnreadNotifications(data.data.unread);
+        }
+      } catch (error) {
+        console.error('获取通知数失败:', error);
+      }
+    };
+
+    fetchUnreadCount();
+    // 每30秒刷新一次
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
 
   const handleLogout = async () => {
     await logout();
@@ -90,6 +114,21 @@ export default function Navbar() {
                 <span className="font-bold text-[#165DFF]">{freeQuota}/5</span>
               </Link>
 
+              {/* Notification Bell */}
+              {user && (
+                <Link
+                  href="/notifications"
+                  className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Bell className="w-5 h-5 text-gray-600" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
+                      {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                    </span>
+                  )}
+                </Link>
+              )}
+
               {/* Auth Buttons */}
               {user ? (
                 <DropdownMenu>
@@ -103,6 +142,19 @@ export default function Navbar() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/notifications" className="flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <Bell className="w-4 h-4" />
+                          我的消息
+                        </span>
+                        {unreadNotifications > 0 && (
+                          <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                            {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                          </span>
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/profile/membership">我的会员</Link>
                     </DropdownMenuItem>

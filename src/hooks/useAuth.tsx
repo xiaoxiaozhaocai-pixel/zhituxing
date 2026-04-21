@@ -22,6 +22,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   quota: QuotaInfo | null;
   refreshQuota: () => Promise<void>;
   login: (phone: string, password?: string, code?: string) => Promise<{ success: boolean; message: string }>;
@@ -167,7 +169,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, quota, refreshQuota, login, register, logout, sendCode }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      isAuthenticated: !!user,
+      isLoading: loading,
+      quota, 
+      refreshQuota, 
+      login, 
+      register, 
+      logout, 
+      sendCode 
+    }}>
       {children}
     </AuthContext.Provider>
   );

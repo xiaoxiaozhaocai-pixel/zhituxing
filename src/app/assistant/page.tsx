@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle } from 'lucide-react';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
@@ -21,19 +21,18 @@ interface BotConfig {
   description: string;
   icon: React.ReactNode;
   color: string;
-  bgColor: string;
+  gradient: string;
   quickQuestions: string[];
 }
 
-// 三个智能体配置
 const bots: BotConfig[] = [
   {
     id: 'jobs',
-    name: '全行业岗位百科',
-    description: '查询各行业岗位信息、薪资水平、发展前景',
-    icon: <Briefcase className="w-6 h-6" />,
+    name: '岗位百科',
+    description: '查询各行业岗位信息',
+    icon: <Briefcase className="w-5 h-5" />,
     color: 'text-[#165DFF]',
-    bgColor: 'bg-[#165DFF]',
+    gradient: 'from-blue-500 to-blue-600',
     quickQuestions: [
       'Java开发工程师前景如何？',
       '产品经理需要哪些技能？',
@@ -43,11 +42,11 @@ const bots: BotConfig[] = [
   },
   {
     id: 'interview',
-    name: '模拟面试官',
-    description: 'AI模拟真实面试场景，帮你备战秋招春招',
-    icon: <GraduationCap className="w-6 h-6" />,
+    name: '模拟面试',
+    description: 'AI模拟真实面试',
+    icon: <GraduationCap className="w-5 h-5" />,
     color: 'text-[#00B42A]',
-    bgColor: 'bg-[#00B42A]',
+    gradient: 'from-green-500 to-green-600',
     quickQuestions: [
       '帮我模拟面试HR岗位',
       '如何回答"你为什么离职"',
@@ -57,11 +56,11 @@ const bots: BotConfig[] = [
   },
   {
     id: 'career',
-    name: 'AI职业生涯规划',
-    description: '根据你的专业和兴趣，制定专属职业规划',
-    icon: <Sparkles className="w-6 h-6" />,
+    name: '职业规划',
+    description: '制定专属职业规划',
+    icon: <Sparkles className="w-5 h-5" />,
     color: 'text-[#722ED1]',
-    bgColor: 'bg-[#722ED1]',
+    gradient: 'from-purple-500 to-purple-600',
     quickQuestions: [
       '计算机专业职业规划',
       '考研还是找工作？',
@@ -71,33 +70,43 @@ const bots: BotConfig[] = [
   }
 ];
 
-// 创建独立的聊天窗口组件
-function ChatWindow({ 
-  bot, 
-  isActive, 
-  onActivate,
-  onQuotaExceeded 
-}: { 
-  bot: BotConfig; 
-  isActive: boolean;
-  onActivate: () => void;
-  onQuotaExceeded: () => void;
-}) {
+export default function AssistantPage() {
+  const [activeBot, setActiveBot] = useState('jobs');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const { user, quota, refreshQuota } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const currentBot = bots.find(b => b.id === activeBot) || bots[0];
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
+    scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // 初始化欢迎消息
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: `你好！我是${currentBot.name}，很高兴为你服务！
+
+你可以这样问我：
+• 了解某个岗位的发展前景和薪资水平
+• 查询某个行业的工作内容和技能要求
+• 获取求职建议和面试技巧
+
+有什么我可以帮到你的吗？`,
+        timestamp: new Date()
+      }]);
+    }
+  }, [activeBot]);
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -113,7 +122,6 @@ function ChatWindow({
     setIsLoading(true);
 
     try {
-      // 获取用户ID用于传递
       const meResponse = await fetch('/api/auth/me');
       const meData = await meResponse.json();
       const userId = meData.success ? meData.user.id : null;
@@ -131,17 +139,16 @@ function ChatWindow({
         headers,
         body: JSON.stringify({
           message: messageText,
-          botType: bot.id,
-          conversationId: localStorage.getItem(`conversationId_${bot.id}`) || undefined
+          botType: activeBot,
+          conversationId: localStorage.getItem(`conversationId_${activeBot}`) || undefined
         }),
       });
 
-      // 检查配额是否超限
       if (response.status === 403) {
         const data = await response.json();
         if (data.error === 'quota_exceeded') {
-          onQuotaExceeded();
-          // 移除刚添加的用户消息
+          refreshQuota();
+          setShowQuotaDialog(true);
           setMessages(prev => prev.slice(0, -1));
           setIsLoading(false);
           return;
@@ -176,7 +183,7 @@ function ChatWindow({
 
         const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
         if (conversationIdMatch) {
-          localStorage.setItem(`conversationId_${bot.id}`, conversationIdMatch[1]);
+          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
         }
       } else {
         throw new Error('Failed to get response');
@@ -184,12 +191,13 @@ function ChatWindow({
     } catch {
       const assistantMessage: Message = {
         role: 'assistant',
-        content: `${bot.name}正在升级中，请稍后再试...`,
+        content: `${currentBot.name}正在升级中，请稍后再试...`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, assistantMessage]);
     } finally {
       setIsLoading(false);
+      inputRef.current?.focus();
     }
   };
 
@@ -198,229 +206,210 @@ function ChatWindow({
   };
 
   const handleQuickQuestion = (question: string) => {
-    if (isActive) {
-      sendMessage(question);
-    }
+    sendMessage(question);
   };
 
-  // 点击Tab时聚焦输入框
-  const handleTabClick = () => {
-    onActivate();
+  const handleTabChange = (botId: string) => {
+    setActiveBot(botId);
+    setMessages([]);
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Tab头部 */}
-      <button
-        onClick={handleTabClick}
-        className={`w-full px-4 py-3 flex items-center gap-3 transition-all ${
-          isActive 
-            ? 'bg-white border-b-2' 
-            : 'bg-gray-50 hover:bg-gray-100'
-        }`}
-        style={{ 
-          borderBottomColor: isActive ? (bot.id === 'jobs' ? '#165DFF' : bot.id === 'interview' ? '#00B42A' : '#722ED1') : 'transparent',
-          borderBottomWidth: '2px'
-        }}
-      >
-        <div className={`w-10 h-10 ${bot.bgColor} rounded-lg flex items-center justify-center text-white`}>
-          {bot.icon}
-        </div>
-        <div className="flex-1 text-left">
-          <h3 className="font-semibold text-gray-900">{bot.name}</h3>
-          <p className="text-xs text-gray-500 line-clamp-1">{bot.description}</p>
-        </div>
-      </button>
-
-      {/* 聊天区域 */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${isActive ? 'block' : 'hidden'}`}>
-        {/* 快捷问题 */}
-        {messages.length === 0 && (
-          <div className="p-4 border-b bg-gray-50">
-            <p className="text-xs text-gray-500 mb-2">试试这些问题：</p>
-            <div className="flex flex-wrap gap-2">
-              {bot.quickQuestions.map((q, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleQuickQuestion(q)}
-                  className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:border-[#165DFF] hover:text-[#165DFF] transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white">
-          {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className={`w-16 h-16 ${bot.bgColor} rounded-full flex items-center justify-center mx-auto mb-3 text-white`}>
-                  {bot.icon}
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{bot.name}</h3>
-                <p className="text-sm text-gray-500">{bot.description}</p>
-              </div>
-            </div>
-          ) : (
-            messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' ? bot.bgColor : 'bg-gray-200'
-                  } text-white`}
-                >
-                  {msg.role === 'user' ? <UserIcon className="w-4 h-4" /> : bot.icon}
-                </div>
-                <div
-                  className={`max-w-[85%] rounded-lg p-3 ${
-                    msg.role === 'user'
-                      ? `${bot.bgColor} text-white`
-                      : 'bg-white border border-gray-200 text-gray-900'
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {msg.content}
-                    {index === messages.length - 1 && isLoading && msg.role === 'user' && (
-                      <span className="inline-block animate-pulse ml-1">▊</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* 输入框 */}
-        <div className="p-3 border-t bg-white">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              placeholder={`问${bot.name}...`}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
-              className="flex-1 text-sm"
-              disabled={isLoading}
-            />
-            <Button
-              size="sm"
-              onClick={handleSend}
-              disabled={isLoading || !inputValue.trim()}
-              className={`${bot.bgColor} hover:opacity-90 text-white`}
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function AssistantPage() {
-  const [activeBot, setActiveBot] = useState('jobs');
-  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
-  const { user, quota, refreshQuota } = useAuth();
-
-  // 配额用完时调用
-  const handleQuotaExceeded = () => {
-    refreshQuota();
-    setShowQuotaDialog(true);
-  };
-
-  // 获取显示的配额
   const displayQuota = quota?.is_member ? '无限' : (quota?.remaining ?? '加载中');
+  const quotaExhausted = !quota?.is_member && (quota?.remaining ?? 0) <= 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 页面标题 */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              AI职业助手
-            </h1>
-            <p className="text-gray-600 text-sm">
-              三大智能体协同服务，助你求职无忧
-            </p>
-          </div>
-          
-          {/* 配额显示 */}
-          {user ? (
-            <div className="flex items-center space-x-2 px-4 py-2 bg-white rounded-lg shadow-sm border">
+    <div className="min-h-screen bg-gray-50">
+      {/* 顶部额度提示条 */}
+      {user && (
+        <div className={`sticky top-0 z-10 px-4 py-3 border-b transition-colors ${
+          quotaExhausted 
+            ? 'bg-orange-50 border-orange-200' 
+            : 'bg-white border-gray-200'
+        }`}>
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
               {quota?.is_member ? (
                 <>
-                  <span className="text-gray-600 text-sm">会员专享</span>
-                  <span className="text-lg font-bold text-[#FF7D00]">无限次使用</span>
+                  <Crown className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="text-gray-700">
+                    <strong className="text-[#FF7D00]">会员专享</strong> 无限次AI服务
+                  </span>
                 </>
               ) : (
                 <>
-                  <span className="text-gray-600 text-sm">本月剩余：</span>
-                  <span className={`text-lg font-bold ${(quota?.remaining ?? 0) <= 0 ? 'text-red-500' : 'text-[#165DFF]'}`}>
+                  <span className="text-gray-600 text-sm">本月剩余免费次数：</span>
+                  <span className={`text-lg font-bold ${quotaExhausted ? 'text-red-500' : 'text-[#165DFF]'}`}>
                     {displayQuota}/5
                   </span>
                 </>
               )}
             </div>
-          ) : (
-            <Link
-              href="/auth"
-              className="flex items-center space-x-2 px-4 py-2 bg-[#165DFF] text-white rounded-lg hover:bg-[#165DFF]/90 transition-colors"
-            >
-              <span>登录 / 注册</span>
-            </Link>
-          )}
+            
+            {quotaExhausted ? (
+              <Link href="/membership">
+                <Button size="sm" className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
+                  开通会员 无限使用
+                </Button>
+              </Link>
+            ) : !quota?.is_member && (
+              <Link href="/membership">
+                <Button size="sm" variant="outline" className="text-[#FF7D00] border-[#FF7D00] hover:bg-orange-50">
+                  开通会员 无限使用
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* 页面标题 */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            AI职业助手
+          </h1>
+          <p className="text-gray-600 text-sm">
+            三大智能体协同服务，助你求职无忧
+          </p>
         </div>
 
-        {/* 三个智能体窗口 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {bots.map((bot) => (
-            <Card 
-              key={bot.id} 
-              className="border-2 overflow-hidden h-[600px] flex flex-col"
-              style={{
-                borderColor: activeBot === bot.id 
-                  ? (bot.id === 'jobs' ? '#165DFF' : bot.id === 'interview' ? '#00B42A' : '#722ED1')
-                  : '#e5e7eb'
-              }}
-            >
-              <ChatWindow 
-                bot={bot} 
-                isActive={activeBot === bot.id}
-                onActivate={() => setActiveBot(bot.id)}
-                onQuotaExceeded={handleQuotaExceeded}
-              />
-            </Card>
-          ))}
+        {/* 智能体Tab选择器 */}
+        <div className="bot-tabs mb-4">
+          <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
+            {bots.map((bot) => (
+              <button
+                key={bot.id}
+                onClick={() => handleTabChange(bot.id)}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-300 flex-shrink-0 ${
+                  activeBot === bot.id
+                    ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
+                    : 'text-gray-600 hover:bg-white hover:shadow'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  activeBot === bot.id ? 'bg-white/20' : 'bg-gray-200'
+                }`}>
+                  {bot.icon}
+                </div>
+                <div className="text-left">
+                  <div className={`font-semibold text-sm ${activeBot === bot.id ? 'text-white' : 'text-gray-900'}`}>
+                    {bot.name}
+                  </div>
+                  <div className={`text-xs ${activeBot === bot.id ? 'text-white/80' : 'text-gray-500'} hidden sm:block`}>
+                    {bot.description}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* 聊天区域 */}
+        <Card className="border-2 overflow-hidden flex flex-col" style={{
+          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
+        }}>
+          {/* 快捷问题 */}
+          {messages.length <= 1 && (
+            <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-white">
+              <p className="text-xs text-gray-500 mb-3">试试这些问题：</p>
+              <div className="flex flex-wrap gap-2">
+                {currentBot.quickQuestions.map((q, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleQuickQuestion(q)}
+                    className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 消息列表 */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white min-h-[400px]">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user' 
+                      ? `bg-gradient-to-br ${currentBot.gradient}` 
+                      : 'bg-white border-2 border-gray-200'
+                  }`}
+                >
+                  {msg.role === 'user' 
+                    ? <UserIcon className="w-5 h-5 text-white" /> 
+                    : <span className={`${currentBot.color}`}>{currentBot.icon}</span>
+                  }
+                </div>
+                <div
+                  className={`max-w-[85%] rounded-2xl p-4 ${
+                    msg.role === 'user'
+                      ? `bg-gradient-to-br ${currentBot.gradient} text-white rounded-tr-sm`
+                      : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
+                  }`}
+                >
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {msg.content}
+                    {index === messages.length - 1 && isLoading && (
+                      <span className="inline-block animate-pulse ml-1">▊</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* 输入框 */}
+          <div className="p-4 border-t bg-white">
+            <div className="flex gap-3">
+              <Input
+                ref={inputRef}
+                placeholder={`问${currentBot.name}...`}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+                className="flex-1 text-sm h-12"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={isLoading || !inputValue.trim()}
+                className={`bg-gradient-to-r ${currentBot.gradient} hover:opacity-90 text-white h-12 px-6`}
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400 mt-2 text-center">
+              AI 辅助建议，仅供参考
+            </p>
+          </div>
+        </Card>
 
         {/* 底部提示 */}
         <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#165DFF]"></div>
-            <span>全行业岗位百科 - 查询真实招聘数据</span>
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
+            <span>全行业岗位百科</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#00B42A]"></div>
-            <span>模拟面试官 - AI实战演练</span>
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600"></div>
+            <span>模拟面试官</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#722ED1]"></div>
-            <span>职业生涯规划 - 定制发展路径</span>
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
+            <span>职业生涯规划</span>
           </div>
         </div>
       </div>
@@ -439,7 +428,7 @@ export default function AssistantPage() {
                 <p className="font-medium text-gray-900">解锁更多次数：</p>
                 <div className="flex flex-col gap-2">
                   <Link href="/membership" onClick={() => setShowQuotaDialog(false)}>
-                    <Button className="w-full bg-[#FF7D00] hover:bg-[#e67000] text-white">
+                    <Button className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
                       开通会员 - 无限次使用
                     </Button>
                   </Link>

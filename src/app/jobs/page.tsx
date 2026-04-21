@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, X, Sparkles } from 'lucide-react';
+import { Search, Filter, X, Sparkles, Loader2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -69,7 +69,7 @@ const mockJobs = [
   { id: 24, name: '商务拓展', industry: '互联网/电商', city: '北京', companyType: '外资企业', salary: '15-28K', friendliness: '一般', tags: ['商务合作', '渠道拓展', '客户关系'] },
 ];
 
-export default function JobsPage() {
+function JobsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -408,5 +408,17 @@ export default function JobsPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function JobsPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    }>
+      <JobsPage />
+    </Suspense>
   );
 }

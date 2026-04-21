@@ -8,13 +8,14 @@ export const runtime = 'edge';
 function selectBotId(message: string, botType?: string): string {
   const jobsBotId = process.env.COZE_BOT_ID_JOBS || '7629654356933050409';
   const interviewBotId = process.env.COZE_BOT_ID_INTERVIEW || '7622676506535788607';
+  const decisionBotId = process.env.COZE_BOT_ID_DECISION || jobsBotId; // 考研就业决策
   
   // 如果指定了bot类型，直接使用
   if (botType === 'jobs') return jobsBotId;
   if (botType === 'interview') return interviewBotId;
+  if (botType === 'decision') return decisionBotId;
   if (botType === 'career') {
-    // 职业生涯规划智能体（预留，待配置）
-    return jobsBotId; // 暂时回退到岗位百科
+    return decisionBotId; // 职业生涯规划使用决策智能体
   }
   
   const messageLower = message.toLowerCase();
@@ -29,15 +30,14 @@ function selectBotId(message: string, botType?: string): string {
     return interviewBotId;
   }
   
-  // 职业规划相关 -> 职业生涯规划（预留）
+  // 考研就业决策相关 -> 决策智能体
   if (
-    messageLower.includes('职业规划') ||
     messageLower.includes('考研') ||
-    messageLower.includes('就业') ||
-    messageLower.includes('适合什么')
+    messageLower.includes('就业选择') ||
+    messageLower.includes('考研还是就业') ||
+    messageLower.includes('本科就业')
   ) {
-    // 暂时回退到岗位百科，待职业生涯规划智能体接入
-    return jobsBotId;
+    return decisionBotId;
   }
   
   // 默认使用岗位百科智能体
@@ -144,9 +144,10 @@ export async function POST(request: NextRequest) {
     let quotaInfo = { remaining: -1, isMember: false };
     if (userId) {
       const member = await getUserQuota(userId);
+      const isExpired = member?.member_expire_time && new Date(member.member_expire_time) > new Date();
       quotaInfo = {
         remaining: member?.monthly_quota ?? 0,
-        isMember: member?.member_type !== 'free' && member?.member_expire_time && new Date(member.member_expire_time) > new Date()
+        isMember: !!(member?.member_type !== 'free' && isExpired)
       };
     }
 

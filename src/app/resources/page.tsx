@@ -1,76 +1,131 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, FileText, BookOpen, GraduationCap, Briefcase } from 'lucide-react';
+import { Calendar, FileText, BookOpen, GraduationCap, Briefcase, Loader2, Eye } from 'lucide-react';
 
 const categories = [
   { id: 'all', name: '全部', icon: <BookOpen className="w-4 h-4" /> },
-  { id: 'resume', name: '简历模板', icon: <FileText className="w-4 h-4" /> },
-  { id: 'interview', name: '面试题库', icon: <GraduationCap className="w-4 h-4" /> },
-  { id: 'report', name: '行业报告', icon: <Briefcase className="w-4 h-4" /> },
-  { id: 'tips', name: '求职技巧', icon: <BookOpen className="w-4 h-4" /> },
-  { id: 'campus', name: '校招信息', icon: <GraduationCap className="w-4 h-4" /> },
+  { id: 'resume', name: '简历指南', icon: <FileText className="w-4 h-4" /> },
+  { id: 'interview', name: '面试技巧', icon: <GraduationCap className="w-4 h-4" /> },
+  { id: 'career', name: '职业规划', icon: <Briefcase className="w-4 h-4" /> },
+  { id: 'industry', name: '行业洞察', icon: <Briefcase className="w-4 h-4" /> },
+  { id: 'tips', name: '求职干货', icon: <BookOpen className="w-4 h-4" /> },
 ];
 
-const resources = [
-  {
-    id: 1,
-    title: '互联网行业简历模板合集',
-    description: '包含前端、后端、产品、运营等各岗位简历模板',
-    category: 'resume',
-    date: '2026-01-15',
-    isFree: true
-  },
-  {
-    id: 2,
-    title: 'HR面试100问及参考答案',
-    description: '常见HR面试问题及专业回答技巧',
-    category: 'interview',
-    date: '2026-01-12',
-    isFree: true
-  },
-  {
-    id: 3,
-    title: '2026年互联网行业薪资报告',
-    description: '全行业薪资水平及岗位需求分析',
-    category: 'report',
-    date: '2026-01-10',
-    isFree: false
-  },
-  {
-    id: 4,
-    title: '无经验如何写好第一份简历',
-    description: '应届生和实习生简历撰写技巧',
-    category: 'tips',
-    date: '2026-01-08',
-    isFree: true
-  },
-  {
-    id: 5,
-    title: '2026春季校园招聘信息汇总',
-    description: '各大企业校招时间线及投递链接',
-    category: 'campus',
-    date: '2026-01-05',
-    isFree: true
-  },
-  {
-    id: 6,
-    title: '技术岗面试真题合集',
-    description: 'Java、Python、前端等技术岗位面试题',
-    category: 'interview',
-    date: '2026-01-03',
-    isFree: false
-  },
-];
+interface Article {
+  id: string;
+  title: string;
+  summary: string | null;
+  coverImage: string | null;
+  category: string;
+  tags: string[];
+  views: number;
+  isFeatured: boolean;
+  author: string | null;
+  createdAt: string;
+}
 
 export default function ResourcesPage() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchArticles();
+  }, [activeCategory]);
+
+  const fetchArticles = async () => {
+    setLoading(true);
+    try {
+      const url = activeCategory === 'all'
+        ? '/api/articles?limit=50'
+        : `/api/articles?category=${activeCategory}&limit=50`;
+      
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.success) {
+        setArticles(data.data.articles);
+      }
+    } catch (error) {
+      console.error('获取文章失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('zh-CN', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // 默认展示数据（当API无数据时）
+  const defaultResources = [
+    {
+      id: 'default-1',
+      title: '互联网行业简历模板合集',
+      summary: '包含前端、后端、产品、运营等各岗位简历模板',
+      category: 'resume',
+      createdAt: '2026-01-15',
+      views: 1256,
+      isFeatured: false
+    },
+    {
+      id: 'default-2',
+      title: 'HR面试100问及参考答案',
+      summary: '常见HR面试问题及专业回答技巧',
+      category: 'interview',
+      createdAt: '2026-01-12',
+      views: 2341,
+      isFeatured: true
+    },
+    {
+      id: 'default-3',
+      title: '2026年互联网行业薪资报告',
+      summary: '全行业薪资水平及岗位需求分析',
+      category: 'industry',
+      createdAt: '2026-01-10',
+      views: 1876,
+      isFeatured: true
+    },
+    {
+      id: 'default-4',
+      title: '无经验如何写好第一份简历',
+      summary: '应届生和实习生简历撰写技巧',
+      category: 'resume',
+      createdAt: '2026-01-08',
+      views: 987,
+      isFeatured: false
+    },
+    {
+      id: 'default-5',
+      title: '技术岗面试真题合集',
+      summary: 'Java、Python、前端等技术岗位面试题',
+      category: 'interview',
+      createdAt: '2026-01-03',
+      views: 1543,
+      isFeatured: false
+    },
+    {
+      id: 'default-6',
+      title: '大学生职业规划指南',
+      summary: '从大一到大四，如何规划你的职业生涯',
+      category: 'career',
+      createdAt: '2026-01-01',
+      views: 2134,
+      isFeatured: true
+    },
+  ];
+
+  const displayResources = articles.length > 0 ? articles : defaultResources;
   const filteredResources = activeCategory === 'all'
-    ? resources
-    : resources.filter(r => r.category === activeCategory);
+    ? displayResources
+    : displayResources.filter((r: Article | typeof defaultResources[0]) => r.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -78,7 +133,7 @@ export default function ResourcesPage() {
         {/* Page Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            📚 求职干货库
+            求职干货库
           </h1>
           <p className="text-lg text-gray-600">
             免费提供海量求职资料，助你顺利拿到offer
@@ -104,46 +159,61 @@ export default function ResourcesPage() {
         </div>
 
         {/* Resources List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredResources.map((resource) => (
-            <Card
-              key={resource.id}
-              className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">
-                      {resource.title}
-                    </CardTitle>
-                    <CardDescription className="mt-2">{resource.description}</CardDescription>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredResources.map((resource) => (
+              <Card
+                key={resource.id}
+                className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2">
+                        {resource.title}
+                      </CardTitle>
+                      <CardDescription className="mt-2 line-clamp-2">
+                        {resource.summary}
+                      </CardDescription>
+                    </div>
+                    {'isFeatured' in resource && resource.isFeatured && (
+                      <span className="bg-orange-500 text-white text-xs font-medium px-2 py-1 rounded ml-2">
+                        精选
+                      </span>
+                    )}
                   </div>
-                  {!resource.isFree && (
-                    <span className="bg-[#165DFF] text-white text-xs font-medium px-2 py-1 rounded">
-                      会员专享
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(resource.createdAt)}
                     </span>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {resource.date}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  className={resource.isFree ? 'w-full' : 'w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white'}
-                >
-                  {resource.isFree ? '查看详情' : '会员查看'}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      {resource.views}
+                    </span>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Link href={`/resources/${resource.id}`} className="w-full">
+                    <Button className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white">
+                      查看详情
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
 
-        {filteredResources.length === 0 && (
+        {filteredResources.length === 0 && !loading && (
           <div className="text-center py-12">
+            <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500">暂无相关资源</p>
           </div>
         )}
