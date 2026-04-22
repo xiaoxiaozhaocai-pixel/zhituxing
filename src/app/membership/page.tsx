@@ -4,130 +4,68 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Zap, FileDown, BookOpen, Headphones, Loader2, Users, BarChart3, MessageCircle, Crown, Star } from 'lucide-react';
+import { Check, Zap, FileDown, Headphones, Loader2, Users, BarChart3, MessageCircle, Crown, Star, Gift, Download, FileText, Users2, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
 
-// 更新后的会员权益（按新权限策略）
+// 会员权益（一次性解锁全部）
 const membershipBenefits = [
-  {
-    icon: <Zap className="w-8 h-8 text-[#722ED1]" />,
-    title: '每月自动职业规划复盘',
-    description: '根据当月面试、技能学习数据，自动更新你的职业规划报告'
-  },
   {
     icon: <MessageCircle className="w-8 h-8 text-[#FF7D00]" />,
     title: '无限次AI模拟面试',
-    description: '无限次全流程模拟（HR/业务/高管），逐题详细点评+改进建议'
+    description: 'HR初面+业务面试+高管终面，无限次全流程模拟，逐题详细点评'
   },
   {
     icon: <BarChart3 className="w-8 h-8 text-[#165DFF]" />,
-    title: '完整能力测评报告',
-    description: '查看完整版测评报告，个性化技能提升方案，同专业能力排名对比'
+    title: '完整6维能力测评',
+    description: '完整版测评报告，与同专业TOP10%差距对比，专属提升计划'
   },
   {
     icon: <Star className="w-8 h-8 text-[#722ED1]" />,
-    title: '胜任力评估服务',
-    description: '无限次胜任力评估，可视化雷达图，能力短板分析与提升建议'
+    title: '胜任力评估',
+    description: '可视化能力雷达图，短板分析与针对性提升建议'
+  },
+  {
+    icon: <Zap className="w-8 h-8 text-[#722ED1]" />,
+    title: '每月自动职业规划复盘',
+    description: '根据当月数据自动更新规划，实时跟踪求职进度'
   },
   {
     icon: <FileDown className="w-8 h-8 text-[#165DFF]" />,
     title: '完整版考研就业决策',
-    description: '完整版院校/专业推荐，个性化备考计划，历年分数线分析'
+    description: '院校/专业推荐，个性化备考计划，历年分数线分析'
+  },
+  {
+    icon: <Gift className="w-8 h-8 text-[#FF7D00]" />,
+    title: '求职大礼包',
+    description: '学长上岸简历模板 + 校招内推码 + 行测/专业笔试真题'
   },
   {
     icon: <Headphones className="w-8 h-8 text-[#FF7D00]" />,
-    title: '增值服务8折优惠',
-    description: '1v1简历精修、模拟面试复盘、职业规划定制报告全部8折'
-  },
-  {
-    icon: <Users className="w-8 h-8 text-[#165DFF]" />,
-    title: '会员专属社群',
-    description: '加入专属社群，获得每周直播答疑和求职指导'
+    title: '增值服务8折',
+    description: '1v1简历精修、面试复盘、职业规划定制报告全部8折'
   }
 ];
 
-// 新的官方定价体系
-const membershipPlans = [
+// 求职大礼包内容
+const giftPackage = [
   {
-    id: 'trial',
-    title: '体验会员',
-    price: '¥9.9',
-    period: '/30天',
-    features: [
-      '每月自动职业规划复盘',
-      '无限次AI模拟面试',
-      '完整能力测评报告',
-      '胜任力评估服务'
-    ],
-    buttonText: '立即开通',
-    isRecommended: false,
-    buttonColor: 'bg-gray-600 hover:bg-gray-700',
-    badge: null
+    icon: <FileText className="w-5 h-5" />,
+    title: '学长学姐上岸简历',
+    description: '各专业真实脱敏简历模板',
+    type: 'word模板'
   },
   {
-    id: 'semester',
-    title: '学期会员',
-    price: '¥29.9',
-    period: '/6个月',
-    badge: '推荐',
-    features: [
-      '每月自动职业规划复盘',
-      '无限次AI模拟面试',
-      '完整能力测评报告',
-      '胜任力评估服务',
-      '完整版考研就业决策',
-      '增值服务8折优惠'
-    ],
-    buttonText: '立即开通',
-    isRecommended: true,
-    buttonColor: 'bg-[#FF7D00] hover:bg-[#e67000]'
+    icon: <Users2 className="w-5 h-5" />,
+    title: '校招内推码',
+    description: '广西本地国企/大厂内推通道',
+    type: '持续更新'
   },
   {
-    id: 'yearly',
-    title: '年度会员',
-    price: '¥49.9',
-    period: '/12个月',
-    badge: '最划算',
-    features: [
-      '每月自动职业规划复盘',
-      '无限次AI模拟面试',
-      '完整能力测评报告',
-      '胜任力评估服务',
-      '完整版考研就业决策',
-      '增值服务8折优惠',
-      '会员专属社群'
-    ],
-    buttonText: '立即开通',
-    isRecommended: false,
-    buttonColor: 'bg-[#165DFF] hover:bg-[#165DFF]/90'
-  }
-];
-
-// 增值付费服务
-const valueAddedServices = [
-  {
-    id: 'resume-refine',
-    title: '1v1简历精修',
-    price: '¥39.9',
-    unit: '/次',
-    description: '专业HR一对一指导，量身打造高质量简历',
-    icon: <FileDown className="w-6 h-6" />
-  },
-  {
-    id: 'interview-review',
-    title: '1v1模拟面试复盘',
-    price: '¥59.9',
-    unit: '/次',
-    description: '专业导师深度复盘，快速提升面试技巧',
-    icon: <MessageCircle className="w-6 h-6" />
-  },
-  {
-    id: 'career-report',
-    title: '专属职业规划定制报告',
-    price: '¥99.9',
-    unit: '/份',
-    description: '资深规划师定制，生成专属职业发展路线图',
-    icon: <Crown className="w-6 h-6" />
+    icon: <BookOpen className="w-5 h-5" />,
+    title: '笔试真题题库',
+    description: '行测+专业笔试历年真题',
+    type: 'PDF资料'
   }
 ];
 
@@ -136,7 +74,6 @@ export default function MembershipPage() {
   const { isAuthenticated } = useAuth();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>('wechat');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubscribe = (planId: string) => {
@@ -149,238 +86,343 @@ export default function MembershipPage() {
   };
 
   const handlePayment = async () => {
-    if (!selectedPlan) return;
-
     setIsProcessing(true);
-    try {
-      const res = await fetch('/api/payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          planId: selectedPlan,
-          paymentMethod
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        router.push(`/payment/${data.data.orderNo}`);
-      } else {
-        alert(data.error || '创建订单失败');
-      }
-    } catch (error) {
-      console.error('支付失败:', error);
-      alert('支付失败，请稍后重试');
-    } finally {
+    // TODO: 接入真实支付
+    setTimeout(() => {
       setIsProcessing(false);
-    }
+      setShowPaymentModal(false);
+      alert('支付功能暂未开放，请联系客服开通');
+    }, 1500);
   };
 
-  const selectedPlanData = membershipPlans.find(p => p.id === selectedPlan);
-
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-            💎 职途星会员中心
-          </h1>
-          <p className="text-lg text-gray-600">
-            开通会员，解锁无限AI服务+专属特权
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] text-white py-12">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">9.9元，解锁全部求职神器</h1>
+          <p className="text-xl text-orange-100 mb-6">
+            一杯奶茶钱，搞定求职全流程
           </p>
-        </div>
-
-        {/* Membership Benefits */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">会员专属权益</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {membershipBenefits.map((benefit, index) => (
-              <Card key={index} className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                <CardContent className="pt-6 text-center">
-                  <div className="mb-4 flex justify-center">{benefit.icon}</div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{benefit.title}</h3>
-                  <p className="text-gray-600 text-sm">{benefit.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm">
+            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+            首1000名用户可享 9.9元 终身会员
           </div>
-        </div>
-
-        {/* Membership Plans */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">选择适合您的套餐</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {membershipPlans.map((plan) => (
-              <Card
-                key={plan.id}
-                className={`border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 ${
-                  plan.isRecommended
-                    ? 'border-[#FF7D00] relative'
-                    : 'border-gray-100'
-                }`}
-              >
-                {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                    <span className="bg-[#FF7D00] text-white text-sm font-medium px-4 py-1 rounded-full shadow-lg">
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-                <CardHeader className="text-center pt-8">
-                  <CardTitle className="text-xl font-bold text-gray-900">{plan.title}</CardTitle>
-                  <CardDescription className="mt-4">
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                      <span className="text-gray-500 ml-1">{plan.period}</span>
-                    </div>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-gray-700">
-                        <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className={`w-full text-white py-6 h-auto text-lg ${plan.buttonColor}`}
-                    onClick={() => handleSubscribe(plan.id)}
-                  >
-                    {plan.buttonText}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          
-          {/* 定价说明文案 */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-500 text-sm bg-gray-100 inline-block px-4 py-2 rounded-lg">
-              💡 核心学期会员定价仅为竞品同类服务的30%，远低于大学生月度平均可支配收入，大幅降低用户付费决策门槛
-            </p>
-          </div>
-        </div>
-
-        {/* Value-Added Services */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">增值付费服务</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {valueAddedServices.map((service) => (
-              <Card
-                key={service.id}
-                className="border-2 border-gray-100 hover:border-[#165DFF]/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-              >
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-[#165DFF]/10 rounded-xl flex items-center justify-center text-[#165DFF]">
-                      {service.icon}
-                    </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-[#FF7D00]">{service.price}</span>
-                      <span className="text-gray-500 text-sm">{service.unit}</span>
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{service.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{service.description}</p>
-                  <Button
-                    className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white"
-                    onClick={() => handleSubscribe(service.id)}
-                  >
-                    立即预约
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-500 text-sm">
-            💡 会员开通后7天内如未使用任何会员特权，可申请全额退款
-          </p>
         </div>
       </div>
 
-      {/* Payment Modal */}
+      {/* 对比区 */}
+      <div className="max-w-6xl mx-auto px-4 -mt-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <div className="grid md:grid-cols-2">
+            {/* 免费用户 */}
+            <div className="p-8 border-r border-gray-100">
+              <div className="text-center mb-6">
+                <div className="inline-block px-4 py-1 bg-gray-100 text-gray-600 rounded-full text-sm mb-2">
+                  免费用户
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">基础功能</h2>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span>AI职业规划（无限次完整版）</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span>岗位百科（无限次查询）</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span>求职干货（全部免费下）</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-600">
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span>AI模拟面试（3次免费机会）</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-400">
+                  <span className="w-5 h-5 flex items-center justify-center text-gray-400">-</span>
+                  <span>完整能力测评报告</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-400">
+                  <span className="w-5 h-5 flex items-center justify-center text-gray-400">-</span>
+                  <span>胜任力评估</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-400">
+                  <span className="w-5 h-5 flex items-center justify-center text-gray-400">-</span>
+                  <span>每月自动职业规划复盘</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* 会员 */}
+            <div className="p-8 bg-gradient-to-br from-orange-50 to-yellow-50 relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#FF7D00] text-white text-sm rounded-full">
+                开通会员
+              </div>
+              <div className="text-center mb-6 pt-2">
+                <div className="text-2xl font-bold text-[#FF7D00]">9.9元 / 月</div>
+                <div className="text-sm text-gray-500 mt-1">一次付费，全部解锁</div>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">AI职业规划（无限次完整版）</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">AI模拟面试（无限次）</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">完整6维能力测评报告</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">胜任力评估 + 雷达图</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">完整版考研就业决策</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">每月自动职业规划复盘</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-[#FF7D00]" />
+                  <span className="font-medium">求职大礼包（简历+内推+真题）</span>
+                </li>
+              </ul>
+              <Button 
+                onClick={() => handleSubscribe('monthly')}
+                className="w-full mt-6 bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white h-12 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+              >
+                立即开通 9.9元会员
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 会员定价方案 */}
+      <div className="max-w-6xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">选择你的会员类型</h2>
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* 月度会员 */}
+          <Card className="border-2 border-[#FF7D00] relative">
+            <div className="absolute -top-3 left-4 px-3 py-1 bg-[#FF7D00] text-white text-sm rounded-full">
+              推荐
+            </div>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">月度会员</CardTitle>
+              <div className="mt-2">
+                <span className="text-4xl font-bold text-[#FF7D00]">9.9</span>
+                <span className="text-gray-500">元 / 月</span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-green-500" />
+                解锁全部付费功能
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-green-500" />
+                无限次AI模拟面试
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-green-500" />
+                完整能力测评报告
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-green-500" />
+                胜任力评估雷达图
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={() => handleSubscribe('monthly')}
+                className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white h-11"
+              >
+                立即开通
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* 终身会员（首1000名） */}
+          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+            <div className="absolute -top-3 left-4 px-3 py-1 bg-purple-600 text-white text-sm rounded-full">
+              首1000名
+            </div>
+            <CardHeader className="text-center pb-2">
+              <CardTitle className="text-xl">终身会员</CardTitle>
+              <div className="mt-2">
+                <span className="text-4xl font-bold text-purple-600">9.9</span>
+                <span className="text-gray-500">元 一次性</span>
+              </div>
+              <div className="text-xs text-purple-600 mt-1">限前1000名，售完恢复原价</div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-purple-500" />
+                <span className="font-medium">永久解锁全部功能</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-purple-500" />
+                未来所有新功能免费
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-purple-500" />
+                专属终身会员标识
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-purple-500" />
+                优先客服通道
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={() => handleSubscribe('lifetime')}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white h-11"
+              >
+                抢前1000名
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+
+      {/* 求职大礼包 */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <Gift className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">求职大礼包</h3>
+              <p className="text-sm text-gray-500">开通会员即可下载</p>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {giftPackage.map((item, index) => (
+              <div key={index} className="bg-white rounded-xl p-4 border border-green-100">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">{item.title}</div>
+                    <div className="text-xs text-gray-500">{item.type}</div>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 会员权益详情 */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">会员专属权益</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {membershipBenefits.map((benefit, index) => (
+            <Card key={index} className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">{benefit.icon}</div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-1">{benefit.title}</h3>
+                    <p className="text-sm text-gray-600">{benefit.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* 底部CTA */}
+      <div className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] py-12">
+        <div className="max-w-4xl mx-auto px-4 text-center text-white">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            一杯奶茶钱，搞定求职全流程
+          </h2>
+          <p className="text-lg text-orange-100 mb-6">
+            AI职业规划永久免费，9.9元解锁全部求职神器
+          </p>
+          <Button 
+            onClick={() => {
+              if (!isAuthenticated) {
+                router.push('/auth');
+              } else {
+                handleSubscribe('monthly');
+              }
+            }}
+            className="bg-white text-[#FF7D00] hover:bg-orange-50 h-14 px-12 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+          >
+            立即开通 9.9元会员
+          </Button>
+        </div>
+      </div>
+
+      {/* 支付弹窗 */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-center">支付方式</CardTitle>
-              <CardDescription className="text-center">
-                选择{selectedPlanData?.title} - {selectedPlanData?.price}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <button
-                  className={`flex-1 py-4 rounded-lg border-2 transition-all ${
-                    paymentMethod === 'wechat'
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setPaymentMethod('wechat')}
-                >
-                  <div className="text-center">
-                    <div className="w-10 h-10 bg-green-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                      <span className="text-white text-xl">W</span>
-                    </div>
-                    <span className="text-sm font-medium">微信支付</span>
-                  </div>
-                </button>
-                <button
-                  className={`flex-1 py-4 rounded-lg border-2 transition-all ${
-                    paymentMethod === 'alipay'
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setPaymentMethod('alipay')}
-                >
-                  <div className="text-center">
-                    <div className="w-10 h-10 bg-blue-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                      <span className="text-white text-xl">A</span>
-                    </div>
-                    <span className="text-sm font-medium">支付宝</span>
-                  </div>
-                </button>
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="text-center mb-6">
+              <div className="text-3xl font-bold text-[#FF7D00] mb-2">
+                {selectedPlan === 'lifetime' ? '9.9元' : '9.9元 / 月'}
               </div>
-              <Button
-                className={`w-full py-6 text-lg ${
-                  paymentMethod === 'wechat'
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                } text-white`}
+              <p className="text-gray-600">
+                {selectedPlan === 'lifetime' 
+                  ? '终身会员，永久解锁全部功能' 
+                  : '月度会员，解锁全部付费功能'}
+              </p>
+            </div>
+            <div className="space-y-3 mb-6">
+              <Button 
+                variant="outline" 
+                className="w-full h-12 justify-start pl-4"
+                onClick={() => {}}
+              >
+                <span className="w-8 h-8 bg-green-500 rounded text-white text-sm flex items-center justify-center mr-3">微</span>
+                微信支付
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full h-12 justify-start pl-4"
+                onClick={() => {}}
+              >
+                <span className="w-8 h-8 bg-blue-500 rounded text-white text-sm flex items-center justify-center mr-3">支</span>
+                支付宝
+              </Button>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => setShowPaymentModal(false)}
+              >
+                取消
+              </Button>
+              <Button 
+                className="flex-1 bg-[#FF7D00] hover:bg-[#FF7D00]/90"
                 onClick={handlePayment}
                 disabled={isProcessing}
               >
                 {isProcessing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    正在创建订单...
-                  </>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>确认支付 {selectedPlanData?.price}</>
+                  '确认支付'
                 )}
               </Button>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => setShowPaymentModal(false)}
-                disabled={isProcessing}
-              >
-                取消
-              </Button>
-            </CardFooter>
-          </Card>
+            </div>
+            <p className="text-center text-xs text-gray-400 mt-4">
+              支付即表示同意《会员服务协议》
+            </p>
+          </div>
         </div>
       )}
     </div>

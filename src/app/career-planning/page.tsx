@@ -20,7 +20,8 @@ import {
   BookOpen,
   Target,
   TrendingUp,
-  ListChecks
+  ListChecks,
+  BarChart3
 } from 'lucide-react';
 
 // 年级选项
@@ -101,7 +102,7 @@ function isJsonFormat(str: string): boolean {
 
 export default function CareerPlanningPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, quota, loading: authLoading } = useAuth();
   
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -383,6 +384,35 @@ export default function CareerPlanningPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* 付费钩子 - 仅非会员显示 */}
+          {quota && !quota.is_member && !generating && generatedContent && (
+            <Card className="mt-6 border-2 border-[#FF7D00] bg-gradient-to-r from-orange-50 to-yellow-50">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-[#FF7D00] rounded-xl flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 mb-1">
+                        开通会员，解锁更多专属权益
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        完整6维能力雷达图 · 无限次AI模拟面试 · 专属提升计划
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/membership">
+                    <Button className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white whitespace-nowrap">
+                      9.9元开通会员
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* 操作按钮 */}
           {!generating && generatedContent && (

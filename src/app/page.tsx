@@ -231,7 +231,11 @@ export default function HomePage() {
               <AnimatedNumber target={15680} />+ 大学生已找到心仪工作
             </span>
             <span className="text-gray-300">|</span>
-            <span>每月免费5次AI服务</span>
+            <span className="text-green-600 font-medium">AI职业规划永久免费</span>
+            <span className="text-gray-300">|</span>
+            <Link href="/membership" className="text-[#FF7D00] hover:underline">
+              9.9元解锁全部功能
+            </Link>
           </p>
           <p className="text-sm text-green-600 font-medium">
             <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium border border-green-200">
