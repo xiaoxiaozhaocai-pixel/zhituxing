@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -186,14 +186,36 @@ export default function AssistantPage() {
   const [hasProfile, setHasProfile] = useState(false);
   const { user, quota, refreshQuota } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const hasInitializedRef = useRef(false);
 
   const currentBot = bots.find(b => b.id === activeBot) || bots[0];
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  // 滚动到聊天区域顶部，让开场白可见
+  const scrollToTop = useCallback(() => {
+    chatContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  // 处理URL参数初始化
+  useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+    
+    const botParam = searchParams.get('bot');
+    if (botParam && bots.some(b => b.id === botParam)) {
+      setActiveBot(botParam);
+      setTimeout(() => {
+        scrollToTop();
+      }, 300);
+    }
+  }, [searchParams, scrollToTop]);
 
   useEffect(() => {
     scrollToBottom();
@@ -379,6 +401,7 @@ export default function AssistantPage() {
     setActiveBot(botId);
     setMessages([]);
     setTimeout(() => {
+      scrollToTop();
       inputRef.current?.focus();
     }, 100);
   };
@@ -483,7 +506,7 @@ export default function AssistantPage() {
           )}
 
           {/* 消息列表 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white min-h-[400px]">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white min-h-[400px]">
             {messages.map((msg, index) => (
               <div
                 key={index}
