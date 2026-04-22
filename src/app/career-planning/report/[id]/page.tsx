@@ -417,6 +417,40 @@ export default function ReportPage() {
           </Card>
         </div>
 
+        {/* 会员转化引导 - 仅非会员可见 */}
+        <Card className="mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 border-0 shadow-xl">
+          <CardContent className="p-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-white mb-2">📊 完整能力匹配雷达图已生成</h3>
+              <p className="text-white/90 text-sm mb-4">开通 9.9元终身会员 即可解锁全部内容：</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <div className="flex items-center gap-2 text-white/90 text-sm">
+                <span className="text-green-300">✓</span> 6项核心能力完整分析
+              </div>
+              <div className="flex items-center gap-2 text-white/90 text-sm">
+                <span className="text-green-300">✓</span> 与TOP10%学长学姐能力对比
+              </div>
+              <div className="flex items-center gap-2 text-white/90 text-sm">
+                <span className="text-green-300">✓</span> 专属技能提升计划+学习资源
+              </div>
+              <div className="flex items-center gap-2 text-white/90 text-sm">
+                <span className="text-green-300">✓</span> 无限次全流程AI模拟面试
+              </div>
+              <div className="flex items-center gap-2 text-white/90 text-sm sm:col-span-2">
+                <span className="text-green-300">✓</span> 每月自动生成职业规划动态复盘报告
+              </div>
+            </div>
+            <div className="text-center">
+              <Link href="/membership">
+                <Button className="bg-white text-purple-600 hover:bg-gray-100 font-bold text-lg px-8">
+                  立即开通9.9元终身会员
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 行动按钮区 - 固定底部 */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-4 z-10">
           <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-3">

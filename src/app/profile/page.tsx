@@ -264,6 +264,30 @@ export default function ProfilePage() {
           ))}
         </div>
 
+        {/* 会员入口 - 仅非会员用户可见 */}
+        {!quota?.is_member && (
+          <Card className="mt-8 bg-gradient-to-r from-[#FF7D00] to-[#FF9A00] border-0 shadow-xl overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                    <Crown className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">9.9元抢终身会员</h3>
+                    <p className="text-white/90 text-sm">解锁全部求职工具，永久有效</p>
+                  </div>
+                </div>
+                <Link href="/membership">
+                  <Button className="bg-white text-[#FF7D00] hover:bg-gray-100 font-bold shadow-lg whitespace-nowrap">
+                    立即抢购
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Logout Button */}
         <div className="mt-8">
           <Button
