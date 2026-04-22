@@ -47,8 +47,8 @@ const features = [
     title: 'AI职业规划',
     description: '30秒生成专属大学四年职业规划，精准匹配专业、年级和兴趣',
     badge: '永久免费',
-    badgeColor: 'bg-green-100 text-green-700',
-    buttonText: '立即生成',
+    badgeColor: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
+    buttonText: '立即免费生成',
     buttonLink: '/career-planning',
     gradient: 'from-purple-500 to-purple-600'
   },
@@ -58,7 +58,7 @@ const features = [
     description: '覆盖互联网/金融/制造/教育/医疗等15+主流行业，匹配最适合你的岗位',
     badge: '无限次免费',
     badgeColor: 'bg-blue-100 text-blue-700',
-    buttonText: '查询岗位',
+    buttonText: '免费查询岗位',
     buttonLink: '/jobs',
     gradient: 'from-blue-500 to-blue-600'
   },
@@ -68,7 +68,7 @@ const features = [
     description: '基于真实招聘要求，AI模拟真实面试场景，精准测算应聘成功率',
     badge: '免费3次',
     badgeColor: 'bg-orange-100 text-orange-700',
-    buttonText: '免费体验',
+    buttonText: '免费体验3次',
     buttonLink: '/assistant?bot=interview',
     gradient: 'from-green-500 to-green-600'
   }
@@ -84,30 +84,30 @@ const whyChooseUs = [
   {
     number: '1',
     icon: <Check className="w-6 h-6" />,
-    gradient: 'from-blue-500 to-blue-600',
-    title: '100%真实招聘数据',
-    description: '所有信息均来自BOSS直聘、智联招聘等平台的真实JD，每周更新'
+    gradient: 'from-green-500 to-emerald-500',
+    title: '100%真实校招数据',
+    description: '所有JD均来自国家官方招聘平台，每周自动更新，拒绝虚假岗位'
   },
   {
     number: '2',
-    icon: <Zap className="w-6 h-6" />,
+    icon: <Target className="w-6 h-6" />,
     gradient: 'from-purple-500 to-purple-600',
     title: 'AI个性化规划',
-    description: '基于你的专业、兴趣和能力，生成专属的职业成长路径'
+    description: '基于你的专业、年级和意向城市，生成专属大学四年成长路径'
   },
   {
     number: '3',
     icon: <Gift className="w-6 h-6" />,
-    gradient: 'from-green-500 to-green-600',
-    title: '学生友好定价',
-    description: '基础功能永久免费，学期会员仅29.9元/6个月，远低于竞品同类服务的30%'
+    gradient: 'from-blue-500 to-blue-600',
+    title: '基础功能永久免费',
+    description: '职业规划、岗位查询、求职干货全部免费，无任何次数限制'
   },
   {
     number: '4',
     icon: <Users className="w-6 h-6" />,
     gradient: 'from-orange-500 to-orange-600',
-    title: '邀请好友免费领会员',
-    description: '邀请好友注册，双方都能获得免费会员和AI次数'
+    title: '9.9元终身会员',
+    description: '首1000名用户仅需9.9元，永久解锁全部求职工具'
   }
 ];
 
@@ -213,27 +213,21 @@ export default function HomePage() {
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
             AI生成你的专属 <span className="text-[#722ED1]">大学四年职业规划</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-10">
-            30秒搞定，精准匹配你的<span className="font-semibold text-[#722ED1]">专业、年级和兴趣</span>，
-            为你推荐最适合的职业方向，并提供个性化学习路径
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-4">
+            <span className="font-semibold">永久免费</span> · <span className="font-semibold">无次数限制</span> · <span className="font-semibold">30秒生成</span>
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <Link href="/career-planning">
-              <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white text-lg px-10 py-7 h-auto rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-1">
-                立即生成我的规划
+              <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white text-xl px-12 py-8 h-auto rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-1">
+                立即免费生成我的规划
               </Button>
             </Link>
           </div>
           
-          <p className="text-sm text-gray-500 mb-2 flex items-center justify-center gap-2">
+          <p className="text-base text-gray-500 flex items-center justify-center gap-2">
             <span className="inline-flex items-center">
-              <AnimatedNumber target={15680} />+ 大学生已找到心仪工作
-            </span>
-          </p>
-          <p className="text-sm text-green-600 font-medium">
-            <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium border border-green-200">
-              无需注册，立即体验
+              已帮助 <AnimatedNumber target={15680} />+ 大学生找到心仪工作
             </span>
           </p>
         </div>

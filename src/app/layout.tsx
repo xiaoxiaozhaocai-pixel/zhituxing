@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
 import FloatingMembershipButton from '@/components/FloatingMembershipButton';
 import ProfileGuideProvider from '@/components/ProfileGuideProvider';
+import TopPromoBar from '@/components/TopPromoBar';
 import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ export default function RootLayout({
         {isDev && <Inspector />}
         <Providers>
           <ProfileGuideProvider>
+            <TopPromoBar />
             <Navbar />
             <FreeQuotaBadge />
             <FloatingMembershipButton />

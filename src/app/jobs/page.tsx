@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload, Send, X, MessageCircle, User } from 'lucide-react';
+import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload, Send, X, MessageCircle, User, ArrowRight } from 'lucide-react';
 
 // 行业列表（与数据库值对应）
 const industries = [
@@ -297,23 +297,22 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {/* 职业规划提示 */}
-      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2 text-sm">
-          <span className="text-purple-700">
-            💡 先生成你的职业规划，获得更精准的个性化建议
+      {/* 职业规划提示 - 紫色渐变 */}
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-4 text-sm text-white">
+          <span className="flex items-center gap-1">
+            💡 先生成你的职业规划，获得更精准的岗位推荐
           </span>
-          <span className="text-gray-300">|</span>
-          <span className="text-purple-700">
+          <span className="text-purple-200">|</span>
+          <span className="flex items-center gap-1">
             完善信息，精准度提升100%
           </span>
-          <Link href="/profile/info" className="text-[#165DFF] underline hover:text-[#165DFF]/80 ml-2">
-            完善信息
+          <Link href="/career-planning" className="underline hover:text-purple-200 font-medium flex items-center gap-1 ml-2">
+            生成规划 →
           </Link>
-          <span className="text-gray-300">|</span>
-          <Link href="/career-planning" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
-            立即生成
-            <ChevronRight className="w-4 h-4" />
+          <span className="text-purple-200">|</span>
+          <Link href="/profile/info" className="underline hover:text-purple-200 font-medium flex items-center gap-1">
+            完善信息 →
           </Link>
         </div>
       </div>
@@ -424,7 +423,7 @@ export default function JobsPage() {
             {jobs.map((job) => (
               <Card
                 key={job.id}
-                className="cursor-pointer hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
+                className="cursor-pointer border-2 border-blue-100 hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
                 onClick={() => handleJobClick(job.name)}
               >
                 <CardContent className="p-5">
@@ -433,7 +432,7 @@ export default function JobsPage() {
                       {job.name}
                     </h3>
                     {job.isFreshFriendly && (
-                      <Badge className="bg-green-100 text-green-700 text-xs whitespace-nowrap rounded-full px-2 py-0.5 border border-green-200">
+                      <Badge className="bg-green-100 text-green-700 text-xs whitespace-nowrap rounded-md px-2 py-0.5 border border-green-200 font-medium">
                         应届友好
                       </Badge>
                     )}
@@ -462,9 +461,10 @@ export default function JobsPage() {
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-1 text-green-600 text-sm group-hover:text-[#165DFF] transition-colors">
+                  <div className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium">
                     <Sparkles className="w-4 h-4" />
                     <span className="group-hover:underline">AI深度分析</span>
+                    <ArrowRight className="w-3 h-3 ml-1" />
                   </div>
                 </CardContent>
               </Card>

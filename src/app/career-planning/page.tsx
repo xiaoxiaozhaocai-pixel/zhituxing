@@ -453,29 +453,35 @@ export default function CareerPlanningPage() {
           </div>
         </div>
 
-        {/* 用户信息读取区 */}
-        <Card className="mb-6 border-purple-200 bg-purple-50/50">
+        {/* 用户信息读取区 - 紫色渐变背景 */}
+        <Card className="mb-6 border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-indigo-50 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {hasProfile ? (
                   <>
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-700">
-                      已读取您的个人信息，将为您生成更精准的规划
-                    </span>
+                    <CheckCircle className="w-6 h-6 text-green-500" />
+                    <div>
+                      <span className="text-gray-800 font-medium">
+                        已读取您的个人信息，将为您生成更精准的规划
+                      </span>
+                      <p className="text-sm text-green-600 mt-0.5">规划精准度：100%</p>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="w-5 h-5 text-yellow-500" />
-                    <span className="text-gray-700">
-                      完善个人信息，规划精准度提升100%
-                    </span>
+                    <AlertCircle className="w-6 h-6 text-purple-500" />
+                    <div>
+                      <span className="text-gray-800 font-medium">
+                        完善个人信息，规划精准度提升100%
+                      </span>
+                      <p className="text-sm text-gray-500 mt-0.5">完善信息后，精准度从50%提升至100%</p>
+                    </div>
                   </>
                 )}
               </div>
               <Link href="/profile/info">
-                <Button variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-100">
+                <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white">
                   <Edit3 className="w-4 h-4 mr-1" />
                   {hasProfile ? '编辑信息' : '去完善'}
                 </Button>
@@ -501,36 +507,36 @@ export default function CareerPlanningPage() {
         )}
 
         {/* 极速生成区 */}
-        <Card className="mb-6 hover:shadow-lg transition-shadow border-2 border-purple-200">
+        <Card className="mb-6 hover:shadow-xl transition-all border-2 border-purple-300 shadow-lg">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg text-purple-700">
-              <Zap className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 text-xl font-bold text-purple-700">
+              <Zap className="w-6 h-6" />
               30秒极速生成（无需完善信息）
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* 所属专业 */}
             <div className="space-y-2">
-              <Label htmlFor="major">所属专业</Label>
+              <Label htmlFor="major" className="font-medium text-gray-700">所属专业</Label>
               <Input
                 id="major"
                 value={form.major}
                 onChange={(e) => updateField('major', e.target.value)}
                 placeholder="如：计算机科学与技术、市场营销"
-                className="border-gray-200 focus:border-purple-400"
+                className="border-2 border-purple-200 focus:border-purple-500 h-12 text-base"
               />
             </div>
 
             {/* 当前年级 */}
             <div className="space-y-2">
-              <Label htmlFor="grade">
+              <Label htmlFor="grade" className="font-medium text-gray-700">
                 当前年级 <span className="text-red-500">*</span>
               </Label>
               <select
                 id="grade"
                 value={form.grade}
                 onChange={(e) => updateField('grade', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+                className="w-full h-12 px-4 rounded-lg border-2 border-purple-200 bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 text-base"
               >
                 <option value="">请选择年级</option>
                 {gradeOptions.map(opt => (
@@ -541,13 +547,13 @@ export default function CareerPlanningPage() {
 
             {/* 意向城市 */}
             <div className="space-y-2">
-              <Label htmlFor="city">意向城市（可选）</Label>
+              <Label htmlFor="city" className="font-medium text-gray-700">意向城市（可选）</Label>
               <Input
                 id="city"
                 value={form.city}
                 onChange={(e) => updateField('city', e.target.value)}
                 placeholder="如：北京、上海、深圳"
-                className="border-gray-200 focus:border-purple-400"
+                className="border-2 border-purple-200 focus:border-purple-500 h-12 text-base"
               />
             </div>
 
@@ -555,37 +561,46 @@ export default function CareerPlanningPage() {
             <Button 
               onClick={handleGenerate}
               disabled={loading || !form.grade}
-              className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+              className="w-full h-14 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
             >
               {loading ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <Loader2 className="w-6 h-6 mr-2 animate-spin" />
               ) : (
-                <Sparkles className="w-5 h-5 mr-2" />
+                <Sparkles className="w-6 h-6 mr-2" />
               )}
               生成我的职业规划
             </Button>
+            <p className="text-center text-sm text-gray-500 flex items-center justify-center gap-2">
+              ✅ 永久免费 · 无次数限制 · 无需注册
+            </p>
           </CardContent>
         </Card>
 
-        {/* 完整生成区 */}
-        <Card className="hover:shadow-md transition-shadow">
+        {/* 底部会员引导 */}
+        <Card className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 mb-6">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900 mb-1">
-                  完善信息，获取100%精准规划
-                </h3>
-                <p className="text-sm text-gray-500">
-                  填写更多个人信息，获得更精准的职业建议
-                </p>
-              </div>
-              <Link href="/profile/info">
-                <Button variant="outline" className="border-gray-300">
-                  去完善个人信息
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              💡 生成规划后，开通9.9元终身会员即可解锁：
+            </h3>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {[
+                '无限次AI模拟面试',
+                '完整能力测评报告',
+                '学长学姐上岸简历模板',
+                '2026校招内推码合集'
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
+            <Link href="/membership">
+              <Button variant="outline" className="w-full border-2 border-gray-300 hover:bg-gray-50 h-11">
+                了解会员权益
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 

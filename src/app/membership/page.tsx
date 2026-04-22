@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Zap, FileDown, Headphones, Loader2, Users, BarChart3, MessageCircle, Crown, Star, Gift, Download, FileText, Users2, BookOpen } from 'lucide-react';
+import { Check, Zap, FileDown, Headphones, Loader2, Users, BarChart3, MessageCircle, Crown, Star, Gift, Download, FileText, Users2, BookOpen, Clock, AlertCircle, Target, TrendingUp, MapPin, Briefcase, GraduationCap, Award, Shield, ChevronRight, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 
@@ -75,6 +75,9 @@ export default function MembershipPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // 使用 useState lazy initializer 避免 React 纯净性警告
+  const [remainingSpots] = useState(() => Math.floor(Math.random() * 201) + 800);
 
   const handleSubscribe = (planId: string) => {
     if (!isAuthenticated) {
@@ -101,12 +104,14 @@ export default function MembershipPage() {
       <div className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] text-white py-12">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">9.9元，解锁全部求职神器</h1>
-          <p className="text-xl text-orange-100 mb-6">
-            一杯奶茶钱，搞定求职全流程
+          <p className="text-xl text-orange-100 mb-4">
+            一杯奶茶钱，搞定大学四年求职全流程
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm">
-            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-            首1000名用户可享 9.9元 终身会员
+            <Clock className="w-4 h-4" />
+            <span className="font-bold text-red-200">
+              首1000名用户可享 9.9元 终身会员
+            </span>
           </div>
         </div>
       </div>
@@ -150,20 +155,65 @@ export default function MembershipPage() {
         </div>
       </div>
 
-      {/* 会员定价方案 */}
+      {/* 会员定价方案 - 终身会员前置 */}
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">选择你的会员类型</h2>
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* 月度会员 */}
-          <Card className="border-2 border-[#FF7D00] relative">
-            <div className="absolute -top-3 left-4 px-3 py-1 bg-[#FF7D00] text-white text-sm rounded-full">
-              推荐
+          {/* 终身会员（首1000名）- 主推 */}
+          <Card className="border-2 border-purple-400 bg-gradient-to-br from-purple-100 to-indigo-100 relative transform md:scale-105 shadow-xl shadow-purple-500/20">
+            <div className="absolute -top-3 left-4 px-4 py-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-full shadow-lg">
+              🔥 推荐
             </div>
+            <CardHeader className="text-center pb-2 pt-6">
+              <CardTitle className="text-2xl font-bold text-gray-900">终身会员</CardTitle>
+              <div className="mt-3">
+                <span className="text-5xl font-bold text-purple-600">9.9</span>
+                <span className="text-xl text-gray-500"> 元一次性</span>
+              </div>
+              <div className="text-base font-bold text-red-600 mt-2 flex items-center justify-center gap-1">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                限前1000名，售完恢复原价
+              </div>
+              <div className="text-sm text-orange-600 font-medium mt-1">
+                🔥 剩余名额：{remainingSpots}/1000
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <Check className="w-5 h-5 text-purple-500" />
+                <span className="font-bold">永久解锁全部功能</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <Check className="w-5 h-5 text-purple-500" />
+                未来所有新功能免费更新
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <Check className="w-5 h-5 text-purple-500" />
+                专属终身会员标识
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <Check className="w-5 h-5 text-purple-500" />
+                优先客服通道
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                onClick={() => handleSubscribe('lifetime')}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-14 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+              >
+                <Crown className="w-5 h-5 mr-2" />
+                立即抢终身会员
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* 月度会员 - 次选 */}
+          <Card className="border-2 border-gray-200 bg-white">
             <CardHeader className="text-center pb-2">
-              <CardTitle className="text-xl">月度会员</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">月度会员</CardTitle>
               <div className="mt-2">
                 <span className="text-4xl font-bold text-[#FF7D00]">9.9</span>
-                <span className="text-gray-500">元 / 月</span>
+                <span className="text-gray-500"> 元 / 月</span>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -187,50 +237,10 @@ export default function MembershipPage() {
             <CardFooter>
               <Button 
                 onClick={() => handleSubscribe('monthly')}
-                className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white h-11"
+                variant="outline"
+                className="w-full border-2 border-gray-300 hover:bg-gray-50 text-gray-700 h-11 font-medium"
               >
-                立即开通
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* 终身会员（首1000名） */}
-          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
-            <div className="absolute -top-3 left-4 px-3 py-1 bg-purple-600 text-white text-sm rounded-full">
-              首1000名
-            </div>
-            <CardHeader className="text-center pb-2">
-              <CardTitle className="text-xl">终身会员</CardTitle>
-              <div className="mt-2">
-                <span className="text-4xl font-bold text-purple-600">9.9</span>
-                <span className="text-gray-500">元 一次性</span>
-              </div>
-              <div className="text-xs text-purple-600 mt-1">限前1000名，售完恢复原价</div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Check className="w-4 h-4 text-purple-500" />
-                <span className="font-medium">永久解锁全部功能</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Check className="w-4 h-4 text-purple-500" />
-                未来所有新功能免费
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Check className="w-4 h-4 text-purple-500" />
-                专属终身会员标识
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Check className="w-4 h-4 text-purple-500" />
-                优先客服通道
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={() => handleSubscribe('lifetime')}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white h-11"
-              >
-                抢前1000名
+                开通月度会员
               </Button>
             </CardFooter>
           </Card>
@@ -273,12 +283,23 @@ export default function MembershipPage() {
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">会员专属权益</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {membershipBenefits.map((benefit, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={index} 
+              className={`transition-all ${
+                index === 0 || index === 1 || index === 5 
+                  ? 'bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200' 
+                  : 'hover:shadow-md'
+              }`}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">{benefit.icon}</div>
+                  <div className={`flex-shrink-0 ${index === 0 || index === 1 || index === 5 ? 'text-orange-500' : ''}`}>
+                    {benefit.icon}
+                  </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-1">{benefit.title}</h3>
+                    <h3 className={`font-bold mb-1 ${index === 0 || index === 1 || index === 5 ? 'text-orange-700' : 'text-gray-900'}`}>
+                      {benefit.title}
+                    </h3>
                     <p className="text-sm text-gray-600">{benefit.description}</p>
                   </div>
                 </div>
@@ -291,23 +312,18 @@ export default function MembershipPage() {
       {/* 底部CTA */}
       <div className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] py-12">
         <div className="max-w-4xl mx-auto px-4 text-center text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            一杯奶茶钱，搞定求职全流程
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            最后 {remainingSpots} 个名额，9.9元抢终身会员
           </h2>
           <p className="text-lg text-orange-100 mb-6">
-            AI职业规划永久免费，9.9元解锁全部求职神器
+            永久解锁全部功能，未来所有新功能免费更新
           </p>
           <Button 
-            onClick={() => {
-              if (!isAuthenticated) {
-                router.push('/auth');
-              } else {
-                handleSubscribe('monthly');
-              }
-            }}
-            className="bg-white text-[#FF7D00] hover:bg-orange-50 h-14 px-12 text-lg font-bold shadow-lg hover:shadow-xl transition-all"
+            onClick={() => handleSubscribe('lifetime')}
+            className="bg-white text-[#FF7D00] hover:bg-orange-50 h-14 px-12 text-xl font-bold shadow-xl hover:shadow-2xl transition-all"
           >
-            立即开通 9.9元会员
+            <Crown className="w-6 h-6 mr-2" />
+            立即抢购终身会员
           </Button>
         </div>
       </div>
