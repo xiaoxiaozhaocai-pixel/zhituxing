@@ -195,8 +195,11 @@ export default function AssistantPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
+  // 仅在有新消息（非欢迎消息）时滚动到底部
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
   }, [messages, scrollToBottom]);
 
   // 检查用户个人信息状态
