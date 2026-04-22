@@ -107,14 +107,20 @@ export default function FavoritesPage() {
         </div>
 
         {favorites.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl">
-            <Heart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-4">还没有收藏任何岗位</p>
+          <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+            <div className="w-24 h-24 bg-gradient-to-br from-red-50 to-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Heart className="w-12 h-12 text-red-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">还没有收藏任何岗位</h3>
+            <p className="text-gray-500 mb-8 max-w-md mx-auto">
+              收藏感兴趣的岗位，方便随时查看对比，找到最适合你的工作
+            </p>
             <a
               href="/jobs"
-              className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-[#165DFF] to-[#4080FF] text-white rounded-xl hover:from-[#165DFF]/90 hover:to-[#4080FF]/90 font-medium shadow-lg shadow-blue-500/20 transition-all"
             >
-              去逛逛
+              <Briefcase className="w-5 h-5 mr-2" />
+              去岗位百科看看
             </a>
           </div>
         ) : (

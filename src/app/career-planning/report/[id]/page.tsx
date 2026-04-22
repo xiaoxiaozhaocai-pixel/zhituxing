@@ -73,6 +73,7 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   // 折叠面板状态
   const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
@@ -182,7 +183,7 @@ export default function ReportPage() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
               <Download className="w-4 h-4 mr-1" />
               下载PDF
             </Button>

@@ -246,9 +246,21 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] hover:-translate-y-2 group"
+                className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-2 group ${
+                  index === 0 
+                    ? 'border-2 border-purple-300 hover:shadow-[0_8px_32px_rgba(114,46,209,0.25)]' 
+                    : 'border-2 border-gray-100 hover:border-blue-200 hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)]'
+                }`}
               >
-                <CardHeader className="pb-4">
+                {/* 发光效果 - 仅第一个卡片 */}
+                {index === 0 && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                )}
+                {/* 脉冲光效 - 仅第一个卡片 */}
+                {index === 0 && (
+                  <div className="absolute -top-1 -right-1 w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
+                )}
+                <CardHeader className="pb-4 relative z-10">
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
                     {feature.icon}
                   </div>
@@ -262,9 +274,9 @@ export default function HomePage() {
                   </div>
                   <CardDescription className="text-gray-600 mt-2">{feature.description}</CardDescription>
                 </CardHeader>
-                <CardFooter>
+                <CardFooter className="relative z-10">
                   <Link href={feature.buttonLink} className="w-full">
-                    <Button className={`w-full bg-gradient-to-r ${feature.gradient} hover:opacity-90 text-white`}>
+                    <Button className={`w-full bg-gradient-to-r ${feature.gradient} hover:opacity-90 text-white ${index === 0 ? 'shadow-lg shadow-purple-500/30' : ''}`}>
                       {feature.buttonText}
                     </Button>
                   </Link>

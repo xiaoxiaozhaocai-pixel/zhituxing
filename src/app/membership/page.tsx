@@ -111,6 +111,45 @@ export default function MembershipPage() {
         </div>
       </div>
 
+      {/* 求职大礼包 - 前置展示 */}
+      <div className="max-w-6xl mx-auto px-4 -mt-6 relative z-10">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200 shadow-xl">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30">
+                <Gift className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">🎁 确定性交付：求职大礼包</h3>
+                <p className="text-sm text-gray-600">开通会员即可下载，马上用得上</p>
+              </div>
+            </div>
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {giftPackage.map((item, index) => (
+                <div key={index} className="bg-white rounded-xl p-4 border border-green-100 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 flex-shrink-0">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">{item.title}</div>
+                    <div className="text-xs text-gray-500">{item.type}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-6 text-center">
+            <Button 
+              onClick={() => handleSubscribe('monthly')}
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-3 text-lg font-bold shadow-lg shadow-green-500/30"
+            >
+              <Crown className="w-5 h-5 mr-2" />
+              立即开通会员 · 下载全部
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* 会员定价方案 */}
       <div className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">选择你的会员类型</h2>

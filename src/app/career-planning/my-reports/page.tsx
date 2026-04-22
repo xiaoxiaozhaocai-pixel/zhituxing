@@ -144,17 +144,22 @@ export default function MyReportsPage() {
           <>
             <div className="space-y-4">
               {reports.length === 0 ? (
-                <Card className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-12 text-center">
-                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-600 mb-2">暂无职业规划报告</h3>
-                    <p className="text-gray-400 mb-6">开始生成您的第一份职业规划报告吧</p>
+                <Card className="border-2 border-dashed border-purple-200 hover:border-purple-300 transition-colors">
+                  <CardContent className="p-16 text-center">
+                    <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Sparkles className="w-12 h-12 text-purple-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">还没有职业规划报告</h3>
+                    <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                      30秒生成专属职业规划，基于你的专业、年级和兴趣，精准匹配最适合你的岗位
+                    </p>
                     <Link href="/career-planning">
-                      <Button className="bg-[#722ED1] hover:bg-[#722ED1]/90">
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        立即生成
+                      <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white px-8 py-6 text-lg font-bold shadow-lg shadow-purple-500/30">
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        立即生成我的规划
                       </Button>
                     </Link>
+                    <p className="text-sm text-gray-400 mt-4">永久免费 · 无次数限制 · 30秒出结果</p>
                   </CardContent>
                 </Card>
               ) : (
