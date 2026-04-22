@@ -50,13 +50,6 @@ const menuItems = [
     highlight: true
   },
   {
-    id: 'membership',
-    title: '我的会员',
-    description: '查看会员状态和到期时间',
-    icon: <Crown className="w-6 h-6 text-[#FF7D00]" />,
-    href: '/profile/membership'
-  },
-  {
     id: 'history',
     title: '我的对话',
     description: '查看AI对话历史记录',
@@ -161,21 +154,6 @@ export default function ProfilePage() {
     );
   };
 
-  const getQuotaDisplay = () => {
-    if (quota?.is_member) {
-      return (
-        <span className="text-sm text-[#FF7D00] font-medium">
-          会员专享：无限次使用
-        </span>
-      );
-    }
-    return (
-      <span className={`text-sm font-medium ${(quota?.remaining ?? 0) <= 0 ? 'text-red-500' : 'text-gray-500'}`}>
-        本月剩余免费次数：{quota?.remaining ?? 0}/5
-      </span>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -207,7 +185,6 @@ export default function ProfilePage() {
                 </p>
                 <div className="flex items-center mt-2 space-x-2 flex-wrap gap-2">
                   {getMemberBadge()}
-                  {getQuotaDisplay()}
                 </div>
               </div>
             </div>

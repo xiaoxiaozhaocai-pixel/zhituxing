@@ -407,49 +407,6 @@ export default function AssistantPage() {
         </div>
       </div>
 
-      {/* 顶部额度提示条 - 模拟面试配额 */}
-      {user && (
-        <div className={`sticky top-0 z-10 px-4 py-3 border-b transition-colors ${
-          quotaExhausted 
-            ? 'bg-orange-50 border-orange-200' 
-            : 'bg-white border-gray-200'
-        }`}>
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {quota?.interview?.unlimited ? (
-                <>
-                  <Crown className="w-5 h-5 text-[#FF7D00]" />
-                  <span className="text-gray-700">
-                    <strong className="text-[#FF7D00]">会员专享</strong> AI模拟面试无限次
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-gray-600 text-sm">AI模拟面试剩余免费次数：</span>
-                  <span className={`text-lg font-bold ${quotaExhausted ? 'text-red-500' : 'text-[#165DFF]'}`}>
-                    {displayQuota}/3
-                  </span>
-                </>
-              )}
-            </div>
-            
-            {quotaExhausted ? (
-              <Link href="/membership">
-                <Button size="sm" className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
-                  开通会员 解锁无限次
-                </Button>
-              </Link>
-            ) : !quota?.interview?.unlimited && (
-              <Link href="/membership">
-                <Button size="sm" variant="outline" className="text-[#FF7D00] border-[#FF7D00] hover:bg-orange-50">
-                  开通会员 无限使用
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* 页面标题 */}
         <div className="mb-6">
