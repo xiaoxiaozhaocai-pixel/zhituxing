@@ -34,20 +34,6 @@ const quickQuestions = [
   '生成我的考研备考计划'
 ];
 
-const upgradePrompt = `
----
-⚠️ **以上为基础版分析内容**
-
-开通会员即可解锁：
-✅ 结合你的专业/年级/成绩的个性化决策报告
-✅ 3-5所目标考研院校推荐（含录取分数线/报录比）
-✅ 3-5个匹配就业岗位推荐（含薪资/成长路径）
-✅ 考研备考/求职准备详细时间线
-✅ 可下载PDF格式完整报告
-
-👉 [立即开通会员，学期会员仅29.9元/6个月](http://localhost:5000/membership)
-`;
-
 const sharePrompt = (inviteCode: string) => `
 ---
 🎉 **分享这份报告给同学，双方都能获得奖励！**
@@ -62,20 +48,15 @@ const sharePrompt = (inviteCode: string) => `
 `;
 
 export default function DecisionPage() {
-  const { user, isAuthenticated, isLoading: authLoading, quota, refreshQuota } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
-  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  const isMember = quota?.is_member;
-  const remainingQuota = quota?.remaining ?? 0;
-  const quotaExhausted = !isMember && remainingQuota <= 0;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,11 +76,6 @@ export default function DecisionPage() {
     }
   }, [authLoading]);
 
-  const handleQuotaExceeded = () => {
-    refreshQuota();
-    setShowQuotaDialog(true);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
@@ -107,11 +83,6 @@ export default function DecisionPage() {
     if (!isAuthenticated) {
       alert('请先登录后再使用');
       window.location.href = '/auth';
-      return;
-    }
-
-    if (quotaExhausted) {
-      handleQuotaExceeded();
       return;
     }
 
@@ -136,12 +107,9 @@ export default function DecisionPage() {
 
       if (response.status === 403) {
         const data = await response.json();
-        if (data.error === 'quota_exceeded') {
-          handleQuotaExceeded();
-          setMessages(prev => prev.slice(0, -1));
-          setLoading(false);
-          return;
-        }
+        setMessages(prev => prev.slice(0, -1));
+        setLoading(false);
+        return;
       }
 
       if (!response.ok) {
@@ -166,12 +134,12 @@ export default function DecisionPage() {
       // 流式结束后添加到消息列表
       if (fullContent) {
         // 非会员添加升级提示
-        const finalContent = !isMember ? fullContent + upgradePrompt : fullContent;
+        const finalContent = fullContent;
         setMessages(prev => [...prev, { 
           role: 'assistant', 
           content: finalContent,
           isReport: true,
-          isFullVersion: isMember
+          isFullVersion: true
         }]);
       }
       setStreamingContent('');
@@ -213,49 +181,6 @@ export default function DecisionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* 顶部额度提示条 */}
-      {user && (
-        <div className={`sticky top-0 z-10 px-4 py-3 border-b transition-colors ${
-          quotaExhausted 
-            ? 'bg-orange-50 border-orange-200' 
-            : 'bg-white border-gray-200'
-        }`}>
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {isMember ? (
-                <>
-                  <Crown className="w-5 h-5 text-[#FF7D00]" />
-                  <span className="text-gray-700">
-                    <strong className="text-[#FF7D00]">会员专享</strong> 无限次决策分析
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-gray-600 text-sm">本月剩余免费次数：</span>
-                  <span className={`text-lg font-bold ${quotaExhausted ? 'text-red-500' : 'text-[#165DFF]'}`}>
-                    {remainingQuota}/5
-                  </span>
-                </>
-              )}
-            </div>
-            
-            {quotaExhausted ? (
-              <Link href="/membership">
-                <Button size="sm" className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
-                  开通会员 无限使用
-                </Button>
-              </Link>
-            ) : !isMember && (
-              <Link href="/membership">
-                <Button size="sm" variant="outline" className="text-[#FF7D00] border-[#FF7D00] hover:bg-orange-50">
-                  开通会员 解锁完整版
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
@@ -267,12 +192,10 @@ export default function DecisionPage() {
               <h1 className="text-xl font-bold text-gray-900">考研就业决策助手</h1>
               <p className="text-gray-500 text-sm">基于你的情况，帮你分析最佳选择</p>
             </div>
-            {isMember && (
-              <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2">
                 <Crown className="w-5 h-5 text-[#FF7D00]" />
                 <span className="text-sm font-medium text-[#FF7D00]">完整版</span>
               </div>
-            )}
           </div>
         </div>
       </div>
@@ -312,7 +235,7 @@ export default function DecisionPage() {
                   </div>
                   
                   {/* 报告操作按钮 */}
-                  {message.role === 'assistant' && message.isReport && isMember && (
+                  {message.role === 'assistant' && message.isReport && (
                     <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2 justify-end">
                       <Button 
                         size="sm" 
@@ -425,40 +348,6 @@ export default function DecisionPage() {
           </p>
         </div>
       </div>
-
-      {/* 额度用完弹窗 */}
-      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-[#FF7D00]" />
-              本月免费次数已用完
-            </DialogTitle>
-            <div className="space-y-4 pt-4">
-              <p className="text-gray-600">
-                您本月的5次免费决策分析已全部使用完毕
-              </p>
-              <div className="space-y-3">
-                <p className="font-medium text-gray-900">解锁完整版决策报告：</p>
-                <div className="flex flex-col gap-2">
-                  <Link href="/membership" onClick={() => setShowQuotaDialog(false)}>
-                    <Button className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
-                      <Crown className="w-4 h-4 mr-2" />
-                      开通会员 - 无限次+完整版报告
-                    </Button>
-                  </Link>
-                  <Link href="/profile/invite" onClick={() => setShowQuotaDialog(false)}>
-                    <Button variant="outline" className="w-full">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      邀请好友 - 每次获得3次免费次数
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
 
       {/* 分享弹窗 */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>

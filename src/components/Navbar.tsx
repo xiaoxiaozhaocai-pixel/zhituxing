@@ -29,7 +29,6 @@ export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [freeQuota] = useState(5);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const pathname = usePathname();
 
@@ -116,15 +115,6 @@ export default function Navbar() {
 
             {/* Right Section */}
             <div className="hidden lg:flex items-center space-x-4">
-              {/* Free Quota Badge */}
-              <Link
-                href="/membership"
-                className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 rounded-full text-sm hover:bg-gray-200 transition-colors"
-              >
-                <span className="text-gray-600">本月剩余免费次数：</span>
-                <span className="font-bold text-[#165DFF]">{freeQuota}/5</span>
-              </Link>
-
               {/* Notification Bell */}
               {user && (
                 <Link
@@ -229,12 +219,11 @@ export default function Navbar() {
               {/* Free Quota Badge */}
               <Link
                 href="/membership"
-                className="flex items-center justify-center space-x-1 px-4 py-2.5 bg-gradient-to-r from-[#165DFF] to-[#4080FF] rounded-lg text-sm text-white shadow-lg"
+                className="flex items-center justify-center space-x-1 px-4 py-2.5 bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] rounded-lg text-sm text-white shadow-lg"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <Sparkles className="w-4 h-4" />
-                <span>本月剩余免费次数：</span>
-                <span className="font-bold text-lg">{freeQuota}/5</span>
+                <Crown className="w-4 h-4" />
+                <span>开通会员</span>
               </Link>
 
               {navItems.map((item) => {
