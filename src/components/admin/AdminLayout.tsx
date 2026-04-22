@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useAdminAuth, AdminAuthProvider } from '@/hooks/useAdminAuth';
 import { 
   LayoutDashboard, 
   FileSearch, 
@@ -16,9 +16,6 @@ import {
   ChevronRight,
   LogOut,
   Loader2,
-  Briefcase,
-  Bell,
-  Plus,
   X
 } from 'lucide-react';
 
