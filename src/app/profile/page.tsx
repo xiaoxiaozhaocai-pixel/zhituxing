@@ -288,6 +288,24 @@ export default function ProfilePage() {
           </Card>
         )}
 
+        {/* 上传JD领会员入口 */}
+        <Card className="mt-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 hover:shadow-md transition-shadow">
+          <CardContent className="p-4">
+            <Link href="/upload-jd-reward" className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Upload className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900">上传JD领会员</h4>
+                  <p className="text-xs text-gray-500">上传3条校招JD，免费领终身会员</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </Link>
+          </CardContent>
+        </Card>
+
         {/* Logout Button */}
         <div className="mt-8">
           <Button

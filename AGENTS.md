@@ -76,6 +76,34 @@ pnpm ts-check    # TypeScript类型检查
 | /api/jd-sync/sync | POST | 触发JD数据同步 |
 | /api/admin/jd-sync/logs | GET | 获取同步日志列表 |
 | /api/admin/jd-sync/trigger | POST | 手动触发同步 |
+| /api/jd/submit | POST | 提交用户上传的JD |
+| /api/jd/submit | GET | 获取我的JD提交记录 |
+
+## 上传JD领会员功能
+
+### 功能说明
+
+1. **专属页面** (`/upload-jd-reward`)
+   - 核心钩子：上传3条真实校招JD，免费领9.9元终身会员
+   - 实时进度条展示上传状态
+   - 支持粘贴文本上传
+   - Tab切换：上传入口 + 历史记录
+   - 审核标准说明
+   - 常见问题（折叠面板）
+
+2. **奖励规则**
+   - 新用户：上传3条审核通过的JD，自动开通终身会员
+   - 已有月度会员：上传3条审核通过，额外获得6个月时长
+   - 已有终身会员：不重复发放
+
+3. **数据库表**
+   - `jd_submissions`: 用户上传JD记录表
+   - `users.is_lifetime_member`: 终身会员标识
+   - `users.jd_reward_granted`: JD奖励发放标识
+
+4. **页面入口**
+   - 岗位百科页面右上角："上传JD领会员"按钮
+   - 个人中心侧边栏："上传JD领会员"入口
 
 ## JD同步管理功能
 

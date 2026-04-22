@@ -330,6 +330,12 @@ export default function JobsPage() {
                 className="pl-10 h-12 text-base rounded-lg border-2 border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all duration-300"
               />
             </div>
+            <Link href="/upload-jd-reward">
+              <Button type="button" variant="outline" className="h-12 px-4 border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400">
+                <Upload className="w-4 h-4 mr-2" />
+                上传JD领会员
+              </Button>
+            </Link>
             <Button type="submit" className="h-12 px-8 bg-[#165DFF] hover:bg-[#165DFF]/90 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <Search className="w-4 h-4 mr-2" />
               智能查询
