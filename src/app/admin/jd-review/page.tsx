@@ -1,625 +1,523 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { 
+  Search, 
   CheckCircle, 
   XCircle, 
+  Clock, 
+  Eye,
   Loader2,
-  AlertCircle,
-  Briefcase,
-  User,
-  Calendar,
-  MapPin,
-  Building2,
-  DollarSign,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  X,
-  MessageSquare
+  Filter,
+  RefreshCw
 } from 'lucide-react';
 
-// 提交记录接口
 interface Submission {
   id: number;
-  user_id: number;
-  user_nickname: string;
   job_name: string;
-  industry: string;
-  city: string;
   company_name: string;
-  company_type: string;
-  salary_min: number | null;
-  salary_max: number | null;
-  skills: string | null;
+  city: string;
+  salary_min: number;
+  salary_max: number;
   jd_content: string;
   status: number;
   reject_reason: string | null;
-  create_time: string;
-  update_time: string;
+  auto_review_result: any;
+  created_at: string;
+  review_time: string | null;
+  username: string;
 }
 
 export default function JdReviewPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { admin } = useAdminAuth();
   
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filterStatus, setFilterStatus] = useState<number | null>(null);
-  
-  // 详情弹窗
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [status, setStatus] = useState('0');
+  const [keyword, setKeyword] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [statusCounts, setStatusCounts] = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [selected, setSelected] = useState<number[]>([]);
+  const [detailItem, setDetailItem] = useState<Submission | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ show: boolean; id: number | null; reason: string }>({
+    show: false,
+    id: null,
+    reason: ''
+  });
   const [actionLoading, setActionLoading] = useState(false);
-  const [actionMessage, setActionMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   useEffect(() => {
-    if (!authLoading && user) {
-      fetchSubmissions();
-    }
-  }, [user, authLoading, currentPage, filterStatus]);
+    fetchData();
+  }, [status, page]);
 
-  const fetchSubmissions = async () => {
-    if (!user) return;
-    
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.append('page', currentPage.toString());
-      params.append('limit', '10');
-      if (filterStatus !== null) {
-        params.append('status', filterStatus.toString());
-      }
+      const params = new URLSearchParams({
+        status: status,
+        page: page.toString(),
+        pageSize: '20',
+        ...(keyword && { keyword })
+      });
       
-      const response = await fetch(`/api/admin/jd?${params.toString()}`);
+      const response = await fetch(`/admin/api/jobs/review?${params}`);
       const data = await response.json();
       
       if (data.code === 200) {
-        setSubmissions(data.data?.list || []);
-        setTotalPages(data.data?.total_pages || 1);
-      } else {
-        setError(data.message || '获取审核列表失败');
+        setSubmissions(data.data.list);
+        setTotal(data.data.pagination.total);
+        setStatusCounts(data.data.statusCounts);
       }
     } catch (error) {
-      console.error('获取审核列表失败:', error);
-      setError('网络错误，请稍后重试');
+      console.error('获取数据失败:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 审核通过
+  const handleSearch = () => {
+    setPage(1);
+    fetchData();
+  };
+
   const handleApprove = async (id: number) => {
     setActionLoading(true);
-    setActionMessage(null);
-    
     try {
-      const response = await fetch(`/api/admin/jd/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+      const response = await fetch('/admin/api/jobs/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'approve'
+          id,
+          action: 'approve',
+          adminId: admin?.id,
+          adminUsername: admin?.username
         })
       });
       
-      const data = await response.json();
-      
-      if (data.code === 200) {
-        setActionMessage({ type: 'success', text: '审核通过，奖励已发放' });
-        setSelectedSubmission(null);
-        fetchSubmissions();
-      } else {
-        setActionMessage({ type: 'error', text: data.message || '操作失败' });
+      if (response.ok) {
+        fetchData();
+        setDetailItem(null);
       }
-    } catch (error) {
-      console.error('审核失败:', error);
-      setActionMessage({ type: 'error', text: '网络错误，请稍后重试' });
     } finally {
       setActionLoading(false);
     }
   };
 
-  // 审核驳回
-  const handleReject = async (id: number) => {
-    if (!rejectReason.trim()) {
-      setActionMessage({ type: 'error', text: '请填写驳回原因' });
-      return;
-    }
+  const handleReject = async () => {
+    if (!rejectModal.id || !rejectModal.reason) return;
     
     setActionLoading(true);
-    setActionMessage(null);
-    
     try {
-      const response = await fetch(`/api/admin/jd/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+      const response = await fetch('/admin/api/jobs/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: rejectModal.id,
           action: 'reject',
-          reject_reason: rejectReason
+          reason: rejectModal.reason,
+          adminId: admin?.id,
+          adminUsername: admin?.username
         })
       });
       
-      const data = await response.json();
-      
-      if (data.code === 200) {
-        setActionMessage({ type: 'success', text: '已驳回，通知已发送' });
-        setSelectedSubmission(null);
-        setRejectReason('');
-        fetchSubmissions();
-      } else {
-        setActionMessage({ type: 'error', text: data.message || '操作失败' });
+      if (response.ok) {
+        fetchData();
+        setRejectModal({ show: false, id: null, reason: '' });
+        setDetailItem(null);
       }
-    } catch (error) {
-      console.error('驳回失败:', error);
-      setActionMessage({ type: 'error', text: '网络错误，请稍后重试' });
     } finally {
       setActionLoading(false);
     }
   };
 
-  // 获取状态信息
-  const getStatusInfo = (status: number) => {
-    switch (status) {
-      case 0:
-        return {
-          label: '待审核',
-          color: 'bg-yellow-100 text-yellow-700 border-yellow-200'
-        };
-      case 1:
-        return {
-          label: '已通过',
-          color: 'bg-green-100 text-green-700 border-green-200'
-        };
-      case 2:
-        return {
-          label: '已驳回',
-          color: 'bg-red-100 text-red-700 border-red-200'
-        };
-      default:
-        return {
-          label: '未知',
-          color: 'bg-gray-100 text-gray-700 border-gray-200'
-        };
+  const handleBatchApprove = async () => {
+    if (selected.length === 0) return;
+    
+    setActionLoading(true);
+    try {
+      const response = await fetch('/admin/api/jobs/review', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: selected,
+          action: 'approve',
+          adminId: admin?.id,
+          adminUsername: admin?.username
+        })
+      });
+      
+      if (response.ok) {
+        setSelected([]);
+        fetchData();
+      }
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  // 格式化日期
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const handleBatchReject = async () => {
+    if (selected.length === 0 || !rejectModal.reason) return;
+    
+    setActionLoading(true);
+    try {
+      const response = await fetch('/admin/api/jobs/review', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: selected,
+          action: 'reject',
+          reason: rejectModal.reason,
+          adminId: admin?.id,
+          adminUsername: admin?.username
+        })
+      });
+      
+      if (response.ok) {
+        setSelected([]);
+        setRejectModal({ show: false, id: null, reason: '' });
+        fetchData();
+      }
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  // 格式化薪资
-  const formatSalary = (min: number | null, max: number | null) => {
+  const toggleSelect = (id: number) => {
+    setSelected(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.length === submissions.length) {
+      setSelected([]);
+    } else {
+      setSelected(submissions.map(s => s.id));
+    }
+  };
+
+  const formatSalary = (min?: number, max?: number) => {
     if (!min && !max) return '面议';
-    if (min && max) return `${(min/1000).toFixed(0)}k-${(max/1000).toFixed(0)}k`;
-    if (min) return `${(min/1000).toFixed(0)}k+`;
-    return `~${(max! / 1000).toFixed(0)}k`;
+    const format = (n: number) => n >= 10000 ? `${n/10000}万` : `${n/1000}k`;
+    if (min && max) return `${format(min)}-${format(max)}`;
+    if (min) return `${format(min)}+`;
+    return `${format(max!)}以下`;
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
-      </div>
-    );
-  }
-
-  // 非管理员不能访问
-  if (user && user.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">权限不足</h2>
-            <p className="text-gray-500">您没有权限访问此页面</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const statusLabels = [
+    { value: '0', label: '待审核', count: statusCounts.pending, color: 'bg-yellow-100 text-yellow-700' },
+    { value: '1', label: '已通过', count: statusCounts.approved, color: 'bg-green-100 text-green-700' },
+    { value: '2', label: '已拒绝', count: statusCounts.rejected, color: 'bg-red-100 text-red-700' }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* 页面标题 */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <CheckCircle className="w-7 h-7 text-[#165DFF]" />
-            JD审核管理
-          </h1>
-          <p className="text-gray-500 mt-2">
-            审核用户提交的校招JD，通过后可发放奖励
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">JD审核管理</h1>
+        <Button onClick={() => fetchData()} variant="outline" size="sm">
+          <RefreshCw className="w-4 h-4 mr-2" />
+          刷新
+        </Button>
+      </div>
 
-        {/* 消息提示 */}
-        {actionMessage && (
-          <div className={`mb-6 px-4 py-3 rounded-lg flex items-center gap-2 ${
-            actionMessage.type === 'success' 
-              ? 'bg-green-50 text-green-700 border border-green-200' 
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}>
-            {actionMessage.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-green-500" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-red-500" />
-            )}
-            <span>{actionMessage.text}</span>
+      {/* 状态Tab */}
+      <div className="flex gap-4">
+        {statusLabels.map(item => (
+          <button
+            key={item.value}
+            onClick={() => { setStatus(item.value); setPage(1); }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              status === item.value 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-white text-gray-600 hover:bg-gray-50 border'
+            }`}
+          >
+            {item.label}
+            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+              status === item.value ? 'bg-white/20' : item.color
+            }`}>
+              {item.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* 搜索 */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Input
+                placeholder="搜索岗位名称、企业名称..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                className="pl-10"
+              />
+            </div>
+            <Button onClick={handleSearch}>搜索</Button>
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* 筛选器 */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">筛选状态：</span>
-              <div className="flex gap-2">
-                <Button 
-                  variant={filterStatus === null ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilterStatus(null)}
-                  className={filterStatus === null ? 'bg-[#165DFF]' : ''}
-                >
-                  全部
-                </Button>
-                <Button 
-                  variant={filterStatus === 0 ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => { setFilterStatus(0); setCurrentPage(1); }}
-                  className={filterStatus === 0 ? 'bg-yellow-500' : ''}
-                >
-                  待审核
-                </Button>
-                <Button 
-                  variant={filterStatus === 1 ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => { setFilterStatus(1); setCurrentPage(1); }}
-                  className={filterStatus === 1 ? 'bg-green-500' : ''}
-                >
-                  已通过
-                </Button>
-                <Button 
-                  variant={filterStatus === 2 ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => { setFilterStatus(2); setCurrentPage(1); }}
-                  className={filterStatus === 2 ? 'bg-red-500' : ''}
-                >
-                  已驳回
-                </Button>
-              </div>
+      {/* 批量操作 */}
+      {selected.length > 0 && (
+        <Card className="border-purple-200 bg-purple-50">
+          <CardContent className="pt-4 pb-4 flex items-center justify-between">
+            <span className="text-purple-700 font-medium">已选择 {selected.length} 项</span>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleBatchApprove} 
+                disabled={actionLoading}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                批量通过
+              </Button>
+              <Button 
+                onClick={() => setRejectModal({ show: true, id: null, reason: '' })}
+                variant="destructive"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                批量拒绝
+              </Button>
+              <Button onClick={() => setSelected([])} variant="outline">
+                取消选择
+              </Button>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* 加载状态 */}
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
-          </div>
-        )}
-
-        {/* 错误提示 */}
-        {error && (
-          <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 mb-6">
-            <AlertCircle className="w-5 h-5" />
-            {error}
-          </div>
-        )}
-
-        {/* 列表 */}
-        {!loading && !error && (
-          <>
-            <div className="space-y-4">
-              {submissions.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-600">暂无待审核记录</h3>
-                  </CardContent>
-                </Card>
-              ) : (
-                submissions.map(submission => {
-                  const statusInfo = getStatusInfo(submission.status);
-                  return (
-                    <Card key={submission.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            {/* 岗位名称和企业 */}
-                            <div className="flex items-center gap-3 mb-3">
-                              <h3 className="text-lg font-semibold text-gray-900">
-                                {submission.job_name}
-                              </h3>
-                              <Badge className={statusInfo.color} variant="outline">
-                                {statusInfo.label}
-                              </Badge>
-                            </div>
-                            
-                            {/* 企业信息 */}
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
-                              <span className="flex items-center gap-1">
-                                <Building2 className="w-4 h-4" />
-                                {submission.company_name}
-                              </span>
-                              {submission.city && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4" />
-                                  {submission.city}
-                                </span>
-                              )}
-                              {submission.company_type && (
-                                <span>{submission.company_type}</span>
-                              )}
-                              {(submission.salary_min || submission.salary_max) && (
-                                <span className="flex items-center gap-1 text-[#FF7D00]">
-                                  <DollarSign className="w-4 h-4" />
-                                  {formatSalary(submission.salary_min, submission.salary_max)}元/月
-                                </span>
-                              )}
-                            </div>
-
-                            {/* 技能标签 */}
-                            {submission.skills && (
-                              <div className="flex flex-wrap gap-2 mb-3">
-                                {submission.skills.split(',').map((skill, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-xs">
-                                    {skill.trim()}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* 提交者和时间 */}
-                            <div className="flex items-center gap-4 text-xs text-gray-400">
-                              <span className="flex items-center gap-1">
-                                <User className="w-3 h-3" />
-                                {submission.user_nickname || `用户${submission.user_id}`}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {formatDate(submission.create_time)}
-                              </span>
-                            </div>
-
-                            {/* 驳回原因 */}
-                            {submission.status === 2 && submission.reject_reason && (
-                              <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-sm mt-3 flex items-start gap-2">
-                                <MessageSquare className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <span className="font-medium">驳回原因：</span>
-                                  {submission.reject_reason}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* 操作按钮 */}
-                          <div className="flex flex-col gap-2 ml-4">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedSubmission(submission)}
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              查看详情
-                            </Button>
-                            {submission.status === 0 && (
-                              <>
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  className="bg-green-500 hover:bg-green-600"
-                                  onClick={() => handleApprove(submission.id)}
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  通过
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-red-500 border-red-200 hover:bg-red-50"
-                                  onClick={() => {
-                                    setSelectedSubmission(submission);
-                                    setRejectReason('');
-                                  }}
-                                >
-                                  <XCircle className="w-4 h-4 mr-1" />
-                                  驳回
-                                </Button>
-                              </>
-                            )}
-                          </div>
+      {/* 数据列表 */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-4 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selected.length === submissions.length && submissions.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded"
+                    />
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">岗位名称</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">企业名称</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">城市</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">薪资</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">提交者</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">提交时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-12 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                    </td>
+                  </tr>
+                ) : submissions.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                      暂无数据
+                    </td>
+                  </tr>
+                ) : (
+                  submissions.map(item => (
+                    <tr key={item.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                          className="rounded"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.job_name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{item.company_name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{item.city || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{formatSalary(item.salary_min, item.salary_max)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{item.username || '未知'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500">
+                        {new Date(item.created_at).toLocaleDateString('zh-CN')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => setDetailItem(item)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          {item.status === 0 && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleApprove(item.id)}
+                                disabled={actionLoading}
+                                className="text-green-600 hover:text-green-700"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => setRejectModal({ show: true, id: item.id, reason: '' })}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-              )}
-            </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-            {/* 分页 */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-8">
+          {/* 分页 */}
+          {total > 20 && (
+            <div className="px-4 py-3 border-t flex items-center justify-between">
+              <span className="text-sm text-gray-500">共 {total} 条</span>
+              <div className="flex gap-2">
                 <Button
-                  variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
                 >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  上一页
+                  <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm text-gray-600">
-                  第 {currentPage} / {totalPages} 页
-                </span>
+                <span className="px-3 py-1 text-sm">{page}</span>
                 <Button
-                  variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
+                  variant="outline"
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={page * 20 >= total}
                 >
-                  下一页
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 详情弹窗 */}
-      {selectedSubmission && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-[#165DFF]" />
-                JD详情
-              </CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => { setSelectedSubmission(null); setRejectReason(''); }}
-              >
-                <X className="w-5 h-5" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* 基本信息 */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-3">基本信息</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+      {detailItem && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold mb-4">JD详情</h2>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-gray-500">岗位名称：</span>
-                    <span className="font-medium">{selectedSubmission.job_name}</span>
+                    <label className="text-sm text-gray-500">岗位名称</label>
+                    <p className="font-medium">{detailItem.job_name}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">企业名称：</span>
-                    <span className="font-medium">{selectedSubmission.company_name}</span>
+                    <label className="text-sm text-gray-500">企业名称</label>
+                    <p className="font-medium">{detailItem.company_name}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">所属行业：</span>
-                    <span>{selectedSubmission.industry || '-'}</span>
+                    <label className="text-sm text-gray-500">工作城市</label>
+                    <p>{detailItem.city || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">工作城市：</span>
-                    <span>{selectedSubmission.city || '-'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">企业类型：</span>
-                    <span>{selectedSubmission.company_type || '-'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">薪资范围：</span>
-                    <span className="text-[#FF7D00]">
-                      {formatSalary(selectedSubmission.salary_min, selectedSubmission.salary_max)}元/月
-                    </span>
+                    <label className="text-sm text-gray-500">薪资范围</label>
+                    <p>{formatSalary(detailItem.salary_min, detailItem.salary_max)}</p>
                   </div>
                 </div>
-                {selectedSubmission.skills && (
-                  <div className="mt-3">
-                    <span className="text-gray-500 text-sm">技能要求：</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedSubmission.skills.split(',').map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
-                          {skill.trim()}
-                        </Badge>
-                      ))}
-                    </div>
+
+                <div>
+                  <label className="text-sm text-gray-500 mb-2 block">JD内容</label>
+                  <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap max-h-60 overflow-y-auto">
+                    {detailItem.jd_content}
+                  </div>
+                </div>
+
+                {detailItem.reject_reason && (
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <label className="text-sm text-red-500">拒绝原因</label>
+                    <p className="text-red-700">{detailItem.reject_reason}</p>
                   </div>
                 )}
               </div>
 
-              {/* 提交者信息 */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-3">提交者信息</h4>
-                <div className="text-sm">
-                  <span className="text-gray-500">提交用户：</span>
-                  <span>{selectedSubmission.user_nickname || `用户${selectedSubmission.user_id}`}</span>
-                </div>
-                <div className="text-sm mt-1">
-                  <span className="text-gray-500">提交时间：</span>
-                  <span>{formatDate(selectedSubmission.create_time)}</span>
-                </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <Button variant="outline" onClick={() => setDetailItem(null)}>
+                  关闭
+                </Button>
+                {detailItem.status === 0 && (
+                  <>
+                    <Button 
+                      variant="destructive"
+                      onClick={() => {
+                        setRejectModal({ show: true, id: detailItem.id, reason: '' });
+                        setDetailItem(null);
+                      }}
+                    >
+                      拒绝
+                    </Button>
+                    <Button 
+                      onClick={() => handleApprove(detailItem.id)}
+                      disabled={actionLoading}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      通过
+                    </Button>
+                  </>
+                )}
               </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-              {/* JD内容 */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-gray-900 mb-3">JD内容</h4>
-                <div className="text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto">
-                  {selectedSubmission.jd_content}
-                </div>
+      {/* 拒绝弹窗 */}
+      {rejectModal.show && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold mb-4">拒绝原因</h2>
+              <textarea
+                value={rejectModal.reason}
+                onChange={(e) => setRejectModal(prev => ({ ...prev, reason: e.target.value }))}
+                placeholder="请输入拒绝原因（将通知用户）"
+                rows={4}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
+              />
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" onClick={() => setRejectModal({ show: false, id: null, reason: '' })}>
+                  取消
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={rejectModal.id ? handleReject : handleBatchReject}
+                  disabled={!rejectModal.reason || actionLoading}
+                >
+                  确认拒绝
+                </Button>
               </div>
-
-              {/* 驳回原因输入 */}
-              {selectedSubmission.status === 0 && (
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-red-700 mb-3">驳回原因</h4>
-                  <Textarea
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    placeholder="请输入驳回原因"
-                    rows={3}
-                  />
-                </div>
-              )}
-
-              {/* 操作按钮 */}
-              {selectedSubmission.status === 0 && (
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => { setSelectedSubmission(null); setRejectReason(''); }}
-                  >
-                    取消
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="text-red-500 border-red-200 hover:bg-red-50"
-                    onClick={() => handleReject(selectedSubmission.id)}
-                    disabled={actionLoading || !rejectReason.trim()}
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <XCircle className="w-4 h-4 mr-2" />
-                    )}
-                    确认驳回
-                  </Button>
-                  <Button
-                    className="bg-green-500 hover:bg-green-600"
-                    onClick={() => handleApprove(selectedSubmission.id)}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                    )}
-                    审核通过
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
