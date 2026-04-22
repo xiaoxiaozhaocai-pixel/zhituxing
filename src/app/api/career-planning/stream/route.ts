@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // 职业规划智能体API配置
 const CAREER_AGENT_API = process.env.CAREER_AGENT_API || 'https://7xwsb63bkk.coze.site/stream_run';
-const CAREER_AGENT_TOKEN = process.env.CAREER_AGENT_TOKEN || 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjNiYjBlZTQ5LTU1MWMtNGJlNi1iYjljLWFkNGRkYTBiMWNlZCJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbIkxudVM4eG9qNUtnUFNvVEszWHZ2VHZNMUZCNmxvSGIyIl0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzc2NzgyMzA5LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NjMxMjA5OTE3NDI0NDAyNDgyIiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NjMxMjIxOTA5OTcxMDA5NTYyIn0.MIyP55GMHeOT7jB_XBPD0i-BhSJSc0wJNdEPe2n4oqG_6Hf46If6Dyr6TSWQFEVN5BS5j4OSV19wTAyz2haf6XztQXSUgX7lv7t046--CZI_JjsnhXmYh4tKUi8us-5_kC_-p7pO9gdGLUiI4Yf1PT46IBVuLtqkCQDv_vVzqB68oTBz563TZC95rKVmeXR2-TGM21Uy_Tjfy-15qAGdSMSCOmy7kl-ZcHtoD2p_79zYFjymE0pCagfg2jtRUL5go-8JS1IG6XqNG8oPLnNbZk0ahYh06nivj138-Fy-PjZ-gkFC78T80o1OwRg-Ooz8p5zp-xVJBAPSE-ntECf-og';
+const CAREER_AGENT_TOKEN = process.env.CAREER_AGENT_TOKEN || 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjMxMWQwNzVjLTY2NDktNDdmYi04MWUxLTJmZDIyYTJmMTgxOSJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbIkxudVM4eG9qNUtnUFNvVEszWHZ2VHZNMUZCNmxvSGIyIl0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzc2ODQyODI2LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3Jrb2xvYWRfaWRlbnRpdHkvaWQ6NzYzMTIwOTkxNzQyNDQwMjQ4MiIsInNyYyI6ImluYm91bmRfYXV0aF9hY2Nlc3NfdG9rZW5faWQ6NzYzMTQ4MTgzMzExMjk5NDAwMTgifQ.IiRCLJsbZcoFgcnobZYhQ9oKlfmzrGBjBqo0MCT83HcA01EKQB9Cxm-ICkE31yv7hZGsLj1Vv2VFoGQfyJTQ2gyMp47Xr3jKYUzKVC79aQS6aAot09HjOufpZu6lEGL9NZTZyBb4CyXnIs7LZcAksiq8ZIhMJVliIzs7JVUZOInue5aWxRm0B1qjVM2DGuSzyc2px_EUhSpbywooTxsJB1cOdfscMWqYSeah427zjzfY5HPFpsp7YIpxiLkiD-8m9NS3jpFVBYl8K4bhFBKuqqI68V-fhtAsvzdlX2CJdmmv6lkg2aqOBycWuZ1DlmzxFpJNOraLSlMxG_XrNG8arQ';
 const PROJECT_ID = process.env.CAREER_AGENT_PROJECT_ID || '7631200707550609418';
 
 // 生成会话ID
@@ -99,96 +99,51 @@ async function callRealApi(requestBody: object): Promise<Response> {
           return;
         }
 
+        // 获取流式响应
         const reader = response.body?.getReader();
         if (!reader) {
-          controller.enqueue(`data: ${JSON.stringify({ error: '无法读取响应流' })}\n\n`);
+          controller.enqueue(`data: ${JSON.stringify({ error: '无法获取响应流' })}\n\n`);
           controller.close();
           return;
         }
 
         const decoder = new TextDecoder();
         let buffer = '';
-        let isDone = false;
 
         while (true) {
           const { done, value } = await reader.read();
-          
-          if (done) {
-            if (!isDone) {
-              controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
-            }
-            break;
-          }
+          if (done) break;
 
-          // 解码数据
-          const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
 
-          // 按双换行分割SSE消息
-          const messages = buffer.split(/\r?\n\r?\n/);
-          buffer = messages.pop() || '';
-
-          for (const message of messages) {
-            if (!message.trim()) continue;
-            
-            const lines = message.split(/\r?\n/);
-            let eventType = '';
-            let dataStr = '';
-
-            for (const line of lines) {
-              if (line.startsWith('event:')) {
-                eventType = line.slice(6).trim();
-              } else if (line.startsWith('data:')) {
-                dataStr = line.slice(5).trim();
-              }
-            }
-
-            if (dataStr && dataStr !== '[DONE]') {
-              try {
-                const parsed = JSON.parse(dataStr);
-                
-                // 提取content.answer中的内容
-                let answer = '';
-                if (parsed.content?.answer) {
-                  answer = parsed.content.answer;
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const dataStr = line.slice(5).trim();
+              if (dataStr) {
+                try {
+                  const data = JSON.parse(dataStr);
+                  // 处理Coze API的响应格式
+                  if (data.data) {
+                    const parsed = JSON.parse(data.data);
+                    if (parsed.content) {
+                      controller.enqueue(`data: ${JSON.stringify({ content: parsed.content })}\n\n`);
+                    }
+                  }
+                } catch (e) {
+                  // 忽略解析错误
                 }
-                
-                // 检查是否结束
-                if (parsed.finish === true || eventType === 'message_end' || parsed.type === 'message_end') {
-                  isDone = true;
-                } else if (answer) {
-                  // 发送提取的内容
-                  controller.enqueue(`data: ${JSON.stringify({ content: answer })}\n\n`);
-                }
-              } catch (e) {
-                // 非JSON数据，忽略
               }
             }
           }
         }
-        
-        // 确保发送完成信号
-        if (!isDone) {
-          try {
-            controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
-          } catch (e) {
-            // 忽略，可能已经关闭
-          }
-        }
+
+        controller.close();
       } catch (error) {
-        console.error('流式请求错误:', error);
-        try {
-          controller.enqueue(`data: ${JSON.stringify({ error: '服务暂时不可用' })}\n\n`);
-        } catch (e) {
-          // 忽略
-        }
-      } finally {
-        // 确保关闭
-        try {
-          controller.close();
-        } catch (e) {
-          // 忽略
-        }
+        console.error('流式调用失败:', error);
+        controller.enqueue(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : '流式调用失败' })}\n\n`);
+        controller.close();
       }
     }
   });
@@ -198,53 +153,72 @@ async function callRealApi(requestBody: object): Promise<Response> {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no'
-    }
+    },
   });
 }
 
-// 流式输出演示内容
+// 模拟数据流
 async function streamDemoContent(major: string, grade: string, city: string): Promise<Response> {
-  const demoReport = `{
-  "basic_version": {
-    "core_conclusion": {
-      "top_jobs": [
-        {"job_name":"前端开发工程师","match_score":92,"industry":"互联网/IT","city":"北京","salary_range":"18-30K","match_reason":"计算机专业对口，北京互联网企业需求旺盛"},
-        {"job_name":"Java开发工程师","match_score":90,"industry":"互联网/软件","city":"北京","salary_range":"18-28K","match_reason":"技术栈匹配，岗位需求量大"},
-        {"job_name":"算法工程师","match_score":85,"industry":"人工智能","city":"北京","salary_range":"25-40K","match_reason":"专业背景契合，AI领域发展前景好"}
-      ],
-      "skill_gaps": ["大型项目经验","分布式系统设计","团队协作能力"],
-      "suggested_learning": ["Spring Cloud微服务","Kubernetes容器化","系统设计思维"]
-    }
-  }
-}`;
+  const demoReport = `
+# 🎯 职业规划报告
 
-  // 根据用户输入调整内容
-  let content = demoReport;
-  if (major) content = content.replace(/计算机/g, major);
-  if (grade) content = content.replace(/大三/g, grade);
-  if (city) content = content.replace(/北京/g, city);
+**个人信息**
+- 所属专业：${major || '计算机科学与技术'}
+- 当前年级：${grade || '大三'}
+- 意向城市：${city || '杭州'}
+
+---
+
+## 📊 精准匹配结论
+
+根据您的【${major || '计算机'}】专业、【${grade || '大三'}】年级、【${city || '杭州'}】意向城市，我为您推荐以下最优赛道：
+
+### 🚀 核心推荐岗位：前端开发工程师
+
+1. **行业前景**：2024年互联网行业前端岗位需求同比增长18%，${city || '杭州'}地区平均月薪12-20K
+2. **竞争分析**：相比后端岗位，竞争比低23%，更适合快速上岸
+3. **技能匹配**：您所学的${major || '计算机'}专业与前端技能重合度达75%
+
+---
+
+## 🎯 核心优势
+
+- ✅ 扎实的编程基础
+- ✅ 良好的逻辑思维能力
+- ✅ 年轻有活力，学习能力强
+
+## ⚠️ 核心短板
+
+- 缺乏大型项目实战经验
+- 前端框架使用经验不足
+
+---
+
+## 📅 行动清单（6个月）
+
+### 第一个月：夯实基础
+- 完成 React 官方文档学习
+- 完成 TodoList 项目实战
+- 学习 TypeScript 基础
+
+### 第二个月：框架进阶
+- 完成电商项目前端开发
+- 学习状态管理（Redux/Zustand）
+- 掌握单元测试基础
+
+---
+
+*本报告由职途星AI职业规划助手生成，仅供参考*
+`;
 
   const stream = new ReadableStream({
     async start(controller) {
-      // 模拟打字机效果，逐字符输出
-      const chars = content.split('');
-      let index = 0;
-      
-      const sendChar = () => {
-        if (index < chars.length) {
-          controller.enqueue(`data: ${JSON.stringify({ content: chars[index] })}\n\n`);
-          index++;
-          // 控制打字速度
-          const delay = chars[index - 1] === '\n' ? 30 : 3;
-          setTimeout(sendChar, delay);
-        } else {
-          controller.enqueue(`data: ${JSON.stringify({ done: true })}\n\n`);
-          controller.close();
-        }
-      };
-      
-      sendChar();
+      const lines = demoReport.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        controller.enqueue(`data: ${JSON.stringify({ content: lines[i] + (i < lines.length - 1 ? '\n' : '') })}\n\n`);
+      }
+      controller.close();
     }
   });
 
@@ -253,7 +227,6 @@ async function streamDemoContent(major: string, grade: string, city: string): Pr
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no'
-    }
+    },
   });
 }
