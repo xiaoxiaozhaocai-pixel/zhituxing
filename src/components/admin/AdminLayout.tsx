@@ -13,15 +13,12 @@ import {
   FileText,
   Settings,
   ScrollText,
-  ChevronRight,
   LogOut,
   Loader2,
-  X,
   Gift,
   Mail,
   Trash2,
-  Download,
-  Crown
+  Download
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -32,8 +29,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { admin, loading, logout, isAuthenticated } = useAdminAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // 如果不是登录页面且未登录，重定向到登录页
   useEffect(() => {
@@ -50,8 +45,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // 加载中
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
       </div>
     );
   }
@@ -87,45 +82,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* 顶部导航栏 */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center px-4">
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 hover:bg-gray-100 rounded-lg mr-2"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <LayoutDashboard className="w-6 h-6" />}
-        </button>
-        
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">职</span>
+    <div className="min-h-screen bg-[#F3F4F6]">
+      {/* 侧边栏 - 固定左侧，深灰色背景 */}
+      <aside className="fixed top-0 left-0 bottom-0 w-[240px] bg-[#1F2937] z-50 overflow-y-auto">
+        {/* Logo区域 */}
+        <div className="h-16 flex items-center px-5 border-b border-gray-700">
+          <div className="w-9 h-9 bg-gradient-to-br from-[#7C3AED] to-purple-400 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-base">职</span>
           </div>
-          <span className="font-bold text-lg text-gray-900">职途星后台</span>
+          <span className="ml-3 text-white font-semibold text-lg">职途星管理后台</span>
         </div>
 
-        <div className="ml-auto flex items-center gap-4">
-          <span className="text-sm text-gray-500">
-            欢迎，<span className="font-medium text-gray-900">{admin?.username}</span>
-          </span>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            退出
-          </button>
-        </div>
-      </header>
-
-      {/* 侧边栏 */}
-      <aside className={`
-        fixed top-16 left-0 bottom-0 bg-white border-r border-gray-200 z-40
-        transition-all duration-300 overflow-y-auto
-        ${sidebarCollapsed ? 'w-16' : 'w-64'}
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <nav className="p-4 space-y-1">
+        {/* 菜单导航 */}
+        <nav className="p-3">
           {menuItems.map((item) => {
             const active = isActive(item.path, item.exact);
             const Icon = item.icon;
@@ -134,42 +103,59 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Link
                 key={item.path}
                 href={item.path}
-                onClick={() => setMobileMenuOpen(false)}
                 className={`
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors
+                  flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200
                   ${active 
-                    ? 'bg-purple-50 text-purple-700 border-l-4 border-purple-600' 
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-[#7C3AED] text-white' 
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }
                 `}
               >
-                <Icon className={`w-5 h-5 ${active ? 'text-purple-600' : ''}`} />
-                {!sidebarCollapsed && (
-                  <span className="font-medium">{item.label}</span>
-                )}
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium">{item.label}</span>
               </Link>
             );
           })}
         </nav>
       </aside>
 
-      {/* 主内容区 */}
-      <main className={`
-        pt-16 min-h-screen transition-all duration-300
-        ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'}
-      `}>
+      {/* 顶部导航栏 - 白色背景，固定顶部 */}
+      <header className="fixed top-0 left-[240px] right-0 h-16 bg-white shadow-sm z-40 flex items-center px-6">
+        <div className="flex-1" />
+
+        <div className="flex items-center gap-4">
+          {/* 管理员信息 */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#7C3AED] to-purple-400 rounded-full flex items-center justify-center">
+              <span className="text-white font-semibold text-sm">
+                {admin?.username?.charAt(0).toUpperCase() || 'A'}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-900">{admin?.username}</span>
+              <span className="text-xs text-gray-500">管理员</span>
+            </div>
+          </div>
+
+          <div className="w-px h-8 bg-gray-200 mx-2" />
+
+          {/* 退出按钮 */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>退出登录</span>
+          </button>
+        </div>
+      </header>
+
+      {/* 主内容区 - 浅灰色背景 */}
+      <main className="ml-[240px] pt-16 min-h-screen">
         <div className="p-6">
           {children}
         </div>
       </main>
-
-      {/* 移动端遮罩 */}
-      {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
     </div>
   );
 }
