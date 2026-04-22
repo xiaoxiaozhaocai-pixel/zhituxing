@@ -281,3 +281,125 @@ interface QuotaInfo {
 - `COZE_PROJECT_DOMAIN_DEFAULT`: 对外访问域名
 - `DEPLOY_RUN_PORT`: 服务监听端口 (5000)
 - `COZE_PROJECT_ENV`: 开发环境 (DEV) 或生产环境 (PROD)
+
+## 管理员后台高频功能（V2扩展）
+
+### 1. 奖励发放管理
+
+**页面**: `/admin/rewards`
+
+**功能说明**:
+- 展示所有奖励发放记录（成功/失败/待处理）
+- 今日失败告警提示
+- 支持按状态筛选
+- 手动补发奖励功能
+
+**API接口**:
+| 接口 | 方法 | 功能 |
+|------|------|------|
+| /admin/api/rewards | GET | 获取奖励发放记录列表 |
+| /admin/api/rewards | POST | 手动发放奖励 |
+| /admin/api/rewards | PUT | 更新奖励状态 |
+
+**奖励类型**:
+- `lifetime`: 终身会员
+- `monthly`: 月度会员
+- `bonus_months`: 额外月数
+
+**数据库表**: `jd_reward_records`
+
+### 2. 站内信管理
+
+**页面**: `/admin/notifications`
+
+**功能说明**:
+- 发送站内信通知（系统通知/活动通知/私信）
+- 支持全体用户、指定会员、单个用户发送
+- 发送记录查询
+- 删除通知功能
+
+**API接口**:
+| 接口 | 方法 | 功能 |
+|------|------|------|
+| /admin/api/notifications | GET | 获取站内信列表 |
+| /admin/api/notifications | POST | 发送站内信 |
+| /admin/api/notifications | DELETE | 删除站内信 |
+
+**发送对象类型**:
+- `all`: 全体用户
+- `members`: 仅会员用户
+- `single`: 指定用户ID
+
+**数据库表**: `notifications`
+
+### 3. 回收站功能
+
+**页面**: `/admin/recycle`
+
+**功能说明**:
+- 展示已删除内容（JD/文章/公告）
+- 7天自动过期删除
+- 即将过期告警提示
+- 恢复功能（还原到原位置）
+- 永久删除功能
+
+**API接口**:
+| 接口 | 方法 | 功能 |
+|------|------|------|
+| /admin/api/recycle | GET | 获取回收站列表 |
+| /admin/api/recycle | POST | 恢复或永久删除 |
+
+**支持的类型**: `jobs`, `articles`, `announcements`
+
+**数据库表**: `recycle_bin`
+
+### 4. 数据导出功能
+
+**页面**: `/admin/export`
+
+**功能说明**:
+- 导出用户数据
+- 导出会员数据
+- 导出岗位数据
+- 导出文章数据
+- 导出订单数据
+- 全量数据导出
+- 支持时间范围筛选
+- CSV格式导出
+
+**API接口**:
+| 接口 | 方法 | 功能 |
+|------|------|------|
+| /admin/api/export | POST | 导出数据 |
+
+**导出类型**: `users`, `members`, `jobs`, `articles`, `orders`, `all`
+
+### 5. 用户拉黑功能
+
+**API接口** (扩展自 /admin/api/users):
+| 接口 | 方法 | 功能 |
+|------|------|------|
+| /admin/api/users | GET | 获取用户列表（含拉黑状态） |
+| /admin/api/users | POST | 拉黑/取消拉黑用户 |
+
+**拉黑字段**:
+- `users.is_blacklisted`: 是否拉黑
+- `users.ban_reason`: 拉黑原因
+- `users.banned_at`: 拉黑时间
+
+### 6. 后台侧边栏菜单
+
+```
+数据看板 → /admin
+JD审核 → /admin/jd-review
+JD管理 → /admin/jobs
+同步任务 → /admin/sync
+奖励发放 → /admin/rewards
+站内信 → /admin/notifications
+用户管理 → /admin/users
+回收站 → /admin/recycle
+内容管理 → /admin/content
+数据导出 → /admin/export
+操作日志 → /admin/logs
+系统设置 → /admin/settings
+```

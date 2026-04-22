@@ -16,7 +16,12 @@ import {
   ChevronRight,
   LogOut,
   Loader2,
-  X
+  X,
+  Gift,
+  Mail,
+  Trash2,
+  Download,
+  Crown
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -61,8 +66,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { path: '/admin/jd-review', icon: FileSearch, label: 'JD审核' },
     { path: '/admin/jobs', icon: Database, label: 'JD管理' },
     { path: '/admin/sync', icon: RefreshCw, label: '同步任务' },
+    { path: '/admin/rewards', icon: Gift, label: '奖励发放' },
+    { path: '/admin/notifications', icon: Mail, label: '站内信' },
     { path: '/admin/users', icon: Users, label: '用户管理' },
+    { path: '/admin/recycle', icon: Trash2, label: '回收站' },
     { path: '/admin/content', icon: FileText, label: '内容管理' },
+    { path: '/admin/export', icon: Download, label: '数据导出' },
     { path: '/admin/logs', icon: ScrollText, label: '操作日志' },
     { path: '/admin/settings', icon: Settings, label: '系统设置' },
   ];
