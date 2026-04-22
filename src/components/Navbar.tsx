@@ -216,16 +216,6 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-white border-t">
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
-              {/* Free Quota Badge */}
-              <Link
-                href="/membership"
-                className="flex items-center justify-center space-x-1 px-4 py-2.5 bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] rounded-lg text-sm text-white shadow-lg"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <Crown className="w-4 h-4" />
-                <span>开通会员</span>
-              </Link>
-
               {navItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                 return (
