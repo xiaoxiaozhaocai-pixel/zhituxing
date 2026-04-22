@@ -383,25 +383,23 @@ export default function AssistantPage() {
     }, 100);
   };
 
-  const displayQuota = quota?.is_member ? '无限' : (quota?.remaining ?? '加载中');
-  const quotaExhausted = !quota?.is_member && (quota?.remaining ?? 0) <= 0;
+  const displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
+  const quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 职业规划提示 */}
+      {/* 职业规划免费提示 */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
-        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-center gap-2 text-sm">
-          <span className="text-purple-700">
-            💡 先生成你的职业规划，获得更精准的个性化建议
-          </span>
-          <span className="text-gray-300">|</span>
-          <span className="text-purple-700">
-            完善信息，精准度提升100%
-          </span>
-          <Link href="/profile/info" className="text-[#165DFF] underline hover:text-[#165DFF]/80 ml-2">
-            完善信息
-          </Link>
-          <span className="text-gray-300">|</span>
+        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-purple-700">
+              AI职业规划永久免费
+            </span>
+            <span className="text-gray-300">|</span>
+            <span className="text-purple-700">
+              无限次生成完整报告
+            </span>
+          </div>
           <Link href="/career-planning" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
             立即生成
             <ArrowRight className="w-4 h-4" />
@@ -409,7 +407,7 @@ export default function AssistantPage() {
         </div>
       </div>
 
-      {/* 顶部额度提示条 */}
+      {/* 顶部额度提示条 - 模拟面试配额 */}
       {user && (
         <div className={`sticky top-0 z-10 px-4 py-3 border-b transition-colors ${
           quotaExhausted 
@@ -418,18 +416,18 @@ export default function AssistantPage() {
         }`}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {quota?.is_member ? (
+              {quota?.interview?.unlimited ? (
                 <>
                   <Crown className="w-5 h-5 text-[#FF7D00]" />
                   <span className="text-gray-700">
-                    <strong className="text-[#FF7D00]">会员专享</strong> 无限次AI服务
+                    <strong className="text-[#FF7D00]">会员专享</strong> AI模拟面试无限次
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-gray-600 text-sm">本月剩余免费次数：</span>
+                  <span className="text-gray-600 text-sm">AI模拟面试剩余免费次数：</span>
                   <span className={`text-lg font-bold ${quotaExhausted ? 'text-red-500' : 'text-[#165DFF]'}`}>
-                    {displayQuota}/5
+                    {displayQuota}/3
                   </span>
                 </>
               )}
@@ -438,10 +436,10 @@ export default function AssistantPage() {
             {quotaExhausted ? (
               <Link href="/membership">
                 <Button size="sm" className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
-                  开通会员 无限使用
+                  开通会员 解锁无限次
                 </Button>
               </Link>
-            ) : !quota?.is_member && (
+            ) : !quota?.interview?.unlimited && (
               <Link href="/membership">
                 <Button size="sm" variant="outline" className="text-[#FF7D00] border-[#FF7D00] hover:bg-orange-50">
                   开通会员 无限使用
@@ -644,16 +642,22 @@ export default function AssistantPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-[#FF7D00]" />
-              提示
+              AI模拟面试次数已用完
             </DialogTitle>
             <DialogDescription className="space-y-3 pt-2">
-              <p>该功能仅限会员使用，开通会员可享受无限次AI服务</p>
+              <p>你的3次免费AI模拟面试机会已用完，开通会员可解锁无限次全流程模拟面试</p>
               <div className="space-y-2">
-                <p className="font-medium text-gray-900">解锁更多权益：</p>
-                <div className="flex flex-col gap-2">
+                <p className="font-medium text-gray-900">会员专属权益：</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>无限次AI模拟面试</li>
+                  <li>完整版能力测评报告</li>
+                  <li>胜任力评估雷达图</li>
+                  <li>考研就业决策完整版</li>
+                </ul>
+                <div className="flex flex-col gap-2 pt-2">
                   <Link href="/membership" onClick={() => setShowQuotaDialog(false)}>
                     <Button className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
-                      开通会员 - 学期会员仅29.9元/6个月
+                      开通会员 解锁无限次
                     </Button>
                   </Link>
                   <Link href="/profile/invite" onClick={() => setShowQuotaDialog(false)}>

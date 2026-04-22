@@ -46,6 +46,8 @@ const features = [
     icon: <GraduationCap className="w-10 h-10" />,
     title: 'AI职业规划',
     description: '30秒生成专属大学四年职业规划，精准匹配专业、年级和兴趣',
+    badge: '永久免费',
+    badgeColor: 'bg-green-100 text-green-700',
     buttonText: '立即生成',
     buttonLink: '/career-planning',
     gradient: 'from-purple-500 to-purple-600'
@@ -54,6 +56,8 @@ const features = [
     icon: <Briefcase className="w-10 h-10" />,
     title: '全行业岗位百科',
     description: '覆盖互联网/金融/制造/教育/医疗等15+主流行业，匹配最适合你的岗位',
+    badge: '无限次免费',
+    badgeColor: 'bg-blue-100 text-blue-700',
     buttonText: '查询岗位',
     buttonLink: '/jobs',
     gradient: 'from-blue-500 to-blue-600'
@@ -62,6 +66,8 @@ const features = [
     icon: <MessageSquare className="w-10 h-10" />,
     title: 'AI模拟面试',
     description: '基于真实招聘要求，AI模拟真实面试场景，精准测算应聘成功率',
+    badge: '免费3次',
+    badgeColor: 'bg-orange-100 text-orange-700',
     buttonText: '免费体验',
     buttonLink: '/assistant?bot=interview',
     gradient: 'from-green-500 to-green-600'
@@ -248,7 +254,14 @@ export default function HomePage() {
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900">{feature.title}</CardTitle>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <CardTitle className="text-xl font-bold text-gray-900">{feature.title}</CardTitle>
+                    {feature.badge && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${feature.badgeColor || 'bg-gray-100 text-gray-600'}`}>
+                        {feature.badge}
+                      </span>
+                    )}
+                  </div>
                   <CardDescription className="text-gray-600 mt-2">{feature.description}</CardDescription>
                 </CardHeader>
                 <CardFooter>

@@ -184,6 +184,49 @@ pnpm ts-check    # TypeScript类型检查
    - 检查用户登录状态和个人信息完善度
    - 在layout.tsx中包裹应用
 
+## 权限体系（V2）
+
+### 核心原则
+- **AI职业规划永久免费**：无任何次数限制，完整报告、PDF下载全部免费
+- **其他功能合理限制**：模拟面试免费3次，能力测评基础版免费
+- **会员专属功能**：胜任力评估仅会员可用
+
+### 功能权限明细
+
+| 功能 | 免费用户 | 会员用户 |
+|------|----------|----------|
+| AI职业规划 | 无限次完整版 | 无限次 + 每月自动复盘报告 |
+| AI模拟面试 | 3次免费机会 | 无限次全流程模拟 |
+| 能力测评 | 基础版免费 | 完整报告 + 排名对比 |
+| 胜任力评估 | 不可用 | 无限次 + 雷达图 |
+| 考研就业决策 | 基础版3次 | 完整版无限次 |
+| 岗位百科 | 无限次免费 | 无限次免费 |
+| 求职干货 | 无限下载 | 无限下载 |
+
+### 配额数据结构
+
+```typescript
+interface QuotaInfo {
+  career_planning: { remaining: number; unlimited: boolean };
+  interview: { remaining: number; unlimited: boolean; reset_time?: string };
+  assessment: { remaining: number; unlimited: boolean; reset_time?: string };
+  competency: { is_member_only: boolean; requires_report: boolean };
+  decision: { remaining: number; unlimited: boolean };
+  is_member: boolean;
+  member_type: string;
+  member_expire_time: string | null;
+}
+```
+
+### 数据库字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| interview_quota | INTEGER | 模拟面试剩余次数，默认3 |
+| interview_quota_reset_time | TIMESTAMP | 配额重置时间（每月1日） |
+| assessment_quota | INTEGER | 能力测评剩余次数，默认1 |
+| assessment_quota_reset_time | TIMESTAMP | 配额重置时间 |
+
 ## 环境变量
 
 - `COZE_WORKSPACE_PATH`: 项目工作目录

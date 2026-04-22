@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { execSql } from '@/lib/exec-sql';
-import { checkAndResetQuota, isMember } from '@/lib/quota';
+import { isMember, getUserQuota } from '@/lib/quota';
 
 // 获取当前用户
 export async function GET(request: NextRequest) {
@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     // 查询用户信息
     const result = await execSql(
       `SELECT id, phone, nickname, avatar_url, created_at, 
-              monthly_quota, quota_reset_time, member_type, member_expire_time
+              monthly_quota, quota_reset_time, member_type, member_expire_time,
+              interview_quota, interview_quota_reset_time,
+              assessment_quota, assessment_quota_reset_time
        FROM users WHERE id = '${userId}' LIMIT 1`
     );
 
@@ -39,25 +41,16 @@ export async function GET(request: NextRequest) {
       quota_reset_time: string;
       member_type: string;
       member_expire_time: string | null;
+      interview_quota: number;
+      interview_quota_reset_time: string;
+      assessment_quota: number;
+      assessment_quota_reset_time: string;
     };
 
-    // 检查并重置配额
-    await checkAndResetQuota(userId);
-    
-    // 重新获取配额信息
-    const updatedResult = await execSql(
-      `SELECT monthly_quota, quota_reset_time FROM users WHERE id = '${userId}' LIMIT 1`
-    );
-    
-    if (updatedResult && updatedResult.length > 0) {
-      user.monthly_quota = (updatedResult[0] as { monthly_quota: number }).monthly_quota;
-      user.quota_reset_time = (updatedResult[0] as { quota_reset_time: string }).quota_reset_time;
-    }
-    
     // 计算是否为会员
     const isVip = await isMember(userId);
     
-    // 格式化响应
+    // 格式化响应 - 新配额结构
     const userInfo = {
       id: user.id,
       phone: user.phone,
@@ -65,11 +58,40 @@ export async function GET(request: NextRequest) {
       avatar_url: user.avatar_url,
       created_at: user.created_at,
       quota: {
-        remaining: isVip ? -1 : user.monthly_quota, // -1表示会员无限次
-        reset_time: user.quota_reset_time,
-        is_member: isVip,
+        // 职业规划始终免费
+        career_planning: {
+          remaining: -1,
+          unlimited: true
+        },
+        // 模拟面试配额
+        interview: {
+          remaining: isVip ? -1 : (user.interview_quota ?? 3),
+          unlimited: isVip,
+          reset_time: user.interview_quota_reset_time
+        },
+        // 能力测评配额
+        assessment: {
+          remaining: isVip ? -1 : (user.assessment_quota ?? 1),
+          unlimited: isVip,
+          reset_time: user.assessment_quota_reset_time
+        },
+        // 胜任力评估（仅会员）
+        competency: {
+          is_member_only: true,
+          requires_report: true
+        },
+        // 考研就业决策
+        decision: {
+          remaining: isVip ? -1 : 3,
+          unlimited: isVip
+        },
+        // 会员状态
         member_type: user.member_type,
-        member_expire_time: user.member_expire_time
+        member_expire_time: user.member_expire_time,
+        // 兼容旧字段
+        remaining: isVip ? -1 : user.interview_quota ?? 3,
+        reset_time: user.interview_quota_reset_time,
+        is_member: isVip
       }
     };
 

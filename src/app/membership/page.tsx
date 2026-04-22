@@ -7,42 +7,42 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Check, Zap, FileDown, BookOpen, Headphones, Loader2, Users, BarChart3, MessageCircle, Crown, Star } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
-// 更新后的会员权益
+// 更新后的会员权益（按新权限策略）
 const membershipBenefits = [
   {
-    icon: <Zap className="w-8 h-8 text-[#165DFF]" />,
-    title: '无限次AI核心服务',
-    description: '职业规划、岗位查询、模拟面试、考研决策、能力测评无限次使用'
+    icon: <Zap className="w-8 h-8 text-[#722ED1]" />,
+    title: '每月自动职业规划复盘',
+    description: '根据当月面试、技能学习数据，自动更新你的职业规划报告'
   },
   {
-    icon: <FileDown className="w-8 h-8 text-[#165DFF]" />,
-    title: '专属成长报告',
-    description: '解锁所有报告完整内容，支持PDF格式下载'
+    icon: <MessageCircle className="w-8 h-8 text-[#FF7D00]" />,
+    title: '无限次AI模拟面试',
+    description: '无限次全流程模拟（HR/业务/高管），逐题详细点评+改进建议'
   },
   {
     icon: <BarChart3 className="w-8 h-8 text-[#165DFF]" />,
-    title: '胜任力动态评估',
-    description: '专属胜任力雷达图，每月自动更新成长报告'
+    title: '完整能力测评报告',
+    description: '查看完整版测评报告，个性化技能提升方案，同专业能力排名对比'
+  },
+  {
+    icon: <Star className="w-8 h-8 text-[#722ED1]" />,
+    title: '胜任力评估服务',
+    description: '无限次胜任力评估，可视化雷达图，能力短板分析与提升建议'
+  },
+  {
+    icon: <FileDown className="w-8 h-8 text-[#165DFF]" />,
+    title: '完整版考研就业决策',
+    description: '完整版院校/专业推荐，个性化备考计划，历年分数线分析'
+  },
+  {
+    icon: <Headphones className="w-8 h-8 text-[#FF7D00]" />,
+    title: '增值服务8折优惠',
+    description: '1v1简历精修、模拟面试复盘、职业规划定制报告全部8折'
   },
   {
     icon: <Users className="w-8 h-8 text-[#165DFF]" />,
     title: '会员专属社群',
     description: '加入专属社群，获得每周直播答疑和求职指导'
-  },
-  {
-    icon: <BookOpen className="w-8 h-8 text-[#165DFF]" />,
-    title: '内推资源库',
-    description: '会员专属内推资源库，定期更新企业校招内推码'
-  },
-  {
-    icon: <Headphones className="w-8 h-8 text-[#165DFF]" />,
-    title: '优先客服支持',
-    description: '专属客服通道，问题1小时内响应'
-  },
-  {
-    icon: <MessageCircle className="w-8 h-8 text-[#165DFF]" />,
-    title: '增值服务折扣',
-    description: '享受所有增值付费服务8折优惠'
   }
 ];
 
@@ -54,10 +54,10 @@ const membershipPlans = [
     price: '¥9.9',
     period: '/30天',
     features: [
-      '所有会员专属特权',
-      '无限次AI核心服务',
-      '完整报告内容查看',
-      '胜任力动态评估'
+      '每月自动职业规划复盘',
+      '无限次AI模拟面试',
+      '完整能力测评报告',
+      '胜任力评估服务'
     ],
     buttonText: '立即开通',
     isRecommended: false,
@@ -69,13 +69,14 @@ const membershipPlans = [
     title: '学期会员',
     price: '¥29.9',
     period: '/6个月',
-    badge: '🔥 推荐',
+    badge: '推荐',
     features: [
-      '所有会员专属特权',
-      '无限次AI核心服务',
-      '完整报告内容查看',
-      '胜任力动态评估',
-      '会员专属内推资源'
+      '每月自动职业规划复盘',
+      '无限次AI模拟面试',
+      '完整能力测评报告',
+      '胜任力评估服务',
+      '完整版考研就业决策',
+      '增值服务8折优惠'
     ],
     buttonText: '立即开通',
     isRecommended: true,
@@ -86,14 +87,15 @@ const membershipPlans = [
     title: '年度会员',
     price: '¥49.9',
     period: '/12个月',
-    badge: '💰 最划算',
+    badge: '最划算',
     features: [
-      '所有会员专属特权',
-      '无限次AI核心服务',
-      '完整报告内容查看',
-      '胜任力动态评估',
-      '会员专属内推资源',
-      '优先客服响应'
+      '每月自动职业规划复盘',
+      '无限次AI模拟面试',
+      '完整能力测评报告',
+      '胜任力评估服务',
+      '完整版考研就业决策',
+      '增值服务8折优惠',
+      '会员专属社群'
     ],
     buttonText: '立即开通',
     isRecommended: false,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRemainingQuota, getUserQuota } from '@/lib/quota';
+import { checkFeatureAccess } from '@/lib/quota';
 import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
@@ -253,12 +253,14 @@ export async function POST(request: NextRequest) {
     // 构建最终消息（用户上下文 + 用户输入）
     const finalMessage = userContext + message;
 
-    // 检查配额（非会员需要扣减）
+    // 检查配额（非会员需要扣减）- 根据bot类型判断
     if (userId && !apiKey) {
-      const quota = await getRemainingQuota(userId);
-      if (quota <= 0) {
+      const feature = botType === 'interview' ? 'interview' : 
+                      botType === 'assessment' ? 'assessment' : 'career_planning';
+      const access = await checkFeatureAccess(userId, feature);
+      if (!access.allowed) {
         return new Response(
-          JSON.stringify({ error: 'quota_exceeded', message: '免费次数已用完' }),
+          JSON.stringify({ error: 'quota_exceeded', message: access.reason }),
           { status: 403, headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -350,11 +352,10 @@ export async function POST(request: NextRequest) {
     // 获取配额信息
     let quotaInfo = { remaining: -1, isMember: false };
     if (userId) {
-      const member = await getUserQuota(userId);
-      const isExpired = member?.member_expire_time && new Date(member.member_expire_time) > new Date();
+      const access = await checkFeatureAccess(userId, 'career_planning');
       quotaInfo = {
-        remaining: member?.monthly_quota ?? 0,
-        isMember: !!(member?.member_type !== 'free' && isExpired)
+        remaining: access.remaining ?? 0,
+        isMember: access.allowed && (access.remaining === -1 || access.remaining === undefined)
       };
     }
 

@@ -3,6 +3,34 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 interface QuotaInfo {
+  // 职业规划
+  career_planning: {
+    remaining: number;
+    unlimited: boolean;
+  };
+  // 模拟面试配额
+  interview: {
+    remaining: number;
+    unlimited: boolean;
+    reset_time?: string;
+  };
+  // 能力测评配额
+  assessment: {
+    remaining: number;
+    unlimited: boolean;
+    reset_time?: string;
+  };
+  // 胜任力评估
+  competency: {
+    is_member_only: boolean;
+    requires_report: boolean;
+  };
+  // 考研就业决策
+  decision: {
+    remaining: number;
+    unlimited: boolean;
+  };
+  // 兼容旧字段
   remaining: number;
   reset_time: string;
   is_member: boolean;
@@ -142,9 +170,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (data.success && data.user) {
         setUser(data.user);
-        // 注册后默认5次配额
+        // 注册后设置默认配额
         setQuota({
-          remaining: 5,
+          career_planning: { remaining: -1, unlimited: true },
+          interview: { remaining: 3, unlimited: false },
+          assessment: { remaining: 1, unlimited: false },
+          competency: { is_member_only: true, requires_report: true },
+          decision: { remaining: 3, unlimited: false },
+          remaining: 3,
           reset_time: '',
           is_member: false,
           member_type: 'free',
