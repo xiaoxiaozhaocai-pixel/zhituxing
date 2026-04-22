@@ -46,6 +46,10 @@ function MessagesPanel({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     fetchNotifications();
   }, [userId]);
 
@@ -55,11 +59,14 @@ function MessagesPanel({ userId }: { userId: string }) {
         headers: { 'x-user-id': userId }
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setNotifications(data.data.notifications || []);
+      } else {
+        setNotifications([]);
       }
     } catch (error) {
       console.error('获取通知失败:', error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -250,6 +257,10 @@ function ReportsPanel({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     fetchReports();
   }, [userId]);
 
@@ -259,11 +270,15 @@ function ReportsPanel({ userId }: { userId: string }) {
         headers: { 'x-user-id': userId }
       });
       const data = await res.json();
-      if (data.code === 200) {
-        setReports(data.data || []);
+      if (data.code === 200 && data.data) {
+        // API返回的数据结构是 { list: [...], total, page, pageSize, totalPages }
+        setReports(data.data.list || []);
+      } else {
+        setReports([]);
       }
     } catch (error) {
       console.error('获取报告失败:', error);
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -299,9 +314,13 @@ function ReportsPanel({ userId }: { userId: string }) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-gray-900">{report.title || '职业规划报告'}</h3>
+                    <h3 className="font-medium text-gray-900">{report.title || `${report.major || '职业规划'}报告`}</h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      {new Date(report.created_at).toLocaleString('zh-CN')}
+                      {report.core_job && <span className="mr-2">目标岗位: {report.core_job}</span>}
+                      {report.city && <span className="mr-2">城市: {report.city}</span>}
+                      {report.create_time && (
+                        <span>{new Date(report.create_time).toLocaleString('zh-CN')}</span>
+                      )}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -325,6 +344,10 @@ function FavoritesPanel({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     fetchFavorites();
   }, [userId]);
 
@@ -334,11 +357,14 @@ function FavoritesPanel({ userId }: { userId: string }) {
         headers: { 'x-user-id': userId }
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setFavorites(data.data.favorites || []);
+      } else {
+        setFavorites([]);
       }
     } catch (error) {
       console.error('获取收藏失败:', error);
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
@@ -425,6 +451,10 @@ function InvitePanel({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     fetchInviteData();
   }, [userId]);
 
@@ -432,9 +462,9 @@ function InvitePanel({ userId }: { userId: string }) {
     try {
       const res = await fetch('/api/invite/my-code');
       const data = await res.json();
-      if (data.success) {
-        setInviteCode(data.data.invite_code);
-        setStats(data.data.stats);
+      if (data.success && data.data) {
+        setInviteCode(data.data.invite_code || '');
+        setStats(data.data.stats || {});
       }
     } catch (error) {
       console.error('获取邀请数据失败:', error);
