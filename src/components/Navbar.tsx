@@ -2,16 +2,10 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, User, ChevronDown, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles } from 'lucide-react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const navItems = [
   { name: '首页', href: '/', icon: <Home className="w-5 h-5" /> },
@@ -31,6 +25,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,6 +61,10 @@ export default function Navbar() {
   const handleLogout = async () => {
     await logout();
     window.location.href = '/';
+  };
+
+  const goToProfile = () => {
+    router.push('/profile');
   };
 
   return (
@@ -118,7 +117,7 @@ export default function Navbar() {
               {/* Notification Bell */}
               {user && (
                 <Link
-                  href="/notifications"
+                  href="/profile?tab=messages"
                   className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Bell className="w-5 h-5 text-gray-600" />
@@ -132,53 +131,23 @@ export default function Navbar() {
 
               {/* Auth Buttons */}
               {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-[#165DFF] rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-sm font-medium">{user.nickname}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <Link href="/notifications" className="flex items-center justify-between">
-                        <span className="flex items-center gap-2">
-                          <Bell className="w-4 h-4" />
-                          我的消息
-                        </span>
-                        {unreadNotifications > 0 && (
-                          <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                            {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                          </span>
-                        )}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/membership">我的会员</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/reports">我的报告</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/favorites">我的收藏</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/invite">我的邀请</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile/settings">账号设置</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-red-600"
-                      onClick={handleLogout}
-                    >
-                      退出登录
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center space-x-2">
+                  {/* 个人中心按钮 */}
+                  <Button
+                    variant="ghost"
+                    className="flex items-center space-x-2 text-[#165DFF] hover:bg-[#165DFF]/10"
+                    onClick={goToProfile}
+                  >
+                    <span className="text-sm font-medium">个人中心</span>
+                  </Button>
+                  
+                  {/* 用户头像 - 点击直接跳转到个人中心 */}
+                  <button onClick={goToProfile}>
+                    <div className="w-8 h-8 bg-[#165DFF] rounded-full flex items-center justify-center hover:bg-[#165DFF]/90 transition-colors">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                  </button>
+                </div>
               ) : (
                 <div className="flex items-center space-x-3">
                   <Link href="/auth">
@@ -241,9 +210,16 @@ export default function Navbar() {
               <div className="pt-4 border-t space-y-2">
                 {user ? (
                   <>
-                    <div className="px-4 py-2 text-center">
-                      <span className="font-medium">{user.nickname}</span>
-                    </div>
+                    <button
+                      onClick={() => {
+                        goToProfile();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium bg-[#165DFF] text-white"
+                    >
+                      <User className="w-5 h-5" />
+                      个人中心
+                    </button>
                     <Button
                       variant="ghost"
                       className="w-full text-red-600"
@@ -252,6 +228,7 @@ export default function Navbar() {
                         setIsMobileMenuOpen(false);
                       }}
                     >
+                      <LogOut className="w-5 h-5 mr-2" />
                       退出登录
                     </Button>
                   </>
