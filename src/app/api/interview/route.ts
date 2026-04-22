@@ -11,9 +11,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 模拟面试智能体API配置
-const INTERVIEW_AGENT_API = process.env.INTERVIEW_AGENT_API || 'https://7xwsb63bkk.coze.site/stream_run';
-const INTERVIEW_AGENT_TOKEN = process.env.INTERVIEW_AGENT_TOKEN || '';
-const PROJECT_ID = process.env.INTERVIEW_AGENT_PROJECT_ID || '7631218260822097954';
+const INTERVIEW_AGENT_API = process.env.INTERVIEW_AGENT_API || 'https://cgctvf5zv2.coze.site/stream_run';
+const INTERVIEW_AGENT_TOKEN = process.env.INTERVIEW_AGENT_TOKEN || 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjMxMWQwNzVjLTY2NDktNDdmYi04MWUxLTJmZDIyYTJmMTgxOSJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbIkZXRXNDQTIwbnpLTU5uOWlLV3JXUkdXY0k5V3pwb1F0Il0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzc2ODI0MjE3LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NjMxMzgwMDM5MTc0NDU1MzQ3Iiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NjMxNDAxOTA0OTgyOTgyNzA2In0.VnAf-aJfBFdtPo9sPHh-RaGp1U6lfp07wFn1HGgDpn1EwVR9tUiQMLzpNLZLslyvU_Lrcnux52GVIKHjWnQTJGBE8_OPE5evzBihYTrVmKVrrZNZqdrUZg-i6Fw_gJroVBmg5J_bBTv3qXAzLtnc8JtT0N9OExBLqDkK6D1wm_Xkcgld1NdKBQvzP9ZDU5-ni84yldZbopLkWI83ZxFpAv3IXmmoDi-r0hbDxD-UabIy2V1tDLTV3lOjdE2-Bqqn71lH8h13_8wDQKb6Zo8_LSelSeU8TxQogp0tGFJcC21eHB-48Lou33h9O_nLdvXGw3aDQmNFMHWFbRjCdEhzxw';
+const PROJECT_ID = process.env.INTERVIEW_AGENT_PROJECT_ID || '7631320202852204571';
 
 // 模拟面试官的开场白
 const DEMO_INTERVIEW_INTRO = `【模拟面试开始】
