@@ -423,11 +423,6 @@ export default function CareerPlanningPage() {
           <p className="text-gray-500 text-lg mb-4">
             30秒完成，开启你的大学职业成长之路
           </p>
-          {/* 永久免费标识 */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-full text-sm">
-            <CheckCircle className="w-4 h-4" />
-            永久免费 · 无次数限制 · 报告PDF可下载
-          </div>
         </div>
 
         {/* 功能介绍 */}

@@ -230,8 +230,6 @@ export default function HomePage() {
             <span className="inline-flex items-center">
               <AnimatedNumber target={15680} />+ 大学生已找到心仪工作
             </span>
-            <span className="text-gray-300">|</span>
-            <span className="text-green-600 font-medium">AI职业规划永久免费</span>
           </p>
           <p className="text-sm text-green-600 font-medium">
             <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium border border-green-200">
