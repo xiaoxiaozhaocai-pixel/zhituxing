@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { syncAllPlatforms } from '@/lib/jd-sync-service';
+import { syncAllPlatforms, syncSinglePlatform } from '@/lib/jd-sync-service';
 
 // 手动触发同步任务
 export async function POST(request: NextRequest) {
   try {
-    // 获取管理员ID（这里简化为从header获取，实际应该验证权限）
-    const adminId = request.headers.get('x-admin-id');
-    
-    if (!adminId) {
-      return NextResponse.json({
-        code: 401,
-        message: '无权限执行此操作'
-      }, { status: 401 });
-    }
+    const body = await request.json().catch(() => ({}));
+    const platformId = body.platform; // 可选，指定单个平台
+    const useMock = body.useMock === true;
 
-    console.log(`管理员 ${adminId} 手动触发JD同步任务`);
+    console.log(`手动触发JD同步任务... platform: ${platformId || '全量'}, useMock: ${useMock}`);
     
-    // 执行同步
-    const results = await syncAllPlatforms();
+    let results;
+    if (platformId) {
+      // 单平台同步
+      const result = await syncSinglePlatform(platformId);
+      results = [result];
+    } else {
+      // 全量同步
+      results = await syncAllPlatforms(useMock);
+    }
 
     const totalFetched = results.reduce((sum, r) => sum + r.total_fetched, 0);
     const totalSuccess = results.reduce((sum, r) => sum + r.success_count, 0);

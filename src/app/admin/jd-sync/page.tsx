@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   RefreshCw, 
@@ -13,10 +15,22 @@ import {
   Clock,
   AlertCircle,
   Database,
-  ExternalLink,
-  Calendar,
-  TrendingUp
+  BarChart3,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  Play
 } from 'lucide-react';
+
+// 平台配置
+const PLATFORMS = [
+  { id: 'ncss', name: '国家24365就业平台', color: 'bg-blue-500', pages: 10 },
+  { id: 'mohrss', name: '中国公共招聘网', color: 'bg-green-500', pages: 10 },
+  { id: 'gxrc', name: '广西人才网上', color: 'bg-orange-500', pages: 10 },
+  { id: 'iguopin', name: '国聘网', color: 'bg-red-500', pages: 10 },
+  { id: 'chinahr', name: '中国研究生招聘网', color: 'bg-purple-500', pages: 10 },
+  { id: 'gxedu', name: '广西高校毕业生就业网', color: 'bg-teal-500', pages: 5 }
+];
 
 // 同步日志接口
 interface SyncLog {
@@ -30,110 +44,136 @@ interface SyncLog {
 }
 
 // 同步统计接口
-interface SyncStats {
-  total_jobs: number;
-  today_sync: number;
-  last_sync_time: string | null;
+interface JobsStats {
+  total: number;
+  today: number;
+  bySource: Record<string, number>;
+}
+
+// 同步进度
+interface SyncProgress {
+  platform: string;
+  current: number;
+  total: number;
+  status: 'pending' | 'syncing' | 'completed' | 'error';
 }
 
 export default function JdSyncPage() {
   const { user, loading: authLoading } = useAuth();
   
   const [logs, setLogs] = useState<SyncLog[]>([]);
-  const [stats, setStats] = useState<SyncStats | null>(null);
+  const [stats, setStats] = useState<JobsStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [syncingPlatform, setSyncingPlatform] = useState<string | null>(null);
+  const [progress, setProgress] = useState<SyncProgress | null>(null);
+  const [expandedLogs, setExpandedLogs] = useState<Set<number>>(new Set());
 
-  // 获取同步统计
-  const fetchStats = async () => {
+  // 获取统计数据
+  const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/jobs');
-      const data = await response.json();
-      
-      const today = new Date().toISOString().slice(0, 10);
-      
-      // 从 jobs 表获取总数据
-      const totalJobs = data.data?.total || 0;
-      
-      // 从同步日志获取今日同步数
-      const todaySync = logs.filter(log => 
-        log.sync_time && log.sync_time.slice(0, 10) === today
-      ).reduce((sum, log) => sum + log.success_count, 0);
-      
-      const lastLog = logs[0];
-      
-      setStats({
-        total_jobs: totalJobs,
-        today_sync: todaySync,
-        last_sync_time: lastLog?.sync_time || null
-      });
-    } catch (error) {
-      console.error('获取统计失败:', error);
-    }
-  };
-
-  // 获取同步日志
-  const fetchLogs = async () => {
-    try {
-      const response = await fetch('/api/admin/jd-sync/logs');
+      const response = await fetch('/api/jd-sync/sync');
       const data = await response.json();
       
       if (data.code === 200) {
-        setLogs(data.data?.list || []);
+        setStats(data.data.jobs_stats);
+      }
+    } catch (error) {
+      console.error('获取统计失败:', error);
+    }
+  }, []);
+
+  // 获取同步日志
+  const fetchLogs = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/jd-sync/logs?pageSize=50');
+      const data = await response.json();
+      
+      if (data.code === 200) {
+        setLogs(data.data.list || []);
       }
     } catch (error) {
       console.error('获取日志失败:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user) {
-      Promise.all([fetchLogs()]).finally(() => setLoading(false));
+      Promise.all([fetchLogs(), fetchStats()]).finally(() => setLoading(false));
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, fetchLogs, fetchStats]);
 
-  useEffect(() => {
-    if (logs.length > 0) {
-      fetchStats();
-    }
-  }, [logs]);
-
-  // 手动触发同步
-  const handleManualSync = async (useMock: boolean = false) => {
+  // 全量同步
+  const handleFullSync = async (useMock: boolean = false) => {
     if (!user) return;
     
     setSyncing(true);
-    setError(null);
-    setSuccessMessage(null);
+    setProgress({ platform: '全量同步', current: 0, total: PLATFORMS.length, status: 'syncing' });
     
     try {
       const response = await fetch('/api/jd-sync/sync', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ useMock })
       });
       
       const data = await response.json();
       
       if (data.code === 200) {
-        const { summary } = data.data;
-        setSuccessMessage(`同步完成！共拉取 ${summary.total_fetched} 条，成功导入 ${summary.success_count} 条`);
+        setProgress({ platform: '全量同步', current: PLATFORMS.length, total: PLATFORMS.length, status: 'completed' });
         
-        // 刷新日志列表
+        // 刷新数据
         await fetchLogs();
         await fetchStats();
+        
+        setTimeout(() => setProgress(null), 3000);
       } else {
-        setError(data.message || '同步失败');
+        setProgress({ platform: '全量同步', current: 0, total: PLATFORMS.length, status: 'error' });
+        setTimeout(() => setProgress(null), 3000);
       }
     } catch (error) {
       console.error('同步失败:', error);
-      setError('网络错误，请稍后重试');
+      setProgress({ platform: '全量同步', current: 0, total: PLATFORMS.length, status: 'error' });
+      setTimeout(() => setProgress(null), 3000);
     } finally {
       setSyncing(false);
+    }
+  };
+
+  // 单平台同步
+  const handleSingleSync = async (platformId: string) => {
+    if (!user) return;
+    
+    setSyncingPlatform(platformId);
+    setProgress({ platform: platformId, current: 0, total: 1, status: 'syncing' });
+    
+    try {
+      const response = await fetch('/api/admin/jd-sync/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platform: platformId })
+      });
+      
+      const data = await response.json();
+      
+      if (data.code === 200) {
+        setProgress({ platform: platformId, current: 1, total: 1, status: 'completed' });
+        
+        // 刷新数据
+        await fetchLogs();
+        await fetchStats();
+        
+        setTimeout(() => setProgress(null), 2000);
+      } else {
+        setProgress({ platform: platformId, current: 0, total: 1, status: 'error' });
+        setTimeout(() => setProgress(null), 2000);
+      }
+    } catch (error) {
+      console.error('同步失败:', error);
+      setProgress({ platform: platformId, current: 0, total: 1, status: 'error' });
+      setTimeout(() => setProgress(null), 2000);
+    } finally {
+      setSyncingPlatform(null);
     }
   };
 
@@ -150,19 +190,21 @@ export default function JdSyncPage() {
     });
   };
 
-  // 获取平台徽章颜色
-  const getPlatformBadge = (platform: string) => {
-    if (platform.includes('24365')) return 'bg-blue-100 text-blue-700';
-    if (platform.includes('公共招聘')) return 'bg-green-100 text-green-700';
-    if (platform.includes('广西')) return 'bg-orange-100 text-orange-700';
-    return 'bg-gray-100 text-gray-700';
+  // 获取平台信息
+  const getPlatformInfo = (name: string) => {
+    return PLATFORMS.find(p => name.includes(p.name.slice(0, 4))) || { 
+      id: 'unknown', 
+      name: name, 
+      color: 'bg-gray-500',
+      pages: 0 
+    };
   };
 
   // 非管理员拦截
   if (!authLoading && user && user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Card className="text-center py-12">
             <CardContent>
               <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -181,17 +223,46 @@ export default function JdSyncPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">JD同步管理</h1>
-          <p className="text-gray-500 mt-1">管理官方公开招聘API数据同步</p>
+          <p className="text-gray-500 mt-1">管理6大官方招聘API数据同步，目标：5000+条真实校招岗位</p>
         </div>
 
+        {/* 同步进度条 */}
+        {progress && (
+          <Card className="mb-8 border-2 border-[#165DFF]/30">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  {progress.status === 'syncing' && <Loader2 className="w-5 h-5 animate-spin text-[#165DFF]" />}
+                  {progress.status === 'completed' && <CheckCircle className="w-5 h-5 text-green-500" />}
+                  {progress.status === 'error' && <XCircle className="w-5 h-5 text-red-500" />}
+                  <span className="font-medium text-gray-900">
+                    {progress.status === 'syncing' && `正在同步: ${progress.platform}`}
+                    {progress.status === 'completed' && '同步完成'}
+                    {progress.status === 'error' && '同步失败'}
+                  </span>
+                </div>
+                <Badge variant={progress.status === 'syncing' ? 'default' : progress.status === 'completed' ? 'secondary' : 'destructive'}>
+                  {progress.status === 'syncing' && '进行中'}
+                  {progress.status === 'completed' && '已完成'}
+                  {progress.status === 'error' && '失败'}
+                </Badge>
+              </div>
+              <Progress value={(progress.current / progress.total) * 100} className="h-2" />
+              <p className="text-sm text-gray-500 mt-2">
+                {progress.current} / {progress.total}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 统计卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500">岗位总数</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.total_jobs || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                   <Database className="w-6 h-6 text-blue-600" />
@@ -204,23 +275,23 @@ export default function JdSyncPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">今日同步</p>
-                  <p className="text-2xl font-bold text-green-600">{stats?.today_sync || 0}</p>
+                  <p className="text-sm text-gray-500">今日新增</p>
+                  <p className="text-2xl font-bold text-green-600">+{stats?.today || 0}</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
+                  <BarChart3 className="w-6 h-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">上次同步</p>
+                  <p className="text-sm text-gray-500">最近同步</p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {formatTime(stats?.last_sync_time || null)}
+                    {logs[0] ? formatTime(logs[0].sync_time) : '从未同步'}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -229,176 +300,287 @@ export default function JdSyncPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">目标进度</p>
+                  <p className="text-2xl font-bold text-[#165DFF]">
+                    {Math.round(((stats?.total || 0) / 5000) * 100)}%
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-[#165DFF]/10 rounded-full flex items-center justify-center">
+                  <Play className="w-6 h-6 text-[#165DFF]" />
+                </div>
+              </div>
+              <Progress value={((stats?.total || 0) / 5000) * 100} className="h-1 mt-2" />
+            </CardContent>
+          </Card>
         </div>
 
-        {/* 操作区域 */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <RefreshCw className="w-5 h-5" />
-              同步控制
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Button 
-                  onClick={() => handleManualSync(false)}
-                  disabled={syncing || loading}
-                  className="bg-[#165DFF] hover:bg-[#165DFF]/90"
-                >
-                  {syncing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      同步中...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      同步官方API
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={() => handleManualSync(true)}
-                  disabled={syncing || loading}
-                  variant="outline"
-                >
-                  <Database className="w-4 h-4 mr-2" />
-                  使用模拟数据
-                </Button>
-                
-                <span className="text-sm text-gray-500">
-                  （官方API不可用时可使用模拟数据演示）
-                </span>
-              </div>
-              
-              <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg">
-                <p>提示：由于部分官方API地址可能已变更，如果官方API同步失败，可以点击&quot;使用模拟数据&quot;按钮添加演示数据。</p>
-              </div>
-            </div>
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-red-500" />
-                <span className="text-sm text-red-700">{error}</span>
-              </div>
-            )}
-            
-            {successMessage && (
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-green-700">{successMessage}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Tab切换 */}
+        <Tabs defaultValue="sync" className="mb-8">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="sync">同步控制</TabsTrigger>
+            <TabsTrigger value="platforms">平台统计</TabsTrigger>
+            <TabsTrigger value="logs">同步日志</TabsTrigger>
+          </TabsList>
 
-        {/* 同步日志 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              同步日志
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-              </div>
-            ) : logs.length === 0 ? (
-              <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">暂无同步记录</p>
-                <p className="text-sm text-gray-400 mt-1">点击&quot;立即同步&quot;开始同步官方招聘数据</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">同步时间</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">来源平台</th>
-                      <th className="text-center py-3 px-4 text-sm font-medium text-gray-500">拉取数</th>
-                      <th className="text-center py-3 px-4 text-sm font-medium text-gray-500">成功</th>
-                      <th className="text-center py-3 px-4 text-sm font-medium text-gray-500">失败</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">状态</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {logs.map((log) => (
-                      <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm text-gray-900">
-                          {formatTime(log.sync_time)}
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge className={getPlatformBadge(log.source_platform)}>
-                            {log.source_platform}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-center text-sm text-gray-900">
-                          {log.total_fetched}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="text-sm font-medium text-green-600">
-                            {log.success_count}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className={`text-sm font-medium ${log.fail_count > 0 ? 'text-red-600' : 'text-gray-400'}`}>
-                            {log.fail_count}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          {log.fail_count > 0 || log.fail_reason ? (
-                            <div className="flex items-center gap-1 text-red-500">
-                              <XCircle className="w-4 h-4" />
-                              <span className="text-xs">{log.fail_reason || '部分失败'}</span>
+          {/* 同步控制Tab */}
+          <TabsContent value="sync">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <RefreshCw className="w-5 h-5" />
+                  全量同步
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  点击下方按钮，从6大官方招聘平台同步校招岗位数据。每次同步将拉取每个平台最近发布的新岗位。
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Button 
+                    onClick={() => handleFullSync(false)}
+                    disabled={syncing}
+                    className="bg-[#165DFF] hover:bg-[#165DFF]/90"
+                  >
+                    {syncing ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                    )}
+                    同步全部平台
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleFullSync(true)}
+                    disabled={syncing}
+                  >
+                    <Loader2 className="w-4 h-4 mr-2" />
+                    使用演示数据
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 单平台控制 */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>单平台同步</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {PLATFORMS.map(platform => (
+                    <div 
+                      key={platform.id}
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${platform.color}`} />
+                          <span className="font-medium text-gray-900">{platform.name}</span>
+                        </div>
+                        <Badge variant="outline">
+                          {stats?.bySource?.[platform.name] || 0} 条
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-3">
+                        预计获取: ~{platform.pages * 100} 条
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => handleSingleSync(platform.id)}
+                        disabled={syncingPlatform === platform.id || syncing}
+                      >
+                        {syncingPlatform === platform.id ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Play className="w-4 h-4 mr-2" />
+                        )}
+                        立即同步
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 平台统计Tab */}
+          <TabsContent value="platforms">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  各平台数据统计
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {PLATFORMS.map(platform => {
+                    const count = stats?.bySource?.[platform.name] || 0;
+                    const percentage = stats?.total ? Math.round((count / stats.total) * 100) : 0;
+                    
+                    return (
+                      <div key={platform.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${platform.color}`} />
+                            <span className="font-medium text-gray-900">{platform.name}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-gray-500">{count} 条</span>
+                            <span className="text-sm font-medium text-gray-900">{percentage}%</span>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div 
+                            className={`${platform.color} h-2 rounded-full transition-all`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {(!stats?.bySource || Object.keys(stats.bySource).length === 0) && (
+                  <div className="text-center py-8 text-gray-500">
+                    <Database className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>暂无数据，请先执行同步任务</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 同步日志Tab */}
+          <TabsContent value="logs">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  同步日志
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {logs.length > 0 ? (
+                  <div className="space-y-3">
+                    {logs.map(log => {
+                      const platform = getPlatformInfo(log.source_platform);
+                      const isExpanded = expandedLogs.has(log.id);
+                      
+                      return (
+                        <div 
+                          key={log.id}
+                          className="border rounded-lg overflow-hidden"
+                        >
+                          <div 
+                            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+                            onClick={() => {
+                              const newExpanded = new Set(expandedLogs);
+                              if (newExpanded.has(log.id)) {
+                                newExpanded.delete(log.id);
+                              } else {
+                                newExpanded.add(log.id);
+                              }
+                              setExpandedLogs(newExpanded);
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-3 h-3 rounded-full ${platform.color}`} />
+                              <div>
+                                <p className="font-medium text-gray-900">{log.source_platform}</p>
+                                <p className="text-sm text-gray-500">{formatTime(log.sync_time)}</p>
+                              </div>
                             </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-green-500">
-                              <CheckCircle className="w-4 h-4" />
-                              <span className="text-xs">成功</span>
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-4 text-sm">
+                                <span className="text-green-600">
+                                  <CheckCircle className="w-4 h-4 inline mr-1" />
+                                  {log.success_count} 成功
+                                </span>
+                                <span className="text-red-600">
+                                  <XCircle className="w-4 h-4 inline mr-1" />
+                                  {log.fail_count} 失败
+                                </span>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronUp className="w-5 h-5 text-gray-400" />
+                              ) : (
+                                <ChevronDown className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          {isExpanded && (
+                            <div className="border-t p-4 bg-gray-50">
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <p className="text-gray-500">总计获取</p>
+                                  <p className="font-medium">{log.total_fetched} 条</p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500">成功导入</p>
+                                  <p className="font-medium text-green-600">{log.success_count} 条</p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500">重复/失败</p>
+                                  <p className="font-medium text-red-600">{log.fail_count} 条</p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-500">成功率</p>
+                                  <p className="font-medium">
+                                    {log.total_fetched > 0 
+                                      ? `${Math.round((log.success_count / log.total_fetched) * 100)}%`
+                                      : '-'}
+                                  </p>
+                                </div>
+                              </div>
+                              {log.fail_reason && (
+                                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+                                  <p className="text-sm text-red-700">
+                                    <AlertCircle className="w-4 h-4 inline mr-1" />
+                                    失败原因: {log.fail_reason}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Clock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>暂无同步日志</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-        {/* 数据来源说明 */}
-        <Card className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50">
+        {/* API说明 */}
+        <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-gray-900 mb-3">官方数据来源</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                <div>
-                  <p className="font-medium text-gray-900">国家24365就业平台</p>
-                  <p className="text-gray-500">教育部官方，提供全国校招岗位</p>
+            <h3 className="font-bold text-blue-900 mb-3">支持的官方招聘平台</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+              {PLATFORMS.map(platform => (
+                <div key={platform.id} className="flex items-center gap-2 text-blue-800">
+                  <div className={`w-2 h-2 rounded-full ${platform.color}`} />
+                  {platform.name}
                 </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                <div>
-                  <p className="font-medium text-gray-900">中国公共招聘网</p>
-                  <p className="text-gray-500">人社部官方，提供国企/事业单位岗位</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                <div>
-                  <p className="font-medium text-gray-900">广西人才网上</p>
-                  <p className="text-gray-500">广西人社厅官方，提供区域精准岗位</p>
-                </div>
-              </div>
+              ))}
             </div>
+            <p className="text-blue-700 text-sm mt-4">
+              数据来源：国家24365就业平台（教育部）、中国公共招聘网（人社部）、国聘网（央企国企）、广西人才网上、广西高校毕业生就业网等官方公开招聘API。所有数据均为真实校招岗位，每周自动更新。
+            </p>
           </CardContent>
         </Card>
       </div>

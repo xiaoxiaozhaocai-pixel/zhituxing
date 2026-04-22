@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { syncAllPlatforms, getLastSyncStatus } from '@/lib/jd-sync-service';
+import { syncAllPlatforms, syncSinglePlatform, getLastSyncStatus, getJobsStats, getPlatformStats } from '@/lib/jd-sync-service';
 
-// 触发同步
+// 触发全量同步
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -36,15 +36,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// 获取同步状态
-export async function GET() {
+// 获取同步状态和统计
+export async function GET(request: NextRequest) {
   try {
     const lastSync = await getLastSyncStatus();
+    const jobsStats = await getJobsStats();
+    const platformStats = await getPlatformStats();
 
     return NextResponse.json({
       code: 200,
       data: {
         last_sync: lastSync,
+        jobs_stats: jobsStats,
+        platform_stats: platformStats,
         is_syncing: false
       }
     });
