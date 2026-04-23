@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import BatchImportModal from '@/components/admin/BatchImportModal';
 import {
   Search,
   Plus,
@@ -15,7 +16,8 @@ import {
   Building2,
   MapPin,
   DollarSign,
-  X
+  X,
+  Upload
 } from 'lucide-react';
 
 interface Job {
@@ -53,6 +55,7 @@ export default function JobsPage() {
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; id: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showBatchImport, setShowBatchImport] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -160,14 +163,20 @@ export default function JobsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">JD管理</h1>
-        <Button onClick={() => { setForm({
-          job_name: '', company_name: '', company_type: '', city: '',
-          salary_min: '', salary_max: '', industry: '', skills: '',
-          jd_content: '', is_fresh_friendly: true
-        }); setModal({ show: true, mode: 'create' }); }}>
-          <Plus className="w-4 h-4 mr-2" />
-          新增JD
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowBatchImport(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            批量导入JD
+          </Button>
+          <Button onClick={() => { setForm({
+            job_name: '', company_name: '', company_type: '', city: '',
+            salary_min: '', salary_max: '', industry: '', skills: '',
+            jd_content: '', is_fresh_friendly: true
+          }); setModal({ show: true, mode: 'create' }); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            新增JD
+          </Button>
+        </div>
       </div>
 
       {/* 筛选 */}
@@ -383,6 +392,13 @@ export default function JobsPage() {
           </Card>
         </div>
       )}
+
+      {/* 批量导入弹窗 */}
+      <BatchImportModal
+        show={showBatchImport}
+        onClose={() => setShowBatchImport(false)}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }
