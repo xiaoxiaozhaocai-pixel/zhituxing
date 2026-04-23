@@ -27,6 +27,11 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  // 如果是后台管理页面，不显示导航栏
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
