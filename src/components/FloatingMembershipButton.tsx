@@ -3,12 +3,19 @@
 import Link from 'next/link';
 import { Crown, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function FloatingMembershipButton() {
+  const pathname = usePathname();
   const { user, quota } = useAuth();
   const [visible, setVisible] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
+
+  // 如果是后台管理页面，不显示悬浮按钮
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   useEffect(() => {
     // 检查配额是否用完
