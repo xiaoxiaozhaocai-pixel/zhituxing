@@ -57,7 +57,7 @@ interface AuthContextType {
   quota: QuotaInfo | null;
   refreshQuota: () => Promise<void>;
   login: (phone: string, password?: string, code?: string) => Promise<{ success: boolean; message: string }>;
-  register: (phone: string, password: string, code: string, nickname?: string) => Promise<{ success: boolean; message: string }>;
+  register: (phone: string, password: string, code: string, nickname?: string, inviteCode?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   sendCode: (phone: string, type?: string) => Promise<{ success: boolean; message: string; code?: string }>;
 }
@@ -158,12 +158,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (phone: string, password: string, code: string, nickname?: string): Promise<{ success: boolean; message: string }> => {
+  const register = async (phone: string, password: string, code: string, nickname?: string, inviteCode?: string): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password, code, nickname }),
+        body: JSON.stringify({ phone, password, code, nickname, invite_code: inviteCode }),
       });
       
       const data = await response.json();

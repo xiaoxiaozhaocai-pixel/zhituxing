@@ -1,18 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Gift } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
 export default function AuthPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, login, register, sendCode } = useAuth();
   
   const [mode, setMode] = useState<AuthMode>('login');
@@ -20,10 +21,21 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [nickname, setNickname] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // 从URL获取邀请码
+  useEffect(() => {
+    const code = searchParams.get('invite_code');
+    if (code) {
+      setInviteCode(code);
+      // 如果是从邀请链接进入，默认显示注册模式
+      setMode('register');
+    }
+  }, [searchParams]);
 
   // 如果已登录，跳转到首页
   useEffect(() => {
@@ -85,7 +97,7 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-      result = await register(phone, password, code, nickname);
+      result = await register(phone, password, code, nickname, inviteCode);
     }
 
     setLoading(false);
@@ -123,6 +135,16 @@ export default function AuthPage() {
           </CardHeader>
           
           <CardContent>
+            {/* 邀请码提示 */}
+            {mode === 'register' && inviteCode && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                <Gift className="w-5 h-5 text-green-600" />
+                <span className="text-sm text-green-700">
+                  您正在使用邀请码 <strong>{inviteCode}</strong> 注册，注册成功后双方都将获得奖励！
+                </span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 手机号 */}
               <div>

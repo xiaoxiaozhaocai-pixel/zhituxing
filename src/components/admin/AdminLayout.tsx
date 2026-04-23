@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useAdminAuth, AdminAuthProvider } from '@/hooks/useAdminAuth';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { 
   LayoutDashboard, 
   FileSearch, 
@@ -25,7 +25,22 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+// 登录页面布局（无侧边栏）
+function AdminLoginLayout({ children }: AdminLayoutProps) {
+  return <>{children}</>;
+}
+
+// 加载状态组件
+function AdminLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
+      <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+    </div>
+  );
+}
+
+// 主后台布局（带侧边栏）
+function AdminMainLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { admin, loading, logout, isAuthenticated } = useAdminAuth();
@@ -36,25 +51,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       router.push('/admin/login');
     }
   }, [loading, isAuthenticated, pathname, router]);
-
-  // 登录页面不需要布局
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
-
-  // 加载中
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
-      </div>
-    );
-  }
-
-  // 未登录
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const menuItems = [
     { path: '/admin', icon: LayoutDashboard, label: '数据看板', exact: true },
@@ -80,6 +76,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     logout();
     router.push('/admin/login');
   };
+
+  // 加载中
+  if (loading) {
+    return <AdminLoading />;
+  }
+
+  // 未登录
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#F3F4F6]">
@@ -157,5 +163,26 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+// 根据路径选择布局
+function AdminLayoutInner({ children }: AdminLayoutProps) {
+  const pathname = usePathname();
+  
+  // 登录页面使用简单布局
+  if (pathname === '/admin/login') {
+    return <AdminLoginLayout>{children}</AdminLoginLayout>;
+  }
+  
+  // 其他页面使用主布局
+  return <AdminMainLayout>{children}</AdminMainLayout>;
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  return (
+    <Suspense fallback={<AdminLoading />}>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </Suspense>
   );
 }
