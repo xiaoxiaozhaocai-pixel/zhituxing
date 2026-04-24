@@ -326,7 +326,23 @@ export default function AssistantPage() {
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          fullContent += chunk;
+          
+          // 解析SSE格式数据，提取answer字段
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                // 从 data.content.content.answer 或 data.content.answer 获取文本
+                const answer = data.content?.content?.answer || data.content?.answer;
+                if (answer && typeof answer === 'string') {
+                  fullContent += answer;
+                }
+              } catch {
+                // 忽略解析错误
+              }
+            }
+          }
           
           setMessages(prev => {
             const newMessages = [...prev];

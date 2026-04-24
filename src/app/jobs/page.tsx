@@ -207,8 +207,10 @@ export default function JobsPage() {
                   done = true;
                   break;
                 }
-                if (data.content) {
-                  fullContent += data.content;
+                // 从 data.content.content.answer 或 data.content.answer 获取文本
+                const answer = data.content?.content?.answer || data.content?.answer;
+                if (answer && typeof answer === 'string') {
+                  fullContent += answer;
                   // 实时更新最后一条消息
                   setMessages(prev => {
                     const updated = [...prev];
