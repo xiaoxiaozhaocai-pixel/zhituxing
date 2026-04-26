@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import FileImportModule from '@/components/admin/FileImportModule';
 import {
   FileText,
   Megaphone,
@@ -307,7 +308,18 @@ export default function ContentPage() {
                     />
                   </div>
                 )}
-                
+
+                {/* 文件导入模块 */}
+                {activeType !== 'announcement' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">导入内容（可选）</label>
+                    <FileImportModule
+                      onContentExtracted={(content) => setForm(prev => ({ ...prev, content }))}
+                      existingContent={form.content}
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium mb-1">内容</label>
                   <textarea
