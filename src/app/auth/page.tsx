@@ -328,34 +328,6 @@ export default function AuthPage() {
             )}
           </CardContent>
         </Card>
-
-        {/* 其他登录方式 */}
-        {mode === 'login' && (
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 text-gray-500">其他登录方式</span>
-              </div>
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="outline" className="bg-white">
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                  <path fill="#07C160" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm-1-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm9 7h-6v-2h6v2zm0-4h-2v-2h2v2z"/>
-                </svg>
-                微信登录
-              </Button>
-              <Button variant="outline" className="bg-white">
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                  <path fill="#12B7F5" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm-1-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm9 7h-6v-2h6v2zm0-4h-2v-2h2v2z"/>
-                </svg>
-                QQ登录
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
