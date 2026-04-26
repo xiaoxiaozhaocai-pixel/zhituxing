@@ -7,6 +7,7 @@ import FreeQuotaBadge from '@/components/FreeQuotaBadge';
 import FloatingMembershipButton from '@/components/FloatingMembershipButton';
 import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
+import { ToastProvider } from '@/hooks/useToast';
 
 export const metadata: Metadata = {
   title: {
@@ -52,13 +53,15 @@ export default function RootLayout({
       <body className={`antialiased`}>
         {isDev && <Inspector />}
         <Providers>
-          <ProfileGuideProvider>
-            <Navbar />
-            <FreeQuotaBadge />
-            <FloatingMembershipButton />
-            {children}
-            <Footer />
-          </ProfileGuideProvider>
+          <ToastProvider>
+            <ProfileGuideProvider>
+              <Navbar />
+              <FreeQuotaBadge />
+              <FloatingMembershipButton />
+              {children}
+              <Footer />
+            </ProfileGuideProvider>
+          </ToastProvider>
         </Providers>
       </body>
     </html>

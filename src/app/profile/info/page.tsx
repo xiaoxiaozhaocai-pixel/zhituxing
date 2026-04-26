@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import { 
   User, 
   Briefcase, 
@@ -20,9 +21,8 @@ import {
   Loader2,
   X,
   Plus,
-  CheckCircle,
-  AlertCircle,
-  Sparkles
+  Sparkles,
+  CircleCheck
 } from 'lucide-react';
 
 // MBTI类型列表
@@ -56,11 +56,11 @@ interface ProfileForm {
 export default function ProfileInfoPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { showToast } = useToast();
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [skillInput, setSkillInput] = useState('');
-  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
   
   // 表单数据
   const [form, setForm] = useState<ProfileForm>({
@@ -195,13 +195,13 @@ export default function ProfileInfoPage() {
       const data = await response.json();
       
       if (data.code === 200) {
-        setMessage({ type: 'success', text: '个人信息保存成功' });
+        showToast('个人信息保存成功', 'success', 3000);
       } else {
-        setMessage({ type: 'error', text: data.message || '请稍后重试' });
+        showToast(data.message || '保存失败，请稍后重试', 'error', 5000);
       }
     } catch (error) {
       console.error('保存失败:', error);
-      setMessage({ type: 'error', text: '网络错误，请稍后重试' });
+      showToast('网络错误，请稍后重试', 'error', 5000);
     } finally {
       setLoading(false);
     }
@@ -221,7 +221,7 @@ export default function ProfileInfoPage() {
       project_experience: '',
       awards: ''
     });
-    setMessage({ type: 'success', text: '表单已清空' });
+    showToast('表单已清空', 'success');
   };
 
   if (authLoading || fetching) {
@@ -235,22 +235,6 @@ export default function ProfileInfoPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* 消息提示 */}
-        {message && (
-          <div className={`mb-6 px-4 py-3 rounded-lg flex items-center gap-2 ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-700 border border-green-200' 
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}>
-            {message.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-green-500" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-red-500" />
-            )}
-            <span>{message.text}</span>
-          </div>
-        )}
-        
         {/* 页面标题 */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">
@@ -502,7 +486,7 @@ export default function ProfileInfoPage() {
               {completionPercent === 100 ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-green-700">
-                    <CheckCircle className="w-5 h-5" />
+                    <CircleCheck className="w-5 h-5" />
                     <span className="font-medium">信息已完善，快去生成你的专属职业规划吧！</span>
                   </div>
                   <Link href="/career-planning">
