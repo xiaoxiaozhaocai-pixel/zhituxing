@@ -16,16 +16,17 @@ const INTERVIEW_AGENT_TOKEN = process.env.INTERVIEW_AGENT_TOKEN || 'eyJhbGciOiJS
 const PROJECT_ID = process.env.INTERVIEW_AGENT_PROJECT_ID || '7631320202852204571';
 
 // 模拟面试官的开场白
-const DEMO_INTERVIEW_INTRO = `【模拟面试开始】
+const DEMO_INTERVIEW_INTRO = `👋你好！我是职途星AI面试官，将为你还原真实的企业校招全流程面试。
 
-您好！我是您的模拟面试官。
+【面试模式选择】我们提供两种面试模式，请选择:
+1. 文字面试：纯文字对话形式
+2. 视频面试：AI面试官以视频形象出现，配合语音提问
 
-在开始之前，请告诉我：
-1. 您应聘的岗位是什么？
-2. 您的专业背景是什么？
-3. 有没有相关的实习或项目经验？
-
-准备好了就可以开始，我会根据您的回答进行追问。
+请你提供以下信息:
+1. 面试模式
+2. 你应聘的岗位全称
+3. 该岗位的完整官方JD
+4. 你的个人求职简历
 `;
 
 // 模拟面试回答
