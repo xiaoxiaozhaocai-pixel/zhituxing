@@ -53,6 +53,30 @@ interface ProfileForm {
   awards: string;
 }
 
+// 能力背景数据结构
+interface AbilityBackground {
+  professional_skills: string[];  // 专业核心技能
+  office_skills: {
+    default_selected: string[];    // 预设选中的办公技能
+    custom_skills: string[];       // 自定义添加的办公技能
+  };
+  language_abilities: Array<{       // 外语能力数组
+    language: string;
+    level: string;
+    proficiency: string;
+  }>;
+  certificates: string[];          // 职业技能证书
+}
+
+// 预设办公软件选项
+const OFFICE_SOFTWARE_OPTIONS = ['Word', 'Excel', 'PPT', 'Outlook', 'WPS'];
+
+// 语种选项
+const LANGUAGE_OPTIONS = ['英语', '日语', '韩语', '法语', '德语', '其他'];
+
+// 熟练程度选项
+const PROFICIENCY_OPTIONS = ['入门', '日常交流', '熟练读写', '母语水平'];
+
 export default function ProfileInfoPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -60,7 +84,24 @@ export default function ProfileInfoPage() {
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  
+  // 专业核心技能输入
   const [skillInput, setSkillInput] = useState('');
+  // 自定义办公软件输入
+  const [customOfficeInput, setCustomOfficeInput] = useState('');
+  
+  // 能力背景数据
+  const [abilityBackground, setAbilityBackground] = useState<AbilityBackground>({
+    professional_skills: [],
+    office_skills: {
+      default_selected: [],
+      custom_skills: []
+    },
+    language_abilities: [
+      { language: '', level: '', proficiency: '' }
+    ],
+    certificates: []
+  });
   
   // 表单数据
   const [form, setForm] = useState<ProfileForm>({
@@ -119,6 +160,44 @@ export default function ProfileInfoPage() {
       
       if (data.code === 200 && data.data?.profile) {
         const profile = data.data.profile;
+        
+        // 处理能力背景数据回填
+        let abilityData: AbilityBackground = {
+          professional_skills: [],
+          office_skills: { default_selected: [], custom_skills: [] },
+          language_abilities: [{ language: '', level: '', proficiency: '' }],
+          certificates: []
+        };
+        
+        if (profile.ability_background) {
+          try {
+            const parsed = typeof profile.ability_background === 'string' 
+              ? JSON.parse(profile.ability_background) 
+              : profile.ability_background;
+            abilityData = {
+              professional_skills: parsed.professional_skills || [],
+              office_skills: {
+                default_selected: parsed.office_skills?.default_selected || [],
+                custom_skills: parsed.office_skills?.custom_skills || []
+              },
+              language_abilities: parsed.language_abilities?.length > 0 
+                ? parsed.language_abilities 
+                : [{ language: '', level: '', proficiency: '' }],
+              certificates: parsed.certificates || []
+            };
+          } catch (e) {
+            // JSON解析失败，兼容旧数据格式
+            abilityData.professional_skills = profile.skills 
+              ? profile.skills.split(',').filter(Boolean) 
+              : [];
+          }
+        } else if (profile.skills) {
+          // 兼容旧数据：已有skills字段迁移到专业核心技能
+          abilityData.professional_skills = profile.skills.split(',').filter(Boolean);
+        }
+        
+        setAbilityBackground(abilityData);
+        
         setForm({
           personality_type: profile.personality_type || '',
           major: profile.major || '',
@@ -144,7 +223,132 @@ export default function ProfileInfoPage() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  // 添加技能标签
+  // ========== 专业核心技能 ==========
+  const addProfessionalSkill = () => {
+    const skill = skillInput.trim();
+    if (skill && !abilityBackground.professional_skills.includes(skill)) {
+      setAbilityBackground(prev => ({
+        ...prev,
+        professional_skills: [...prev.professional_skills, skill]
+      }));
+      setSkillInput('');
+    }
+  };
+
+  const removeProfessionalSkill = (skill: string) => {
+    setAbilityBackground(prev => ({
+      ...prev,
+      professional_skills: prev.professional_skills.filter(s => s !== skill)
+    }));
+  };
+
+  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addProfessionalSkill();
+    }
+  };
+
+  // ========== 办公软件技能 ==========
+  const toggleOfficeSkill = (skill: string) => {
+    setAbilityBackground(prev => {
+      const isSelected = prev.office_skills.default_selected.includes(skill);
+      return {
+        ...prev,
+        office_skills: {
+          ...prev.office_skills,
+          default_selected: isSelected
+            ? prev.office_skills.default_selected.filter(s => s !== skill)
+            : [...prev.office_skills.default_selected, skill]
+        }
+      };
+    });
+  };
+
+  const addCustomOfficeSkill = () => {
+    const skill = customOfficeInput.trim();
+    if (skill && !abilityBackground.office_skills.custom_skills.includes(skill) 
+        && !abilityBackground.office_skills.default_selected.includes(skill)) {
+      setAbilityBackground(prev => ({
+        ...prev,
+        office_skills: {
+          ...prev.office_skills,
+          custom_skills: [...prev.office_skills.custom_skills, skill]
+        }
+      }));
+      setCustomOfficeInput('');
+    }
+  };
+
+  const removeCustomOfficeSkill = (skill: string) => {
+    setAbilityBackground(prev => ({
+      ...prev,
+      office_skills: {
+        ...prev.office_skills,
+        custom_skills: prev.office_skills.custom_skills.filter(s => s !== skill)
+      }
+    }));
+  };
+
+  const handleCustomOfficeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCustomOfficeSkill();
+    }
+  };
+
+  // ========== 外语能力 ==========
+  const updateLanguageAbility = (index: number, field: string, value: string) => {
+    setAbilityBackground(prev => {
+      const newAbilities = [...prev.language_abilities];
+      newAbilities[index] = { ...newAbilities[index], [field]: value };
+      return { ...prev, language_abilities: newAbilities };
+    });
+  };
+
+  const addLanguageAbility = () => {
+    setAbilityBackground(prev => ({
+      ...prev,
+      language_abilities: [...prev.language_abilities, { language: '', level: '', proficiency: '' }]
+    }));
+  };
+
+  const removeLanguageAbility = (index: number) => {
+    setAbilityBackground(prev => ({
+      ...prev,
+      language_abilities: prev.language_abilities.filter((_, i) => i !== index)
+    }));
+  };
+
+  // ========== 职业技能证书 ==========
+  const [certificateInput, setCertificateInput] = useState('');
+
+  const addCertificate = () => {
+    const cert = certificateInput.trim();
+    if (cert && !abilityBackground.certificates.includes(cert)) {
+      setAbilityBackground(prev => ({
+        ...prev,
+        certificates: [...prev.certificates, cert]
+      }));
+      setCertificateInput('');
+    }
+  };
+
+  const removeCertificate = (cert: string) => {
+    setAbilityBackground(prev => ({
+      ...prev,
+      certificates: prev.certificates.filter(c => c !== cert)
+    }));
+  };
+
+  const handleCertificateKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCertificate();
+    }
+  };
+
+  // ========== 技能标签（兼容旧逻辑） ==========
   const addSkill = () => {
     const skill = skillInput.trim();
     if (skill && !form.skills.includes(skill)) {
@@ -153,17 +357,8 @@ export default function ProfileInfoPage() {
     }
   };
 
-  // 移除技能标签
   const removeSkill = (skill: string) => {
     updateField('skills', form.skills.filter(s => s !== skill));
-  };
-
-  // 处理技能输入回车
-  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addSkill();
-    }
   };
 
   // 保存表单
@@ -185,10 +380,13 @@ export default function ProfileInfoPage() {
           graduation_year: form.graduation_year ? parseInt(form.graduation_year) : null,
           city: form.city || null,
           job_intention: form.job_intention || null,
-          skills: form.skills.length > 0 ? form.skills.join(',') : null,
+          skills: abilityBackground.professional_skills.length > 0 
+            ? abilityBackground.professional_skills.join(',') 
+            : (form.skills.length > 0 ? form.skills.join(',') : null),
           internship_experience: form.internship_experience || null,
           project_experience: form.project_experience || null,
-          awards: form.awards || null
+          awards: form.awards || null,
+          ability_background: abilityBackground
         })
       });
 
@@ -221,6 +419,15 @@ export default function ProfileInfoPage() {
       project_experience: '',
       awards: ''
     });
+    setAbilityBackground({
+      professional_skills: [],
+      office_skills: { default_selected: [], custom_skills: [] },
+      language_abilities: [{ language: '', level: '', proficiency: '' }],
+      certificates: []
+    });
+    setSkillInput('');
+    setCustomOfficeInput('');
+    setCertificateInput('');
     showToast('表单已清空', 'success');
   };
 
@@ -367,18 +574,19 @@ export default function ProfileInfoPage() {
                 能力背景
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
+              {/* 子板块1：专业核心技能 */}
               <div className="space-y-2">
-                <Label>已掌握技能</Label>
+                <Label>专业核心技能</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {form.skills.map(skill => (
+                  {abilityBackground.professional_skills.map(skill => (
                     <span 
                       key={skill}
                       className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#165DFF]/10 text-[#165DFF] text-sm"
                     >
                       {skill}
                       <button
-                        onClick={() => removeSkill(skill)}
+                        onClick={() => removeProfessionalSkill(skill)}
                         className="hover:text-red-500"
                       >
                         <X className="w-3 h-3" />
@@ -391,17 +599,170 @@ export default function ProfileInfoPage() {
                     value={skillInput}
                     onChange={(e) => setSkillInput(e.target.value)}
                     onKeyDown={handleSkillKeyDown}
-                    placeholder="输入技能后按回车添加（如：Python、Excel、PS）"
+                    placeholder="输入专业技能后按回车添加（如：招聘配置、Python、数据分析）"
                   />
                   <Button 
                     variant="outline" 
-                    onClick={addSkill}
+                    onClick={addProfessionalSkill}
                     disabled={!skillInput.trim()}
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-gray-400">我们将分析你的技能缺口，给出针对性提升建议</p>
+                <p className="text-xs text-gray-400">输入你的专业相关核心技能，按回车添加</p>
+              </div>
+
+              {/* 子板块2：办公软件技能 */}
+              <div className="space-y-2">
+                <Label>办公软件技能</Label>
+                {/* 预设选项 */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {OFFICE_SOFTWARE_OPTIONS.map(skill => {
+                    const isSelected = abilityBackground.office_skills.default_selected.includes(skill);
+                    return (
+                      <button
+                        key={skill}
+                        onClick={() => toggleOfficeSkill(skill)}
+                        className={`px-3 py-1 rounded-lg text-sm transition-all ${
+                          isSelected 
+                            ? 'bg-purple-500 text-white' 
+                            : 'bg-white border border-gray-200 text-gray-600 hover:border-purple-300'
+                        }`}
+                      >
+                        {skill}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* 自定义输入 */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {abilityBackground.office_skills.custom_skills.map(skill => (
+                    <span 
+                      key={skill}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-600 text-sm"
+                    >
+                      {skill}
+                      <button
+                        onClick={() => removeCustomOfficeSkill(skill)}
+                        className="hover:text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={customOfficeInput}
+                    onChange={(e) => setCustomOfficeInput(e.target.value)}
+                    onKeyDown={handleCustomOfficeKeyDown}
+                    placeholder="输入其他办公软件（如：PS、XMind、SPSS）"
+                  />
+                  <Button 
+                    variant="outline" 
+                    onClick={addCustomOfficeSkill}
+                    disabled={!customOfficeInput.trim()}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-400">选择你熟练掌握的办公软件，可自定义补充</p>
+              </div>
+
+              {/* 子板块3：外语等级能力 */}
+              <div className="space-y-2">
+                <Label>外语等级能力</Label>
+                <div className="space-y-3">
+                  {abilityBackground.language_abilities.map((lang, index) => (
+                    <div key={index} className="flex flex-wrap md:flex-nowrap gap-2 items-start">
+                      <select
+                        value={lang.language}
+                        onChange={(e) => updateLanguageAbility(index, 'language', e.target.value)}
+                        className="w-full md:w-28 h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-sm"
+                      >
+                        <option value="">选择语种</option>
+                        {LANGUAGE_OPTIONS.map(l => (
+                          <option key={l} value={l}>{l}</option>
+                        ))}
+                      </select>
+                      <Input
+                        value={lang.level}
+                        onChange={(e) => updateLanguageAbility(index, 'level', e.target.value)}
+                        placeholder="如：CET-6 520分、N2、雅思7.0"
+                        className="flex-1"
+                      />
+                      <select
+                        value={lang.proficiency}
+                        onChange={(e) => updateLanguageAbility(index, 'proficiency', e.target.value)}
+                        className="w-full md:w-32 h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-sm"
+                      >
+                        <option value="">选择熟练程度</option>
+                        {PROFICIENCY_OPTIONS.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+                      <div className="flex gap-1">
+                        {index === abilityBackground.language_abilities.length - 1 && abilityBackground.language_abilities.length < 5 ? (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={addLanguageAbility}
+                            className="h-10 px-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        ) : abilityBackground.language_abilities.length > 1 ? (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removeLanguageAbility(index)}
+                            className="h-10 px-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        ) : <div className="w-10" />}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400">选择你的外语等级与掌握程度</p>
+              </div>
+
+              {/* 子板块4：职业技能证书 */}
+              <div className="space-y-2">
+                <Label>职业技能证书</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {abilityBackground.certificates.map(cert => (
+                    <span 
+                      key={cert}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-sm"
+                    >
+                      {cert}
+                      <button
+                        onClick={() => removeCertificate(cert)}
+                        className="hover:text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={certificateInput}
+                    onChange={(e) => setCertificateInput(e.target.value)}
+                    onKeyDown={handleCertificateKeyDown}
+                    placeholder="输入职业资格、技能等级证书（如：人力资源管理师、计算机二级）"
+                  />
+                  <Button 
+                    variant="outline" 
+                    onClick={addCertificate}
+                    disabled={!certificateInput.trim()}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-400">输入你获得的职业资格、技能等级证书，按回车添加</p>
               </div>
             </CardContent>
           </Card>

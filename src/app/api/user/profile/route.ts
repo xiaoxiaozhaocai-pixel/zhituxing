@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
       skills,
       internship_experience,
       project_experience,
-      awards
+      awards,
+      ability_background
     } = body;
 
     // 检查是否已有记录
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
           internship_experience,
           project_experience,
           awards,
+          ability_background,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -130,7 +132,8 @@ export async function POST(request: NextRequest) {
           skills,
           internship_experience,
           project_experience,
-          awards
+          awards,
+          ability_background
         })
         .select()
         .single();
