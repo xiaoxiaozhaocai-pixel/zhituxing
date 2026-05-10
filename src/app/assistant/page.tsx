@@ -426,9 +426,12 @@ export default function AssistantPage() {
   const handleTabChange = (botId: string) => {
     setActiveBot(botId);
     setMessages([]);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+    // 切换Tab时重置聊天区域滚动位置
+    requestAnimationFrame(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = 0;
+      }
+    });
   };
 
   const displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
