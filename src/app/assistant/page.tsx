@@ -192,18 +192,42 @@ export default function AssistantPage() {
   const { user, quota, refreshQuota } = useAuth();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isUserNearBottomRef = useRef(true);
 
   const currentBot = bots.find(b => b.id === activeBot) || bots[0];
 
+  // 平滑滚动到底部（仅在用户接近底部时）
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = chatContainerRef.current;
+    if (!container) return;
+    
+    // 只在用户接近底部时自动滚动（阈值100px）
+    const threshold = 100;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isUserNearBottomRef.current = distanceFromBottom < threshold;
+    
+    if (isUserNearBottomRef.current) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, []);
 
-  // 仅在有新消息（非欢迎消息）时滚动到底部
+  // 检测用户是否主动向上滚动
+  const handleChatScroll = useCallback(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const threshold = 100;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isUserNearBottomRef.current = distanceFromBottom < threshold;
+  }, []);
+
+  // 消息更新时滚动（使用requestAnimationFrame防抖）
   useEffect(() => {
     if (messages.length > 1) {
-      scrollToBottom();
+      requestAnimationFrame(() => {
+        scrollToBottom();
+      });
     }
   }, [messages, scrollToBottom]);
 
@@ -507,7 +531,11 @@ export default function AssistantPage() {
           )}
 
           {/* 消息列表 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white min-h-[400px]">
+          <div 
+            ref={chatContainerRef}
+            onScroll={handleChatScroll}
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[520px]"
+          >
             {messages.map((msg, index) => (
               <div
                 key={index}
