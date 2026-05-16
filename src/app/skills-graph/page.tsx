@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import {
-  Network, Search, Info, X, ZoomIn, ZoomOut, RotateCcw
+  Network, Search, Info, X, ZoomIn, ZoomOut, RotateCcw, Crown
 } from 'lucide-react';
+import { useMembership } from '@/contexts/MembershipContext';
+import PaywallModal from '@/components/PaywallModal';
 
 interface RelationNode {
   name: string;
@@ -55,6 +57,8 @@ const relationLabels: Record<string, string> = {
 const activeRelations = ['co_occur', 'prerequisite', 'similar', 'career_path'] as const;
 
 export default function SkillsGraphPage() {
+  const { isMember, loading: memberLoading } = useMembership();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchSkill, setSearchSkill] = useState('');
   const [edges, setEdges] = useState<RelationEdge[]>([]);
@@ -78,8 +82,34 @@ export default function SkillsGraphPage() {
       const res = await fetch(`/api/skills/relations?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
-        setEdges(data.data || []);
-        setNodes(data.nodes || []);
+        // 免费用户只能看搜索技能的直接关联（1层关系）
+        let filteredEdges = data.data || [];
+        let filteredNodes = data.nodes || [];
+        if (!isMember && searchSkill) {
+          const directSkill = searchSkill.trim().toLowerCase();
+          filteredEdges = filteredEdges.filter((e: RelationEdge) =>
+            e.sourceSkill.toLowerCase() === directSkill || e.targetSkill.toLowerCase() === directSkill
+          );
+          // 只保留与直接关联边相关的节点
+          const relatedSkills = new Set<string>();
+          filteredEdges.forEach((e: RelationEdge) => {
+            relatedSkills.add(e.sourceSkill);
+            relatedSkills.add(e.targetSkill);
+          });
+          relatedSkills.add(searchSkill.trim());
+          filteredNodes = filteredNodes.filter((n: RelationNode) => relatedSkills.has(n.name));
+        } else if (!isMember && !searchSkill) {
+          // 免费用户未搜索时，只展示部分关系
+          filteredEdges = filteredEdges.slice(0, 6);
+          const shownSkills = new Set<string>();
+          filteredEdges.forEach((e: RelationEdge) => {
+            shownSkills.add(e.sourceSkill);
+            shownSkills.add(e.targetSkill);
+          });
+          filteredNodes = filteredNodes.filter((n: RelationNode) => shownSkills.has(n.name));
+        }
+        setEdges(filteredEdges);
+        setNodes(filteredNodes);
       }
     } catch (err) {
       console.error('获取技能关系失败:', err);
@@ -216,6 +246,14 @@ export default function SkillsGraphPage() {
             <h1 className="text-2xl font-bold text-gray-900">技能关系图</h1>
           </div>
           <p className="text-gray-500 ml-13">可视化展示技能之间的关联关系，发现学习路径</p>
+          {!isMember && !memberLoading && (
+            <button
+              onClick={() => setPaywallOpen(true)}
+              className="ml-4 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 border border-amber-200 hover:from-amber-200 hover:to-yellow-200 transition-all"
+            >
+              <Crown className="w-3.5 h-3.5" /> 升级会员查看完整图谱
+            </button>
+          )}
         </div>
 
         {/* 搜索和筛选 */}
@@ -477,6 +515,9 @@ export default function SkillsGraphPage() {
           </div>
         )}
       </div>
+
+      {/* 付费墙弹窗 */}
+      <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} feature="完整技能图谱" />
     </div>
   );
 }

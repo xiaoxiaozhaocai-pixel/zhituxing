@@ -9,8 +9,10 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Route, BookOpen, Target, Clock, CheckCircle2, Circle,
-  ArrowRight, AlertTriangle, Lightbulb, ChevronRight
+  ArrowRight, AlertTriangle, Lightbulb, ChevronRight, Crown
 } from 'lucide-react';
+import { useMembership } from '@/contexts/MembershipContext';
+import PaywallModal from '@/components/PaywallModal';
 
 interface LearningPhase {
   phase: string;
@@ -49,6 +51,8 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
 
 export default function LearningPathPage() {
   const { user, isAuthenticated } = useAuth();
+  const { isMember, loading: memberLoading } = useMembership();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [matchResults, setMatchResults] = useState<MatchJobResult[]>([]);
   const [selectedJobIdx, setSelectedJobIdx] = useState(0);
@@ -213,7 +217,9 @@ export default function LearningPathPage() {
                       {/* 竖线 */}
                       <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-blue-100" />
                       <div className="space-y-6">
-                        {selectedJob.learningPath.map((phase, i) => (
+                        {selectedJob.learningPath
+                          .slice(0, isMember ? undefined : 3)
+                          .map((phase, i) => (
                           <div key={i} className="relative flex items-start gap-4 pl-2">
                             {/* 节点 */}
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 z-10 ${
@@ -250,6 +256,37 @@ export default function LearningPathPage() {
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* 免费用户锁定提示 */}
+              {!isMember && !memberLoading && selectedJob?.learningPath && selectedJob.learningPath.length > 3 && (
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-white/95 z-10 rounded-xl flex items-end justify-center pb-6">
+                    <button
+                      onClick={() => setPaywallOpen(true)}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-medium shadow-lg hover:from-amber-600 hover:to-yellow-600 transition-all"
+                    >
+                      <Crown className="w-5 h-5" /> 升级会员查看完整学习路径
+                    </button>
+                  </div>
+                  <Card className="border-gray-100 opacity-50">
+                    <CardHeader>
+                      <CardTitle className="text-gray-400 text-sm">更多学习路径...</CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-8">
+                      <div className="space-y-4">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="flex items-start gap-4 pl-2">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                              <Crown className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <div className="flex-1 h-16 bg-gray-100 rounded-lg" />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
 
               {/* 前置技能链 */}
@@ -359,6 +396,9 @@ export default function LearningPathPage() {
           </div>
         )}
       </div>
+
+      {/* 付费墙弹窗 */}
+      <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} feature="完整学习路径" />
     </div>
   );
 }

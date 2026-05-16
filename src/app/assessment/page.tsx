@@ -9,8 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
 import {
   BarChart3, TrendingUp, Award, AlertTriangle, History, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Minus
+  ArrowUpRight, ArrowDownRight, Minus, Crown
 } from 'lucide-react';
+import { useMembership } from '@/contexts/MembershipContext';
+import PaywallModal from '@/components/PaywallModal';
 
 interface Dimension {
   name: string;
@@ -41,6 +43,8 @@ interface PercentileInfo {
 
 export default function AssessmentPage() {
   const { user, isAuthenticated } = useAuth();
+  const { isMember, loading: memberLoading } = useMembership();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<AssessmentRecord[]>([]);
   const [percentile, setPercentile] = useState<PercentileInfo | null>(null);
@@ -203,7 +207,7 @@ export default function AssessmentPage() {
               <h3 className="text-sm font-medium text-gray-500 flex items-center gap-1">
                 <History className="w-4 h-4" /> 测评历史
               </h3>
-              {records.map((rec, idx) => (
+              {records.slice(0, isMember ? undefined : 1).map((rec, idx) => (
                 <Card
                   key={rec.id}
                   className={`cursor-pointer transition-all border ${
@@ -349,8 +353,8 @@ export default function AssessmentPage() {
                 />
               )}
 
-              {/* 成长曲线 */}
-              {growthData.length >= 2 && (
+              {/* 成长曲线 - 仅会员 */}
+              {isMember && growthData.length >= 2 && (
                 <Card className="border-purple-100">
                   <CardHeader>
                     <CardTitle className="text-purple-700 flex items-center gap-1">
@@ -378,10 +382,30 @@ export default function AssessmentPage() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* 免费用户：历史对比锁定 */}
+              {!isMember && !memberLoading && records.length > 1 && (
+                <Card className="border-amber-100 bg-gradient-to-br from-amber-50/50 to-yellow-50/50">
+                  <CardContent className="py-6 text-center">
+                    <Crown className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                    <h4 className="font-medium text-gray-700 mb-1">历史对比与成长曲线</h4>
+                    <p className="text-sm text-gray-400 mb-3">会员可查看完整测评历史和成长趋势</p>
+                    <button
+                      onClick={() => setPaywallOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium hover:from-amber-600 hover:to-yellow-600 transition-all"
+                    >
+                      <Crown className="w-4 h-4" /> 升级会员
+                    </button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {/* 付费墙弹窗 */}
+      <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} feature="完整测评历史" />
     </div>
   );
 }

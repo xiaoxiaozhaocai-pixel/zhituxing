@@ -8,6 +8,7 @@ import FloatingMembershipButton from '@/components/FloatingMembershipButton';
 import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
+import { MembershipProvider } from '@/contexts/MembershipContext';
 
 export const metadata: Metadata = {
   title: {
@@ -54,13 +55,15 @@ export default function RootLayout({
         {isDev && <Inspector />}
         <Providers>
           <ToastProvider>
-            <ProfileGuideProvider>
-              <Navbar />
-              <FreeQuotaBadge />
-              <FloatingMembershipButton />
-              {children}
-              <Footer />
-            </ProfileGuideProvider>
+            <MembershipProvider>
+              <ProfileGuideProvider>
+                <Navbar />
+                <FreeQuotaBadge />
+                <FloatingMembershipButton />
+                {children}
+                <Footer />
+              </ProfileGuideProvider>
+            </MembershipProvider>
           </ToastProvider>
         </Providers>
       </body>

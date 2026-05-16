@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 import { usePathname, useRouter } from 'next/navigation';
 
 const navItems = [
@@ -25,6 +26,7 @@ const navItems = [
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
+  const { isMember, membershipPlan } = useMembership();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -152,10 +154,19 @@ export default function Navbar() {
                   
                   {/* 用户头像 - 点击直接跳转到个人中心 */}
                   <button onClick={goToProfile}>
-                    <div className="w-8 h-8 bg-[#165DFF] rounded-full flex items-center justify-center hover:bg-[#165DFF]/90 transition-colors">
+                    <div className="w-8 h-8 bg-[#165DFF] rounded-full flex items-center justify-center hover:bg-[#165DFF]/90 transition-colors relative">
                       <User className="w-4 h-4 text-white" />
+                      {isMember && (
+                        <Crown className="w-3 h-3 text-amber-400 absolute -top-1 -right-1" />
+                      )}
                     </div>
                   </button>
+                  {/* 会员标识 */}
+                  {isMember && (
+                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 border border-amber-200">
+                      <Crown className="w-3 h-3" /> {membershipPlan || '会员'}
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
