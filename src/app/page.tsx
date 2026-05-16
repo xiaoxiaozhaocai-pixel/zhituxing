@@ -13,31 +13,30 @@ const hotTags = [
   '教师', '护士', '工程师', '管培生', '行政', '数据分析师', '测试工程师'
 ];
 
-// 职业规划核心优势
 const careerPlanningAdvantages = [
   {
     icon: <Calendar className="w-8 h-8" />,
     title: '分年级定制',
     description: '大一到大四，不同阶段不同规划',
-    gradient: 'from-purple-500 to-purple-600'
+    gradient: 'from-violet-500 to-purple-600'
   },
   {
     icon: <Target className="w-8 h-8" />,
     title: '6维精准匹配',
     description: '人格、专业、能力、兴趣、价值观、风险承受力',
-    gradient: 'from-indigo-500 to-indigo-600'
+    gradient: 'from-blue-500 to-indigo-600'
   },
   {
     icon: <Check className="w-8 h-8" />,
     title: '可落地行动项',
     description: '每个建议都带可点击的执行按钮',
-    gradient: 'from-blue-500 to-blue-600'
+    gradient: 'from-cyan-500 to-blue-600'
   },
   {
     icon: <TrendingUp className="w-8 h-8" />,
     title: '动态更新',
     description: '每月自动复盘，规划随你成长',
-    gradient: 'from-green-500 to-green-600'
+    gradient: 'from-emerald-500 to-teal-600'
   }
 ];
 
@@ -47,30 +46,33 @@ const features = [
     title: 'AI职业规划',
     description: '30秒生成专属大学四年职业规划，精准匹配专业、年级和兴趣',
     badge: '永久免费',
-    badgeColor: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
+    badgeColor: 'bg-violet-500/20 text-violet-300 border border-violet-400/30',
     buttonText: '立即免费生成',
     buttonLink: '/career-planning',
-    gradient: 'from-purple-500 to-purple-600'
+    gradient: 'from-violet-500 to-purple-600',
+    glowColor: 'rgba(139, 92, 246, 0.4)'
   },
   {
     icon: <Briefcase className="w-10 h-10" />,
     title: '全行业岗位百科',
     description: '覆盖互联网/金融/制造/教育/医疗等15+主流行业，匹配最适合你的岗位',
     badge: '无限次免费',
-    badgeColor: 'bg-blue-100 text-blue-700',
+    badgeColor: 'bg-blue-500/20 text-blue-300 border border-blue-400/30',
     buttonText: '免费查询岗位',
     buttonLink: '/jobs',
-    gradient: 'from-blue-500 to-blue-600'
+    gradient: 'from-blue-500 to-cyan-500',
+    glowColor: 'rgba(59, 130, 246, 0.4)'
   },
   {
     icon: <MessageSquare className="w-10 h-10" />,
     title: 'AI模拟面试',
     description: '基于真实招聘要求，AI模拟真实面试场景，精准测算应聘成功率',
     badge: '免费3次',
-    badgeColor: 'bg-orange-100 text-orange-700',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30',
     buttonText: '免费体验3次',
     buttonLink: '/assistant?bot=interview',
-    gradient: 'from-green-500 to-green-600'
+    gradient: 'from-emerald-500 to-teal-500',
+    glowColor: 'rgba(16, 185, 129, 0.4)'
   }
 ];
 
@@ -84,28 +86,28 @@ const whyChooseUs = [
   {
     number: '1',
     icon: <Check className="w-6 h-6" />,
-    gradient: 'from-green-500 to-emerald-500',
+    gradient: 'from-emerald-500 to-teal-500',
     title: '100%真实校招数据',
     description: '所有JD均来自国家官方招聘平台，每周自动更新，拒绝虚假岗位'
   },
   {
     number: '2',
     icon: <Target className="w-6 h-6" />,
-    gradient: 'from-purple-500 to-purple-600',
+    gradient: 'from-violet-500 to-purple-600',
     title: 'AI个性化规划',
     description: '基于你的专业、年级和意向城市，生成专属大学四年成长路径'
   },
   {
     number: '3',
     icon: <Gift className="w-6 h-6" />,
-    gradient: 'from-blue-500 to-blue-600',
+    gradient: 'from-blue-500 to-cyan-500',
     title: '基础功能永久免费',
     description: '职业规划、岗位查询、求职干货全部免费，无任何次数限制'
   },
   {
     number: '4',
     icon: <Users className="w-6 h-6" />,
-    gradient: 'from-orange-500 to-orange-600',
+    gradient: 'from-amber-500 to-orange-500',
     title: '9.9元终身会员',
     description: '首1000名用户仅需9.9元，永久解锁全部求职工具'
   }
@@ -179,11 +181,56 @@ function AnimatedNumber({ target, duration = 2000 }: { target: number; duration?
   return <span ref={ref}>{count.toLocaleString()}</span>;
 }
 
+// 浮动粒子组件 — 仅客户端渲染，避免 SSR/CSR Math.random() 不一致导致 hydration 错误
+function FloatingParticles() {
+  const [particles, setParticles] = useState<Array<{w:number;h:number;l:number;t:number;dur:number;delay:number;dx:string}>>([]);
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 20 }).map(() => ({
+        w: Math.random() * 4 + 2,
+        h: Math.random() * 4 + 2,
+        l: Math.random() * 100,
+        t: Math.random() * 100,
+        dur: Math.random() * 20 + 15,
+        delay: Math.random() * -20,
+        dx: Math.random() > 0.5 ? '' : '-',
+      }))
+    );
+  }, []);
+
+  if (particles.length === 0) return null;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-white/[0.03]"
+          style={{
+            width: `${p.w}px`,
+            height: `${p.h}px`,
+            left: `${p.l}%`,
+            top: `${p.t}%`,
+            animation: `float-particle ${p.dur}s linear infinite`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
   const tagsRef = useRef<HTMLDivElement>(null);
   const [showMoreTags, setShowMoreTags] = useState(false);
   const [likedReviews, setLikedReviews] = useState<number[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleTagClick = (tag: string) => {
     router.push(`/assistant?query=${encodeURIComponent(tag)}`);
@@ -200,77 +247,158 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Banner Section */}
-      <section className="bg-gradient-to-br from-purple-50 via-white to-indigo-100 py-16 md:py-24 relative overflow-hidden">
-        {/* 装饰背景 */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200/20 rounded-full blur-3xl" />
-        </div>
+    <div className="min-h-screen bg-[#0F172A] font-[system-ui,-apple-system,'Segoe_UI',Roboto,'Helvetica_Neue',Arial,'Noto_Sans',sans-serif] leading-relaxed">
+      {/* Global Fade-in Animation */}
+      <style jsx global>{`
+        @keyframes float-particle {
+          0% { transform: translateY(0) translateX(0); opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateY(-100vh) translateX(-50px); opacity: 0; }
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glow-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2); }
+          50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.7), 0 0 80px rgba(99, 102, 241, 0.3); }
+        }
+        @keyframes grid-move {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(60px); }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .animate-fade-in-up-delay-1 {
+          opacity: 0;
+          animation: fadeInUp 0.8s ease-out 0.15s forwards;
+        }
+        .animate-fade-in-up-delay-2 {
+          opacity: 0;
+          animation: fadeInUp 0.8s ease-out 0.3s forwards;
+        }
+        .animate-fade-in-up-delay-3 {
+          opacity: 0;
+          animation: fadeInUp 0.8s ease-out 0.45s forwards;
+        }
+        .animate-fade-in-up-delay-4 {
+          opacity: 0;
+          animation: fadeInUp 0.8s ease-out 0.6s forwards;
+        }
+        .glow-btn {
+          animation: glow-pulse 3s ease-in-out infinite;
+        }
+        .glow-btn:hover {
+          animation: none;
+          box-shadow: 0 0 40px rgba(99, 102, 241, 0.8), 0 0 100px rgba(99, 102, 241, 0.4);
+          transform: scale(1.05);
+        }
+      `}</style>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-            AI生成你的专属 <span className="text-[#722ED1]">大学四年职业规划</span>
+      {/* ============ Hero Section ============ */}
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+        {/* 深蓝渐变背景 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0F172A]" />
+
+        {/* 网格纹理 */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px',
+          }}
+        />
+
+        {/* 装饰光晕 */}
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[128px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[128px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[160px]" />
+
+        {/* 浮动粒子 */}
+        <FloatingParticles />
+
+        {/* Hero Content */}
+        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 py-24 md:py-32 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+          {/* 标签 */}
+          <div className="animate-fade-in-up-delay-1">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] text-sm text-blue-300 mb-8 backdrop-blur-sm">
+              <Sparkles className="w-4 h-4" />
+              全行业全岗位 AI 模拟甄选与职业能力发展平台
+            </span>
+          </div>
+
+          {/* 主标题 */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-[1.2] tracking-tight animate-fade-in-up-delay-2">
+            AI生成你的专属
+            <br />
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent">
+              大学四年职业规划
+            </span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-4">
-            <span className="font-semibold">永久免费</span> · <span className="font-semibold">无次数限制</span> · <span className="font-semibold">30秒生成</span>
+
+          {/* 副标题 */}
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-4 animate-fade-in-up-delay-2">
+            <span className="text-white font-semibold">永久免费</span>{' '}
+            <span className="text-slate-500">·</span>{' '}
+            <span className="text-white font-semibold">无次数限制</span>{' '}
+            <span className="text-slate-500">·</span>{' '}
+            <span className="text-white font-semibold">30秒生成</span>
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+
+          {/* CTA 按钮 */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 animate-fade-in-up-delay-3">
             <Link href="/career-planning">
-              <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white text-xl px-12 py-8 h-auto rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-1">
+              <button className="glow-btn bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white text-lg px-10 py-4 rounded-xl font-semibold transition-all duration-300">
                 立即免费生成我的规划
-              </Button>
+              </button>
             </Link>
           </div>
-          
-          <p className="text-base text-gray-500 flex items-center justify-center gap-2">
-            <span className="inline-flex items-center">
-              已帮助 <AnimatedNumber target={15680} />+ 大学生找到心仪工作
-            </span>
+
+          {/* 用户数量 */}
+          <p className="text-base text-slate-500 flex items-center justify-center gap-2 animate-fade-in-up-delay-4">
+            已帮助 <AnimatedNumber target={15680} />+ 大学生找到心仪工作
           </p>
         </div>
+
+        {/* 底部渐变过渡 */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0F172A] to-transparent" />
       </section>
 
-      {/* Core Features Section */}
-      <section className="py-16 bg-white">
+      {/* ============ Core Features Section ============ */}
+      <section className="py-20 bg-[#0F172A] relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className={`relative overflow-hidden transition-all duration-300 hover:-translate-y-2 group ${
-                  index === 0 
-                    ? 'border-2 border-purple-300 hover:shadow-[0_8px_32px_rgba(114,46,209,0.25)]' 
-                    : 'border-2 border-gray-100 hover:border-blue-200 hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)]'
-                }`}
+                className={`relative overflow-hidden bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_60px_-15px_${feature.glowColor}] group`}
               >
-                {/* 发光效果 - 仅第一个卡片 */}
-                {index === 0 && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                )}
-                {/* 脉冲光效 - 仅第一个卡片 */}
-                {index === 0 && (
-                  <div className="absolute -top-1 -right-1 w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
-                )}
+                {/* 悬浮光晕 */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${feature.gradient} rounded-full blur-[80px] opacity-0 group-hover:opacity-20 transition-opacity duration-700`} />
+
                 <CardHeader className="pb-4 relative z-10">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 text-white shadow-lg group-hover:shadow-xl transition-shadow`}>
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                     {feature.icon}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <CardTitle className="text-xl font-bold text-gray-900">{feature.title}</CardTitle>
+                    <CardTitle className="text-xl font-bold text-white">{feature.title}</CardTitle>
                     {feature.badge && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${feature.badgeColor || 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${feature.badgeColor || 'bg-slate-700 text-slate-300'}`}>
                         {feature.badge}
                       </span>
                     )}
                   </div>
-                  <CardDescription className="text-gray-600 mt-2">{feature.description}</CardDescription>
+                  <CardDescription className="text-slate-400 mt-2 leading-relaxed">{feature.description}</CardDescription>
                 </CardHeader>
                 <CardFooter className="relative z-10">
                   <Link href={feature.buttonLink} className="w-full">
-                    <Button className={`w-full bg-gradient-to-r ${feature.gradient} hover:opacity-90 text-white ${index === 0 ? 'shadow-lg shadow-purple-500/30' : ''}`}>
+                    <Button className={`w-full bg-gradient-to-r ${feature.gradient} hover:opacity-90 text-white border-0 transition-all duration-300`}>
                       {feature.buttonText}
                     </Button>
                   </Link>
@@ -281,38 +409,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Hot Tags Section */}
-      <section className="py-12 bg-gray-50">
+      {/* ============ Hot Tags Section ============ */}
+      <section className="py-16 bg-[#0B1120]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <span className="text-orange-500">🔥</span> 热门岗位一键查
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span className="text-orange-400">🔥</span> 热门岗位一键查
             </h2>
-            <button 
-              className="text-sm text-[#165DFF] hover:text-[#165DFF]/80 flex items-center gap-1"
+            <button
+              className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
               onClick={() => setShowMoreTags(!showMoreTags)}
             >
               {showMoreTags ? '收起' : '更多'}
               <ChevronRight className={`w-4 h-4 transition-transform ${showMoreTags ? 'rotate-90' : ''}`} />
             </button>
           </div>
-          <div 
-            ref={tagsRef}
-            className="relative"
-          >
-            {/* 滚动指示箭头 */}
-            {hotTags.length > 8 && (
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none flex items-center justify-end pr-2">
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            )}
-            
+          <div ref={tagsRef} className="relative">
             <div className={`flex flex-wrap gap-3 transition-all duration-300 ${showMoreTags ? '' : 'max-h-16 overflow-hidden'}`}>
               {hotTags.map((tag, index) => (
                 <button
                   key={index}
                   onClick={() => handleTagClick(tag)}
-                  className="px-5 py-2.5 bg-white border-2 border-gray-200 rounded-full text-gray-700 font-medium hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
+                  className="px-5 py-2.5 bg-slate-800/80 border border-slate-700/50 rounded-full text-slate-300 font-medium hover:bg-blue-600 hover:text-white hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
                 >
                   {tag}
                 </button>
@@ -322,47 +440,47 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* AI Assistant Section */}
-      <section className="py-16 bg-white">
+      {/* ============ AI Assistant Section ============ */}
+      <section className="py-20 bg-[#0F172A]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">
-              <Sparkles className="w-6 h-6 text-[#165DFF]" />
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 flex items-center justify-center gap-2">
+              <Sparkles className="w-6 h-6 text-blue-400" />
               免费体验AI岗位查询
             </h2>
-            <p className="text-gray-600">
-              👋 你好！我是「职途星——职搭子」，大学生专属的全行业岗位JD库助手~所有信息均来自真实招聘JD，拒绝空泛鸡汤！
+            <p className="text-slate-400 leading-relaxed">
+              你好！我是「职途星——职搭子」，大学生专属的全行业岗位JD库助手~所有信息均来自真实招聘JD，拒绝空泛鸡汤！
             </p>
           </div>
-          
-          <div className="border-2 border-[#165DFF]/20 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-white">
+
+          <div className="border border-slate-700/50 rounded-2xl overflow-hidden bg-slate-800/30 backdrop-blur-sm">
             <div className="p-8 md:p-12">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 {/* AI 图标 */}
                 <div className="flex-shrink-0">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#165DFF] to-[#4080FF] rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                     <span className="text-white text-2xl font-bold">AI</span>
                   </div>
                 </div>
-                
+
                 {/* 示例对话气泡 */}
                 <div className="flex-1 space-y-4">
-                  <p className="text-gray-600 mb-4">✨ 我能帮你做什么：</p>
+                  <p className="text-slate-300 mb-4">✨ 我能帮你做什么：</p>
                   <div className="space-y-3">
                     {sampleQuestions.map((q, i) => (
                       <button
                         key={i}
                         onClick={() => handleSampleClick(q.text)}
-                        className="w-full text-left px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-[#165DFF] hover:shadow-md transition-all duration-300 group flex items-center gap-3"
+                        className="w-full text-left px-5 py-3.5 bg-slate-800/80 border border-slate-700/50 rounded-xl hover:border-blue-500/50 hover:bg-slate-700/50 transition-all duration-300 group flex items-center gap-3"
                       >
                         <span className="text-xl">{q.icon}</span>
-                        <span className="text-gray-700 group-hover:text-[#165DFF] transition-colors">{q.text}</span>
+                        <span className="text-slate-300 group-hover:text-blue-300 transition-colors">{q.text}</span>
                       </button>
                     ))}
                   </div>
-                  
+
                   <Link href="/assistant" className="inline-block mt-4">
-                    <Button className="bg-gradient-to-r from-[#165DFF] to-[#4080FF] hover:opacity-90 text-white shadow-lg shadow-blue-500/30">
+                    <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-90 text-white shadow-lg shadow-blue-500/20 border-0">
                       <MessageSquare className="w-4 h-4 mr-2" />
                       立即体验
                     </Button>
@@ -374,54 +492,57 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose Us Section */}
-      <section className="py-16 bg-gray-50">
+      {/* ============ Why Choose Us Section ============ */}
+      <section className="py-20 bg-[#0B1120]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-12 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-14 text-center">
             为什么<AnimatedNumber target={15680} />+大学生选择职途星？
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {whyChooseUs.map((item, index) => (
               <div key={index} className="text-center group">
-                <div className="relative mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto">
-                    <div className={`w-10 h-10 bg-gradient-to-br ${item.gradient} rounded-full flex items-center justify-center text-white`}>
+                <div className="relative mb-5">
+                  <div className="w-14 h-14 bg-slate-800/80 rounded-full flex items-center justify-center mx-auto border border-slate-700/50">
+                    <div className={`w-10 h-10 bg-gradient-to-br ${item.gradient} rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300`}>
                       {item.icon}
                     </div>
                   </div>
-                  <span className="absolute -top-1 -right-1 w-6 h-6 bg-[#165DFF] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  <span className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/30">
                     {item.number}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.description}</p>
+                <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 职业规划核心优势 Section */}
-      <section className="py-16 bg-gradient-to-br from-purple-50 to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-12 text-center flex items-center justify-center gap-2">
-            <Sparkles className="w-6 h-6 text-[#722ED1]" />
+      {/* ============ Career Planning Advantages Section ============ */}
+      <section className="py-20 bg-[#0F172A] relative overflow-hidden">
+        {/* 装饰光晕 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-violet-600/5 rounded-full blur-[120px]" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-14 text-center flex items-center justify-center gap-2">
+            <Sparkles className="w-6 h-6 text-violet-400" />
             职业规划核心优势
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {careerPlanningAdvantages.map((item, index) => (
-              <Card 
+              <Card
                 key={index}
-                className="bg-white border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="bg-slate-800/50 border-slate-700/50 hover:border-violet-500/30 hover:shadow-[0_12px_40px_-10px_rgba(139,92,246,0.2)] transition-all duration-500 hover:-translate-y-1 group backdrop-blur-sm"
               >
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white shadow-lg flex-shrink-0`}>
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
                       {item.icon}
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
-                      <p className="text-gray-600 text-sm">{item.description}</p>
+                      <h3 className="font-bold text-white mb-1">{item.title}</h3>
+                      <p className="text-slate-400 text-sm leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -431,48 +552,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* User Reviews Section */}
-      <section className="py-16 bg-white">
+      {/* ============ User Reviews Section ============ */}
+      <section className="py-20 bg-[#0B1120]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-12 text-center flex items-center justify-center gap-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-14 text-center flex items-center justify-center gap-2">
             <span>💬</span> 用户真实评价
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {userReviews.map((review, index) => (
-              <Card 
-                key={index} 
-                className="border-2 border-gray-100 hover:border-blue-200 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.12)] hover:-translate-y-1"
+              <Card
+                key={index}
+                className="bg-slate-800/50 border-slate-700/50 hover:border-blue-500/30 transition-all duration-500 hover:shadow-[0_12px_40px_-10px_rgba(59,130,246,0.15)] hover:-translate-y-1 group backdrop-blur-sm"
               >
                 <CardContent className="pt-6">
                   {/* 评分 */}
                   <div className="flex items-center gap-1 mb-3">
                     {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'}`}
                       />
                     ))}
                   </div>
-                  
-                  <p className="text-gray-700 mb-4 leading-relaxed">「{review.content}」</p>
-                  
+
+                  <p className="text-slate-300 mb-4 leading-relaxed">「{review.content}」</p>
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#165DFF] to-[#4080FF] rounded-full flex items-center justify-center mr-3 border-2 border-blue-200">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mr-3 border-2 border-blue-400/30">
                         <span className="text-white font-medium">{review.name.charAt(0)}</span>
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{review.name}</p>
-                        <p className="text-xs text-gray-500">{review.school}</p>
+                        <p className="font-semibold text-white">{review.name}</p>
+                        <p className="text-xs text-slate-500">{review.school}</p>
                       </div>
                     </div>
-                    
+
                     <button
                       onClick={() => handleLike(index)}
                       className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-all ${
                         likedReviews.includes(index)
-                          ? 'bg-blue-100 text-blue-600'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                          ? 'bg-blue-500/20 text-blue-400'
+                          : 'bg-slate-700/50 text-slate-500 hover:bg-slate-700 hover:text-slate-400'
                       }`}
                     >
                       <ThumbsUp className={`w-3 h-3 ${likedReviews.includes(index) ? 'fill-current' : ''}`} />
@@ -486,20 +607,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Referral Banner */}
-      <section className="py-12 bg-gradient-to-r from-[#165DFF] to-[#4080FF]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ============ Referral Banner ============ */}
+      <section className="py-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 relative overflow-hidden">
+        {/* 装饰 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-20 -left-20 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between text-center md:text-left">
             <div className="mb-6 md:mb-0">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-2">
                 🎉 邀请好友得免费会员！
               </h2>
-              <p className="text-white/90">
+              <p className="text-white/80 leading-relaxed">
                 邀请1人得7天会员+3次AI次数，邀请3人得30天会员，上不封顶！
               </p>
             </div>
             <Link href="/profile/invite">
-              <Button className="bg-white text-[#165DFF] hover:bg-gray-100 text-lg px-8 py-6 h-auto rounded-xl shadow-lg">
+              <Button className="bg-white text-indigo-600 hover:bg-slate-100 text-lg px-8 py-6 h-auto rounded-xl shadow-lg font-semibold transition-all duration-300 hover:scale-105">
                 立即邀请
               </Button>
             </Link>

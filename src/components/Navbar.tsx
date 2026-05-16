@@ -1,27 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
 import { usePathname, useRouter } from 'next/navigation';
 
-const navItems = [
-  { name: '首页', href: '/', icon: <Home className="w-5 h-5" /> },
-  { name: '岗位匹配', href: '/match', icon: <Target className="w-5 h-5" />, highlight: true, color: '#F97316' },
-  { name: '能力测评', href: '/assessment', icon: <BarChart3 className="w-5 h-5" />, color: '#8B5CF6' },
-  { name: '学习路径', href: '/learning-path', icon: <Route className="w-5 h-5" />, color: '#0EA5E9' },
-  { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-5 h-5" />, color: '#6366F1' },
-  { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-5 h-5" />, color: '#722ED1' },
-  { name: '全行业岗位百科', href: '/jobs', icon: <Briefcase className="w-5 h-5" /> },
-  { name: 'AI职业助手', href: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
-  { name: '会员中心', href: '/membership', icon: <Crown className="w-5 h-5" />, highlight: true },
-  { name: '求职干货', href: '/resources', icon: <BookOpen className="w-5 h-5" /> },
-  { name: '使用流程', href: '/guide', icon: <Compass className="w-5 h-5" /> },
-  { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-5 h-5" /> },
-  { name: '联系我们', href: '/contact', icon: <Phone className="w-5 h-5" /> },
+const mainNavItems = [
+  { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
+  { name: '岗位匹配', href: '/match', icon: <Target className="w-4 h-4" /> },
+  { name: '能力测评', href: '/assessment', icon: <BarChart3 className="w-4 h-4" /> },
+  { name: '学习路径', href: '/learning-path', icon: <Route className="w-4 h-4" /> },
+  { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-4 h-4" /> },
+];
+
+const moreNavItems = [
+  { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-4 h-4" /> },
+  { name: '全行业岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
+  { name: 'AI职业助手', href: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
+  { name: '会员中心', href: '/membership', icon: <Crown className="w-4 h-4" /> },
+  { name: '求职干货', href: '/resources', icon: <BookOpen className="w-4 h-4" /> },
+  { name: '使用流程', href: '/guide', icon: <Compass className="w-4 h-4" /> },
+  { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-4 h-4" /> },
+  { name: '联系我们', href: '/contact', icon: <Phone className="w-4 h-4" /> },
 ];
 
 export default function Navbar() {
@@ -29,9 +32,11 @@ export default function Navbar() {
   const { isMember, membershipPlan } = useMembership();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
+  const moreRef = useRef<HTMLDivElement>(null);
 
   // 如果是后台管理页面，不显示导航栏
   if (pathname?.startsWith('/admin')) {
@@ -44,6 +49,17 @@ export default function Navbar() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 点击外部关闭"更多"下拉
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setIsMoreOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // 获取未读通知数
@@ -64,7 +80,6 @@ export default function Navbar() {
     };
 
     fetchUnreadCount();
-    // 每30秒刷新一次
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
@@ -78,49 +93,113 @@ export default function Navbar() {
     router.push('/profile');
   };
 
+  const isHomePage = pathname === '/';
+
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white shadow-md py-3' : 'bg-transparent py-4'
+          isScrolled
+            ? isHomePage
+              ? 'bg-[#0F172A]/90 backdrop-blur-xl shadow-lg shadow-black/20 py-2'
+              : 'bg-white/95 backdrop-blur-xl shadow-md py-2'
+            : isHomePage
+              ? 'bg-transparent py-4'
+              : 'bg-white shadow-md py-3'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-[#165DFF] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">职</span>
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isHomePage ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-[#165DFF]'}`}>
+                <span className="text-white font-bold text-lg">职</span>
               </div>
               <div>
-                <div className="text-xl font-bold text-gray-900">职途星</div>
-                <div className="text-xs text-gray-500">你的AI职业规划助手</div>
+                <div className={`text-lg font-bold ${isHomePage ? 'text-white' : 'text-gray-900'}`}>职途星</div>
+                <div className={`text-[10px] ${isHomePage ? 'text-slate-500' : 'text-gray-500'}`}>AI职业规划助手</div>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
-              {navItems.map((item) => {
+              {mainNavItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-                const itemColor = item.color || (item.highlight ? '#FF7D00' : '#165DFF');
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      item.highlight
-                        ? 'bg-[#FF7D00] text-white hover:bg-[#e67000]'
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isHomePage
+                        ? isActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
                         : isActive
-                          ? `bg-[${itemColor}] text-white`
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? 'bg-[#165DFF]/10 text-[#165DFF]'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
-                    style={isActive && item.color ? { backgroundColor: item.color } : undefined}
                   >
                     {item.icon}
                     {item.name}
                   </Link>
                 );
               })}
+
+              {/* "更多"下拉菜单 */}
+              <div ref={moreRef} className="relative">
+                <button
+                  onClick={() => setIsMoreOpen(!isMoreOpen)}
+                  className={`flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isHomePage
+                      ? isMoreOpen
+                        ? 'bg-white/10 text-white'
+                        : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                      : isMoreOpen
+                        ? 'bg-[#165DFF]/10 text-[#165DFF]'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  更多
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isMoreOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* 下拉面板 */}
+                <div
+                  className={`absolute top-full right-0 mt-2 w-52 rounded-xl border shadow-xl transition-all duration-200 origin-top-right ${
+                    isMoreOpen
+                      ? 'opacity-100 scale-100'
+                      : 'opacity-0 scale-95 pointer-events-none'
+                  } ${isHomePage ? 'bg-slate-800 border-slate-700/50 shadow-black/40' : 'bg-white border-gray-200'}`}
+                >
+                  <div className="py-2">
+                    {moreNavItems.map((item) => {
+                      const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setIsMoreOpen(false)}
+                          className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
+                            isHomePage
+                              ? isActive
+                                ? 'text-blue-400 bg-white/[0.06]'
+                                : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                              : isActive
+                                ? 'text-[#165DFF] bg-blue-50'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          {item.icon}
+                          {item.name}
+                          {item.name === '会员中心' && (
+                            <Crown className="w-3 h-3 text-amber-400 ml-auto" />
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right Section */}
@@ -129,9 +208,11 @@ export default function Navbar() {
               {user && (
                 <Link
                   href="/profile?tab=messages"
-                  className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className={`relative p-2 rounded-lg transition-colors ${
+                    isHomePage ? 'hover:bg-white/[0.06]' : 'hover:bg-gray-100'
+                  }`}
                 >
-                  <Bell className="w-5 h-5 text-gray-600" />
+                  <Bell className={`w-5 h-5 ${isHomePage ? 'text-slate-400' : 'text-gray-600'}`} />
                   {unreadNotifications > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
                       {unreadNotifications > 9 ? '9+' : unreadNotifications}
@@ -143,27 +224,33 @@ export default function Navbar() {
               {/* Auth Buttons */}
               {user ? (
                 <div className="flex items-center space-x-2">
-                  {/* 个人中心按钮 */}
                   <Button
                     variant="ghost"
-                    className="flex items-center space-x-2 text-[#165DFF] hover:bg-[#165DFF]/10"
+                    className={`flex items-center space-x-2 text-sm font-medium ${
+                      isHomePage
+                        ? 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                        : 'text-[#165DFF] hover:bg-[#165DFF]/10'
+                    }`}
                     onClick={goToProfile}
                   >
-                    <span className="text-sm font-medium">个人中心</span>
+                    <span>个人中心</span>
                   </Button>
-                  
-                  {/* 用户头像 - 点击直接跳转到个人中心 */}
+
                   <button onClick={goToProfile}>
-                    <div className="w-8 h-8 bg-[#165DFF] rounded-full flex items-center justify-center hover:bg-[#165DFF]/90 transition-colors relative">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors relative ${
+                      isHomePage
+                        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500'
+                        : 'bg-[#165DFF] hover:bg-[#165DFF]/90'
+                    }`}>
                       <User className="w-4 h-4 text-white" />
                       {isMember && (
                         <Crown className="w-3 h-3 text-amber-400 absolute -top-1 -right-1" />
                       )}
                     </div>
                   </button>
-                  {/* 会员标识 */}
+
                   {isMember && (
-                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 border border-amber-200">
+                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border border-amber-500/30">
                       <Crown className="w-3 h-3" /> {membershipPlan || '会员'}
                     </span>
                   )}
@@ -173,13 +260,21 @@ export default function Navbar() {
                   <Link href="/auth">
                     <Button
                       variant="ghost"
-                      className="text-[#165DFF] hover:text-[#165DFF] hover:bg-[#165DFF]/10"
+                      className={`${
+                        isHomePage
+                          ? 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                          : 'text-[#165DFF] hover:text-[#165DFF] hover:bg-[#165DFF]/10'
+                      }`}
                     >
                       登录
                     </Button>
                   </Link>
                   <Link href="/auth">
-                    <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90 text-white">
+                    <Button className={`${
+                      isHomePage
+                        ? 'bg-white text-slate-900 hover:bg-slate-100'
+                        : 'bg-[#165DFF] hover:bg-[#165DFF]/90 text-white'
+                    }`}>
                       注册
                     </Button>
                   </Link>
@@ -193,9 +288,9 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
+                <X className={`w-6 h-6 ${isHomePage ? 'text-white' : ''}`} />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu className={`w-6 h-6 ${isHomePage ? 'text-white' : ''}`} />
               )}
             </button>
           </div>
@@ -203,17 +298,19 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t">
+          <div className={`lg:hidden border-t ${isHomePage ? 'bg-[#0F172A] border-slate-700/50' : 'bg-white border-gray-200'}`}>
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
-              {navItems.map((item) => {
+              {[...mainNavItems, ...moreNavItems].map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium ${
-                      item.highlight
-                        ? 'bg-[#FF7D00] text-white text-center'
+                      isHomePage
+                        ? isActive
+                          ? 'bg-white/10 text-white'
+                          : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
                         : isActive
                           ? 'bg-[#165DFF] text-white'
                           : 'text-gray-700 hover:bg-gray-100'
@@ -227,7 +324,7 @@ export default function Navbar() {
               })}
 
               {/* Auth Buttons */}
-              <div className="pt-4 border-t space-y-2">
+              <div className={`pt-4 border-t space-y-2 ${isHomePage ? 'border-slate-700/50' : ''}`}>
                 {user ? (
                   <>
                     <button
@@ -235,14 +332,18 @@ export default function Navbar() {
                         goToProfile();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium bg-[#165DFF] text-white"
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium ${
+                        isHomePage
+                          ? 'bg-white/10 text-white'
+                          : 'bg-[#165DFF] text-white'
+                      }`}
                     >
                       <User className="w-5 h-5" />
                       个人中心
                     </button>
                     <Button
                       variant="ghost"
-                      className="w-full text-red-600"
+                      className="w-full text-red-500"
                       onClick={() => {
                         handleLogout();
                         setIsMobileMenuOpen(false);
@@ -255,12 +356,12 @@ export default function Navbar() {
                 ) : (
                   <>
                     <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full">
+                      <Button variant="ghost" className={`w-full ${isHomePage ? 'text-slate-300 hover:text-white' : ''}`}>
                         登录
                       </Button>
                     </Link>
                     <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white">
+                      <Button className={`w-full ${isHomePage ? 'bg-white text-slate-900 hover:bg-slate-100' : 'bg-[#165DFF] hover:bg-[#165DFF]/90 text-white'}`}>
                         注册
                       </Button>
                     </Link>
