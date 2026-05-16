@@ -1,17 +1,22 @@
 # DESIGN.md
 
 ## 品牌与视觉方向
-- 主色调：深蓝色系 (#0F172A → #1E293B)
-- 参考风格：现代化SaaS产品（Notion、Linear质感）
-- 气质：专业、科技、克制、不花哨
+- 主色调：深蓝头 + 白身体（经典SaaS蓝白风格）
+- 参考风格：Stripe、Notion 质感
+- 气质：专业、清爽、可信、克制
 
 ## Design Tokens
 
 ### 色彩
-- 背景：#0F172A (最深) → #1E293B (深蓝) → #0B1120 (极深)
-- 文字：白色为主，slate-400 为辅，slate-500 为弱
-- 卡片：slate-800/50 + border-slate-700/50 + backdrop-blur-sm（毛玻璃）
-- 渐变色：蓝→紫（from-blue-400 via-indigo-400 to-violet-400）
+- 导航栏：深蓝渐变 #1E40AF → #1E3A8A，白色文字/图标
+- 页面背景：白色 #FFFFFF 或极浅灰 #F8FAFC
+- 卡片/容器：白色背景 + shadow-sm + rounded-xl
+- 文字主色：深灰 #1E293B
+- 次要文字：浅灰 #64748B
+- 弱文字：#94A3B8
+- 边框/分割线：极浅灰 #E2E8F0
+- 渐变色：蓝→紫（from-blue-600 via-indigo-500 to-violet-500）
+- 功能色：橙色（岗位）、紫色（测评）、绿色（规划）、蓝色（主操作）
 
 ### 字体
 - 字体族：system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif
@@ -24,19 +29,18 @@
 ### 动效
 - 淡入加载：fadeInUp 0.8s ease-out，多级延迟（0.15s递增）
 - 功能卡片：hover translateY(-8px) + 深阴影 + 图标scale(1.1)
-- CTA按钮：glow-pulse 发光脉冲 + hover scale(1.05)
-- 浮动粒子：20个微小粒子，15-35s循环，opacity 0.03
+- CTA按钮：渐变背景 + hover scale(1.05) + 阴影增强
 - "更多"下拉：scale(0.95→1) + opacity过渡
 
-### 背景纹理
-- 网格：1px线，60px间距，opacity 0.03
-- 光晕：indigo/violet/blue 圆形blur，低透明度
-- 粒子：微小白色圆形，浮动动画
+### 管理后台
+- 侧边栏：深蓝渐变（#1E40AF → #1E3A8A），白色文字
+- 内容区：白色背景 #FFFFFF
+- 卡片/表格：白底 + border-[#E2E8F0] + shadow-sm
 
 ## 交互与状态
-- 导航栏：深蓝背景页用透明→毛玻璃，白底页保持白底
-- 卡片悬浮：边框变亮色 + 彩色阴影 + 微上浮
-- 按钮：渐变背景 + hover透明度变化 + 阴影
+- 导航栏：固定顶部，深蓝渐变背景，白色文字
+- 卡片悬浮：阴影加深 + 微上浮（-8px）
+- 按钮：蓝底白字 / 渐变背景 + hover亮度变化 + 阴影
 
 ## 导航结构
 - 主导航5项：首页/岗位匹配/能力测评/学习路径/技能图谱

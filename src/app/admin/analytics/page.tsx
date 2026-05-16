@@ -69,7 +69,7 @@ const EVENT_LABELS: Record<string, string> = {
 /* ─── SVG 饼图 ─── */
 function PieChart({ data }: { data: DistributionItem[] }) {
   const total = data.reduce((s, d) => s + Number(d.count), 0);
-  if (total === 0) return <div className="text-center text-gray-400 py-8">暂无数据</div>;
+  if (total === 0) return <div className="text-center text-[#64748B] py-8">暂无数据</div>;
 
   const cx = 120, cy = 120, r = 90;
   let cumAngle = -90;
@@ -98,16 +98,16 @@ function PieChart({ data }: { data: DistributionItem[] }) {
     <div className="flex items-center gap-6">
       <svg width={240} height={240} viewBox="0 0 240 240">
         {slices.map((s, i) => (
-          <path key={i} d={s.path} fill={s.color} stroke="#1E293B" strokeWidth={1} />
+          <path key={i} d={s.path} fill={s.color} stroke="white" strokeWidth={2} />
         ))}
       </svg>
       <div className="flex-1 space-y-1.5 max-h-[240px] overflow-y-auto">
         {slices.map((s, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
             <span className="w-3 h-3 rounded-sm shrink-0" style={{ background: s.color }} />
-            <span className="text-gray-300 flex-1 truncate">{s.label}</span>
-            <span className="text-gray-400">{s.count}</span>
-            <span className="text-gray-500 w-12 text-right">{s.pct}%</span>
+            <span className="text-[#1E293B] flex-1 truncate">{s.label}</span>
+            <span className="text-[#64748B]">{s.count}</span>
+            <span className="text-[#94A3B8] w-12 text-right">{s.pct}%</span>
           </div>
         ))}
       </div>
@@ -117,7 +117,7 @@ function PieChart({ data }: { data: DistributionItem[] }) {
 
 /* ─── SVG 漏斗图 ─── */
 function FunnelChart({ stages }: { stages: FunnelStage[] }) {
-  if (stages.length === 0) return <div className="text-center text-gray-400 py-8">暂无数据</div>;
+  if (stages.length === 0) return <div className="text-center text-[#64748B] py-8">暂无数据</div>;
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
   const colors = ['#3B82F6', '#8B5CF6', '#F97316', '#22C55E'];
 
@@ -131,15 +131,15 @@ function FunnelChart({ stages }: { stages: FunnelStage[] }) {
         return (
           <div key={i}>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-300">{stage.name}</span>
+              <span className="text-sm text-[#1E293B]">{stage.name}</span>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-white">{stage.count}</span>
+                <span className="text-sm font-semibold text-[#1E293B]">{stage.count}</span>
                 {convRate && (
-                  <span className="text-xs text-gray-400">转化率 {convRate}%</span>
+                  <span className="text-xs text-[#64748B]">转化率 {convRate}%</span>
                 )}
               </div>
             </div>
-            <div className="h-8 bg-gray-800 rounded relative overflow-hidden">
+            <div className="h-8 bg-[#F1F5F9] rounded relative overflow-hidden">
               <div
                 className="h-full rounded transition-all duration-500"
                 style={{ width: `${widthPct}%`, background: colors[i] || DEFAULT_COLOR }}
@@ -154,9 +154,8 @@ function FunnelChart({ stages }: { stages: FunnelStage[] }) {
 
 /* ─── SVG 多折线趋势图 ─── */
 function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
-  if (data.length === 0) return <div className="text-center text-gray-400 py-8">暂无数据</div>;
+  if (data.length === 0) return <div className="text-center text-[#64748B] py-8">暂无数据</div>;
 
-  // 生成日期序列
   const dateMap = new Map<string, string>();
   const now = new Date();
   for (let i = days - 1; i >= 0; i--) {
@@ -167,7 +166,6 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
   }
   const dates = Array.from(dateMap.keys());
 
-  // 按事件类型分组
   const eventTypes = [...new Set(data.map((d) => d.event_type))];
   const eventMap = new Map<string, Map<string, number>>();
   for (const d of data) {
@@ -176,7 +174,6 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
     m.set(String(d.date).slice(0, 10), Number(d.count));
   }
 
-  // 只显示 top 5 事件类型（按总量）
   const topEvents = eventTypes
     .map((et) => ({
       et,
@@ -189,7 +186,6 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
   const w = 700, h = 280, px = 50, py = 20;
   const chartW = w - px - 20, chartH = h - py * 2;
 
-  // 求全局最大值
   let maxVal = 1;
   for (const et of topEvents) {
     for (const date of dates) {
@@ -199,12 +195,10 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
   }
   maxVal = Math.ceil(maxVal * 1.2);
 
-  // X/Y 映射
   const xStep = dates.length > 1 ? chartW / (dates.length - 1) : chartW;
   const toX = (i: number) => px + i * xStep;
   const toY = (v: number) => py + chartH - (v / maxVal) * chartH;
 
-  // X轴标签（间隔显示）
   const labelInterval = Math.max(1, Math.floor(dates.length / 10));
 
   return (
@@ -215,7 +209,7 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
           const y = toY(pct * maxVal);
           return (
             <g key={i}>
-              <line x1={px} y1={y} x2={w - 20} y2={y} stroke="#334155" strokeWidth={0.5} />
+              <line x1={px} y1={y} x2={w - 20} y2={y} stroke="#E2E8F0" strokeWidth={0.5} />
               <text x={px - 6} y={y + 4} textAnchor="end" fill="#94A3B8" fontSize={10}>
                 {Math.round(pct * maxVal)}
               </text>
@@ -246,7 +240,6 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
                 strokeWidth={2}
                 strokeLinejoin="round"
               />
-              {/* 数据点 */}
               {dates.map((d, i) => {
                 const v = eventMap.get(et)?.get(d) || 0;
                 return v > 0 ? (
@@ -262,7 +255,7 @@ function TrendChart({ data, days }: { data: TrendItem[]; days: number }) {
         {topEvents.map((et) => (
           <div key={et} className="flex items-center gap-1.5 text-xs">
             <span className="w-3 h-0.5 rounded" style={{ background: EVENT_COLORS[et] || DEFAULT_COLOR }} />
-            <span className="text-gray-400">{EVENT_LABELS[et] || et}</span>
+            <span className="text-[#64748B]">{EVENT_LABELS[et] || et}</span>
           </div>
         ))}
       </div>
@@ -309,8 +302,8 @@ export default function AdminAnalyticsPage() {
       {/* 页面标题 + 时间范围 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">行为数据看板</h1>
-          <p className="text-gray-400 text-sm mt-1">用户行为分析与数据洞察</p>
+          <h1 className="text-2xl font-bold text-[#1E293B]">行为数据看板</h1>
+          <p className="text-[#64748B] text-sm mt-1">用户行为分析与数据洞察</p>
         </div>
         <div className="flex items-center gap-2">
           {[
@@ -322,10 +315,10 @@ export default function AdminAnalyticsPage() {
             <button
               key={opt.value}
               onClick={() => setDays(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${
+              className={`px-3 py-1.5 rounded-lg text-sm transition border ${
                 days === opt.value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-[#64748B] border-[#E2E8F0] hover:bg-[#F8FAFC]'
               }`}
             >
               {opt.label}
@@ -335,7 +328,7 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {loading && !data ? (
-        <div className="text-center text-gray-400 py-20">加载中...</div>
+        <div className="text-center text-[#64748B] py-20">加载中...</div>
       ) : (
         <>
           {/* 核心指标卡片 */}
@@ -345,47 +338,45 @@ export default function AdminAnalyticsPage() {
               value={metrics?.dau ?? 0}
               subtitle="当日活跃用户"
               icon="👥"
-              color="text-blue-400"
+              color="text-blue-600"
             />
             <MetricCard
               title="对话次数"
               value={metrics?.chatCount ?? 0}
               subtitle={`${days}天内总对话`}
               icon="💬"
-              color="text-purple-400"
+              color="text-purple-600"
             />
             <MetricCard
               title="测评完成率"
               value={`${metrics?.assessmentCompleteRate ?? 0}%`}
               subtitle="完成/开始测评"
               icon="📊"
-              color="text-cyan-400"
+              color="text-cyan-600"
             />
             <MetricCard
               title="付费转化率"
               value={`${metrics?.paywallConvertRate ?? 0}%`}
               subtitle="转化/展示付费墙"
               icon="💎"
-              color="text-green-400"
+              color="text-green-600"
             />
           </div>
 
           {/* 中间行：事件分布 + 漏斗 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* 饼图 */}
-            <Card className="bg-[#1E293B] border-gray-700">
+            <Card className="bg-white border-[#E2E8F0] shadow-sm">
               <CardHeader>
-                <CardTitle className="text-white text-base">行为事件分布</CardTitle>
+                <CardTitle className="text-[#1E293B] text-base">行为事件分布</CardTitle>
               </CardHeader>
               <CardContent>
                 <PieChart data={distribution} />
               </CardContent>
             </Card>
 
-            {/* 漏斗图 */}
-            <Card className="bg-[#1E293B] border-gray-700">
+            <Card className="bg-white border-[#E2E8F0] shadow-sm">
               <CardHeader>
-                <CardTitle className="text-white text-base">用户行为漏斗</CardTitle>
+                <CardTitle className="text-[#1E293B] text-base">用户行为漏斗</CardTitle>
               </CardHeader>
               <CardContent>
                 <FunnelChart stages={funnel} />
@@ -394,9 +385,9 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* 趋势图 */}
-          <Card className="bg-[#1E293B] border-gray-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white text-base">行为趋势（近{days}天）</CardTitle>
+              <CardTitle className="text-[#1E293B] text-base">行为趋势（近{days}天）</CardTitle>
             </CardHeader>
             <CardContent>
               <TrendChart data={trend} days={days} />
@@ -404,13 +395,13 @@ export default function AdminAnalyticsPage() {
           </Card>
 
           {/* 热门页面 */}
-          <Card className="bg-[#1E293B] border-gray-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white text-base">热门页面排行 Top 10</CardTitle>
+              <CardTitle className="text-[#1E293B] text-base">热门页面排行 Top 10</CardTitle>
             </CardHeader>
             <CardContent>
               {topPages.length === 0 ? (
-                <div className="text-center text-gray-400 py-6">暂无页面浏览数据</div>
+                <div className="text-center text-[#64748B] py-6">暂无页面浏览数据</div>
               ) : (
                 <div className="space-y-2">
                   {topPages.map((item, i) => {
@@ -418,19 +409,19 @@ export default function AdminAnalyticsPage() {
                     const barPct = (Number(item.views) / maxViews) * 100;
                     return (
                       <div key={i} className="flex items-center gap-3">
-                        <span className="w-6 text-center text-sm text-gray-500 font-mono">
+                        <span className="w-6 text-center text-sm text-[#94A3B8] font-mono">
                           {i + 1}
                         </span>
-                        <span className="text-sm text-gray-300 w-32 truncate">
+                        <span className="text-sm text-[#1E293B] w-32 truncate">
                           {String(item.page)}
                         </span>
-                        <div className="flex-1 h-6 bg-gray-800 rounded overflow-hidden">
+                        <div className="flex-1 h-6 bg-[#F1F5F9] rounded overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded"
                             style={{ width: `${barPct}%` }}
                           />
                         </div>
-                        <span className="text-sm text-gray-400 w-16 text-right">
+                        <span className="text-sm text-[#64748B] w-16 text-right">
                           {Number(item.views)}次
                         </span>
                       </div>
@@ -461,13 +452,13 @@ function MetricCard({
   color: string;
 }) {
   return (
-    <Card className="bg-[#1E293B] border-gray-700">
+    <Card className="bg-white border-[#E2E8F0] shadow-sm">
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-gray-400">{title}</p>
+            <p className="text-sm text-[#64748B]">{title}</p>
             <p className={`text-2xl font-bold mt-1 ${color}`}>{value}</p>
-            <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-xs text-[#94A3B8] mt-1">{subtitle}</p>
           </div>
           <span className="text-2xl">{icon}</span>
         </div>

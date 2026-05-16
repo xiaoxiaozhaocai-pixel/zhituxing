@@ -227,7 +227,6 @@ export default function AdminSkillsPage() {
   const renderForceGraph = () => {
     if (graphNodes.length === 0) return null;
 
-    // 简单的圆形布局
     const width = 500;
     const height = 400;
     const centerX = width / 2;
@@ -245,7 +244,7 @@ export default function AdminSkillsPage() {
     });
 
     return (
-      <svg ref={svgRef} width={width} height={height} className="border border-slate-700 rounded-lg bg-slate-900/50">
+      <svg ref={svgRef} width={width} height={height} className="border border-[#E2E8F0] rounded-lg bg-[#F8FAFC]">
         {/* 边 */}
         {graphEdges.map((edge, i) => {
           const src = nodePositions.get(edge.source);
@@ -260,7 +259,6 @@ export default function AdminSkillsPage() {
                 strokeDasharray={config.lineStyle || 'none'}
                 opacity={0.7}
               />
-              {/* 边标签 */}
               <text
                 x={(src.x + tgt.x) / 2} y={(src.y + tgt.y) / 2 - 6}
                 textAnchor="middle" fill={config.color} fontSize={10}
@@ -282,13 +280,13 @@ export default function AdminSkillsPage() {
               <circle
                 cx={pos.x} cy={pos.y}
                 r={isCenter ? 28 : 18}
-                fill={isCenter ? '#1E40AF' : '#334155'}
-                stroke={isCenter ? '#3B82F6' : '#64748B'}
+                fill={isCenter ? '#1E40AF' : '#E2E8F0'}
+                stroke={isCenter ? '#3B82F6' : '#94A3B8'}
                 strokeWidth={isCenter ? 3 : 1.5}
               />
               <text
                 x={pos.x} y={pos.y + 4}
-                textAnchor="middle" fill="white"
+                textAnchor="middle" fill={isCenter ? 'white' : '#1E293B'}
                 fontSize={isCenter ? 12 : 10} fontWeight={isCenter ? 'bold' : 'normal'}
               >
                 {node.name.length > 6 ? node.name.slice(0, 5) + '…' : node.name}
@@ -307,30 +305,30 @@ export default function AdminSkillsPage() {
       <div className="flex-1 space-y-6">
         {/* 统计卡片 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardContent className="p-4">
-              <div className="text-slate-400 text-sm">技能分类</div>
-              <div className="text-2xl font-bold text-white mt-1">{stats?.taxonomyTotal || 0}</div>
+              <div className="text-[#64748B] text-sm">技能分类</div>
+              <div className="text-2xl font-bold text-[#1E293B] mt-1">{stats?.taxonomyTotal || 0}</div>
             </CardContent>
           </Card>
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardContent className="p-4">
-              <div className="text-slate-400 text-sm">技能关系</div>
-              <div className="text-2xl font-bold text-white mt-1">{stats?.relationsTotal || 0}</div>
+              <div className="text-[#64748B] text-sm">技能关系</div>
+              <div className="text-2xl font-bold text-[#1E293B] mt-1">{stats?.relationsTotal || 0}</div>
             </CardContent>
           </Card>
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardContent className="p-4">
-              <div className="text-slate-400 text-sm">前置关系</div>
-              <div className="text-2xl font-bold text-green-400 mt-1">
+              <div className="text-[#64748B] text-sm">前置关系</div>
+              <div className="text-2xl font-bold text-green-600 mt-1">
                 {Number(stats?.typeBreakdown?.find((t: Record<string, unknown>) => t.relation_type === 'prerequisite')?.count) || 0}
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardContent className="p-4">
-              <div className="text-slate-400 text-sm">共现关系</div>
-              <div className="text-2xl font-bold text-blue-400 mt-1">
+              <div className="text-[#64748B] text-sm">共现关系</div>
+              <div className="text-2xl font-bold text-blue-600 mt-1">
                 {Number(stats?.typeBreakdown?.find((t: Record<string, unknown>) => t.relation_type === 'co_occur')?.count) || 0}
               </div>
             </CardContent>
@@ -339,14 +337,14 @@ export default function AdminSkillsPage() {
 
         {/* 分类分布 */}
         {stats?.categoryBreakdown && stats.categoryBreakdown.length > 0 && (
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-300">技能分类分布</CardTitle>
+              <CardTitle className="text-sm text-[#1E293B]">技能分类分布</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {stats.categoryBreakdown.map((cat: Record<string, unknown>, i: number) => (
-                  <span key={i} className="px-3 py-1 rounded-full text-xs bg-slate-800 text-slate-300 border border-slate-600">
+                  <span key={i} className="px-3 py-1 rounded-full text-xs bg-[#F8FAFC] text-[#1E293B] border border-[#E2E8F0]">
                     {String(cat.category)} ({String(cat.count)})
                   </span>
                 ))}
@@ -356,36 +354,36 @@ export default function AdminSkillsPage() {
         )}
 
         {/* Tab切换 */}
-        <div className="flex gap-2 border-b border-slate-700 pb-2">
+        <div className="flex gap-2 border-b border-[#E2E8F0] pb-2">
           <button
-            className={`px-4 py-2 rounded-t text-sm font-medium ${activeTab === 'taxonomy' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-4 py-2 rounded-t text-sm font-medium ${activeTab === 'taxonomy' ? 'bg-blue-600 text-white' : 'text-[#64748B] hover:text-[#1E293B]'}`}
             onClick={() => setActiveTab('taxonomy')}
           >技能分类管理</button>
           <button
-            className={`px-4 py-2 rounded-t text-sm font-medium ${activeTab === 'relations' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-4 py-2 rounded-t text-sm font-medium ${activeTab === 'relations' ? 'bg-blue-600 text-white' : 'text-[#64748B] hover:text-[#1E293B]'}`}
             onClick={() => setActiveTab('relations')}
           >技能关系管理</button>
         </div>
 
         {/* 技能分类Tab */}
         {activeTab === 'taxonomy' && (
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-slate-300">技能分类列表</CardTitle>
+              <CardTitle className="text-sm text-[#1E293B]">技能分类列表</CardTitle>
               <div className="flex gap-2">
                 <Input placeholder="搜索技能..." value={taxonomyKeyword}
                   onChange={e => { setTaxonomyKeyword(e.target.value); setTaxonomyPage(1); }}
-                  className="w-40 h-8 bg-slate-800 border-slate-600 text-white text-xs" />
-                <Button size="sm" onClick={() => setShowAddTaxonomy(true)} className="bg-blue-600 hover:bg-blue-700 text-xs">
+                  className="w-40 h-8 text-xs" />
+                <Button size="sm" onClick={() => setShowAddTaxonomy(true)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
                   + 新增
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-slate-300">
+                <table className="w-full text-sm text-[#1E293B]">
                   <thead>
-                    <tr className="border-b border-slate-700 text-slate-400">
+                    <tr className="border-b border-[#E2E8F0] text-[#64748B]">
                       <th className="text-left py-2 px-2">ID</th>
                       <th className="text-left py-2 px-2">技能名称</th>
                       <th className="text-left py-2 px-2">类别</th>
@@ -395,21 +393,21 @@ export default function AdminSkillsPage() {
                   </thead>
                   <tbody>
                     {taxonomy.map(item => (
-                      <tr key={item.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                        <td className="py-2 px-2 text-slate-500">{item.id}</td>
-                        <td className="py-2 px-2 font-medium text-white">{item.skill_name}</td>
+                      <tr key={item.id} className="border-b border-[#E2E8F0]/50 hover:bg-blue-50/30">
+                        <td className="py-2 px-2 text-[#64748B]">{item.id}</td>
+                        <td className="py-2 px-2 font-medium text-[#1E293B]">{item.skill_name}</td>
                         <td className="py-2 px-2">
                           {editingItem?.id === item.id ? (
                             <Input value={editingItem.category || ''} onChange={e => setEditingItem({ ...editingItem, category: e.target.value })}
-                              className="w-24 h-7 bg-slate-700 border-slate-600 text-white text-xs" />
+                              className="w-24 h-7 text-xs" />
                           ) : (
-                            <span className="px-2 py-0.5 rounded bg-slate-700 text-xs">{item.category || '-'}</span>
+                            <span className="px-2 py-0.5 rounded bg-[#F8FAFC] text-xs border border-[#E2E8F0]">{item.category || '-'}</span>
                           )}
                         </td>
                         <td className="py-2 px-2">
                           {editingItem?.id === item.id ? (
                             <Input value={editingItem.domain || ''} onChange={e => setEditingItem({ ...editingItem, domain: e.target.value })}
-                              className="w-28 h-7 bg-slate-700 border-slate-600 text-white text-xs" />
+                              className="w-28 h-7 text-xs" />
                           ) : (
                             <span className="text-xs">{item.domain || '-'}</span>
                           )}
@@ -417,14 +415,14 @@ export default function AdminSkillsPage() {
                         <td className="py-2 px-2">
                           {editingItem?.id === item.id ? (
                             <div className="flex gap-1">
-                              <Button size="sm" variant="ghost" onClick={handleUpdateTaxonomy} className="text-green-400 text-xs h-6">保存</Button>
-                              <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="text-slate-400 text-xs h-6">取消</Button>
+                              <Button size="sm" variant="ghost" onClick={handleUpdateTaxonomy} className="text-green-600 text-xs h-6">保存</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="text-[#64748B] text-xs h-6">取消</Button>
                             </div>
                           ) : (
                             <div className="flex gap-1">
-                              <Button size="sm" variant="ghost" onClick={() => setEditingItem(item)} className="text-blue-400 text-xs h-6">编辑</Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleDeleteTaxonomy(item.id)} className="text-red-400 text-xs h-6">删除</Button>
-                              <Button size="sm" variant="ghost" onClick={() => { setGraphSkill(item.skill_name); }} className="text-purple-400 text-xs h-6">图谱</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingItem(item)} className="text-blue-600 text-xs h-6">编辑</Button>
+                              <Button size="sm" variant="ghost" onClick={() => handleDeleteTaxonomy(item.id)} className="text-red-600 text-xs h-6">删除</Button>
+                              <Button size="sm" variant="ghost" onClick={() => { setGraphSkill(item.skill_name); }} className="text-purple-600 text-xs h-6">图谱</Button>
                             </div>
                           )}
                         </td>
@@ -433,8 +431,7 @@ export default function AdminSkillsPage() {
                   </tbody>
                 </table>
               </div>
-              {/* 分页 */}
-              <div className="flex items-center justify-between mt-3 text-xs text-slate-400">
+              <div className="flex items-center justify-between mt-3 text-xs text-[#64748B]">
                 <span>共 {taxonomyTotal} 条</span>
                 <div className="flex gap-1">
                   <Button size="sm" variant="ghost" disabled={taxonomyPage <= 1} onClick={() => setTaxonomyPage(p => p - 1)} className="h-7 text-xs">上一页</Button>
@@ -448,31 +445,31 @@ export default function AdminSkillsPage() {
 
         {/* 技能关系Tab */}
         {activeTab === 'relations' && (
-          <Card className="bg-[#0F172A] border-slate-700">
+          <Card className="bg-white border-[#E2E8F0] shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-slate-300">技能关系列表</CardTitle>
+              <CardTitle className="text-sm text-[#1E293B]">技能关系列表</CardTitle>
               <div className="flex gap-2">
                 <Input placeholder="搜索技能..." value={relationsKeyword}
                   onChange={e => { setRelationsKeyword(e.target.value); setRelationsPage(1); }}
-                  className="w-32 h-8 bg-slate-800 border-slate-600 text-white text-xs" />
+                  className="w-32 h-8 text-xs" />
                 <select value={relationsFilter} onChange={e => { setRelationsFilter(e.target.value); setRelationsPage(1); }}
-                  className="h-8 bg-slate-800 border border-slate-600 text-white text-xs rounded px-2">
+                  className="h-8 border border-[#E2E8F0] bg-white text-[#1E293B] text-xs rounded px-2">
                   <option value="">全部关系</option>
                   <option value="prerequisite">前置</option>
                   <option value="co_occur">共现</option>
                   <option value="similar">相似</option>
                   <option value="career_path">职业路径</option>
                 </select>
-                <Button size="sm" onClick={() => setShowAddRelation(true)} className="bg-blue-600 hover:bg-blue-700 text-xs">+ 新增</Button>
+                <Button size="sm" onClick={() => setShowAddRelation(true)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">+ 新增</Button>
                 <Button size="sm" variant="outline" onClick={() => setShowImport(true)}
-                  className="border-slate-600 text-slate-300 text-xs">批量导入</Button>
+                  className="text-xs">批量导入</Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-slate-300">
+                <table className="w-full text-sm text-[#1E293B]">
                   <thead>
-                    <tr className="border-b border-slate-700 text-slate-400">
+                    <tr className="border-b border-[#E2E8F0] text-[#64748B]">
                       <th className="text-left py-2 px-2">ID</th>
                       <th className="text-left py-2 px-2">源技能</th>
                       <th className="text-left py-2 px-2">目标技能</th>
@@ -485,38 +482,38 @@ export default function AdminSkillsPage() {
                     {relations.map(item => {
                       const config = RELATION_CONFIG[item.relation_type] || RELATION_CONFIG.co_occur;
                       return (
-                        <tr key={item.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                          <td className="py-2 px-2 text-slate-500">{item.id}</td>
-                          <td className="py-2 px-2 font-medium text-white">
+                        <tr key={item.id} className="border-b border-[#E2E8F0]/50 hover:bg-blue-50/30">
+                          <td className="py-2 px-2 text-[#64748B]">{item.id}</td>
+                          <td className="py-2 px-2 font-medium text-[#1E293B]">
                             {editingRelation?.id === item.id ? (
                               <Input value={editingRelation.source_skill} onChange={e => setEditingRelation({ ...editingRelation, source_skill: e.target.value })}
-                                className="w-28 h-7 bg-slate-700 border-slate-600 text-white text-xs" />
+                                className="w-28 h-7 text-xs" />
                             ) : item.source_skill}
                           </td>
-                          <td className="py-2 px-2 font-medium text-white">
+                          <td className="py-2 px-2 font-medium text-[#1E293B]">
                             {editingRelation?.id === item.id ? (
                               <Input value={editingRelation.target_skill} onChange={e => setEditingRelation({ ...editingRelation, target_skill: e.target.value })}
-                                className="w-28 h-7 bg-slate-700 border-slate-600 text-white text-xs" />
+                                className="w-28 h-7 text-xs" />
                             ) : item.target_skill}
                           </td>
                           <td className="py-2 px-2">
                             {editingRelation?.id === item.id ? (
                               <select value={editingRelation.relation_type} onChange={e => setEditingRelation({ ...editingRelation, relation_type: e.target.value })}
-                                className="h-7 bg-slate-700 border border-slate-600 text-white text-xs rounded px-1">
+                                className="h-7 border border-[#E2E8F0] bg-white text-[#1E293B] text-xs rounded px-1">
                                 <option value="prerequisite">前置</option>
                                 <option value="co_occur">共现</option>
                                 <option value="similar">相似</option>
                                 <option value="career_path">职业路径</option>
                               </select>
                             ) : (
-                              <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: config.color + '20', color: config.color }}>{config.label}</span>
+                              <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: config.color + '15', color: config.color, border: `1px solid ${config.color}30` }}>{config.label}</span>
                             )}
                           </td>
                           <td className="py-2 px-2">
                             {editingRelation?.id === item.id ? (
                               <Input type="number" step="0.1" min="0" max="1" value={editingRelation.weight}
                                 onChange={e => setEditingRelation({ ...editingRelation, weight: parseFloat(e.target.value) || 0 })}
-                                className="w-16 h-7 bg-slate-700 border-slate-600 text-white text-xs" />
+                                className="w-16 h-7 text-xs" />
                             ) : (
                               <span className="text-xs">{item.weight}</span>
                             )}
@@ -524,13 +521,13 @@ export default function AdminSkillsPage() {
                           <td className="py-2 px-2">
                             {editingRelation?.id === item.id ? (
                               <div className="flex gap-1">
-                                <Button size="sm" variant="ghost" onClick={handleUpdateRelation} className="text-green-400 text-xs h-6">保存</Button>
-                                <Button size="sm" variant="ghost" onClick={() => setEditingRelation(null)} className="text-slate-400 text-xs h-6">取消</Button>
+                                <Button size="sm" variant="ghost" onClick={handleUpdateRelation} className="text-green-600 text-xs h-6">保存</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingRelation(null)} className="text-[#64748B] text-xs h-6">取消</Button>
                               </div>
                             ) : (
                               <div className="flex gap-1">
-                                <Button size="sm" variant="ghost" onClick={() => setEditingRelation(item)} className="text-blue-400 text-xs h-6">编辑</Button>
-                                <Button size="sm" variant="ghost" onClick={() => handleDeleteRelation(item.id)} className="text-red-400 text-xs h-6">删除</Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingRelation(item)} className="text-blue-600 text-xs h-6">编辑</Button>
+                                <Button size="sm" variant="ghost" onClick={() => handleDeleteRelation(item.id)} className="text-red-600 text-xs h-6">删除</Button>
                               </div>
                             )}
                           </td>
@@ -540,7 +537,7 @@ export default function AdminSkillsPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center justify-between mt-3 text-xs text-slate-400">
+              <div className="flex items-center justify-between mt-3 text-xs text-[#64748B]">
                 <span>共 {relationsTotal} 条</span>
                 <div className="flex gap-1">
                   <Button size="sm" variant="ghost" disabled={relationsPage <= 1} onClick={() => setRelationsPage(p => p - 1)} className="h-7 text-xs">上一页</Button>
@@ -554,17 +551,17 @@ export default function AdminSkillsPage() {
 
         {/* 新增技能分类弹窗 */}
         {showAddTaxonomy && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAddTaxonomy(false)}>
-            <div className="bg-[#1E293B] p-6 rounded-lg w-96 border border-slate-700" onClick={e => e.stopPropagation()}>
-              <h3 className="text-white font-medium mb-4">新增技能分类</h3>
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => setShowAddTaxonomy(false)}>
+            <div className="bg-white p-6 rounded-xl w-96 border border-[#E2E8F0] shadow-xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-[#1E293B] font-medium mb-4">新增技能分类</h3>
               <div className="space-y-3">
-                <div><label className="text-slate-400 text-xs">技能名称 *</label><Input value={newTaxonomy.skill_name} onChange={e => setNewTaxonomy({ ...newTaxonomy, skill_name: e.target.value })} className="bg-slate-800 border-slate-600 text-white" /></div>
-                <div><label className="text-slate-400 text-xs">类别</label><Input value={newTaxonomy.category} onChange={e => setNewTaxonomy({ ...newTaxonomy, category: e.target.value })} className="bg-slate-800 border-slate-600 text-white" /></div>
-                <div><label className="text-slate-400 text-xs">领域</label><Input value={newTaxonomy.domain} onChange={e => setNewTaxonomy({ ...newTaxonomy, domain: e.target.value })} className="bg-slate-800 border-slate-600 text-white" /></div>
+                <div><label className="text-[#64748B] text-xs">技能名称 *</label><Input value={newTaxonomy.skill_name} onChange={e => setNewTaxonomy({ ...newTaxonomy, skill_name: e.target.value })} /></div>
+                <div><label className="text-[#64748B] text-xs">类别</label><Input value={newTaxonomy.category} onChange={e => setNewTaxonomy({ ...newTaxonomy, category: e.target.value })} /></div>
+                <div><label className="text-[#64748B] text-xs">领域</label><Input value={newTaxonomy.domain} onChange={e => setNewTaxonomy({ ...newTaxonomy, domain: e.target.value })} /></div>
               </div>
               <div className="flex gap-2 mt-4 justify-end">
-                <Button variant="ghost" onClick={() => setShowAddTaxonomy(false)} className="text-slate-400">取消</Button>
-                <Button onClick={handleAddTaxonomy} className="bg-blue-600 hover:bg-blue-700">确认</Button>
+                <Button variant="outline" onClick={() => setShowAddTaxonomy(false)}>取消</Button>
+                <Button onClick={handleAddTaxonomy} className="bg-blue-600 hover:bg-blue-700 text-white">确认</Button>
               </div>
             </div>
           </div>
@@ -572,27 +569,27 @@ export default function AdminSkillsPage() {
 
         {/* 新增技能关系弹窗 */}
         {showAddRelation && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowAddRelation(false)}>
-            <div className="bg-[#1E293B] p-6 rounded-lg w-96 border border-slate-700" onClick={e => e.stopPropagation()}>
-              <h3 className="text-white font-medium mb-4">新增技能关系</h3>
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => setShowAddRelation(false)}>
+            <div className="bg-white p-6 rounded-xl w-96 border border-[#E2E8F0] shadow-xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-[#1E293B] font-medium mb-4">新增技能关系</h3>
               <div className="space-y-3">
-                <div><label className="text-slate-400 text-xs">源技能 *</label><Input value={newRelation.source_skill} onChange={e => setNewRelation({ ...newRelation, source_skill: e.target.value })} className="bg-slate-800 border-slate-600 text-white" /></div>
-                <div><label className="text-slate-400 text-xs">目标技能 *</label><Input value={newRelation.target_skill} onChange={e => setNewRelation({ ...newRelation, target_skill: e.target.value })} className="bg-slate-800 border-slate-600 text-white" /></div>
+                <div><label className="text-[#64748B] text-xs">源技能 *</label><Input value={newRelation.source_skill} onChange={e => setNewRelation({ ...newRelation, source_skill: e.target.value })} /></div>
+                <div><label className="text-[#64748B] text-xs">目标技能 *</label><Input value={newRelation.target_skill} onChange={e => setNewRelation({ ...newRelation, target_skill: e.target.value })} /></div>
                 <div>
-                  <label className="text-slate-400 text-xs">关系类型</label>
+                  <label className="text-[#64748B] text-xs">关系类型</label>
                   <select value={newRelation.relation_type} onChange={e => setNewRelation({ ...newRelation, relation_type: e.target.value })}
-                    className="w-full h-10 bg-slate-800 border border-slate-600 text-white rounded px-3">
+                    className="w-full h-10 border border-[#E2E8F0] bg-white text-[#1E293B] rounded-md px-3">
                     <option value="prerequisite">前置关系</option>
                     <option value="co_occur">共现关系</option>
                     <option value="similar">相似关系</option>
                     <option value="career_path">职业路径</option>
                   </select>
                 </div>
-                <div><label className="text-slate-400 text-xs">权重 (0-1)</label><Input type="number" step="0.1" min="0" max="1" value={newRelation.weight} onChange={e => setNewRelation({ ...newRelation, weight: parseFloat(e.target.value) || 0.5 })} className="bg-slate-800 border-slate-600 text-white" /></div>
+                <div><label className="text-[#64748B] text-xs">权重 (0-1)</label><Input type="number" step="0.1" min="0" max="1" value={newRelation.weight} onChange={e => setNewRelation({ ...newRelation, weight: parseFloat(e.target.value) || 0.5 })} /></div>
               </div>
               <div className="flex gap-2 mt-4 justify-end">
-                <Button variant="ghost" onClick={() => setShowAddRelation(false)} className="text-slate-400">取消</Button>
-                <Button onClick={handleAddRelation} className="bg-blue-600 hover:bg-blue-700">确认</Button>
+                <Button variant="outline" onClick={() => setShowAddRelation(false)}>取消</Button>
+                <Button onClick={handleAddRelation} className="bg-blue-600 hover:bg-blue-700 text-white">确认</Button>
               </div>
             </div>
           </div>
@@ -600,25 +597,25 @@ export default function AdminSkillsPage() {
 
         {/* 批量导入弹窗 */}
         {showImport && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => { setShowImport(false); setImportResult(null); }}>
-            <div className="bg-[#1E293B] p-6 rounded-lg w-[520px] border border-slate-700" onClick={e => e.stopPropagation()}>
-              <h3 className="text-white font-medium mb-4">批量导入技能关系</h3>
-              <p className="text-slate-400 text-xs mb-2">
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => { setShowImport(false); setImportResult(null); }}>
+            <div className="bg-white p-6 rounded-xl w-[520px] border border-[#E2E8F0] shadow-xl" onClick={e => e.stopPropagation()}>
+              <h3 className="text-[#1E293B] font-medium mb-4">批量导入技能关系</h3>
+              <p className="text-[#64748B] text-xs mb-2">
                 CSV格式：每行一条，字段用逗号分隔：源技能,目标技能,关系类型(prerequisite/co_occur/similar/career_path),权重
               </p>
               <textarea
                 value={csvText} onChange={e => setCsvText(e.target.value)}
                 placeholder={"Java,Spring Boot,prerequisite,0.9\nPython,Django,co_occur,0.7\nReact,Vue,similar,0.8"}
-                className="w-full h-40 bg-slate-800 border border-slate-600 text-white text-xs rounded p-3 font-mono"
+                className="w-full h-40 border border-[#E2E8F0] bg-[#F8FAFC] text-[#1E293B] text-xs rounded-lg p-3 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               {importResult && (
-                <div className="mt-2 p-2 rounded bg-slate-800 text-xs text-slate-300">
+                <div className="mt-2 p-2 rounded-lg bg-[#F8FAFC] text-xs text-[#1E293B] border border-[#E2E8F0]">
                   导入完成：成功 {importResult.inserted} 条，失败 {importResult.errors} 条，共 {importResult.total} 条
                 </div>
               )}
               <div className="flex gap-2 mt-4 justify-end">
-                <Button variant="ghost" onClick={() => { setShowImport(false); setImportResult(null); }} className="text-slate-400">关闭</Button>
-                <Button onClick={handleBulkImport} className="bg-blue-600 hover:bg-blue-700">导入</Button>
+                <Button variant="outline" onClick={() => { setShowImport(false); setImportResult(null); }}>关闭</Button>
+                <Button onClick={handleBulkImport} className="bg-blue-600 hover:bg-blue-700 text-white">导入</Button>
               </div>
             </div>
           </div>
@@ -627,16 +624,16 @@ export default function AdminSkillsPage() {
 
       {/* 右侧可视化面板 */}
       <div className="w-[540px] flex-shrink-0 space-y-4">
-        <Card className="bg-[#0F172A] border-slate-700">
+        <Card className="bg-white border-[#E2E8F0] shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-300">技能关系图预览</CardTitle>
+            <CardTitle className="text-sm text-[#1E293B]">技能关系图预览</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2 mb-3">
               <Input placeholder="输入技能名称..." value={graphSkill} onChange={e => setGraphSkill(e.target.value)}
-                className="flex-1 h-8 bg-slate-800 border-slate-600 text-white text-xs"
+                className="flex-1 h-8 text-xs"
                 onKeyDown={e => { if (e.key === 'Enter') fetchGraph(); }} />
-              <Button size="sm" onClick={fetchGraph} className="bg-blue-600 hover:bg-blue-700 text-xs">查看</Button>
+              <Button size="sm" onClick={fetchGraph} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">查看</Button>
             </div>
 
             {/* 图例 */}
@@ -644,7 +641,7 @@ export default function AdminSkillsPage() {
               {Object.entries(RELATION_CONFIG).map(([key, cfg]) => (
                 <span key={key} className="flex items-center gap-1">
                   <span className="w-4 h-0.5 inline-block" style={{ backgroundColor: cfg.color, borderStyle: cfg.lineStyle ? 'dashed' : 'solid' }} />
-                  <span className="text-slate-400">{cfg.label}</span>
+                  <span className="text-[#64748B]">{cfg.label}</span>
                 </span>
               ))}
             </div>
@@ -652,13 +649,13 @@ export default function AdminSkillsPage() {
             {showGraph ? (
               renderForceGraph()
             ) : (
-              <div className="h-[400px] flex items-center justify-center text-slate-500 text-sm border border-slate-700 rounded-lg bg-slate-900/50">
+              <div className="h-[400px] flex items-center justify-center text-[#64748B] text-sm border border-[#E2E8F0] rounded-lg bg-[#F8FAFC]">
                 输入技能名称查看关系图
               </div>
             )}
 
             {showGraph && graphEdges.length > 0 && (
-              <div className="mt-3 text-xs text-slate-400">
+              <div className="mt-3 text-xs text-[#64748B]">
                 找到 {graphNodes.length} 个节点、{graphEdges.length} 条关系
               </div>
             )}

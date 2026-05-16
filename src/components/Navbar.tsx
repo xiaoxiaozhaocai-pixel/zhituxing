@@ -93,31 +93,25 @@ export default function Navbar() {
     router.push('/profile');
   };
 
-  const isHomePage = pathname === '/';
-
   return (
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? isHomePage
-              ? 'bg-[#0F172A]/90 backdrop-blur-xl shadow-lg shadow-black/20 py-2'
-              : 'bg-white/95 backdrop-blur-xl shadow-md py-2'
-            : isHomePage
-              ? 'bg-transparent py-4'
-              : 'bg-white shadow-md py-3'
+            ? 'bg-[#1E40AF]/95 backdrop-blur-xl shadow-lg shadow-blue-900/20 py-2'
+            : 'bg-gradient-to-r from-[#1E40AF] to-[#1E3A8A] py-3'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isHomePage ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-[#165DFF]'}`}>
+              <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">职</span>
               </div>
               <div>
-                <div className={`text-lg font-bold ${isHomePage ? 'text-white' : 'text-gray-900'}`}>职途星</div>
-                <div className={`text-[10px] ${isHomePage ? 'text-slate-500' : 'text-gray-500'}`}>AI职业规划助手</div>
+                <div className="text-lg font-bold text-white">职途星</div>
+                <div className="text-[10px] text-blue-200/70">AI职业规划助手</div>
               </div>
             </Link>
 
@@ -130,13 +124,9 @@ export default function Navbar() {
                     key={item.name}
                     href={item.href}
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isHomePage
-                        ? isActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                        : isActive
-                          ? 'bg-[#165DFF]/10 text-[#165DFF]'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'text-blue-100 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     {item.icon}
@@ -150,13 +140,9 @@ export default function Navbar() {
                 <button
                   onClick={() => setIsMoreOpen(!isMoreOpen)}
                   className={`flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isHomePage
-                      ? isMoreOpen
-                        ? 'bg-white/10 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                      : isMoreOpen
-                        ? 'bg-[#165DFF]/10 text-[#165DFF]'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    isMoreOpen
+                      ? 'bg-white/20 text-white'
+                      : 'text-blue-100 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   更多
@@ -169,7 +155,7 @@ export default function Navbar() {
                     isMoreOpen
                       ? 'opacity-100 scale-100'
                       : 'opacity-0 scale-95 pointer-events-none'
-                  } ${isHomePage ? 'bg-slate-800 border-slate-700/50 shadow-black/40' : 'bg-white border-gray-200'}`}
+                  } bg-white border-gray-200`}
                 >
                   <div className="py-2">
                     {moreNavItems.map((item) => {
@@ -180,19 +166,15 @@ export default function Navbar() {
                           href={item.href}
                           onClick={() => setIsMoreOpen(false)}
                           className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
-                            isHomePage
-                              ? isActive
-                                ? 'text-blue-400 bg-white/[0.06]'
-                                : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                              : isActive
-                                ? 'text-[#165DFF] bg-blue-50'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            isActive
+                              ? 'text-blue-600 bg-blue-50'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                           }`}
                         >
                           {item.icon}
                           {item.name}
                           {item.name === '会员中心' && (
-                            <Crown className="w-3 h-3 text-amber-400 ml-auto" />
+                            <Crown className="w-3 h-3 text-amber-500 ml-auto" />
                           )}
                         </Link>
                       );
@@ -208,11 +190,9 @@ export default function Navbar() {
               {user && (
                 <Link
                   href="/profile?tab=messages"
-                  className={`relative p-2 rounded-lg transition-colors ${
-                    isHomePage ? 'hover:bg-white/[0.06]' : 'hover:bg-gray-100'
-                  }`}
+                  className="relative p-2 rounded-lg transition-colors hover:bg-white/10"
                 >
-                  <Bell className={`w-5 h-5 ${isHomePage ? 'text-slate-400' : 'text-gray-600'}`} />
+                  <Bell className="w-5 h-5 text-blue-100" />
                   {unreadNotifications > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
                       {unreadNotifications > 9 ? '9+' : unreadNotifications}
@@ -226,22 +206,14 @@ export default function Navbar() {
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
-                    className={`flex items-center space-x-2 text-sm font-medium ${
-                      isHomePage
-                        ? 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
-                        : 'text-[#165DFF] hover:bg-[#165DFF]/10'
-                    }`}
+                    className="flex items-center space-x-2 text-sm font-medium text-blue-100 hover:text-white hover:bg-white/10"
                     onClick={goToProfile}
                   >
                     <span>个人中心</span>
                   </Button>
 
                   <button onClick={goToProfile}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors relative ${
-                      isHomePage
-                        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500'
-                        : 'bg-[#165DFF] hover:bg-[#165DFF]/90'
-                    }`}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors relative bg-white/20 hover:bg-white/30">
                       <User className="w-4 h-4 text-white" />
                       {isMember && (
                         <Crown className="w-3 h-3 text-amber-400 absolute -top-1 -right-1" />
@@ -250,7 +222,7 @@ export default function Navbar() {
                   </button>
 
                   {isMember && (
-                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border border-amber-500/30">
+                    <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
                       <Crown className="w-3 h-3" /> {membershipPlan || '会员'}
                     </span>
                   )}
@@ -260,21 +232,13 @@ export default function Navbar() {
                   <Link href="/auth">
                     <Button
                       variant="ghost"
-                      className={`${
-                        isHomePage
-                          ? 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
-                          : 'text-[#165DFF] hover:text-[#165DFF] hover:bg-[#165DFF]/10'
-                      }`}
+                      className="text-blue-100 hover:text-white hover:bg-white/10"
                     >
                       登录
                     </Button>
                   </Link>
                   <Link href="/auth">
-                    <Button className={`${
-                      isHomePage
-                        ? 'bg-white text-slate-900 hover:bg-slate-100'
-                        : 'bg-[#165DFF] hover:bg-[#165DFF]/90 text-white'
-                    }`}>
+                    <Button className="bg-white text-blue-700 hover:bg-blue-50 font-semibold shadow-sm">
                       注册
                     </Button>
                   </Link>
@@ -288,9 +252,9 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
-                <X className={`w-6 h-6 ${isHomePage ? 'text-white' : ''}`} />
+                <X className="w-6 h-6 text-white" />
               ) : (
-                <Menu className={`w-6 h-6 ${isHomePage ? 'text-white' : ''}`} />
+                <Menu className="w-6 h-6 text-white" />
               )}
             </button>
           </div>
@@ -298,7 +262,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className={`lg:hidden border-t ${isHomePage ? 'bg-[#0F172A] border-slate-700/50' : 'bg-white border-gray-200'}`}>
+          <div className="lg:hidden border-t border-blue-700/50 bg-[#1E40AF]">
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
               {[...mainNavItems, ...moreNavItems].map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -307,13 +271,9 @@ export default function Navbar() {
                     key={item.name}
                     href={item.href}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium ${
-                      isHomePage
-                        ? isActive
-                          ? 'bg-white/10 text-white'
-                          : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
-                        : isActive
-                          ? 'bg-[#165DFF] text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'text-blue-100 hover:text-white hover:bg-white/10'
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -324,7 +284,7 @@ export default function Navbar() {
               })}
 
               {/* Auth Buttons */}
-              <div className={`pt-4 border-t space-y-2 ${isHomePage ? 'border-slate-700/50' : ''}`}>
+              <div className="pt-4 border-t border-blue-700/50 space-y-2">
                 {user ? (
                   <>
                     <button
@@ -332,18 +292,14 @@ export default function Navbar() {
                         goToProfile();
                         setIsMobileMenuOpen(false);
                       }}
-                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium ${
-                        isHomePage
-                          ? 'bg-white/10 text-white'
-                          : 'bg-[#165DFF] text-white'
-                      }`}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium bg-white/20 text-white"
                     >
                       <User className="w-5 h-5" />
                       个人中心
                     </button>
                     <Button
                       variant="ghost"
-                      className="w-full text-red-500"
+                      className="w-full text-red-300 hover:text-red-200"
                       onClick={() => {
                         handleLogout();
                         setIsMobileMenuOpen(false);
@@ -356,12 +312,12 @@ export default function Navbar() {
                 ) : (
                   <>
                     <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className={`w-full ${isHomePage ? 'text-slate-300 hover:text-white' : ''}`}>
+                      <Button variant="ghost" className="w-full text-blue-100 hover:text-white">
                         登录
                       </Button>
                     </Link>
                     <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className={`w-full ${isHomePage ? 'bg-white text-slate-900 hover:bg-slate-100' : 'bg-[#165DFF] hover:bg-[#165DFF]/90 text-white'}`}>
+                      <Button className="w-full bg-white text-blue-700 hover:bg-blue-50 font-semibold">
                         注册
                       </Button>
                     </Link>
