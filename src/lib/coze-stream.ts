@@ -20,6 +20,19 @@ export async function getUserInfoFromRequest(request: NextRequest): Promise<User
   if (!userId) return null;
 
   try {
+    // 优先使用 execSql 查询（兼容 Edge Runtime）
+    const result = await execSql(
+      `SELECT user_id, user_type FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
+    );
+
+    if (result && result.length > 0) {
+      return {
+        userId,
+        userType: (result[0] as { user_type: string }).user_type || 'free',
+      };
+    }
+
+    // execSql 失败时，fallback 到 Supabase REST API
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${userId}&select=user_id,user_type&limit=1`,
       {
