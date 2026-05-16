@@ -56,28 +56,28 @@ SSE解析出结构化数据后，根据type存入对应的Supabase表：
 ## 当前开发阶段：阶段一 MVP
 需要完成的任务（按顺序）：
 
-### 任务1：改造 chat/route.ts
+### 任务1：改造 chat/route.ts ✅ 已完成
 - 用户验证改查 user_profiles 表（不再查 users 表），同时查出 user_type
 - 调用Coze API时传入 custom_variables: { user_type }
 - 修复流式传输（不要先读完整响应再转发，改为边读边转发）
 - 添加SSE解析器，解析 <<DATA>> 标记，结构化数据通过 event: structured_data 推送，同时存入Supabase对应表
 
-### 任务2：改造 interview/route.ts
+### 任务2：改造 interview/route.ts ✅ 已完成
 - 同样传入 user_type
 - 添加SSE解析器
 - 面试结果存入 interview_results 表
 
-### 任务3：改造 career-planning/stream/route.ts
+### 任务3：改造 career-planning/stream/route.ts ✅ 已完成
 - 同样传入 user_type
 - 添加SSE解析器
 - 规划结果存入 career_plans 表
 
-### 任务4：改造 search-jd/route.ts
+### 任务4：改造 search-jd/route.ts ✅ 已完成
 - 同样传入 user_type
 - 添加SSE解析器
 - JD匹配结果存入 skill_job_match 表
 
-### 任务5：创建数据卡片组件
+### 任务5：创建数据卡片组件 ✅ 已完成
 - src/components/cards/InterviewResultCard.tsx — 面试结果卡片
 - src/components/cards/CareerPlanCard.tsx — 职业规划卡片
 - src/components/cards/JdMatchCard.tsx — 岗位匹配卡片
