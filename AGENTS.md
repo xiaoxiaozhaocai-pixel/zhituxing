@@ -93,3 +93,134 @@ SSE解析出结构化数据后，根据type存入对应的Supabase表：
 - SQL查询用 execSql 工具函数
 - 错误处理要有fallback（Coze不可用时返回预设回复）
 - 环境变量：NEXT_PUBLIC_ 前缀的暴露前端，其余仅服务端
+
+---
+
+# 阶段二执行手册
+
+## 当前状态
+阶段一MVP已完成：Supabase建表+API改造+SSE解析+数据卡片+智能体对接+端到端测试通过。
+
+## 阶段二目标
+从"能对话"升级为"有数据价值"——实现量化匹配、结构化页面、会员体系。
+
+---
+
+## 任务1：匹配算法TypeScript版（P0）
+
+创建 `src/lib/match-algorithm.ts`，实现以下算法：
+
+### 1.1 技能匹配度计算
+- 输入：用户技能列表(user_skills) + 目标岗位JD(jd_library/skill_job_match)
+- 算法：匹配度 = (已匹配技能数 / 岗位要求技能数) × 100
+- 输出：match_score, matched_skills, gap_skills
+
+### 1.2 技能缺口分析
+- 输入：gap_skills + skill_relations表
+- 算法：对每个缺口技能，查skill_relations找prerequisite关系，生成学习路径
+- 输出：learning_path（按prerequisite排序的技能学习顺序）
+
+### 1.3 薪资范围估算
+- 输入：匹配度 + 岗位JD中的薪资范围
+- 算法：根据匹配度在薪资范围的低位和高位之间插值
+- 输出：estimated_salary_min, estimated_salary_max
+
+### 1.4 竞争力百分位
+- 输入：用户匹配度 + 同岗位其他用户的匹配度（assessment_results表）
+- 算法：percentile = 排名/总人数 × 100
+- 输出：percentile_rank
+
+---
+
+## 任务2：6个新API路由（P0）
+
+### 2.1 `/api/match` (POST)
+- 功能：根据用户技能匹配岗位
+- 输入：user_id, target_position（可选）
+- 流程：查user_skills → 查jd_library/skill_job_match → 调匹配算法 → 返回匹配结果
+- 输出：匹配岗位列表（按match_score降序），每个含match_score, gap_skills, estimated_salary
+
+### 2.2 `/api/skills/relations` (GET)
+- 功能：查询技能关系图谱
+- 输入：skill_name, relation_type（co_occur/prerequisite/similar/career_path）
+- 流程：查skill_relations表
+- 输出：关联技能列表+关系类型+权重
+
+### 2.3 `/api/user/profile` (GET)
+- 功能：获取用户完整画像
+- 输入：user_id
+- 流程：查user_profiles + user_skills + 最近的assessment_results
+- 输出：完整用户画像JSON
+
+### 2.4 `/api/assessment` (POST)
+- 功能：触发能力测评并返回结果
+- 输入：user_id, target_position
+- 流程：调用Coze测评智能体 → 解析SSE → 存assessment_results → 返回结果
+- 输出：测评维度评分+百分位+短板+提升建议
+
+### 2.5 `/api/jd/search` (GET)
+- 功能：搜索JD库
+- 输入：keyword, city, salary_range, industry
+- 流程：查jd_library表，支持全文搜索
+- 输出：JD列表（含技能要求、薪资、匹配度）
+
+### 2.6 `/api/analytics` (POST)
+- 功能：上报用户行为数据
+- 输入：user_id, event_type, event_data
+- 流程：写入行为日志表（后续阶段三用）
+- 输出：success/fail
+
+---
+
+## 任务3：4个新页面（P0）
+
+### 3.1 匹配结果页 `/match`
+- 调用 /api/match 获取数据
+- 展示：匹配岗位卡片列表（JdMatchCard组件复用）
+- 支持按匹配度/薪资/城市筛选
+- 点击岗位卡片展开详情（技能缺口+学习建议）
+
+### 3.2 测评详情页 `/assessment`
+- 调用 /api/assessment 触发测评
+- 展示：SkillAssessmentCard + 各维度详细分析
+- 历史测评对比（2次以上时显示成长曲线）
+
+### 3.3 学习路径页 `/learning-path`
+- 调用 /api/skills/relations 获取技能关系
+- 展示：技能学习路线图（按prerequisite排序的时间线）
+- 每个技能节点显示：当前水平→目标水平→推荐资源
+- 集成career_plans表中的学习计划
+
+### 3.4 技能关系图页 `/skill-graph`
+- 调用 /api/skills/relations 获取关系数据
+- 展示：交互式技能关系网络图（可用简单SVG或Canvas绘制）
+- 4种关系用不同颜色/线型区分：co_occur(蓝)、prerequisite(绿)、similar(橙)、career_path(紫)
+- 点击节点展开技能详情
+
+---
+
+## 任务4：会员功能（P1）
+
+### 4.1 会员状态管理
+- user_profiles表的user_type字段：free / member
+- 前端通过 /api/auth/me 获取user_type
+- 全局context提供会员状态
+
+### 4.2 付费墙组件
+- 创建 `src/components/PaywallCard.tsx`
+- 免费用户访问会员功能时弹出付费引导
+- 展示：会员权益列表+价格+开通按钮
+
+### 4.3 功能权限控制
+- 免费用户：每日3次对话、基础岗位查询、无法查看技能图谱
+- 会员用户：无限对话、完整匹配分析、技能图谱、学习路径、测评报告下载
+- 在API Route层做权限拦截，非会员返回403+升级提示
+
+---
+
+## 执行顺序
+1. 先做任务1（匹配算法）— 这是任务2的基础
+2. 再做任务2（API路由）— 这是任务3的基础
+3. 然后做任务3（页面）— 前端展示
+4. 最后做任务4（会员）— 需要前面的功能都就位
+5. 每个任务完成后更新AGENTS.md标记完成状态
