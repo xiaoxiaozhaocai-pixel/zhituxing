@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useMembership } from '@/contexts/MembershipContext';
 import PaywallModal from '@/components/PaywallModal';
+import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 
 interface Dimension {
   name: string;
@@ -51,6 +52,17 @@ export default function AssessmentPage() {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [growthData, setGrowthData] = useState<{ date: string; score: number }[]>([]);
 
+  // 埋点：页面浏览
+  usePageView('assessment');
+
+  // 初始化 tracker
+  useEffect(() => {
+    if (user) {
+      AnalyticsTracker.init({ userId: user.id, membershipType: isMember ? 'member' : 'free' });
+    }
+    return () => { AnalyticsTracker.destroy(); };
+  }, [user, isMember]);
+
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       fetchAssessment();
@@ -60,6 +72,9 @@ export default function AssessmentPage() {
 
   const fetchAssessment = async () => {
     setLoading(true);
+
+    // 埋点：开始测评
+    AnalyticsTracker.track(AnalyticsEvent.ASSESSMENT_START);
     try {
       const res = await fetch('/api/assessment', {
         headers: { 'x-user-id': user!.id },
@@ -71,6 +86,10 @@ export default function AssessmentPage() {
         setGrowthData(data.data?.growthCurve || []);
         if (data.data?.assessments?.length > 0) {
           setSelectedIdx(0);
+          // 埋点：完成测评（加载到历史数据）
+          AnalyticsTracker.track(AnalyticsEvent.ASSESSMENT_COMPLETE, {
+            total_records: data.data.assessments.length,
+          });
         }
       }
     } catch (err) {

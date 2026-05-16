@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useMembership } from '@/contexts/MembershipContext';
 import PaywallModal from '@/components/PaywallModal';
+import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 
 interface RelationNode {
   name: string;
@@ -73,8 +74,21 @@ export default function SkillsGraphPage() {
   const animRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // 埋点：页面浏览
+  usePageView('skills_graph');
+
+  // 初始化 tracker
+  useEffect(() => {
+    AnalyticsTracker.init({ membershipType: isMember ? 'member' : 'free' });
+    return () => { AnalyticsTracker.destroy(); };
+  }, [isMember]);
+
   const fetchRelations = useCallback(async (skill?: string) => {
     setLoading(true);
+
+    // 埋点：浏览技能图谱
+    AnalyticsTracker.track(AnalyticsEvent.SKILL_GRAPH_EXPLORE, { skill: skill || 'all' });
+
     try {
       const params = new URLSearchParams();
       if (skill) params.set('skill_name', skill);

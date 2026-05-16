@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuth } from '@/hooks/useAuth';
 import JdMatchCard from '@/components/cards/JdMatchCard';
+import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import {
   Target, Search, SlidersHorizontal, ChevronDown, ChevronUp,
   MapPin, DollarSign, TrendingUp, Briefcase, AlertTriangle
@@ -46,9 +47,23 @@ export default function MatchPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [fetched, setFetched] = useState(false);
 
+  // 埋点：页面浏览
+  usePageView('match');
+
+  // 初始化 tracker
+  useEffect(() => {
+    if (user) {
+      AnalyticsTracker.init({ userId: user.id, membershipType: 'free' });
+    }
+    return () => { AnalyticsTracker.destroy(); };
+  }, [user]);
+
   const handleMatch = async () => {
     if (!user?.id) return;
     setLoading(true);
+
+    // 埋点：查看匹配结果
+    AnalyticsTracker.track(AnalyticsEvent.MATCH_VIEW, { target_position: targetPosition || 'auto' });
     try {
       const params = new URLSearchParams();
       if (targetPosition) params.set('target_position', targetPosition);

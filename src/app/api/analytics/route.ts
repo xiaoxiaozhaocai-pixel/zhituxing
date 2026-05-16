@@ -12,29 +12,56 @@ import { getUserInfoFromRequest } from '@/lib/coze-stream';
 
 export const runtime = 'edge';
 
-// POST - 上报行为数据
+// POST - 上报行为数据（单条或批量）
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { event_type, event_data } = body;
+
+    // 批量上报：{ events: [...] }
+    if (body.events && Array.isArray(body.events)) {
+      if (body.events.length === 0) {
+        return NextResponse.json({ success: true, inserted: 0 });
+      }
+      // 批量插入，最多100条
+      const events = body.events.slice(0, 100);
+      const valuesParts: string[] = [];
+      for (const evt of events) {
+        const eventType = (evt.event_type || '').replace(/'/g, "''");
+        if (!eventType || eventType.length > 100) continue;
+        const userId = evt.user_id ? `${evt.user_id}` : 'NULL';
+        const dataStr = evt.event_data ? JSON.stringify(evt.event_data).replace(/'/g, "''") : 'null';
+        const ts = evt.timestamp || new Date().toISOString();
+        valuesParts.push(`(${userId}, '${eventType}', '${dataStr}', '${ts}')`);
+      }
+      if (valuesParts.length === 0) {
+        return NextResponse.json({ success: true, inserted: 0 });
+      }
+      await execSql(
+        `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES ${valuesParts.join(', ')}`
+      );
+      return NextResponse.json({ success: true, inserted: valuesParts.length });
+    }
+
+    // 单条上报：{ event_type, event_data }
+    const { event_type, event_data, user_id: bodyUserId, timestamp } = body;
 
     if (!event_type) {
       return NextResponse.json({ error: '缺少 event_type 参数' }, { status: 400 });
     }
-
-    // 校验 event_type 长度
     if (event_type.length > 100) {
       return NextResponse.json({ error: 'event_type 过长' }, { status: 400 });
     }
 
-    // 获取用户ID（可选，匿名事件也支持）
-    const userInfo = await getUserInfoFromRequest(request);
-    const userId = userInfo?.userId || null;
+    // 优先使用 body 中的 user_id（来自 tracker），否则从 header 获取
+    let userId: number | null = bodyUserId ? Number(bodyUserId) : null;
+    if (!userId || isNaN(userId)) {
+      const userInfo = await getUserInfoFromRequest(request);
+      const parsedId = userInfo?.userId ? Number(userInfo.userId) : null;
+      userId = (parsedId && !isNaN(parsedId)) ? parsedId : null;
+    }
 
-    // 序列化 event_data
     const dataStr = event_data ? JSON.stringify(event_data).replace(/'/g, "''") : 'null';
-    const now = new Date().toISOString();
-
+    const now = timestamp || new Date().toISOString();
     const userIdStr = userId ? `${userId}` : 'NULL';
 
     await execSql(

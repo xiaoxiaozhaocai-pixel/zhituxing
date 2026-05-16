@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useMembership } from '@/contexts/MembershipContext';
 import PaywallModal from '@/components/PaywallModal';
+import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 
 interface LearningPhase {
   phase: string;
@@ -59,9 +60,23 @@ export default function LearningPathPage() {
   const [skillProgress, setSkillProgress] = useState<Record<string, SkillProgress>>({});
   const [careerSteps, setCareerSteps] = useState<CareerPlanStep[]>([]);
 
+  // 埋点：页面浏览
+  usePageView('learning_path');
+
+  // 初始化 tracker
+  useEffect(() => {
+    if (user) {
+      AnalyticsTracker.init({ userId: user.id, membershipType: isMember ? 'member' : 'free' });
+    }
+    return () => { AnalyticsTracker.destroy(); };
+  }, [user, isMember]);
+
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       fetchLearningData();
+
+      // 埋点：查看学习路径
+      AnalyticsTracker.track(AnalyticsEvent.LEARNING_PATH_VIEW);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.id]);

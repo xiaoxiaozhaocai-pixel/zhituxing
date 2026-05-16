@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle } from 'lucide-react';
+import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
@@ -258,6 +259,20 @@ export default function AssistantPage() {
     checkProfile();
   }, [user]);
 
+  // 埋点：页面浏览 + tracker初始化
+  usePageView('assistant', { bot_type: activeBot });
+
+  // 初始化 AnalyticsTracker
+  useEffect(() => {
+    if (user) {
+      const membershipType = ('membershipType' in user ? String((user as Record<string, unknown>).membershipType) : 'free');
+      AnalyticsTracker.init({ userId: user.id, membershipType });
+    } else {
+      AnalyticsTracker.init();
+    }
+    return () => { AnalyticsTracker.destroy(); };
+  }, [user]);
+
   // 初始化欢迎消息
   useEffect(() => {
     if (messages.length === 0) {
@@ -281,6 +296,12 @@ export default function AssistantPage() {
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
+
+    // 埋点：发送对话消息
+    AnalyticsTracker.track(AnalyticsEvent.CHAT_SEND, {
+      bot_type: activeBot,
+      message_length: messageText.length,
+    });
 
     try {
       const meResponse = await fetch('/api/auth/me');

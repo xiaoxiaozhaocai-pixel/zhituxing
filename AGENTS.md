@@ -224,3 +224,159 @@ SSE解析出结构化数据后，根据type存入对应的Supabase表：
 3. ✅ 任务3（页面）— 4个新页面 + 导航入口
 4. ✅ 任务4（会员）— 会员状态管理 + 付费墙 + 权限控制
 5. ✅ AGENTS.md 已更新标记完成状态
+
+---
+
+# 阶段三执行手册
+
+## 当前状态
+✅ 阶段一MVP：Supabase建表 + API改造 + SSE解析 + 6个智能体对接 + 端到端测试通过
+✅ 阶段二进阶：匹配算法(760行) + 6个API路由 + 5张新表 + 4个新页面 + 会员功能
+🔄 阶段三：行为埋点 + 相似用户推荐 + 管理后台
+
+## 阶段三目标
+用户行为数据采集 → 相似用户推荐算法 → 管理后台数据看板，形成"数据飞轮"
+
+---
+
+## 任务1：行为埋点工具（P0）
+
+### 文件
+- 新建 `src/lib/analytics/tracker.ts`
+- 修改各页面组件添加埋点调用
+
+### 规格
+创建统一的行为埋点工具类 `AnalyticsTracker`，提供：
+```
+AnalyticsTracker.track(event, properties?)
+```
+
+事件类型枚举：
+- `page_view` — 页面浏览
+- `chat_send` — 发送对话消息
+- `match_view` — 查看匹配结果
+- `assessment_start` / `assessment_complete` — 开始/完成测评
+- `learning_path_view` — 查看学习路径
+- `skill_graph_explore` — 浏览技能图谱
+- `paywall_show` / `paywall_convert` — 付费墙展示/转化
+- `interview_start` / `interview_complete` — 面试开始/完成
+
+核心逻辑：
+- 自动附带 user_id、membership_type、timestamp、session_id
+- 调用 /api/analytics POST 接口上报（阶段二已创建）
+- 本地队列缓冲，批量上报（每5条或3秒flush一次）
+- 页面关闭前（beforeunload）强制flush
+- 离线时存入 localStorage，上线后补报
+
+### 需要添加埋点的页面
+- `src/app/assistant/page.tsx` — chat_send
+- `src/app/match/page.tsx` — match_view
+- `src/app/assessment/page.tsx` — assessment_start/complete
+- `src/app/learning-path/page.tsx` — learning_path_view
+- `src/app/skills-graph/page.tsx` — skill_graph_explore
+
+---
+
+## 任务2：相似用户推荐算法（P0）
+
+### 文件
+- 新建 `src/lib/similar-users-algorithm.ts`
+- 新建 `src/app/api/similar-users/route.ts`
+
+### 算法规格
+输入：当前用户ID
+输出：相似用户列表（最多10个），每个包含：相似度分数、共同技能、推荐理由
+
+算法步骤：
+1. 从 user_skills 表获取当前用户的技能向量
+2. 从 user_profiles 表获取同专业/同职业方向的用户候选集
+3. 计算技能向量余弦相似度
+4. 按相似度降序排列，返回 Top 10
+5. 附带推荐理由（如"你们都掌握了Python和数据分析"）
+
+### API路由
+- `GET /api/similar-users`
+- 请求：需要登录（x-user-id header）
+- 响应：`{ similar_users: [{ user_id, similarity, shared_skills, reason }] }`
+
+---
+
+## 任务3：管理后台布局 + JD数据管理页（P1）
+
+### 文件
+- 新建 `src/app/admin/layout.tsx` — 管理后台布局（左侧边栏导航）
+- 新建 `src/app/admin/jd/page.tsx`
+
+### 布局设计
+- 左侧固定侧边栏：Logo + 导航项（JD管理/用户看板/技能管理/行为看板）
+- 右侧内容区域
+- 顶部：当前页面标题 + 管理员信息
+
+### JD管理页功能
+- JD列表表格：分页、搜索、按行业/城市/薪资筛选
+- 单条JD详情查看：技能要求、薪资范围、来源、状态
+- JD状态管理：启用/禁用/标记过期
+- 批量操作：批量启用/禁用
+- 数据统计卡片：JD总数、本周新增、热门技能Top 10
+
+### 权限
+- 仅 admin 用户可访问，前端路由守卫 + 后端API校验
+
+---
+
+## 任务4：管理后台 — 用户数据看板（P1）
+
+### 文件
+- 新建 `src/app/admin/users/page.tsx`
+
+### 页面功能
+- 用户统计卡片：总用户数、会员数、会员转化率、本周新增
+- 用户列表表格：分页、搜索、按会员状态/专业/年级筛选
+- 单用户详情抽屉：画像、技能、测评历史、匹配记录
+- 用户增长趋势图：近30天每日新增用户（折线图）
+
+---
+
+## 任务5：管理后台 — 技能关系图管理（P1）
+
+### 文件
+- 新建 `src/app/admin/skills/page.tsx`
+
+### 页面功能
+- 技能分类管理：skill_taxonomy 表的增删改查
+- 技能关系管理：skill_relations 表的增删改查（前置/共现/相似/职业路径4种关系）
+- 可视化预览：右侧小窗展示选中技能的关系图（力导向图）
+- 批量导入：支持CSV格式批量导入技能关系
+
+---
+
+## 任务6：管理后台 — 行为数据看板（P1）
+
+### 文件
+- 新建 `src/app/admin/analytics/page.tsx`
+
+### 页面功能
+- 核心指标卡片：DAU、对话次数、测评完成率、付费转化率
+- 行为事件分布图：各事件类型占比（饼图）
+- 用户行为漏斗：注册→首次对话→首次测评→付费（漏斗图）
+- 行为趋势图：近30天各事件每日数量（多折线图）
+- 热门页面排行：页面浏览量Top 10
+
+---
+
+## 执行顺序
+1. 任务1：行为埋点工具 → 先有数据采集能力
+2. 任务2：相似用户推荐算法 → 核心推荐能力
+3. 任务3：管理后台布局 + JD管理
+4. 任务4：用户看板
+5. 任务5：技能图管理
+6. 任务6：行为看板
+
+每个任务完成后告知，再给下一个任务。
+
+## 注意事项
+- 管理后台所有页面需要 admin 权限守卫
+- 行为埋点不能影响页面性能，必须异步上报
+- 相似用户推荐算法是纯函数，不直接操作数据库
+- 管理后台使用 shadcn/ui 的 Table/Card/Chart 组件，保持深蓝主色调
+- 所有新API路由复用 src/lib/coze-stream.ts 中的公共函数
