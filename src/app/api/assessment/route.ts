@@ -1,5 +1,5 @@
 /**
- * 职业规划AI智能体流式API
+ * 专业能力测评AI智能体流式API
  * 使用Coze Workflow stream_run API，通过SSE协议返回流式响应
  * 集成用户验证、user_type权限、SSE结构化数据解析
  */
@@ -14,72 +14,69 @@ import {
 
 export const runtime = 'edge';
 
-// 职业规划 fallback 回复
-function getCareerFallback(major: string, grade: string, city: string): string {
-  return `# 🎯 职业规划报告
+// 能力测评 fallback 回复
+function getAssessmentFallback(major: string, grade: string): string {
+  return `# 📊 专业能力测评报告
 
 **个人信息**
 - 所属专业：${major || '未填写'}
 - 当前年级：${grade || '未填写'}
-- 意向城市：${city || '未填写'}
 
 ---
 
-## 📊 精准匹配结论
+## 🎯 测评概览
 
-根据您的【${major || '计算机'}】专业、【${grade || '大三'}】年级、【${city || '杭州'}】意向城市，我为您推荐以下最优赛道：
+根据您的【${major || '计算机'}】专业背景，以下是您的能力画像：
 
-### 🚀 核心推荐岗位：前端开发工程师
-
-1. **行业前景**：2024年互联网行业前端岗位需求同比增长18%，${city || '杭州'}地区平均月薪12-20K
-2. **竞争分析**：相比后端岗位，竞争比低23%，更适合快速上岸
-3. **技能匹配**：您所学的${major || '计算机'}专业与前端技能重合度达75%
+### 综合评分：72 / 100
 
 ---
 
-## 🎯 核心优势
+## 📋 各维度评分
 
-- ✅ 扎实的编程基础
-- ✅ 良好的逻辑思维能力
-- ✅ 年轻有活力，学习能力强
-
-## ⚠️ 核心短板
-
-- 缺乏大型项目实战经验
-- 前端框架使用经验不足
-
----
-
-## 📅 行动清单（6个月）
-
-### 第一个月：夯实基础
-- 完成 React 官方文档学习
-- 完成 TodoList 项目实战
-- 学习 TypeScript 基础
-
-### 第二个月：框架进阶
-- 完成电商项目前端开发
-- 学习状态管理（Redux/Zustand）
-- 掌握单元测试基础
+| 维度 | 评分 | 等级 |
+|------|------|------|
+| 专业知识 | 75/100 | B+ |
+| 实践能力 | 65/100 | B |
+| 沟通表达 | 80/100 | A- |
+| 逻辑思维 | 78/100 | B+ |
+| 团队协作 | 70/100 | B |
+| 创新能力 | 68/100 | B |
 
 ---
 
-*本报告由职途星AI职业规划助手生成，仅供参考*`;
+## 💪 核心优势
+- ✅ 扎实的专业理论基础
+- ✅ 良好的沟通表达能力
+- ✅ 较强的逻辑分析能力
+
+## ⚠️ 待提升方向
+- 缺乏项目实战经验
+- 创新思维训练不足
+- 团队协作能力有待加强
+
+---
+
+## 🎯 推荐岗位
+新媒体运营 | 内容策划 | 品牌营销 | 产品运营
+
+---
+
+*本报告由职途星AI专业能力测评助手生成，仅供参考*`;
 }
 
 /**
  * 调用 Coze Workflow stream_run API
- * 与标准 Bot chat API 不同，Workflow API 使用 stream_run 端点
  */
-async function callWorkflowStreamApi(
+async function callAssessmentWorkflowApi(
   message: string,
   sessionId: string,
   userType: string
 ): Promise<Response> {
-  const token = process.env.COZE_CAREER_PLANNING_TOKEN;
-  const projectId = process.env.COZE_CAREER_PLANNING_PROJECT_ID;
+  const token = process.env.COZE_ASSESSMENT_TOKEN;
+  const projectId = process.env.COZE_ASSESSMENT_PROJECT_ID;
 
-  const url = 'https://7xwsb63bkk.coze.site/stream_run';
+  const url = 'https://f35g9r6pp2.coze.site/stream_run';
 
   const response = await fetch(url, {
     method: 'POST',
@@ -104,6 +101,10 @@ async function callWorkflowStreamApi(
       type: 'query',
       session_id: sessionId,
       project_id: projectId,
+      // 传入 user_type 用于权限控制
+      custom_variables: {
+        user_type: userType || 'free',
+      },
     }),
   });
 
@@ -112,10 +113,9 @@ async function callWorkflowStreamApi(
 
 /**
  * 解析 Workflow stream_run SSE 流
- * 工作流 SSE 格式与标准 Bot chat API 不同，需要单独处理
  * 边读边转发，同时解析 <<DATA:type=xxx>>...<<END>> 结构化数据
  */
-function createWorkflowSSEStream(
+function createAssessmentSSEStream(
   cozeResponse: Response,
   userId: string | null,
   fallbackText: string
@@ -136,7 +136,6 @@ function createWorkflowSSEStream(
       try {
         const { done, value } = await reader.read();
         if (done) {
-          // 处理 buffer 中剩余的文本
           if (buffer.trim()) {
             processTextBuffer(buffer, controller, encoder, userId);
           }
@@ -149,14 +148,12 @@ function createWorkflowSSEStream(
         // 首个 chunk 检查是否为错误响应
         if (isFirstChunk) {
           isFirstChunk = false;
-          // 如果第一个 chunk 看起来是 JSON 错误
           const trimmed = chunk.trim();
           if (trimmed.startsWith('{') || trimmed.startsWith('{"error"')) {
             try {
               const errorData = JSON.parse(trimmed);
               if (errorData.code && errorData.code !== 0) {
-                console.error('Workflow API error:', errorData);
-                // 降级为 fallback
+                console.error('Assessment Workflow API error:', errorData);
                 const fallbackStream = createTextStream(fallbackText);
                 const fallbackReader = fallbackStream.getReader();
                 while (true) {
@@ -192,6 +189,7 @@ function createWorkflowSSEStream(
               if (parsed.type === 'answer' && parsed.content?.answer != null) {
                 textContent = parsed.content.answer;
               } else if (parsed.type === 'message_start' || parsed.type === 'message_end') {
+                // 控制事件，不转发文本
                 textContent = '';
               } else if (parsed.type === 'text' && parsed.content?.text) {
                 textContent = parsed.content.text;
@@ -207,15 +205,12 @@ function createWorkflowSSEStream(
 
               if (textContent) {
                 buffer += textContent;
-                // 尝试解析结构化数据标记
                 const dataStartRegex = /<<DATA:type=(\w+)>>/i;
                 const dataEndRegex = /<<END>>/i;
 
                 const startMatch = buffer.match(dataStartRegex);
                 if (startMatch) {
-                  // 找到开始标记，累积到 structuredBuffer
                   const startIndex = buffer.indexOf(startMatch[0]);
-                  // 把开始标记之前的文本先转发
                   const beforeData = buffer.slice(0, startIndex);
                   if (beforeData.trim()) {
                     processTextChunk(beforeData, controller, encoder);
@@ -223,7 +218,6 @@ function createWorkflowSSEStream(
                   structuredBuffer = buffer.slice(startIndex + startMatch[0].length);
                   buffer = '';
 
-                  // 检查是否已有结束标记
                   const endMatch = structuredBuffer.match(dataEndRegex);
                   if (endMatch) {
                     const endIndex = structuredBuffer.indexOf(endMatch[0]);
@@ -233,20 +227,17 @@ function createWorkflowSSEStream(
                     structuredBuffer = '';
                   }
                 } else if (structuredBuffer) {
-                  // 继续累积结构化数据
                   structuredBuffer += textContent;
                   const endMatch = structuredBuffer.match(dataEndRegex);
                   if (endMatch) {
                     const endIndex = structuredBuffer.indexOf(endMatch[0]);
                     const jsonStr = structuredBuffer.slice(0, endIndex).trim();
                     const startMatch2 = structuredBuffer.match(/<<DATA:type=(\w+)>>/i);
-                    const dataType = startMatch2 ? startMatch2[1] : 'career_plan';
+                    const dataType = startMatch2 ? startMatch2[1] : 'skill_assessment';
                     processStructuredData(dataType, jsonStr, controller, encoder, userId);
                     structuredBuffer = '';
                   }
                 } else {
-                  // 普通文本，尝试提取部分转发
-                  // 保留最后一段可能不完整的标记
                   const lastDataTag = buffer.lastIndexOf('<<DATA');
                   if (lastDataTag > -1) {
                     const beforeTag = buffer.slice(0, lastDataTag);
@@ -255,7 +246,6 @@ function createWorkflowSSEStream(
                     }
                     buffer = buffer.slice(lastDataTag);
                   } else {
-                    // 没有未完成的标记，全部转发
                     if (buffer.trim()) {
                       processTextChunk(buffer, controller, encoder);
                       buffer = '';
@@ -264,7 +254,6 @@ function createWorkflowSSEStream(
                 }
               }
             } catch {
-              // JSON 解析失败，原样转发文本
               if (dataText && dataText !== '[DONE]') {
                 processTextChunk(dataText, controller, encoder);
               }
@@ -272,7 +261,7 @@ function createWorkflowSSEStream(
           }
         }
       } catch (error) {
-        console.error('Workflow SSE stream error:', error);
+        console.error('Assessment SSE stream error:', error);
         controller.close();
       }
     },
@@ -300,7 +289,6 @@ function processTextBuffer(
   encoder: TextEncoder,
   userId: string | null
 ) {
-  // 检查是否有未解析的结构化数据
   const dataStartRegex = /<<DATA:type=(\w+)>>/i;
   const startMatch = text.match(dataStartRegex);
 
@@ -338,15 +326,14 @@ function processStructuredData(
     const sseEvent = `event: structured_data\ndata: ${JSON.stringify({ type: dataType, data: jsonData })}\n\n`;
     controller.enqueue(encoder.encode(sseEvent));
 
-    // 保存到 Supabase
+    // 保存到 Supabase（assessment 类型存入 assessment_results 表）
     if (userId) {
-      saveStructuredData('career', userId, dataType, jsonData as Record<string, unknown>).catch((err: unknown) => {
-        console.error('保存结构化数据失败:', err);
+      saveStructuredData('assessment', userId, dataType, jsonData as Record<string, unknown>).catch((err: unknown) => {
+        console.error('保存测评数据失败:', err);
       });
     }
   } catch (e) {
     console.error('解析结构化数据JSON失败:', e, 'raw:', jsonStr.slice(0, 200));
-    // JSON 解析失败，作为普通文本转发
     processTextChunk(`<<DATA:type=${dataType}>>${jsonStr}<<END>>`, controller, encoder);
   }
 }
@@ -354,7 +341,7 @@ function processStructuredData(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { major, grade, city, message, sessionId } = body;
+    const { major, grade, message, sessionId } = body;
 
     // 1. 用户验证 — 查 user_profiles 表
     const userInfo = await getUserInfoFromRequest(request);
@@ -368,16 +355,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. 构建最终消息
-    const queryContent = message || `请根据以下信息，为我生成一份专属的职业规划报告：\n\n【基本信息】\n- 所属专业：${major || '未填写'}\n- 当前年级：${grade || '未填写'}\n- 意向城市：${city || '未填写'}\n\n请生成一份详细的职业规划报告。`;
+    const queryContent = message || `请根据以下信息，为我生成一份专业能力测评报告：\n\n【基本信息】\n- 所属专业：${major || '未填写'}\n- 当前年级：${grade || '未填写'}\n\n请从专业知识、实践能力、沟通表达、逻辑思维、团队协作、创新能力六个维度进行测评，给出评分和提升建议。`;
     const finalMessage = userContext + queryContent;
 
     // 4. 检查 Workflow API 配置
-    const token = process.env.COZE_CAREER_PLANNING_TOKEN;
-    const projectId = process.env.COZE_CAREER_PLANNING_PROJECT_ID;
+    const token = process.env.COZE_ASSESSMENT_TOKEN;
+    const projectId = process.env.COZE_ASSESSMENT_PROJECT_ID;
 
     if (!token || !projectId) {
-      console.log('Career planning Workflow API not configured, using fallback');
-      const fallback = getCareerFallback(major, grade, city);
+      console.log('Assessment Workflow API not configured, using fallback');
+      const fallback = getAssessmentFallback(major, grade);
       return new Response(createTextStream(fallback), {
         headers: {
           'Content-Type': 'text/event-stream',
@@ -387,16 +374,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 5. 生成 session_id（每次对话唯一）
-    const finalSessionId = sessionId || `career_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    // 5. 生成 session_id
+    const finalSessionId = sessionId || `assessment_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     // 6. 调用 Workflow stream_run API
-    const cozeResponse = await callWorkflowStreamApi(finalMessage, finalSessionId, userType);
+    const cozeResponse = await callAssessmentWorkflowApi(finalMessage, finalSessionId, userType);
 
     // 检查响应状态
     if (!cozeResponse.ok) {
-      console.error('Workflow API error:', cozeResponse.status);
-      const fallback = getCareerFallback(major, grade, city);
+      console.error('Assessment Workflow API error:', cozeResponse.status);
+      const fallback = getAssessmentFallback(major, grade);
       return new Response(createTextStream(fallback), {
         headers: {
           'Content-Type': 'text/event-stream',
@@ -410,8 +397,8 @@ export async function POST(request: NextRequest) {
     const contentType = cozeResponse.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const errorData = await cozeResponse.json();
-      console.error('Workflow API JSON error:', errorData);
-      const fallback = getCareerFallback(major, grade, city);
+      console.error('Assessment Workflow API JSON error:', errorData);
+      const fallback = getAssessmentFallback(major, grade);
       return new Response(createTextStream(fallback), {
         headers: {
           'Content-Type': 'text/event-stream',
@@ -422,10 +409,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. 创建 SSE 流（含结构化数据解析）
-    const stream = createWorkflowSSEStream(
+    const stream = createAssessmentSSEStream(
       cozeResponse,
       userId,
-      getCareerFallback(major, grade, city)
+      getAssessmentFallback(major, grade)
     );
 
     return new Response(stream, {
@@ -436,7 +423,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('职业规划生成失败:', error);
+    console.error('能力测评生成失败:', error);
     return NextResponse.json(
       { code: 500, message: '生成失败', error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
