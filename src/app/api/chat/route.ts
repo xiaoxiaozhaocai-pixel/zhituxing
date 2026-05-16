@@ -23,17 +23,14 @@ export const runtime = 'edge';
 
 // 智能体路由选择
 function selectBotId(botType?: string): string {
-  const jobsBotId = process.env.COZE_BOT_ID_JOBS;
-  const interviewBotId = process.env.COZE_BOT_ID_INTERVIEW;
-  const decisionBotId = process.env.COZE_BOT_ID_DECISION;
-
-  if (botType === 'jobs') return jobsBotId || '';
-  if (botType === 'interview') return interviewBotId || '';
-  if (botType === 'decision') return decisionBotId || '';
-  if (botType === 'career') return decisionBotId || '';
-
+  if (botType === 'jobs') return process.env.COZE_BOT_ID_JOBS || '';
+  if (botType === 'interview') return process.env.COZE_BOT_ID_INTERVIEW || '';
+  if (botType === 'decision') return process.env.COZE_BOT_ID_DECISION || '';
+  if (botType === 'career') return process.env.COZE_BOT_ID_CAREER || '';
+  if (botType === 'assessment') return process.env.COZE_BOT_ID_ASSESSMENT || '';
+  if (botType === 'competency') return process.env.COZE_BOT_ID_COMPETENCY || '';
   // 默认返回岗位百科ID
-  return jobsBotId || '';
+  return process.env.COZE_BOT_ID_JOBS || '';
 }
 
 // 预设回复（Coze未配置时的fallback）
