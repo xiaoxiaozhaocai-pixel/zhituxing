@@ -2,14 +2,18 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut } from 'lucide-react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { usePathname, useRouter } from 'next/navigation';
 
 const navItems = [
   { name: '首页', href: '/', icon: <Home className="w-5 h-5" /> },
-  { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-5 h-5" />, highlight: true, color: '#722ED1' },
+  { name: '岗位匹配', href: '/match', icon: <Target className="w-5 h-5" />, highlight: true, color: '#F97316' },
+  { name: '能力测评', href: '/assessment', icon: <BarChart3 className="w-5 h-5" />, color: '#8B5CF6' },
+  { name: '学习路径', href: '/learning-path', icon: <Route className="w-5 h-5" />, color: '#0EA5E9' },
+  { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-5 h-5" />, color: '#6366F1' },
+  { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-5 h-5" />, color: '#722ED1' },
   { name: '全行业岗位百科', href: '/jobs', icon: <Briefcase className="w-5 h-5" /> },
   { name: 'AI职业助手', href: '/assistant', icon: <MessageSquare className="w-5 h-5" /> },
   { name: '会员中心', href: '/membership', icon: <Crown className="w-5 h-5" />, highlight: true },
