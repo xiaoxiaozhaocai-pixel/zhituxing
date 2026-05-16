@@ -16,15 +16,18 @@
 8. `user_skills` — 用户技能画像（技能等级、掌握程度）
 9. `skill_progress` — 技能进度追踪（学习状态、完成百分比）
 
-## Coze 智能体（6个）
-| Bot ID环境变量 | 功能 | 数据闭环 |
-|---|---|---|
-| COZE_BOT_ID_JOBS | 职搭子JD助手 | JD→skill_job_match |
-| COZE_BOT_ID_INTERVIEW | AI模拟面试官 | 面试→interview_results |
-| COZE_BOT_ID_DECISION | 考研就业决策助手 | 决策→career_plans |
-| 待配置 | 职业生涯规划助手 | 规划→career_plans |
-| 待配置 | 专业能力测评助手 | 测评→assessment_results |
-| 待配置 | 胜任力评估助手 | 评估→skill_job_match |
+## Coze 智能体（6个）— 全部已对接 stream_run API ✅
+| 智能体 | stream_run 环境变量前缀 | 功能 | 数据闭环 | API路由 |
+|---|---|---|---|---|
+| 职搭子 | COZE_JOBS_* | HR岗位JD助手 | JD→skill_job_match | /api/search-jd (POST) |
+| AI模拟面试官 | COZE_INTERVIEW_* | 模拟面试 | 面试→interview_results | /api/interview (POST) |
+| 考研就业决策助手 | COZE_DECISION_* | 考研vs就业决策 | 决策→career_plans | /api/chat (botType=decision) |
+| AI职业规划师 | COZE_CAREER_* | 职业生涯规划 | 规划→career_plans | /api/career-planning/stream (POST) |
+| 专业能力测评助手 | COZE_ASSESSMENT_* | 能力测评 | 测评→assessment_results | /api/assessment (POST) |
+| 胜任力评估助手 | COZE_COMPETENCY_* | 胜任力评估（仅会员） | 评估→skill_job_match | /api/competency (POST) |
+
+每个智能体的 stream_run 配置包含3个环境变量：`{PREFIX}_API_URL`、`{PREFIX}_PROJECT_ID`、`{PREFIX}_API_TOKEN`
+回退机制：stream_run 失败时，chat/interview 路由会回退到标准 Coze Bot API (api.coze.cn/v3/chat)
 
 ## SSE 流式解析规范
 Coze 智能体返回的流式文本中可能包含结构化数据标记：
