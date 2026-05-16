@@ -233,31 +233,39 @@ export async function callWorkflowStreamApi(params: {
   const finalMessage = (params.userContext || '') + params.message;
   const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
 
-  return fetch(config.apiUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${config.token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'text/event-stream',
-    },
-    body: JSON.stringify({
-      content: {
-        query: {
-          prompt: [
-            {
-              type: 'text',
-              content: {
-                text: finalMessage,
-              },
-            },
-          ],
-        },
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000); // 2分钟超时
+
+  try {
+    return await fetch(config.apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
       },
-      type: 'query',
-      session_id: sessionId,
-      project_id: config.projectId,
-    }),
-  });
+      body: JSON.stringify({
+        content: {
+          query: {
+            prompt: [
+              {
+                type: 'text',
+                content: {
+                  text: finalMessage,
+                },
+              },
+            ],
+          },
+        },
+        type: 'query',
+        session_id: sessionId,
+        project_id: config.projectId,
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 /**
@@ -290,7 +298,15 @@ export function createWorkflowSSEStream(params: {
 
       try {
         while (true) {
-          const { done, value } = await reader.read();
+          let readResult: { done: boolean; value?: Uint8Array };
+          try {
+            readResult = await reader.read();
+          } catch (readErr: unknown) {
+            const errMsg = readErr instanceof Error ? readErr.message : String(readErr);
+            console.log('Workflow stream read error:', errMsg);
+            break;
+          }
+          const { done, value } = readResult;
           if (done) break;
 
           sseBuffer += decoder.decode(value, { stream: true });
@@ -405,9 +421,12 @@ export function createWorkflowSSEStream(params: {
             searchStart = afterEndPos;
           }
         }
+      } catch (streamErr: unknown) {
+        const errMsg = streamErr instanceof Error ? streamErr.message : String(streamErr);
+        console.log('Workflow stream unexpected error:', errMsg);
       } finally {
-        reader.releaseLock();
-        controller.close();
+        try { reader.releaseLock(); } catch { /* ignore */ }
+        try { controller.close(); } catch { /* ignore */ }
       }
     },
   });
@@ -591,8 +610,8 @@ export function createCozeSSEStream(params: {
           controller.enqueue(encoder.encode(buffer));
         }
       } finally {
-        reader.releaseLock();
-        controller.close();
+        try { reader.releaseLock(); } catch { /* ignore */ }
+        try { controller.close(); } catch { /* ignore */ }
       }
     },
   });
