@@ -1,9 +1,10 @@
 /**
  * 通用聊天API — 路由到不同Coze智能体
  * 
- * 改造要点：
+ * 优先使用扣子编程 stream_run API（Workflow部署方式）
+ * 如果 stream_run 未配置，回退到标准 Coze Bot API
  * - 用户验证改查 user_profiles 表，查出 user_type
- * - Coze API 传入 custom_variables: { user_type }
+ * - 传入 custom_variables: { user_type }
  * - 真正的边读边转发流式传输
  * - SSE 解析器提取结构化数据，存入对应 Supabase 表
  */
@@ -15,13 +16,15 @@ import {
   getUserProfileContext,
   callCozeStreamApi,
   createCozeSSEStream,
+  callWorkflowStreamApi,
+  createWorkflowSSEStream,
   createTextStream,
-  saveStructuredData,
+  getWorkflowConfig,
 } from '@/lib/coze-stream';
 
 export const runtime = 'edge';
 
-// 智能体路由选择
+// 智能体路由选择（标准Bot API用）
 function selectBotId(botType?: string): string {
   if (botType === 'jobs') return process.env.COZE_BOT_ID_JOBS || '';
   if (botType === 'interview') return process.env.COZE_BOT_ID_INTERVIEW || '';
@@ -29,11 +32,10 @@ function selectBotId(botType?: string): string {
   if (botType === 'career') return process.env.COZE_BOT_ID_CAREER || '';
   if (botType === 'assessment') return process.env.COZE_BOT_ID_ASSESSMENT || '';
   if (botType === 'competency') return process.env.COZE_BOT_ID_COMPETENCY || '';
-  // 默认返回岗位百科ID
   return process.env.COZE_BOT_ID_JOBS || '';
 }
 
-// 预设回复（Coze未配置时的fallback）
+// 预设回复（fallback）
 function getFallbackResponse(botType?: string, message?: string): string {
   const msgLower = (message || '').toLowerCase();
 
@@ -96,19 +98,49 @@ function getFallbackResponse(botType?: string, message?: string): string {
 请提供信息，我来为您定制专属规划！`;
   }
 
-  // 默认岗位百科回复
+  if (botType === 'assessment' || msgLower.includes('测评')) {
+    return `您好！我是专业能力测评助手。
+
+请告诉我您的：
+
+🎯 **基本信息：**
+• 所学专业：
+• 当前年级：
+• 感兴趣的方向：
+
+📊 **我能帮您测评：**
+• 专业核心能力评估
+• 职业技能匹配度分析
+• 能力短板与提升建议
+• 个性化发展路径推荐
+
+请提供信息，开始您的专业能力测评！`;
+  }
+
+  if (botType === 'competency' || msgLower.includes('胜任力')) {
+    return `您好！我是胜任力评估助手（会员专属）。
+
+请告诉我：
+
+🎯 **目标岗位**和**个人背景**
+
+📊 **我能帮您评估：**
+• 岗位胜任力模型匹配
+• 核心能力差距分析
+• 可视化胜任力雷达图
+• 针对性提升建议
+
+请提供信息，开始胜任力评估！`;
+  }
+
   return `👋 您好！我是「职途星——职搭子」，您的专属岗位百科助手。
 
 🔍 **我可以帮您查询：**
 
 • **岗位信息**：直接输入岗位名称，如「Java开发」「产品经理」「新媒体运营」
-
 • **按地点推荐**：告诉我城市，如「深圳」「上海」「北京」
-
 • **按薪资推荐**：告诉我薪资范围，如「10k-15k」「5k-8k」
-
 • **按背景匹配**：告诉我您的专业和学历，如「计算机专业，本科」
-
 • **智能组合**：多个条件组合，如「深圳Java开发15k-20k」
 
 📚 覆盖互联网/金融/制造/教育/医疗等15+主流行业
@@ -138,8 +170,6 @@ export async function POST(request: NextRequest) {
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
-    const botId = selectBotId(botType);
-    const apiKey = process.env.COZE_API_KEY;
 
     // 获取用户个人信息上下文
     let userContext = '';
@@ -148,7 +178,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 检查配额（非会员需要扣减）
-    if (userId && !apiKey) {
+    if (userId) {
       const feature = botType === 'interview' ? 'interview' :
                       botType === 'assessment' ? 'assessment' : 'career_planning';
       const access = await checkFeatureAccess(userId, feature);
@@ -160,14 +190,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 如果没有配置 Coze API，使用 fallback
-    if (!apiKey || !botId) {
-      console.log('Coze API not configured, using fallback response');
-      const fallback = getFallbackResponse(botType, message);
-      return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
+    const fallbackText = getFallbackResponse(botType, message);
+
+    // ===========================
+    // 优先尝试 stream_run API（扣子编程 Workflow 部署方式）
+    // ===========================
+    const workflowConfig = getWorkflowConfig(botType);
+
+    if (workflowConfig) {
+      console.log(`[chat] Using stream_run API for botType=${botType}`);
+      try {
+        const workflowResponse = await callWorkflowStreamApi({
+          botType: botType || 'jobs',
+          message,
+          userContext,
+        });
+
+        if (workflowResponse.ok) {
+          const stream = createWorkflowSSEStream({
+            workflowResponse,
+            userId,
+            botType,
+            fallbackText,
+          });
+          return new Response(stream, { headers: SSE_HEADERS });
+        } else {
+          console.log(`[chat] stream_run API returned ${workflowResponse.status}, falling back`);
+          const errorBody = await workflowResponse.text();
+          console.log(`[chat] stream_run error: ${errorBody.slice(0, 200)}`);
+        }
+      } catch (err) {
+        console.error('[chat] stream_run API error:', err);
+      }
     }
 
-    // 2. 调用 Coze API，传入 custom_variables
+    // ===========================
+    // 回退到标准 Coze Bot API
+    // ===========================
+    const botId = selectBotId(botType);
+    const apiKey = process.env.COZE_API_KEY;
+
+    if (!apiKey || !botId) {
+      console.log('[chat] No standard Bot API configured, using fallback');
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
+    }
+
+    console.log(`[chat] Using standard Bot API for botType=${botType}, botId=${botId}`);
     const cozeResponse = await callCozeStreamApi({
       botId,
       message,
@@ -176,23 +244,19 @@ export async function POST(request: NextRequest) {
       userContext,
     });
 
-    // 3. 先检查 HTTP 状态码
     if (!cozeResponse.ok) {
-      console.log('Coze API HTTP error:', cozeResponse.status);
-      const fallback = getFallbackResponse(botType, message);
-      return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
+      console.log('[chat] Coze Bot API HTTP error:', cozeResponse.status);
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
-    // 检查 Content-Type，如果不是 SSE 流，说明返回了 JSON 错误
     const contentType = cozeResponse.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const errorText = await cozeResponse.text();
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.code && errorData.code !== 0) {
-          console.log('Coze API error:', errorData.code, errorData.msg);
-          const fallback = getFallbackResponse(botType, message);
-          return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
+          console.log('[chat] Coze Bot API error:', errorData.code, errorData.msg);
+          return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
         }
       } catch {
         // JSON 解析失败，继续
@@ -209,13 +273,12 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // 4. 流式转发 + SSE 解析器
-    const fallbackForStream = getFallbackResponse(botType, message);
+    // 流式转发 + SSE 解析器
     const stream = createCozeSSEStream({
       cozeResponse,
       userId,
       botType,
-      fallbackText: fallbackForStream,
+      fallbackText,
     });
 
     return new Response(stream, {
@@ -227,7 +290,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Chat API Error:', error);
-
     const fallback = getFallbackResponse();
     return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
   }

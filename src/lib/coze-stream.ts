@@ -187,6 +187,233 @@ export async function saveStructuredData(
 }
 
 /**
+ * 4a. 获取 Workflow stream_run API 配置
+ * 根据 botType 返回对应智能体的 API URL、Project ID、Token
+ */
+export function getWorkflowConfig(botType?: string): {
+  apiUrl: string;
+  projectId: string;
+  token: string;
+} | null {
+  const configMap: Record<string, { urlKey: string; projectKey: string; tokenKey: string }> = {
+    career:     { urlKey: 'COZE_CAREER_API_URL',     projectKey: 'COZE_CAREER_PROJECT_ID',     tokenKey: 'COZE_CAREER_API_TOKEN' },
+    assessment: { urlKey: 'COZE_ASSESSMENT_API_URL',  projectKey: 'COZE_ASSESSMENT_PROJECT_ID', tokenKey: 'COZE_ASSESSMENT_API_TOKEN' },
+    competency: { urlKey: 'COZE_COMPETENCY_API_URL',  projectKey: 'COZE_COMPETENCY_PROJECT_ID', tokenKey: 'COZE_COMPETENCY_API_TOKEN' },
+    interview:  { urlKey: 'COZE_INTERVIEW_API_URL',   projectKey: 'COZE_INTERVIEW_PROJECT_ID',  tokenKey: 'COZE_INTERVIEW_API_TOKEN' },
+    jobs:       { urlKey: 'COZE_JOBS_API_URL',        projectKey: 'COZE_JOBS_PROJECT_ID',       tokenKey: 'COZE_JOBS_API_TOKEN' },
+    decision:   { urlKey: 'COZE_DECISION_API_URL',    projectKey: 'COZE_DECISION_PROJECT_ID',   tokenKey: 'COZE_DECISION_API_TOKEN' },
+  };
+
+  const config = configMap[botType || ''];
+  if (!config) return null;
+
+  const apiUrl = process.env[config.urlKey];
+  const projectId = process.env[config.projectKey];
+  const token = process.env[config.tokenKey];
+
+  if (!apiUrl || !projectId || !token) return null;
+
+  return { apiUrl, projectId, token };
+}
+
+/**
+ * 4b. 调用扣子编程 stream_run API
+ * 请求格式与 assessment/competency 路由中已验证的方式一致
+ */
+export async function callWorkflowStreamApi(params: {
+  botType: string;
+  message: string;
+  userContext?: string;
+}): Promise<Response> {
+  const config = getWorkflowConfig(params.botType);
+  if (!config) {
+    throw new Error(`No workflow config found for botType: ${params.botType}`);
+  }
+
+  const finalMessage = (params.userContext || '') + params.message;
+  const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+
+  return fetch(config.apiUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${config.token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream',
+    },
+    body: JSON.stringify({
+      content: {
+        query: {
+          prompt: [
+            {
+              type: 'text',
+              content: {
+                text: finalMessage,
+              },
+            },
+          ],
+        },
+      },
+      type: 'query',
+      session_id: sessionId,
+      project_id: config.projectId,
+    }),
+  });
+}
+
+/**
+ * 5a. 解析扣子编程 stream_run 返回的 SSE 流
+ * 数据格式: data: {"type":"answer","content":{"answer":"..."}}
+ * 同时支持 <<DATA:type=xxx>>...<<END>> 结构化数据标记
+ */
+export function createWorkflowSSEStream(params: {
+  workflowResponse: Response;
+  userId: string | null;
+  botType: string | undefined;
+  fallbackText: string;
+}): ReadableStream {
+  const { workflowResponse, userId, botType, fallbackText } = params;
+
+  return new ReadableStream({
+    async start(controller) {
+      const reader = workflowResponse.body?.getReader();
+      const decoder = new TextDecoder();
+      const encoder = new TextEncoder();
+
+      if (!reader) {
+        controller.close();
+        return;
+      }
+
+      let sseBuffer = '';
+      let textBuffer = ''; // 累积的纯文本（用于 <<DATA>> 解析）
+      let hasError = false;
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          sseBuffer += decoder.decode(value, { stream: true });
+
+          // 按 \n\n 分割 SSE 事件块
+          const blocks = sseBuffer.split('\n\n');
+          sseBuffer = blocks.pop() ?? '';
+
+          for (const block of blocks) {
+            const dataLines = block
+              .split('\n')
+              .filter(line => line.startsWith('data:'))
+              .map(line => line.slice(5).trim());
+
+            if (dataLines.length === 0) continue;
+
+            for (const line of dataLines) {
+              try {
+                const parsed = JSON.parse(line);
+
+                // 检查错误
+                if (parsed.code && parsed.code !== 0) {
+                  console.log('Workflow stream error:', parsed.code, parsed.msg);
+                  hasError = true;
+                  break;
+                }
+
+                // 提取文本内容
+                if (parsed.type === 'answer' && parsed.content?.answer) {
+                  textBuffer += parsed.content.answer;
+                } else if (parsed.type === 'error') {
+                  console.log('Workflow error event:', parsed);
+                  hasError = true;
+                  break;
+                }
+              } catch {
+                // 非 JSON，忽略
+              }
+            }
+
+            if (hasError) break;
+          }
+
+          if (hasError) break;
+        }
+
+        if (hasError) {
+          controller.enqueue(encoder.encode(fallbackText));
+        } else {
+          // 处理累积的文本缓冲，解析 <<DATA>> 标记
+          const dataStartRegex = /<<\s*DATA\s*:\s*type\s*=\s*(\w+)\s*>>/i;
+          const dataEndRegex = /<<\s*END\s*>>/i;
+          let searchStart = 0;
+
+          while (searchStart < textBuffer.length) {
+            const startMatch = textBuffer.substring(searchStart).match(dataStartRegex);
+
+            if (!startMatch) {
+              // 没有找到 <<DATA>> 标记，全部作为普通文本输出
+              const textToForward = textBuffer.substring(searchStart);
+              if (textToForward) {
+                controller.enqueue(encoder.encode(textToForward));
+              }
+              break;
+            }
+
+            const dataType = startMatch[1];
+            const dataStartPos = searchStart + startMatch.index! + startMatch[0].length;
+
+            // 转发标记前的普通文本
+            if (startMatch.index! > 0) {
+              const textBefore = textBuffer.substring(searchStart, searchStart + startMatch.index!);
+              if (textBefore) {
+                controller.enqueue(encoder.encode(textBefore));
+              }
+            }
+
+            // 查找 <<END>>
+            const endMatch = textBuffer.substring(dataStartPos).match(dataEndRegex);
+
+            if (!endMatch) {
+              // <<END>> 没找到，转发 <<DATA>> 标记后的内容作为普通文本
+              const remaining = textBuffer.substring(searchStart + startMatch.index!);
+              if (remaining) {
+                controller.enqueue(encoder.encode(remaining));
+              }
+              break;
+            }
+
+            // 提取结构化数据
+            const jsonStr = textBuffer.substring(dataStartPos, dataStartPos + endMatch.index!);
+            const afterEndPos = dataStartPos + endMatch.index! + endMatch[0].length;
+
+            try {
+              const jsonData = JSON.parse(jsonStr);
+
+              // 通过特殊 SSE 事件推送给前端
+              const structuredEvent = `event: structured_data\ndata: ${JSON.stringify({ type: dataType, data: jsonData })}\n\n`;
+              controller.enqueue(encoder.encode(structuredEvent));
+
+              // 异步保存到 Supabase
+              if (userId) {
+                saveStructuredData(botType, userId, dataType, jsonData).catch(err =>
+                  console.error('Background save error:', err)
+                );
+              }
+            } catch (parseErr) {
+              console.error('结构化数据JSON解析失败:', parseErr);
+              controller.enqueue(encoder.encode(`<<DATA:type=${dataType}>>${jsonStr}<<END>>`));
+            }
+
+            searchStart = afterEndPos;
+          }
+        }
+      } finally {
+        reader.releaseLock();
+        controller.close();
+      }
+    },
+  });
+}
+
+/**
  * 4. 创建 Coze API 的流式请求
  * 包含 custom_variables 和用户上下文注入
  */

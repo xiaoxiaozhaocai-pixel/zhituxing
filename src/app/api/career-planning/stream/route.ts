@@ -1,14 +1,12 @@
 /**
  * 职业规划AI智能体流式API
  * 
- * 改造要点：
- * - 使用标准 Coze Bot API (api.coze.cn/v3/chat)，与 chat/route.ts 一致
- * - 使用 COZE_API_KEY + COZE_BOT_ID_DECISION 认证
+ * 优先使用扣子编程 stream_run API
+ * 回退到标准 Coze Bot API
  * - 用户验证查 user_profiles 表，查出 user_type
- * - Coze API 传入 custom_variables: { user_type }
+ * - 传入 custom_variables: { user_type }
  * - 真正的边读边转发流式传输
- * - SSE 解析器提取结构化数据，存入对应 Supabase 表
- * - 复用 @/lib/coze-stream.ts 公共模块
+ * - SSE 解析器提取结构化数据，存入 career_plans 表
  */
 
 import { NextRequest } from 'next/server';
@@ -17,7 +15,10 @@ import {
   getUserProfileContext,
   callCozeStreamApi,
   createCozeSSEStream,
+  callWorkflowStreamApi,
+  createWorkflowSSEStream,
   createTextStream,
+  getWorkflowConfig,
 } from '@/lib/coze-stream';
 
 export const runtime = 'edge';
@@ -87,12 +88,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { major, grade, city, message, conversationId } = body;
 
-    // 1. 用户验证 — 查 user_profiles 表获取 user_type
+    // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
-    const botId = process.env.COZE_BOT_ID_DECISION || '';
-    const apiKey = process.env.COZE_API_KEY;
 
     // 2. 获取用户个人信息上下文
     let userContext = '';
@@ -103,59 +102,84 @@ export async function POST(request: NextRequest) {
     // 3. 构建最终消息
     const queryContent = message || `请根据以下信息，为我生成一份专属的职业规划报告：\n\n【基本信息】\n- 所属专业：${major || '未填写'}\n- 当前年级：${grade || '未填写'}\n- 意向城市：${city || '未填写'}\n\n请生成一份详细的职业规划报告。`;
     const finalMessage = userContext + queryContent;
+    const fallbackText = getCareerFallback(major, grade, city);
 
-    // 4. 如果没有配置 Coze API，使用 fallback
-    if (!apiKey || !botId) {
-      console.log('Career planning Coze API not configured, using fallback');
-      const fallback = getCareerFallback(major, grade, city);
-      return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
+    // ===========================
+    // 优先尝试 stream_run API
+    // ===========================
+    const workflowConfig = getWorkflowConfig('career');
+
+    if (workflowConfig) {
+      console.log('[career] Using stream_run API');
+      try {
+        const workflowResponse = await callWorkflowStreamApi({
+          botType: 'career',
+          message: finalMessage,
+          userContext: '', // 已拼接到 finalMessage
+        });
+
+        if (workflowResponse.ok) {
+          const stream = createWorkflowSSEStream({
+            workflowResponse,
+            userId,
+            botType: 'career',
+            fallbackText,
+          });
+          return new Response(stream, { headers: SSE_HEADERS });
+        } else {
+          console.log(`[career] stream_run returned ${workflowResponse.status}, falling back`);
+        }
+      } catch (err) {
+        console.error('[career] stream_run error:', err);
+      }
     }
 
-    // 5. 调用 Coze API，传入 custom_variables
+    // ===========================
+    // 回退到标准 Coze Bot API
+    // ===========================
+    const botId = process.env.COZE_BOT_ID_CAREER || process.env.COZE_BOT_ID_DECISION || '';
+    const apiKey = process.env.COZE_API_KEY;
+
+    if (!apiKey || !botId) {
+      console.log('[career] No Bot API configured, using fallback');
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
+    }
+
     const cozeResponse = await callCozeStreamApi({
       botId,
       message: finalMessage,
       userType,
       conversationId,
-      userContext: '', // 已拼接到 finalMessage 中
+      userContext: '', // 已拼接到 finalMessage
     });
 
-    // 6. 先检查 HTTP 状态码
     if (!cozeResponse.ok) {
-      console.log('Career planning Coze API HTTP error:', cozeResponse.status);
-      const fallback = getCareerFallback(major, grade, city);
-      return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
+      console.log('[career] Coze API error:', cozeResponse.status);
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
-    // 检查 Content-Type，如果不是 SSE 流，说明返回了 JSON 错误
     const contentType = cozeResponse.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const errorText = await cozeResponse.text();
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.code && errorData.code !== 0) {
-          console.log('Career planning Coze API error:', errorData.code, errorData.msg);
-          const fallback = getCareerFallback(major, grade, city);
-          return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
+          console.log('[career] Coze API error:', errorData.code, errorData.msg);
+          return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
         }
-      } catch {
-        // JSON 解析失败，继续
-      }
+      } catch { /* continue */ }
     }
 
-    // 7. 流式转发 + SSE 解析器
-    const fallbackForStream = getCareerFallback(major, grade, city);
     const stream = createCozeSSEStream({
       cozeResponse,
       userId,
       botType: 'career',
-      fallbackText: fallbackForStream,
+      fallbackText,
     });
 
     return new Response(stream, { headers: SSE_HEADERS });
   } catch (error) {
     console.error('职业规划生成失败:', error);
-
     const fallback = getCareerFallback('', '', '');
     return new Response(createTextStream(fallback), { headers: SSE_HEADERS });
   }

@@ -1,7 +1,10 @@
 /**
  * 统一岗位搜索API
  * 供智能体调用，也支持前端直接搜索
- * 集成用户验证、user_type权限、SSE结构化数据解析
+ * 
+ * 优先使用扣子编程 stream_run API
+ * 回退到标准 Coze Bot API
+ * 最终回退到数据库搜索
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,7 +13,10 @@ import {
   getUserInfoFromRequest,
   callCozeStreamApi,
   createCozeSSEStream,
+  callWorkflowStreamApi,
+  createWorkflowSSEStream,
   createTextStream,
+  getWorkflowConfig,
 } from '@/lib/coze-stream';
 
 export const runtime = 'edge';
@@ -18,6 +24,12 @@ export const runtime = 'edge';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+const SSE_HEADERS = {
+  'Content-Type': 'text/event-stream',
+  'Cache-Control': 'no-cache',
+  'Connection': 'keep-alive',
+};
 
 interface SearchResult {
   source: string;
@@ -53,7 +65,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
       industry: (job.industry as string) || 'General',
       company_type: (job.company_type as string) || 'Unknown',
       job_description: (job.jd_content as string) || 'No detailed information',
-      is_fresh_friendly: job.is_fresh_friendly === 1
+      is_fresh_friendly: job.is_fresh_friendly === 1,
     }));
   } catch (error) {
     console.error('Database search exception:', error);
@@ -86,6 +98,13 @@ function formatResults(jobs: SearchResult[]): string {
   return lines.join('\n');
 }
 
+function getDbFallback(message: string): Promise<string> {
+  return searchFromDatabase(message).then(results => {
+    if (results.length > 0) return formatResults(results);
+    return `未找到与「${message}」相关的岗位信息。请尝试其他关键词。`;
+  });
+}
+
 // GET: 供智能体工具调用（直接搜索数据库）
 export async function GET(request: NextRequest) {
   try {
@@ -95,7 +114,7 @@ export async function GET(request: NextRequest) {
     if (!query) {
       return NextResponse.json({
         code: 0,
-        result: 'Please provide search keyword, e.g. ?query=recruiter'
+        result: 'Please provide search keyword, e.g. ?query=recruiter',
       });
     }
 
@@ -106,20 +125,17 @@ export async function GET(request: NextRequest) {
 
     console.log('[Search] Found', databaseResults.length, 'results');
 
-    return NextResponse.json({
-      code: 0,
-      result: result
-    });
+    return NextResponse.json({ code: 0, result });
   } catch (error) {
     console.error('[Search] API error:', error);
     return NextResponse.json({
       code: 1,
-      result: 'Service temporarily unavailable'
+      result: 'Service temporarily unavailable',
     });
   }
 }
 
-// POST: 供前端直接调用 Coze 职搭子智能体进行岗位匹配
+// POST: 供前端直接调用职搭子智能体
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -132,32 +148,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. 用户验证 — 查 user_profiles 表
+    // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
 
-    // 2. 检查 Coze 配置
+    const fallbackText = await getDbFallback(message);
+
+    // ===========================
+    // 优先尝试 stream_run API
+    // ===========================
+    const workflowConfig = getWorkflowConfig('jobs');
+
+    if (workflowConfig) {
+      console.log('[search-jd] Using stream_run API');
+      try {
+        const workflowResponse = await callWorkflowStreamApi({
+          botType: 'jobs',
+          message,
+          userContext: '',
+        });
+
+        if (workflowResponse.ok) {
+          const stream = createWorkflowSSEStream({
+            workflowResponse,
+            userId,
+            botType: 'jobs',
+            fallbackText,
+          });
+          return new Response(stream, { headers: SSE_HEADERS });
+        } else {
+          console.log(`[search-jd] stream_run returned ${workflowResponse.status}, falling back`);
+        }
+      } catch (err) {
+        console.error('[search-jd] stream_run error:', err);
+      }
+    }
+
+    // ===========================
+    // 回退到标准 Coze Bot API
+    // ===========================
     const botId = process.env.COZE_BOT_ID_JOBS || '';
     const apiKey = process.env.COZE_API_KEY;
 
     if (!apiKey || !botId) {
-      // Coze 未配置，直接搜索数据库作为 fallback
-      const dbResults = await searchFromDatabase(message);
-      const fallbackText = dbResults.length > 0
-        ? formatResults(dbResults)
-        : `未找到与「${message}」相关的岗位信息。请尝试其他关键词。`;
-
-      return new Response(createTextStream(fallbackText), {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
-    // 3. 调用 Coze API（边读边转发，传入 user_type）
     const cozeResponse = await callCozeStreamApi({
       botId,
       message,
@@ -165,55 +202,27 @@ export async function POST(request: NextRequest) {
       conversationId,
     });
 
-    // 检查 Coze 响应状态
     if (!cozeResponse.ok) {
       console.error('Coze API error:', cozeResponse.status);
-      const dbResults = await searchFromDatabase(message);
-      const fallbackText = dbResults.length > 0
-        ? formatResults(dbResults)
-        : `未找到与「${message}」相关的岗位信息。请尝试其他关键词。`;
-      return new Response(createTextStream(fallbackText), {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
-    // 如果响应不是流式的
     const contentType = cozeResponse.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const errorData = await cozeResponse.json();
       console.error('Coze API JSON error:', errorData);
-      const dbResults = await searchFromDatabase(message);
-      const fallbackText = dbResults.length > 0
-        ? formatResults(dbResults)
-        : `未找到与「${message}」相关的岗位信息。`;
-      return new Response(createTextStream(fallbackText), {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
+      return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
-    // 4. 创建 SSE 流（含结构化数据解析，jd_match 类型存入 skill_job_match 表）
+    // 创建 SSE 流（jd_match 类型存入 skill_job_match 表）
     const stream = createCozeSSEStream({
       cozeResponse,
       userId,
       botType: 'jobs',
-      fallbackText: `未找到与「${message}」相关的岗位信息。请尝试其他关键词。`,
+      fallbackText,
     });
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    });
+    return new Response(stream, { headers: SSE_HEADERS });
   } catch (error) {
     console.error('Search-JD API Error:', error);
     return NextResponse.json(
