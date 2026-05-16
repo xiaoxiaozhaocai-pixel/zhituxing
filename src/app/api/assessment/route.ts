@@ -7,8 +7,112 @@ import {
   createWorkflowSSEStream,
   createTextStream,
 } from '@/lib/coze-stream';
+import { execSql } from '@/lib/exec-sql';
+import { calculateCompetencyPercentile, type CompetencyPercentileResult, type PeerMatchScore } from '@/lib/matching-algorithm';
 
 export const runtime = 'edge';
+
+// ============================================================
+// GET - 获取测评历史 + 竞争力百分位
+// ============================================================
+
+export async function GET(request: NextRequest) {
+  try {
+    const userInfo = await getUserInfoFromRequest(request);
+    const userId = userInfo?.userId || null;
+
+    if (!userId) {
+      return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+    const targetPosition = searchParams.get('target_position') || '';
+
+    // 1. 获取用户测评历史
+    const assessRows = await execSql(
+      `SELECT id, result_data, created_at FROM assessment_results WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 10`
+    );
+
+    const history = (assessRows || [] as unknown[]).map((row) => {
+      const r = row as Record<string, unknown>;
+      return {
+        id: r.id,
+        data: typeof r.result_data === 'string' ? JSON.parse(r.result_data) : r.result_data,
+        createdAt: r.created_at,
+      };
+    });
+
+    // 2. 计算竞争力百分位
+    let percentile: CompetencyPercentileResult | null = null;
+    if (targetPosition) {
+      // 获取同岗位其他用户的匹配度
+      const matchRows = await execSql(
+        `SELECT match_data, user_id FROM skill_job_match WHERE match_data::text ILIKE '%${targetPosition.replace(/'/g, "''")}%'`
+      );
+
+      const peerScores: PeerMatchScore[] = [];
+      let userScore = 0;
+
+      for (const row of matchRows as Array<Record<string, unknown>>) {
+        try {
+          const data = typeof row.match_data === 'string' ? JSON.parse(row.match_data) : row.match_data;
+          const rowUserId = row.user_id as (string | number);
+          // match_data 是数组，每项有 matchScore
+          if (Array.isArray(data)) {
+            for (const item of data) {
+              if (item.matchScore) {
+                peerScores.push({ userId: rowUserId || 'unknown', matchScore: item.matchScore });
+              }
+              if (item.jobName && item.jobName.includes(targetPosition) && item.matchScore) {
+                userScore = item.matchScore;
+              }
+            }
+          }
+        } catch {
+          // 解析失败跳过
+        }
+      }
+
+      if (peerScores.length > 0 && userScore > 0) {
+        percentile = calculateCompetencyPercentile(userScore, peerScores);
+      }
+    }
+
+    // 3. 成长曲线（2次以上测评时）
+    let growthCurve: Array<{ date: string; score: number }> | null = null;
+    if (history.length >= 2) {
+      growthCurve = history
+        .map((h) => {
+          const d = h.data as Record<string, unknown>;
+          return {
+            date: h.createdAt as string,
+            score: (d.overall_score as number) || (d.match_score as number) || 0,
+          };
+        })
+        .reverse(); // 按时间升序
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        history,
+        percentile,
+        growthCurve,
+        totalAssessments: history.length,
+      },
+    });
+  } catch (error) {
+    console.error('[assessment] GET Error:', error);
+    return NextResponse.json(
+      { error: '查询测评历史失败', detail: error instanceof Error ? error.message : '未知错误' },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================
+// POST - 触发能力测评（保留原有功能）
+// ============================================================
 
 // 能力测评 fallback 回复
 function getAssessmentFallback(major?: string, grade?: string): string {
