@@ -14,11 +14,11 @@ export async function POST(request: NextRequest) {
     if (body.events && Array.isArray(body.events)) {
       let inserted = 0;
       for (const evt of body.events) {
-        const userId = Number(evt.user_id) || null;
+        const userId = evt.user_id ? String(evt.user_id).replace(/'/g, "''") : null;
         const eventType = String(evt.event_type || '').replace(/'/g, "''");
         const eventData = evt.event_data ? JSON.stringify(evt.event_data).replace(/'/g, "''") : null;
         const ts = evt.timestamp ? `'${evt.timestamp}'` : 'NOW()';
-        const sql = `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES (${userId || 'NULL'}, '${eventType}', '${eventData}'::jsonb, ${ts})`;
+        const sql = `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES (${userId ? `'${userId}'` : 'NULL'}, '${eventType}', '${eventData}'::jsonb, ${ts})`;
         const res = await execSql(sql);
         if (Array.isArray(res) && (res as Record<string, unknown>[]).length > 0) inserted++;
       }
@@ -26,13 +26,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 单条上报
-    const userId = Number(body.user_id) || null;
+    const userId = body.user_id ? String(body.user_id).replace(/'/g, "''") : null;
     const eventType = String(body.event_type || '').replace(/'/g, "''");
     const eventData = body.event_data ? JSON.stringify(body.event_data).replace(/'/g, "''") : null;
     const ts = body.timestamp ? `'${body.timestamp}'` : 'NOW()';
 
     await execSql(
-      `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES (${userId || 'NULL'}, '${eventType}', '${eventData}'::jsonb, ${ts})`
+      `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES (${userId ? `'${userId}'` : 'NULL'}, '${eventType}', '${eventData}'::jsonb, ${ts})`
     );
 
     return NextResponse.json({ success: true });

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const rows = await execSql(
       `SELECT membership_type, membership_plan, membership_expires_at, user_type
-       FROM user_profiles WHERE user_id = ${userId}`
+       FROM user_profiles WHERE user_id = '${userId}'`
     );
 
     if (!rows || rows.length === 0) {
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       if (isExpired) {
         // 过期自动降级为免费用户
         await execSql(
-          `UPDATE user_profiles SET membership_type = 'free', user_type = 'free' WHERE user_id = ${userId}`
+          `UPDATE user_profiles SET membership_type = 'free', user_type = 'free' WHERE user_id = '${userId}'`
         );
       }
     }
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
            user_type = 'member',
            membership_plan = '${planNameEscaped}',
            membership_expires_at = ${expiresSql}
-       WHERE user_id = ${userId}`
+       WHERE user_id = '${userId}'`
     );
 
     return NextResponse.json({

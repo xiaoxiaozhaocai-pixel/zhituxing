@@ -163,7 +163,7 @@ async function fetchUserSkills(userId: string): Promise<UserSkill[]> {
   // 从 user_skills 表获取
   try {
     const rows = await execSql(
-      `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = ${userId}`
+      `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = '${userId}'`
     );
     for (const row of rows as Array<{ skill_name: string; level: number; proficiency: string }>) {
       skills.push({ name: row.skill_name, level: row.level, proficiency: row.proficiency });
@@ -175,7 +175,7 @@ async function fetchUserSkills(userId: string): Promise<UserSkill[]> {
   // 从 user_profiles 补充
   try {
     const rows = await execSql(
-      `SELECT skills, ability_background FROM user_profiles WHERE user_id = ${userId} LIMIT 1`
+      `SELECT skills, ability_background FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
     );
     if (rows && rows.length > 0) {
       const profile = rows[0] as { skills: string | null; ability_background: string | null };

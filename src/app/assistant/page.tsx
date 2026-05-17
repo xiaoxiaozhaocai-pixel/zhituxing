@@ -11,11 +11,26 @@ import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, Al
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
+import CareerPlanCard from '@/components/cards/CareerPlanCard';
+import InterviewResultCard from '@/components/cards/InterviewResultCard';
+import JdMatchCard from '@/components/cards/JdMatchCard';
+import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
+
+interface StructuredDataItem {
+  type: string;
+  data: Record<string, unknown>;
+}
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  structuredData?: StructuredDataItem[];
+}
+
+/** 过滤文本中残留的 <<DATA:type=xxx>>...<<END>> 标记（安全网） */
+function stripDataMarkers(text: string): string {
+  return text.replace(/<<\s*DATA\s*:\s*type\s*=\s*\w+\s*>>[\s\S]*?<<\s*END\s*>>/gi, '').trim();
 }
 
 interface BotConfig {
@@ -448,8 +463,27 @@ export default function AssistantPage() {
 
             if (!dataLine) continue;
 
-            // 结构化数据事件（暂不处理，后续可扩展）
-            if (eventType === 'structured_data') continue;
+            // 结构化数据事件 — 保存到消息中，后续渲染数据卡片
+            if (eventType === 'structured_data') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                const sData: StructuredDataItem = { type: parsed.type, data: parsed.data };
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  const last = newMsgs[newMsgs.length - 1];
+                  if (last && last.role === 'assistant') {
+                    newMsgs[newMsgs.length - 1] = {
+                      ...last,
+                      structuredData: [...(last.structuredData || []), sData],
+                    };
+                  }
+                  return newMsgs;
+                });
+              } catch {
+                // 忽略解析错误
+              }
+              continue;
+            }
 
             try {
               const parsed = JSON.parse(dataLine);
@@ -458,11 +492,12 @@ export default function AssistantPage() {
                 clearTimeout(firstTokenTimer);
                 clearTimeout(timeoutTimer);
                 fullContent += parsed.content;
+                const displayContent = stripDataMarkers(fullContent);
                 setMessages(prev => {
                   const newMsgs = [...prev];
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
-                    content: fullContent 
+                    content: displayContent 
                   };
                   return newMsgs;
                 });
@@ -490,11 +525,12 @@ export default function AssistantPage() {
                 clearTimeout(firstTokenTimer);
                 clearTimeout(timeoutTimer);
                 fullContent += dataLine;
+                const displayContent = stripDataMarkers(fullContent);
                 setMessages(prev => {
                   const newMsgs = [...prev];
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
-                    content: fullContent 
+                    content: displayContent 
                   };
                   return newMsgs;
                 });
@@ -724,6 +760,26 @@ export default function AssistantPage() {
                       </button>
                     )}
                   </div>
+                  {/* 结构化数据卡片 */}
+                  {msg.structuredData && msg.structuredData.length > 0 && (
+                    <div className="mt-3 space-y-3">
+                      {msg.structuredData.map((sd, sdIdx) => {
+                        if (sd.type === 'career_plan') {
+                          return <CareerPlanCard key={sdIdx} data={sd.data as Parameters<typeof CareerPlanCard>[0]['data']} />;
+                        }
+                        if (sd.type === 'interview_result') {
+                          return <InterviewResultCard key={sdIdx} data={sd.data as Parameters<typeof InterviewResultCard>[0]['data']} />;
+                        }
+                        if (sd.type === 'jd_match' || sd.type === 'skill_job_match') {
+                          return <JdMatchCard key={sdIdx} data={sd.data as Parameters<typeof JdMatchCard>[0]['data']} />;
+                        }
+                        if (sd.type === 'skill_assessment') {
+                          return <SkillAssessmentCard key={sdIdx} data={sd.data as Parameters<typeof SkillAssessmentCard>[0]['data']} />;
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

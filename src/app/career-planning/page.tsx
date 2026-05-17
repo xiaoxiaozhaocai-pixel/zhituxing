@@ -9,6 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import GenerateGuideModal from '@/components/GenerateGuideModal';
+import CareerPlanCard from '@/components/cards/CareerPlanCard';
+import InterviewResultCard from '@/components/cards/InterviewResultCard';
+import JdMatchCard from '@/components/cards/JdMatchCard';
+import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
 import { 
   Sparkles, 
   Loader2, 
@@ -106,6 +110,7 @@ export default function CareerPlanningPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [structuredData, setStructuredData] = useState<Array<{ type: string; data: Record<string, unknown> }>>([]);
   const [message, setMessage] = useState<{type: 'success' | 'error' | 'info', text: string} | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -199,6 +204,7 @@ export default function CareerPlanningPage() {
     
     setGenerating(true);
     setGeneratedContent('');
+    setStructuredData([]);
     setMessage(null);
     
     try {
@@ -274,8 +280,16 @@ export default function CareerPlanningPage() {
 
             if (!dataLine) continue;
 
-            // 跳过结构化数据事件（后续可扩展）
-            if (eventType === 'structured_data') continue;
+            // 结构化数据事件 — 保存状态，后续渲染卡片
+            if (eventType === 'structured_data') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                setStructuredData(prev => [...prev, { type: parsed.type, data: parsed.data }]);
+              } catch {
+                // 忽略解析错误
+              }
+              continue;
+            }
 
             try {
               const data = JSON.parse(dataLine);
@@ -284,7 +298,9 @@ export default function CareerPlanningPage() {
                 clearTimeout(thinkingTimer);
                 clearTimeout(timeoutTimer);
                 fullContent += data.content;
-                setGeneratedContent(fullContent);
+                // 过滤残留的 <<DATA>> 标记
+                const displayContent = fullContent.replace(/<<\s*DATA\s*:\s*type\s*=\s*\w+\s*>>[\s\S]*?<<\s*END\s*>>/gi, '').trim();
+                setGeneratedContent(displayContent);
                 setMessage(null);
               } else if (data.type === 'done') {
                 clearTimeout(thinkingTimer);
@@ -375,6 +391,7 @@ export default function CareerPlanningPage() {
   // 关闭生成结果，重新开始
   const resetGeneration = () => {
     setGeneratedContent('');
+    setStructuredData([]);
     setMessage(null);
   };
 
@@ -436,6 +453,26 @@ export default function CareerPlanningPage() {
                   <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
                     <Loader2 className="w-8 h-8 animate-spin mb-4" />
                     <p>正在思考中，请稍候...</p>
+                  </div>
+                )}
+                {/* 结构化数据卡片 */}
+                {structuredData.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {structuredData.map((sd, idx) => {
+                      if (sd.type === 'career_plan') {
+                        return <CareerPlanCard key={idx} data={sd.data as Parameters<typeof CareerPlanCard>[0]['data']} />;
+                      }
+                      if (sd.type === 'interview_result') {
+                        return <InterviewResultCard key={idx} data={sd.data as Parameters<typeof InterviewResultCard>[0]['data']} />;
+                      }
+                      if (sd.type === 'jd_match' || sd.type === 'skill_job_match') {
+                        return <JdMatchCard key={idx} data={sd.data as Parameters<typeof JdMatchCard>[0]['data']} />;
+                      }
+                      if (sd.type === 'skill_assessment') {
+                        return <SkillAssessmentCard key={idx} data={sd.data as Parameters<typeof SkillAssessmentCard>[0]['data']} />;
+                      }
+                      return null;
+                    })}
                   </div>
                 )}
               </div>

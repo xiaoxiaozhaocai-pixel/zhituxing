@@ -8,7 +8,7 @@ async function checkAdmin(request: NextRequest): Promise<number | null> {
   const userId = parseInt(request.headers.get('x-user-id') || '0');
   if (!userId) return null;
   const rows = await execSql(
-    `SELECT is_admin FROM user_profiles WHERE user_id = ${userId}`
+    `SELECT is_admin FROM user_profiles WHERE user_id = '${userId}'`
   ) as Record<string, unknown>[];
   if (!rows?.length || !rows[0].is_admin) return null;
   return userId;
@@ -97,7 +97,7 @@ async function getUserDetail(userId: number) {
     `SELECT user_id, user_type, membership_type, membership_plan, major, grade,
             job_intention, city, skills, personality_type, ability_background::text,
             internship_experience, project_experience, awards, is_admin, created_at
-     FROM user_profiles WHERE user_id = ${userId}`
+     FROM user_profiles WHERE user_id = '${userId}'`
   ) as Record<string, unknown>[];
 
   if (!profileRows?.length) {
@@ -106,32 +106,32 @@ async function getUserDetail(userId: number) {
 
   // 用户技能
   const skillRows = await execSql(
-    `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = ${userId} ORDER BY level DESC`
+    `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = '${userId}' ORDER BY level DESC`
   ) as Record<string, unknown>[];
 
   // 测评历史
   const assessmentRows = await execSql(
-    `SELECT id, result_data::text, created_at FROM assessment_results WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, result_data::text, created_at FROM assessment_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
   ) as Record<string, unknown>[];
 
   // 匹配记录
   const matchRows = await execSql(
-    `SELECT id, match_data::text, created_at FROM skill_job_match WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, match_data::text, created_at FROM skill_job_match WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
   ) as Record<string, unknown>[];
 
   // 面试记录
   const interviewRows = await execSql(
-    `SELECT id, result_data::text, created_at FROM interview_results WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, result_data::text, created_at FROM interview_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
   ) as Record<string, unknown>[];
 
   // 职业规划
   const careerRows = await execSql(
-    `SELECT id, plan_data::text, created_at FROM career_plans WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, plan_data::text, created_at FROM career_plans WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
   ) as Record<string, unknown>[];
 
   // 行为统计
   const behaviorRows = await execSql(
-    `SELECT event_type, COUNT(*)::int as count FROM analytics_events WHERE user_id = ${userId} GROUP BY event_type ORDER BY count DESC`
+    `SELECT event_type, COUNT(*)::int as count FROM analytics_events WHERE user_id = '${userId}' GROUP BY event_type ORDER BY count DESC`
   ) as Record<string, unknown>[];
 
   const profile = profileRows[0];

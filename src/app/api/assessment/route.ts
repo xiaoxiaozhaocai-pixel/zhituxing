@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // 1. 获取用户测评历史
     const assessRows = await execSql(
-      `SELECT id, result_data, created_at FROM assessment_results WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 10`
+      `SELECT id, result_data, created_at FROM assessment_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 10`
     );
 
     const history = (assessRows || [] as unknown[]).map((row) => {

@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     let userSkills: Array<{ name: string; level: number; proficiency: string }> = [];
     try {
       const skillRows = await execSql(
-        `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = ${userId}`
+        `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = '${userId}'`
       );
       userSkills = (skillRows as Array<Record<string, unknown>>).map((row) => ({
         name: row.skill_name as string,
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     let latestAssessment = null;
     try {
       const assessRows = await execSql(
-        `SELECT result_data, created_at FROM assessment_results WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 1`
+        `SELECT result_data, created_at FROM assessment_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 1`
       );
       if (assessRows && assessRows.length > 0) {
         const row = assessRows[0] as Record<string, unknown>;
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     let latestCareerPlan = null;
     try {
       const planRows = await execSql(
-        `SELECT plan_data, created_at FROM career_plans WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 1`
+        `SELECT plan_data, created_at FROM career_plans WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 1`
       );
       if (planRows && planRows.length > 0) {
         const row = planRows[0] as Record<string, unknown>;
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
     let skillProgress: Array<Record<string, unknown>> = [];
     try {
       const progressRows = await execSql(
-        `SELECT skill_name, status, completion_pct FROM skill_progress WHERE user_id = ${userId}`
+        `SELECT skill_name, status, completion_pct FROM skill_progress WHERE user_id = '${userId}'`
       );
       skillProgress = (progressRows || []) as Array<Record<string, unknown>>;
     } catch {

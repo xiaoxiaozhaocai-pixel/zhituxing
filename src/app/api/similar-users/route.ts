@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     // 1. 获取当前用户画像
     const profileRows = await execSql(
-      `SELECT user_id, major, job_intention FROM user_profiles WHERE user_id = ${currentUserId}`
+      `SELECT user_id, major, job_intention FROM user_profiles WHERE user_id = '${currentUserId}'`
     );
     if (!profileRows || profileRows.length === 0) {
       return NextResponse.json(
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     // 2. 获取当前用户技能向量
     const skillRows = await execSql(
-      `SELECT skill_name, level FROM user_skills WHERE user_id = ${currentUserId}`
+      `SELECT skill_name, level FROM user_skills WHERE user_id = '${currentUserId}'`
     );
     const currentSkills: Record<string, number> = {};
     for (const row of (skillRows || []) as Record<string, unknown>[]) {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     // 如果没有技能数据，也尝试从 ability_background 提取
     if (Object.keys(currentSkills).length === 0) {
       const bgRows = await execSql(
-        `SELECT ability_background FROM user_profiles WHERE user_id = ${currentUserId}`
+        `SELECT ability_background FROM user_profiles WHERE user_id = '${currentUserId}'`
       );
       const bg = (bgRows?.[0] as Record<string, unknown>)?.ability_background;
       if (bg && typeof bg === 'object') {
