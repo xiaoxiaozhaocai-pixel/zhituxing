@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle } from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
+import { useSSEStream } from '@/hooks/useSSEStream';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -197,6 +198,9 @@ export default function AssistantPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const isUserNearBottomRef = useRef(true);
 
+  // SSE流式解析hook
+  const [streamState, streamActions] = useSSEStream();
+
   const currentBot = bots.find(b => b.id === activeBot) || bots[0];
 
   // 平滑滚动到底部（仅在用户接近底部时）
@@ -341,7 +345,7 @@ export default function AssistantPage() {
           sessionId: localStorage.getItem('partnerSessionId') || undefined
         };
       }
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
@@ -359,77 +363,189 @@ export default function AssistantPage() {
         }
       }
 
-      if (response.ok && response.body) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullContent = '';
+      if (!response.ok) {
+        throw new Error(`请求失败 (${response.status})`);
+      }
 
-        const assistantMessage: Message = {
-          role: 'assistant',
-          content: '',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
+      // 创建空的助手消息占位
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: '',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, assistantMessage]);
 
+      // 使用SSE流式解析hook
+      streamActions.reset();
+      
+      // 监听流式内容变化，更新消息
+      const originalStartStream = streamActions.startStream;
+      
+      // 手动处理流式响应
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('无法读取AI响应');
+      }
+
+      const decoder = new TextDecoder();
+      let fullContent = '';
+      let sseBuffer = '';
+      let firstTokenTimer = setTimeout(() => {
+        // 15秒未收到第一个token
+        setMessages(prev => {
+          const newMsgs = [...prev];
+          const last = newMsgs[newMsgs.length - 1];
+          if (last && last.role === 'assistant' && !last.content) {
+            newMsgs[newMsgs.length - 1] = { ...last, content: '🤔 AI正在思考，请耐心等待...' };
+          }
+          return newMsgs;
+        });
+      }, 15000);
+
+      const timeoutTimer = setTimeout(() => {
+        // 30秒超时
+        setMessages(prev => {
+          const newMsgs = [...prev];
+          const last = newMsgs[newMsgs.length - 1];
+          if (last && last.role === 'assistant') {
+            if (!last.content || last.content.includes('AI正在思考')) {
+              newMsgs[newMsgs.length - 1] = { 
+                ...last, 
+                content: '⏱️ 请求超时，请点击重试。如持续超时，请检查网络后稍后再试。' 
+              };
+            }
+          }
+          return newMsgs;
+        });
+        setIsLoading(false);
+        reader.cancel().catch(() => {});
+      }, 30000);
+
+      try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          
-          // 解析SSE格式数据，提取answer字段
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
-                // 从 data.content.content.answer 或 data.content.answer 获取文本
-                const answer = data.content?.content?.answer || data.content?.answer;
-                if (answer && typeof answer === 'string') {
-                  fullContent += answer;
-                }
-              } catch {
-                // 忽略解析错误
+          sseBuffer += decoder.decode(value, { stream: true });
+
+          // 按 \n\n 分割SSE事件
+          const events = sseBuffer.split('\n\n');
+          sseBuffer = events.pop() ?? '';
+
+          for (const event of events) {
+            if (!event.trim()) continue;
+
+            let eventType = 'message';
+            let dataLine = '';
+
+            for (const line of event.split('\n')) {
+              if (line.startsWith('event:')) {
+                eventType = line.slice(6).trim();
+              } else if (line.startsWith('data:')) {
+                dataLine = line.slice(5).trim();
+              }
+            }
+
+            if (!dataLine) continue;
+
+            // 结构化数据事件（暂不处理，后续可扩展）
+            if (eventType === 'structured_data') continue;
+
+            try {
+              const parsed = JSON.parse(dataLine);
+
+              if (parsed.type === 'text' && parsed.content) {
+                clearTimeout(firstTokenTimer);
+                clearTimeout(timeoutTimer);
+                fullContent += parsed.content;
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1] = { 
+                    ...newMsgs[newMsgs.length - 1], 
+                    content: fullContent 
+                  };
+                  return newMsgs;
+                });
+              } else if (parsed.type === 'done') {
+                clearTimeout(firstTokenTimer);
+                clearTimeout(timeoutTimer);
+              } else if (parsed.type === 'error') {
+                clearTimeout(firstTokenTimer);
+                clearTimeout(timeoutTimer);
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  const last = newMsgs[newMsgs.length - 1];
+                  if (last && last.role === 'assistant' && (!last.content || last.content.includes('AI正在思考'))) {
+                    newMsgs[newMsgs.length - 1] = { 
+                      ...last, 
+                      content: `❌ ${parsed.message || 'AI生成出错，请重试'}` 
+                    };
+                  }
+                  return newMsgs;
+                });
+              }
+            } catch {
+              // 兼容非JSON纯文本
+              if (dataLine && !dataLine.startsWith('{')) {
+                clearTimeout(firstTokenTimer);
+                clearTimeout(timeoutTimer);
+                fullContent += dataLine;
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1] = { 
+                    ...newMsgs[newMsgs.length - 1], 
+                    content: fullContent 
+                  };
+                  return newMsgs;
+                });
               }
             }
           }
-          
-          setMessages(prev => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].content = fullContent;
-            return newMessages;
-          });
         }
+      } finally {
+        clearTimeout(firstTokenTimer);
+        clearTimeout(timeoutTimer);
+        try { reader.releaseLock(); } catch { /* ignore */ }
+      }
 
-        const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
-        if (conversationIdMatch) {
-          if (isInterview) {
-            localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
-          } else if (isPartner) {
-            localStorage.setItem('partnerSessionId', conversationIdMatch[1]);
-          } else {
-            localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
-          }
+      // 保存conversationId
+      const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
+      if (conversationIdMatch) {
+        if (isInterview) {
+          localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
+        } else if (isPartner) {
+          localStorage.setItem('partnerSessionId', conversationIdMatch[1]);
+        } else {
+          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
         }
-        
-        // 确保免责文案已添加
-        if (!fullContent.includes('免责声明')) {
+      }
+      
+      // 确保免责文案已添加
+      if (fullContent && !fullContent.includes('免责声明')) {
+        const disclaimer = currentBot.welcomeMessage.split('---')[1] || '';
+        if (disclaimer) {
           setMessages(prev => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].content = fullContent + currentBot.welcomeMessage.split('---')[1] || '';
-            return newMessages;
+            const newMsgs = [...prev];
+            newMsgs[newMsgs.length - 1] = { 
+              ...newMsgs[newMsgs.length - 1], 
+              content: fullContent + disclaimer 
+            };
+            return newMsgs;
           });
         }
-      } else {
-        throw new Error('Failed to get response');
       }
     } catch {
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: `${currentBot.name}正在升级中，请稍后再试...`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => {
+        const newMsgs = [...prev];
+        const last = newMsgs[newMsgs.length - 1];
+        if (last && last.role === 'assistant') {
+          newMsgs[newMsgs.length - 1] = { 
+            ...last, 
+            content: last.content || '❌ 生成失败，请检查网络后重试' 
+          };
+        }
+        return newMsgs;
+      });
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -586,8 +702,26 @@ export default function AssistantPage() {
                 >
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
                     {msg.content}
-                    {index === messages.length - 1 && isLoading && (
+                    {index === messages.length - 1 && isLoading && msg.content && !msg.content.includes('AI正在思考') && !msg.content.includes('请求超时') && (
                       <span className="inline-block animate-pulse ml-1">▊</span>
+                    )}
+                    {index === messages.length - 1 && isLoading && !msg.content && (
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                        </div>
+                        <span className="text-xs">AI正在生成...</span>
+                      </div>
+                    )}
+                    {msg.content.includes('请求超时') && (
+                      <button
+                        onClick={() => sendMessage(msg.content.replace('[超时] ', '').replace('请求超时，请重试', '').trim())}
+                        className="mt-2 px-4 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        重新生成
+                      </button>
                     )}
                   </div>
                 </div>

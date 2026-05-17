@@ -269,9 +269,15 @@ export async function callWorkflowStreamApi(params: {
 }
 
 /**
- * 5a. 解析扣子编程 stream_run 返回的 SSE 流
+ * 5a. 解析扣子编程 stream_run 返回的 SSE 流（增量转发版）
  * 数据格式: data: {"type":"answer","content":{"answer":"..."}}
  * 同时支持 <<DATA:type=xxx>>...<<END>> 结构化数据标记
+ * 
+ * 统一SSE输出格式：
+ * - 文本: data: {"type":"text","content":"..."}\n\n
+ * - 结构化: event: structured_data\ndata: {"type":"xxx","data":{...}}\n\n
+ * - 错误: data: {"type":"error","message":"..."}\n\n
+ * - 完成: data: {"type":"done"}\n\n
  */
 export function createWorkflowSSEStream(params: {
   workflowResponse: Response;
@@ -281,20 +287,126 @@ export function createWorkflowSSEStream(params: {
 }): ReadableStream {
   const { workflowResponse, userId, botType, fallbackText } = params;
 
+  // 发送SSE文本事件
+  function sendText(controller: { enqueue: (d: Uint8Array) => void }, text: string) {
+    const encoder = new TextEncoder();
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`));
+  }
+
+  // 发送SSE完成事件
+  function sendDone(controller: { enqueue: (d: Uint8Array) => void }) {
+    const encoder = new TextEncoder();
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+  }
+
+  // 发送SSE错误事件
+  function sendError(controller: { enqueue: (d: Uint8Array) => void }, message: string) {
+    const encoder = new TextEncoder();
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', message })}\n\n`));
+  }
+
   return new ReadableStream({
     async start(controller) {
       const reader = workflowResponse.body?.getReader();
       const decoder = new TextDecoder();
-      const encoder = new TextEncoder();
 
       if (!reader) {
-        controller.close();
+        sendError(controller, '无法读取AI响应');
+        try { controller.close(); } catch { /* ignore */ }
         return;
       }
 
       let sseBuffer = '';
-      let textBuffer = ''; // 累积的纯文本（用于 <<DATA>> 解析）
+      // 用于 <<DATA>> 标记检测的文本缓冲区（只保留未确认部分）
+      let pendingText = '';
       let hasError = false;
+      let hasSentAnyData = false;
+
+      // <<DATA>> 标记正则
+      const dataStartRegex = /<<\s*DATA\s*:\s*type\s*=\s*(\w+)\s*>>/i;
+      const dataEndRegex = /<<\s*END\s*>>/i;
+
+      /**
+       * 处理累积文本：增量检测 <<DATA>> 标记，确认安全的文本立即转发
+       * 返回处理后的 pendingText（未确认部分）
+       */
+      function flushPendingText(): string {
+        const encoder = new TextEncoder();
+        let searchStart = 0;
+
+        while (searchStart < pendingText.length) {
+          const startMatch = pendingText.substring(searchStart).match(dataStartRegex);
+
+          if (!startMatch) {
+            // 没有找到 <<DATA>> 标记
+            // 检查尾部是否有可能是未完成的 <<DATA>> 前缀
+            const lastLt = pendingText.lastIndexOf('<<', searchStart);
+            if (lastLt > searchStart && lastLt > pendingText.length - 30) {
+              // 可能是未完成的标记，保留从 << 开始的部分
+              const safeText = pendingText.substring(searchStart, lastLt);
+              if (safeText) {
+                sendText(controller, safeText);
+                hasSentAnyData = true;
+              }
+              return pendingText.substring(lastLt);
+            }
+            // 没有部分标记，全部安全转发
+            const safeText = pendingText.substring(searchStart);
+            if (safeText) {
+              sendText(controller, safeText);
+              hasSentAnyData = true;
+            }
+            return '';
+          }
+
+          const dataType = startMatch[1];
+          const dataStartPos = searchStart + startMatch.index! + startMatch[0].length;
+
+          // 转发标记前的普通文本
+          if (startMatch.index! > 0) {
+            const textBefore = pendingText.substring(searchStart, searchStart + startMatch.index!);
+            if (textBefore) {
+              sendText(controller, textBefore);
+              hasSentAnyData = true;
+            }
+          }
+
+          // 查找 <<END>>
+          const endMatch = pendingText.substring(dataStartPos).match(dataEndRegex);
+
+          if (!endMatch) {
+            // <<END>> 还没到，保留从 <<DATA>> 开始的部分
+            return pendingText.substring(searchStart + startMatch.index!);
+          }
+
+          // 提取结构化数据
+          const jsonStr = pendingText.substring(dataStartPos, dataStartPos + endMatch.index!);
+          const afterEndPos = dataStartPos + endMatch.index! + endMatch[0].length;
+
+          try {
+            const jsonData = JSON.parse(jsonStr);
+            // 通过 SSE 结构化数据事件推送给前端
+            controller.enqueue(encoder.encode(`event: structured_data\ndata: ${JSON.stringify({ type: dataType, data: jsonData })}\n\n`));
+            hasSentAnyData = true;
+
+            // 异步保存到 Supabase
+            if (userId) {
+              saveStructuredData(botType, userId, dataType, jsonData).catch(err =>
+                console.error('Background save error:', err)
+              );
+            }
+          } catch (parseErr) {
+            console.error('结构化数据JSON解析失败:', parseErr);
+            // 解析失败，原样作为文本转发
+            sendText(controller, `<<DATA:type=${dataType}>>${jsonStr}<<END>>`);
+            hasSentAnyData = true;
+          }
+
+          searchStart = afterEndPos;
+        }
+
+        return '';
+      }
 
       try {
         while (true) {
@@ -334,9 +446,10 @@ export function createWorkflowSSEStream(params: {
                   break;
                 }
 
-                // 提取文本内容
+                // 提取文本内容，立即追加到 pendingText 并尝试刷新
                 if (parsed.type === 'answer' && parsed.content?.answer) {
-                  textBuffer += parsed.content.answer;
+                  pendingText += parsed.content.answer;
+                  pendingText = flushPendingText();
                 } else if (parsed.type === 'error') {
                   console.log('Workflow error event:', parsed);
                   hasError = true;
@@ -353,77 +466,31 @@ export function createWorkflowSSEStream(params: {
           if (hasError) break;
         }
 
+        // 流结束，刷新剩余 pendingText
         if (hasError) {
-          controller.enqueue(encoder.encode(fallbackText));
-        } else {
-          // 处理累积的文本缓冲，解析 <<DATA>> 标记
-          const dataStartRegex = /<<\s*DATA\s*:\s*type\s*=\s*(\w+)\s*>>/i;
-          const dataEndRegex = /<<\s*END\s*>>/i;
-          let searchStart = 0;
-
-          while (searchStart < textBuffer.length) {
-            const startMatch = textBuffer.substring(searchStart).match(dataStartRegex);
-
-            if (!startMatch) {
-              // 没有找到 <<DATA>> 标记，全部作为普通文本输出
-              const textToForward = textBuffer.substring(searchStart);
-              if (textToForward) {
-                controller.enqueue(encoder.encode(textToForward));
-              }
-              break;
-            }
-
-            const dataType = startMatch[1];
-            const dataStartPos = searchStart + startMatch.index! + startMatch[0].length;
-
-            // 转发标记前的普通文本
-            if (startMatch.index! > 0) {
-              const textBefore = textBuffer.substring(searchStart, searchStart + startMatch.index!);
-              if (textBefore) {
-                controller.enqueue(encoder.encode(textBefore));
-              }
-            }
-
-            // 查找 <<END>>
-            const endMatch = textBuffer.substring(dataStartPos).match(dataEndRegex);
-
-            if (!endMatch) {
-              // <<END>> 没找到，转发 <<DATA>> 标记后的内容作为普通文本
-              const remaining = textBuffer.substring(searchStart + startMatch.index!);
-              if (remaining) {
-                controller.enqueue(encoder.encode(remaining));
-              }
-              break;
-            }
-
-            // 提取结构化数据
-            const jsonStr = textBuffer.substring(dataStartPos, dataStartPos + endMatch.index!);
-            const afterEndPos = dataStartPos + endMatch.index! + endMatch[0].length;
-
-            try {
-              const jsonData = JSON.parse(jsonStr);
-
-              // 通过特殊 SSE 事件推送给前端
-              const structuredEvent = `event: structured_data\ndata: ${JSON.stringify({ type: dataType, data: jsonData })}\n\n`;
-              controller.enqueue(encoder.encode(structuredEvent));
-
-              // 异步保存到 Supabase
-              if (userId) {
-                saveStructuredData(botType, userId, dataType, jsonData).catch(err =>
-                  console.error('Background save error:', err)
-                );
-              }
-            } catch (parseErr) {
-              console.error('结构化数据JSON解析失败:', parseErr);
-              controller.enqueue(encoder.encode(`<<DATA:type=${dataType}>>${jsonStr}<<END>>`));
-            }
-
-            searchStart = afterEndPos;
+          if (!hasSentAnyData) {
+            // 用 fallback 文本替代
+            sendText(controller, fallbackText);
+          } else {
+            sendError(controller, 'AI生成过程中出现错误');
           }
+        } else {
+          // 最后一次刷新
+          pendingText = flushPendingText();
+          // 刷新后可能还有残余文本（尾部不完整的 <<DATA>> 标记）
+          if (pendingText) {
+            sendText(controller, pendingText);
+          }
+          sendDone(controller);
         }
       } catch (streamErr: unknown) {
         const errMsg = streamErr instanceof Error ? streamErr.message : String(streamErr);
         console.log('Workflow stream unexpected error:', errMsg);
+        if (!hasSentAnyData) {
+          sendText(controller, fallbackText);
+        } else {
+          sendError(controller, 'AI生成过程中出现异常');
+        }
       } finally {
         try { reader.releaseLock(); } catch { /* ignore */ }
         try { controller.close(); } catch { /* ignore */ }
@@ -471,10 +538,14 @@ export async function callCozeStreamApi(params: {
 }
 
 /**
- * 5. Coze SSE 流解析 + 结构化数据提取
+ * 5. Coze SSE 流解析 + 结构化数据提取（增量转发版）
  * 边读边转发，解析 <<DATA:type=xxx>>...<<END>> 标记
  * 
- * 返回一个 ReadableStream，可直接作为 Response body
+ * 统一SSE输出格式（与 createWorkflowSSEStream 一致）：
+ * - 文本: data: {"type":"text","content":"..."}\n\n
+ * - 结构化: event: structured_data\ndata: {"type":"xxx","data":{...}}\n\n
+ * - 错误: data: {"type":"error","message":"..."}\n\n
+ * - 完成: data: {"type":"done"}\n\n
  */
 export function createCozeSSEStream(params: {
   cozeResponse: Response;
@@ -484,6 +555,17 @@ export function createCozeSSEStream(params: {
 }): ReadableStream {
   const { cozeResponse, userId, botType, fallbackText } = params;
 
+  // 发送SSE文本事件
+  function sendText(ctrl: { enqueue: (d: Uint8Array) => void }, text: string) {
+    const enc = new TextEncoder();
+    ctrl.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`));
+  }
+
+  function sendDone(ctrl: { enqueue: (d: Uint8Array) => void }) {
+    const enc = new TextEncoder();
+    ctrl.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+  }
+
   return new ReadableStream({
     async start(controller) {
       const reader = cozeResponse.body?.getReader();
@@ -491,13 +573,15 @@ export function createCozeSSEStream(params: {
       const encoder = new TextEncoder();
 
       if (!reader) {
-        controller.close();
+        sendText(controller, fallbackText);
+        try { controller.close(); } catch { /* ignore */ }
         return;
       }
 
       // SSE 解析状态
       let buffer = '';
       let isFirstChunk = true;
+      let hasSentAnyData = false;
 
       // 结构化数据标记的正则（容错：允许多余空格、大小写变化）
       const dataStartRegex = /<<\s*DATA\s*:\s*type\s*=\s*(\w+)\s*>>/i;
@@ -519,7 +603,8 @@ export function createCozeSSEStream(params: {
                 const potentialError = JSON.parse(trimmed);
                 if (potentialError.code && potentialError.code !== 0) {
                   console.log('Coze API stream error:', potentialError.code, potentialError.msg);
-                  controller.enqueue(encoder.encode(fallbackText));
+                  sendText(controller, fallbackText);
+                  hasSentAnyData = true;
                   break;
                 }
               } catch {
@@ -543,7 +628,8 @@ export function createCozeSSEStream(params: {
                 // 可能是未完成的标记，保留
                 const textToForward = buffer.substring(searchStart, lastLt);
                 if (textToForward) {
-                  controller.enqueue(encoder.encode(textToForward));
+                  sendText(controller, textToForward);
+                  hasSentAnyData = true;
                 }
                 buffer = buffer.substring(lastLt);
                 break;
@@ -551,7 +637,8 @@ export function createCozeSSEStream(params: {
               // 没有部分标记，全部转发
               const textToForward = buffer.substring(searchStart);
               if (textToForward) {
-                controller.enqueue(encoder.encode(textToForward));
+                sendText(controller, textToForward);
+                hasSentAnyData = true;
               }
               buffer = '';
               break;
@@ -564,7 +651,8 @@ export function createCozeSSEStream(params: {
             if (startMatch.index! > 0) {
               const textBefore = buffer.substring(searchStart, searchStart + startMatch.index!);
               if (textBefore) {
-                controller.enqueue(encoder.encode(textBefore));
+                sendText(controller, textBefore);
+                hasSentAnyData = true;
               }
             }
 
@@ -587,6 +675,7 @@ export function createCozeSSEStream(params: {
               // 通过特殊 SSE 事件推送给前端
               const structuredEvent = `event: structured_data\ndata: ${JSON.stringify({ type: dataType, data: jsonData })}\n\n`;
               controller.enqueue(encoder.encode(structuredEvent));
+              hasSentAnyData = true;
 
               // 异步保存到 Supabase（不 await，避免阻塞流）
               if (userId) {
@@ -596,8 +685,9 @@ export function createCozeSSEStream(params: {
               }
             } catch (parseErr) {
               console.error('结构化数据JSON解析失败:', parseErr);
-              // 解析失败，原样转发
-              controller.enqueue(encoder.encode(`<<DATA:type=${dataType}>>${jsonStr}<<END>>`));
+              // 解析失败，原样作为文本转发
+              sendText(controller, `<<DATA:type=${dataType}>>${jsonStr}<<END>>`);
+              hasSentAnyData = true;
             }
 
             // 继续处理 <<END>> 之后的内容
@@ -607,7 +697,16 @@ export function createCozeSSEStream(params: {
 
         // 处理 buffer 中剩余的内容
         if (buffer) {
-          controller.enqueue(encoder.encode(buffer));
+          sendText(controller, buffer);
+          hasSentAnyData = true;
+        }
+
+        sendDone(controller);
+      } catch (streamErr: unknown) {
+        const errMsg = streamErr instanceof Error ? streamErr.message : String(streamErr);
+        console.log('Coze stream unexpected error:', errMsg);
+        if (!hasSentAnyData) {
+          sendText(controller, fallbackText);
         }
       } finally {
         try { reader.releaseLock(); } catch { /* ignore */ }
@@ -619,20 +718,23 @@ export function createCozeSSEStream(params: {
 
 /**
  * 6. 流式返回纯文本（fallback 用，模拟打字效果）
+ * 使用统一SSE格式：data: {"type":"text","content":"..."}\n\n
  */
 export function createTextStream(text: string): ReadableStream {
   return new ReadableStream({
     async start(controller) {
+      const encoder = new TextEncoder();
       let index = 0;
       const chunkSize = 5;
 
       while (index < text.length) {
         const chunk = text.slice(index, index + chunkSize);
-        controller.enqueue(new TextEncoder().encode(chunk));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: chunk })}\n\n`));
         index += chunkSize;
         await new Promise(resolve => setTimeout(resolve, 30));
       }
 
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
       controller.close();
     },
   });

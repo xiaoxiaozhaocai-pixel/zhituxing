@@ -106,7 +106,7 @@ export default function CareerPlanningPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
-  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [message, setMessage] = useState<{type: 'success' | 'error' | 'info', text: string} | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [showGuideModal, setShowGuideModal] = useState(false);
@@ -220,47 +220,105 @@ export default function CareerPlanningPage() {
       });
 
       if (!response.ok) {
-        throw new Error('请求失败');
+        throw new Error(`请求失败 (${response.status})`);
       }
 
       const reader = response.body?.getReader();
       if (!reader) {
-        throw new Error('无法读取响应');
+        throw new Error('无法读取AI响应');
       }
 
       const decoder = new TextDecoder();
       let fullContent = '';
+      let sseBuffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) break;
+      // 超时计时器
+      const thinkingTimer = setTimeout(() => {
+        if (!fullContent) {
+          setMessage({ type: 'info', text: 'AI正在思考，请耐心等待...' });
+        }
+      }, 15000);
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+      const timeoutTimer = setTimeout(() => {
+        if (!fullContent) {
+          setMessage({ type: 'error', text: '请求超时，请重试' });
+          setGenerating(false);
+          reader.cancel().catch(() => {});
+        }
+      }, 30000);
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              
-              if (data.error) {
-                throw new Error(data.error);
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          sseBuffer += decoder.decode(value, { stream: true });
+
+          // 按 \n\n 分割SSE事件
+          const events = sseBuffer.split('\n\n');
+          sseBuffer = events.pop() ?? '';
+
+          for (const event of events) {
+            if (!event.trim()) continue;
+
+            let eventType = 'message';
+            let dataLine = '';
+
+            for (const line of event.split('\n')) {
+              if (line.startsWith('event:')) {
+                eventType = line.slice(6).trim();
+              } else if (line.startsWith('data:')) {
+                dataLine = line.slice(5).trim();
               }
-              
-              if (data.content) {
+            }
+
+            if (!dataLine) continue;
+
+            // 跳过结构化数据事件（后续可扩展）
+            if (eventType === 'structured_data') continue;
+
+            try {
+              const data = JSON.parse(dataLine);
+
+              if (data.type === 'text' && data.content) {
+                clearTimeout(thinkingTimer);
+                clearTimeout(timeoutTimer);
                 fullContent += data.content;
                 setGeneratedContent(fullContent);
-              }
-              
-              if (data.done) {
-                break;
+                setMessage(null);
+              } else if (data.type === 'done') {
+                clearTimeout(thinkingTimer);
+                clearTimeout(timeoutTimer);
+              } else if (data.type === 'error') {
+                clearTimeout(thinkingTimer);
+                clearTimeout(timeoutTimer);
+                throw new Error(data.message || 'AI生成出错');
               }
             } catch (e) {
-              // 忽略解析错误
+              if (e instanceof Error && e.message !== 'AI生成出错') {
+                // 兼容旧格式
+                const data = JSON.parse(dataLine);
+                if (data.content) {
+                  clearTimeout(thinkingTimer);
+                  clearTimeout(timeoutTimer);
+                  fullContent += data.content;
+                  setGeneratedContent(fullContent);
+                  setMessage(null);
+                }
+                if (data.error) {
+                  clearTimeout(thinkingTimer);
+                  clearTimeout(timeoutTimer);
+                  throw new Error(data.error);
+                }
+              } else {
+                throw e;
+              }
             }
           }
         }
+      } finally {
+        clearTimeout(thinkingTimer);
+        clearTimeout(timeoutTimer);
       }
 
       // 生成完成后，保存报告
@@ -495,10 +553,14 @@ export default function CareerPlanningPage() {
           <div className={`mb-6 px-4 py-3 rounded-lg flex items-center gap-2 ${
             message.type === 'success' 
               ? 'bg-green-50 text-green-700 border border-green-200' 
+              : message.type === 'info'
+              ? 'bg-blue-50 text-blue-700 border border-blue-200'
               : 'bg-red-50 text-red-700 border border-red-200'
           }`}>
             {message.type === 'success' ? (
               <CheckCircle className="w-5 h-5 text-green-500" />
+            ) : message.type === 'info' ? (
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
             ) : (
               <AlertCircle className="w-5 h-5 text-red-500" />
             )}
