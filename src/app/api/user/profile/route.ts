@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
     const profile = profileRows[0] as Record<string, unknown>;
 
     // 2. 用户技能列表（从 user_skills 表 + ability_background 解析）
-    let userSkills: Array<{ name: string; level: number; proficiency: string }> = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let userSkills: any[] = [];
     try {
       const skillRows = await execSql(
         `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = '${userId}'`
@@ -83,17 +84,28 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 从 skills 字段补充（skills 现在是 text[] 数组）
+    // 从 skills 字段补充（skills 现在是 jsonb，可能是对象数组或字符串数组）
     if (profile.skills) {
-      const skillsArray = Array.isArray(profile.skills)
-        ? profile.skills
-        : typeof profile.skills === 'string'
-          ? parseUserSkillsFromText(profile.skills as string).map((s: { name: string }) => s.name)
-          : [];
-      for (const skillName of skillsArray) {
-        const name = typeof skillName === 'string' ? skillName : String(skillName);
-        if (!userSkills.some((es) => es.name.toLowerCase() === name.toLowerCase())) {
-          userSkills.push({ name, level: 3, proficiency: '基础' });
+      const skillsData = profile.skills;
+      if (Array.isArray(skillsData) && skillsData.length > 0 && typeof skillsData[0] === 'object' && skillsData[0] !== null) {
+        // 新格式：对象数组 [{name, category, level, hotness, description}]
+        // 直接使用，不需要从 user_skills 合并
+        userSkills = skillsData as Array<Record<string, unknown>>;
+      } else {
+        // 旧格式：字符串数组 ["skill1", "skill2"]
+        let skillsArray: string[] = [];
+        if (Array.isArray(skillsData)) {
+          skillsArray = skillsData.map((s: unknown) =>
+            typeof s === 'object' && s !== null ? (s as Record<string, unknown>).name as string : String(s)
+          ).filter(Boolean);
+        } else if (typeof skillsData === 'string') {
+          skillsArray = parseUserSkillsFromText(skillsData).map((s: { name: string }) => s.name);
+        }
+        for (const skillName of skillsArray) {
+          const name = typeof skillName === 'string' ? skillName : String(skillName);
+          if (!userSkills.some((es) => es.name.toLowerCase() === name.toLowerCase())) {
+            userSkills.push({ name, level: 3, proficiency: '基础' });
+          }
         }
       }
     }
@@ -236,12 +248,20 @@ export async function POST(request: NextRequest) {
       ability_background,
     } = body;
 
-    // 将 skills 转换为数组（兼容字符串和数组格式）
-    let skillsArray: string[] | null = null;
-    if (Array.isArray(skills)) {
-      skillsArray = skills;
-    } else if (typeof skills === 'string' && skills.length > 0) {
-      skillsArray = skills.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+    // 将 skills 转换为 jsonb 格式
+    // 支持：数组字符串 ["a","b"]、逗号分隔字符串 "a,b"、对象数组 [{name,category,level}]、纯数组 ["a","b"]
+    let skillsValue: unknown = null;
+    if (skills !== null && skills !== undefined) {
+      if (Array.isArray(skills)) {
+        skillsValue = skills;
+      } else if (typeof skills === 'string') {
+        const trimmed = skills.trim();
+        if (trimmed.startsWith('[')) {
+          try { skillsValue = JSON.parse(trimmed); } catch { skillsValue = trimmed.split(',').map((s: string) => s.trim()).filter(Boolean); }
+        } else if (trimmed.length > 0) {
+          skillsValue = trimmed.split(',').map((s: string) => s.trim()).filter(Boolean);
+        }
+      }
     }
 
     // 检查是否已有记录
@@ -263,7 +283,7 @@ export async function POST(request: NextRequest) {
           city,
           job_intention,
           target_city,
-          skills: skillsArray,
+          skills: skillsValue,
           internship_experience,
           project_experience,
           awards,
@@ -285,7 +305,7 @@ export async function POST(request: NextRequest) {
           city,
           job_intention,
           target_city,
-          skills: skillsArray,
+          skills: skillsValue,
           internship_experience,
           project_experience,
           awards,

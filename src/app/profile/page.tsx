@@ -29,8 +29,13 @@ import {
   AlertCircle,
   Pencil,
   Check,
-  Bookmark
+  Bookmark,
+  Target,
+  Briefcase,
+  Brain,
+  ArrowRight,
 } from 'lucide-react';
+import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 
 // 侧边栏菜单项
 const menuItems = [
@@ -44,25 +49,73 @@ const menuItems = [
   { id: 'logout', label: '退出登录', icon: LogOut, color: '#EF4444', isLogout: true },
 ];
 
-// MBTI类型列表
-const mbtiTypes = [
-  { value: 'INTJ', label: 'INTJ - 策略家' }, { value: 'INTP', label: 'INTP - 逻辑学家' },
-  { value: 'ENTJ', label: 'ENTJ - 指挥官' }, { value: 'ENTP', label: 'ENTP - 辩论家' },
-  { value: 'INFJ', label: 'INFJ - 提倡者' }, { value: 'INFP', label: 'INFP - 调停者' },
-  { value: 'ENFJ', label: 'ENFJ - 主人公' }, { value: 'ENFP', label: 'ENFP - 竞选者' },
-  { value: 'ISTJ', label: 'ISTJ - 物流师' }, { value: 'ISFJ', label: 'ISFJ - 守卫者' },
-  { value: 'ESTJ', label: 'ESTJ - 总经理' }, { value: 'ESFJ', label: 'ESFJ - 执政官' },
-  { value: 'ISTP', label: 'ISTP - 鉴赏家' }, { value: 'ISFP', label: 'ISFP - 探险家' },
-  { value: 'ESTP', label: 'ESTP - 企业家' }, { value: 'ESFP', label: 'ESFP - 表演者' },
-];
+// 熟练度色条组件
+function ProficiencyBar({ level }: { level: string }) {
+  const config = PROFICIENCY_CONFIG[level as keyof typeof PROFICIENCY_CONFIG] || PROFICIENCY_CONFIG['了解'];
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-300" style={{ width: config.width, backgroundColor: config.color }} />
+      </div>
+      <span className="text-xs font-medium" style={{ color: config.color }}>{level}</span>
+    </div>
+  );
+}
+
+// 技能分类展示组件
+function SkillCategorySection({
+  title,
+  icon: Icon,
+  skills,
+  accentColor,
+  onEdit,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  skills: SkillForSave[];
+  accentColor: string;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span style={{ color: accentColor }}><Icon className="w-4 h-4" /></span>
+          <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
+          <span className="text-xs text-gray-400">{skills.length} 项</span>
+        </div>
+        <button
+          onClick={onEdit}
+          className="text-xs text-[#165DFF] hover:text-[#165DFF]/80 flex items-center gap-0.5"
+        >
+          <Pencil className="w-3 h-3" />
+          编辑
+        </button>
+      </div>
+      {skills.length > 0 ? (
+        <div className="space-y-2">
+          {skills.map((skill) => (
+            <div key={skill.name} className="flex items-center justify-between py-1.5 px-3 bg-gray-50/80 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-800">{skill.name}</span>
+                {skill.is_hot && <span className="text-xs">🔥</span>}
+              </div>
+              <ProficiencyBar level={skill.level} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-gray-400 py-2">暂无技能，点击编辑添加</p>
+      )}
+    </div>
+  );
+}
 
 // 个人信息面板组件
 function ProfileInfoPanel({ userId }: { userId: string }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
@@ -73,7 +126,8 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     try {
       const res = await fetch('/api/user/profile', { headers: { 'x-user-id': userId } });
       const data = await res.json();
-      if (data.profile) setProfile(data.profile);
+      if (data.data?.profile) setProfile(data.data.profile);
+      else if (data.profile) setProfile(data.profile);
     } catch (e) {
       console.error('获取个人信息失败:', e);
     } finally {
@@ -81,58 +135,14 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     }
   };
 
-  const startEdit = (field: string, value: any) => {
-    setEditingField(field);
-    setEditValue(Array.isArray(value) ? value.join(', ') : String(value || ''));
-  };
-
-  const cancelEdit = () => {
-    setEditingField(null);
-    setEditValue('');
-  };
-
-  const saveEdit = async (field: string) => {
-    setSaving(true);
-    try {
-      let value: any = editValue;
-      if (field === 'skills') {
-        value = editValue.split(',').map((s: string) => s.trim()).filter(Boolean);
-      }
-      const res = await fetch('/api/user/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
-        body: JSON.stringify({ [field]: value }),
-      });
-      if (res.ok) {
-        setProfile((prev: Record<string, any>) => ({ ...prev, [field]: value }));
-      }
-    } catch (e) {
-      console.error('保存失败:', e);
-    } finally {
-      setSaving(false);
-      setEditingField(null);
-      setEditValue('');
-    }
-  };
-
-  const removeSkill = async (skill: string) => {
-    const currentSkills: string[] = Array.isArray(profile.skills) ? profile.skills : [];
-    const newSkills = currentSkills.filter(s => s !== skill);
-    setProfile((prev: Record<string, any>) => ({ ...prev, skills: newSkills }));
-    try {
-      await fetch('/api/user/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
-        body: JSON.stringify({ skills: newSkills }),
-      });
-    } catch (e) {
-      console.error('删除技能失败:', e);
-    }
-  };
-
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" /></div>;
   }
+
+  // 解析技能数据
+  const skillsData = Array.isArray(profile.skills) ? profile.skills : [];
+  const grouped = groupSkillsByCategory(skillsData);
+  const hasSkills = grouped.professional.length + grouped.office.length + grouped.soft.length > 0;
 
   const fields = [
     { key: 'major', label: '专业', icon: Bookmark },
@@ -142,147 +152,102 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     { key: 'personality_type', label: '人格类型', icon: User },
   ];
 
+  const hasBasicInfo = fields.some(f => profile[f.key]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">个人信息</h2>
         <Link href="/profile/info">
-          <Button variant="outline" size="sm">详细编辑</Button>
+          <Button variant="outline" size="sm">
+            <Pencil className="w-3 h-3 mr-1" />
+            编辑
+          </Button>
         </Link>
       </div>
 
-      {/* 基础信息卡片 */}
+      {/* 基本信息卡片 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <User className="w-5 h-5 text-[#165DFF]" />
             基本信息
           </CardTitle>
-          <CardDescription>点击编辑按钮修改个人信息，修改后自动保存</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {fields.map(({ key, label, icon: Icon }) => {
-            const value = profile[key];
-            const isEditing = editingField === key;
-            const displayValue = value || '未填写';
-
-            // 人格类型特殊处理 - 下拉选择
-            if (key === 'personality_type' && isEditing) {
-              return (
-                <div key={key} className="flex items-center gap-4 py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                    <Icon className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">{label}</span>
+        <CardContent>
+          {hasBasicInfo ? (
+            <div className="space-y-3">
+              {fields.map(({ key, label, icon: Icon }) => {
+                const value = profile[key];
+                if (!value) return null;
+                return (
+                  <div key={key} className="flex items-center gap-3 py-1.5">
+                    <Icon className="w-4 h-4 text-gray-400 shrink-0" />
+                    <span className="text-sm text-gray-500 w-20 shrink-0">{label}</span>
+                    <span className="text-sm font-medium text-gray-900">{value}</span>
                   </div>
-                  <select
-                    value={editValue}
-                    onChange={(e) => setEditValue(e.target.value)}
-                    className="flex-1 px-3 py-1.5 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                  >
-                    <option value="">请选择</option>
-                    {mbtiTypes.map(t => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                  <div className="flex gap-1">
-                    <button onClick={() => saveEdit(key)} disabled={saving} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg">
-                      <Check className="w-4 h-4" />
-                    </button>
-                    <button onClick={cancelEdit} className="p-1.5 text-gray-400 hover:bg-gray-50 rounded-lg">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div key={key} className="flex items-center gap-4 py-2 border-b border-gray-50 last:border-0">
-                <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                  <Icon className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
-                </div>
-                {isEditing ? (
-                  <>
-                    <input
-                      type="text"
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      className="flex-1 px-3 py-1.5 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                      autoFocus
-                      onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(key); if (e.key === 'Escape') cancelEdit(); }}
-                    />
-                    <div className="flex gap-1">
-                      <button onClick={() => saveEdit(key)} disabled={saving} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg">
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button onClick={cancelEdit} className="p-1.5 text-gray-400 hover:bg-gray-50 rounded-lg">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <span className={`flex-1 text-sm ${value ? 'text-gray-900' : 'text-gray-400'}`}>{displayValue}</span>
-                    <button onClick={() => startEdit(key, value)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                  </>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-gray-400 text-sm mb-3">尚未填写基本信息</p>
+              <Link href="/profile/info">
+                <Button size="sm" className="bg-[#165DFF] hover:bg-[#165DFF]/90">
+                  去填写
+                </Button>
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* 技能标签卡片 */}
+      {/* 技能画像卡片 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-[#722ED1]" />
-            技能标签
+            <Sparkles className="w-5 h-5 text-purple-600" />
+            技能画像
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {editingField === 'skills' ? (
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                placeholder="输入技能，用逗号分隔"
-                className="w-full px-3 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                autoFocus
-                onKeyDown={(e) => { if (e.key === 'Enter') saveEdit('skills'); if (e.key === 'Escape') cancelEdit(); }}
+        <CardContent className="space-y-5">
+          {hasSkills ? (
+            <>
+              <SkillCategorySection
+                title="专业核心技能"
+                icon={Target}
+                skills={grouped.professional}
+                accentColor="#3B82F6"
+                onEdit={() => router.push('/profile/info?from=/profile&step=3')}
               />
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => saveEdit('skills')} disabled={saving}>
-                  {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Check className="w-3 h-3 mr-1" />}
-                  保存
-                </Button>
-                <Button size="sm" variant="outline" onClick={cancelEdit}>取消</Button>
-              </div>
-            </div>
+              <SkillCategorySection
+                title="通用办公技能"
+                icon={Briefcase}
+                skills={grouped.office}
+                accentColor="#10B981"
+                onEdit={() => router.push('/profile/info?from=/profile&step=3')}
+              />
+              <SkillCategorySection
+                title="软技能"
+                icon={Brain}
+                skills={grouped.soft}
+                accentColor="#8B5CF6"
+                onEdit={() => router.push('/profile/info?from=/profile&step=3')}
+              />
+            </>
           ) : (
-            <div>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {Array.isArray(profile.skills) && profile.skills.length > 0 ? (
-                  profile.skills.map((skill: string, i: number) => (
-                    <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                      {skill}
-                      <button onClick={() => removeSkill(skill)} className="text-blue-400 hover:text-red-500 ml-0.5">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-gray-400 text-sm">暂未添加技能标签</span>
-                )}
+            <div className="text-center py-8">
+              <div className="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-3">
+                <Sparkles className="w-7 h-7 text-purple-400" />
               </div>
-              <Button size="sm" variant="outline" onClick={() => startEdit('skills', profile.skills)}>
-                <Pencil className="w-3 h-3 mr-1" />
-                {Array.isArray(profile.skills) && profile.skills.length > 0 ? '编辑技能' : '添加技能'}
-              </Button>
+              <p className="text-gray-500 text-sm mb-1">完善你的技能画像</p>
+              <p className="text-gray-400 text-xs mb-4">获取精准职业规划和岗位匹配</p>
+              <Link href="/profile/info?from=/profile">
+                <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-purple-600 hover:from-[#165DFF]/90 hover:to-purple-600/90 text-white shadow-md shadow-purple-500/20">
+                  AI智能推荐技能
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
           )}
         </CardContent>

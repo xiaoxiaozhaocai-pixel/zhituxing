@@ -99,7 +99,16 @@ export async function getUserProfileContext(userId: string): Promise<string> {
     if (profile.graduation_year) contextParts.push(`毕业年份：${profile.graduation_year}年`);
     if (profile.city) contextParts.push(`意向工作城市：${profile.city}`);
     if (profile.job_intention) contextParts.push(`求职意向：${profile.job_intention}`);
-    if (profile.skills) contextParts.push(`已掌握技能：${profile.skills}`);
+    if (profile.skills) {
+      // skills 是 jsonb，可能是字符串数组或对象数组
+      const skillsData = profile.skills;
+      if (Array.isArray(skillsData)) {
+        const skillNames = skillsData.map((s: unknown) =>
+          typeof s === 'object' && s !== null ? (s as Record<string, unknown>).name : s
+        ).filter(Boolean);
+        if (skillNames.length > 0) contextParts.push(`已掌握技能：${skillNames.join('、')}`);
+      }
+    }
 
     // 解析 ability_background 结构化数据
     if (profile.ability_background) {
@@ -202,6 +211,7 @@ export function getWorkflowConfig(botType?: string): {
     interview:  { urlKey: 'COZE_INTERVIEW_API_URL',   projectKey: 'COZE_INTERVIEW_PROJECT_ID',  tokenKey: 'COZE_INTERVIEW_API_TOKEN' },
     jobs:       { urlKey: 'COZE_JOBS_API_URL',        projectKey: 'COZE_JOBS_PROJECT_ID',       tokenKey: 'COZE_JOBS_API_TOKEN' },
     decision:   { urlKey: 'COZE_DECISION_API_URL',    projectKey: 'COZE_DECISION_PROJECT_ID',   tokenKey: 'COZE_DECISION_API_TOKEN' },
+    skill_portrait: { urlKey: 'COZE_SKILL_PORTRAIT_API_URL', projectKey: 'COZE_SKILL_PORTRAIT_PROJECT_ID', tokenKey: 'COZE_SKILL_PORTRAIT_API_TOKEN' },
   };
 
   const config = configMap[botType || ''];
