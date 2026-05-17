@@ -523,7 +523,7 @@ export default function CareerPlanningPage() {
                   </>
                 )}
               </div>
-              <Link href="/profile/info">
+              <Link href="/profile/info?from=/career-planning">
                 <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white">
                   <Edit3 className="w-4 h-4 mr-1" />
                   {hasProfile ? '编辑信息' : '去完善'}

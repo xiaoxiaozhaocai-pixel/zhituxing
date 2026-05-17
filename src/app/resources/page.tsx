@@ -139,7 +139,7 @@ export default function ResourcesPage() {
           <span className="text-purple-700">
             完善信息，精准度提升100%
           </span>
-          <Link href="/profile/info" className="text-[#165DFF] underline hover:text-[#165DFF]/80 ml-2">
+          <Link href="/profile/info?from=/resources" className="text-[#165DFF] underline hover:text-[#165DFF]/80 ml-2">
             完善信息
           </Link>
           <span className="text-gray-300">|</span>

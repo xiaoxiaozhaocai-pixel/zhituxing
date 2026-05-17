@@ -313,7 +313,7 @@ export default function JobsPage() {
             生成规划 →
           </Link>
           <span className="text-purple-200">|</span>
-          <Link href="/profile/info" className="underline hover:text-purple-200 font-medium flex items-center gap-1">
+          <Link href="/profile/info?from=/jobs" className="underline hover:text-purple-200 font-medium flex items-center gap-1">
             完善信息 →
           </Link>
         </div>

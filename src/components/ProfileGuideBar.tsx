@@ -55,7 +55,7 @@ export default function ProfileGuideBar({ hasProfile }: ProfileGuideBarProps) {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/profile/info"
+            href="/profile/info?from=/match"
             className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-full hover:from-purple-700 hover:to-indigo-700 transition-all shadow-sm"
           >
             立即完善

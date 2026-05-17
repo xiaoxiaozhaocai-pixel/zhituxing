@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -453,6 +453,8 @@ interface AbilityBackground {
 
 export default function ProfileInfoPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromPage = searchParams.get('from') || '';
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
 
@@ -751,7 +753,11 @@ export default function ProfileInfoPage() {
       const data = await response.json();
 
       if (data.code === 200) {
-        showToast('个人信息保存成功', 'success', 3000);
+        showToast('个人信息保存成功', 'success', 2000);
+        // 保存成功后跳回来源页面
+        setTimeout(() => {
+          router.push(fromPage || '/profile');
+        }, 800);
       } else {
         showToast(data.message || '保存失败，请稍后重试', 'error', 5000);
       }
@@ -1217,7 +1223,7 @@ export default function ProfileInfoPage() {
               ) : (
                 <Save className="w-4 h-4 mr-2" />
               )}
-              保存
+              {loading ? '保存中...' : '保存'}
             </Button>
           </div>
         </div>

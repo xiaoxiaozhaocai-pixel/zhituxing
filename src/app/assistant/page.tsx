@@ -781,7 +781,7 @@ export default function AssistantPage() {
                   <span>完善个人信息，获得更精准的AI建议</span>
                 </div>
                 <Link 
-                  href="/profile/info"
+                  href="/profile/info?from=/assistant"
                   className="flex items-center gap-1 text-[#165DFF] hover:text-[#165DFF]/80 font-medium"
                 >
                   去填写
