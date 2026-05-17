@@ -736,11 +736,11 @@ export default function ProfileInfoPage() {
           major: form.major || null,
           grade: form.grade || null,
           graduation_year: form.graduation_year ? parseInt(form.graduation_year) : null,
-          city: form.city || null,
+          target_city: form.city || null,
           job_intention: form.job_intention || null,
           skills: abilityBackground.professional_skills.length > 0
-            ? abilityBackground.professional_skills.join(',')
-            : (form.skills.length > 0 ? form.skills.join(',') : null),
+            ? abilityBackground.professional_skills
+            : (form.skills.length > 0 ? form.skills : null),
           internship_experience: form.internship_experience || null,
           project_experience: form.project_experience || null,
           awards: form.awards || null,

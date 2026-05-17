@@ -83,12 +83,17 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 从 skills 文本字段补充
+    // 从 skills 字段补充（skills 现在是 text[] 数组）
     if (profile.skills) {
-      const textSkills = parseUserSkillsFromText(profile.skills as string);
-      for (const s of textSkills) {
-        if (!userSkills.some((es) => es.name.toLowerCase() === s.name.toLowerCase())) {
-          userSkills.push({ name: s.name, level: 3, proficiency: '基础' });
+      const skillsArray = Array.isArray(profile.skills)
+        ? profile.skills
+        : typeof profile.skills === 'string'
+          ? parseUserSkillsFromText(profile.skills as string).map((s: { name: string }) => s.name)
+          : [];
+      for (const skillName of skillsArray) {
+        const name = typeof skillName === 'string' ? skillName : String(skillName);
+        if (!userSkills.some((es) => es.name.toLowerCase() === name.toLowerCase())) {
+          userSkills.push({ name, level: 3, proficiency: '基础' });
         }
       }
     }
@@ -231,6 +236,14 @@ export async function POST(request: NextRequest) {
       ability_background,
     } = body;
 
+    // 将 skills 转换为数组（兼容字符串和数组格式）
+    let skillsArray: string[] | null = null;
+    if (Array.isArray(skills)) {
+      skillsArray = skills;
+    } else if (typeof skills === 'string' && skills.length > 0) {
+      skillsArray = skills.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+    }
+
     // 检查是否已有记录
     const { data: existing } = await supabase
       .from('user_profiles')
@@ -250,7 +263,7 @@ export async function POST(request: NextRequest) {
           city,
           job_intention,
           target_city,
-          skills,
+          skills: skillsArray,
           internship_experience,
           project_experience,
           awards,
@@ -272,7 +285,7 @@ export async function POST(request: NextRequest) {
           city,
           job_intention,
           target_city,
-          skills,
+          skills: skillsArray,
           internship_experience,
           project_experience,
           awards,
@@ -283,8 +296,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (result.error) {
-      console.error('保存失败:', result.error);
-      return NextResponse.json({ code: 500, message: '保存失败' }, { status: 500 });
+      console.error('保存失败:', result.error.message, result.error.details, result.error.hint);
+      return NextResponse.json({ code: 500, message: `保存失败: ${result.error.message}` }, { status: 500 });
     }
 
     return NextResponse.json({
