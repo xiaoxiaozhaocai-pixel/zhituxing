@@ -247,7 +247,7 @@ export async function callWorkflowStreamApi(params: {
   const timeout = setTimeout(() => controller.abort(), 120000); // 2分钟超时
 
   try {
-    return await fetch(config.apiUrl, {
+    const response = await fetch(config.apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${config.token}`,
@@ -273,6 +273,31 @@ export async function callWorkflowStreamApi(params: {
       }),
       signal: controller.signal,
     });
+
+    // 检测非 SSE 响应（如认证失败返回 JSON 错误）
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('text/event-stream') && response.ok) {
+      // HTTP 200 但不是 SSE 格式 → 读取错误信息
+      const body = await response.text();
+      let errorMsg = `AI服务返回了非预期的响应格式`;
+      try {
+        const errorJson = JSON.parse(body);
+        errorMsg = errorJson.msg || errorJson.message || errorJson.error || errorMsg;
+      } catch { /* use default */ }
+      throw new Error(errorMsg);
+    }
+
+    if (!response.ok) {
+      let errorMsg = `AI服务请求失败(HTTP ${response.status})`;
+      try {
+        const errorBody = await response.text();
+        const errorJson = JSON.parse(errorBody);
+        errorMsg = errorJson.msg || errorJson.message || errorJson.error || errorMsg;
+      } catch { /* use default */ }
+      throw new Error(errorMsg);
+    }
+
+    return response;
   } finally {
     clearTimeout(timeout);
   }

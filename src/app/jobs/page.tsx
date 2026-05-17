@@ -8,7 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload, Send, X, MessageCircle, User, ArrowRight } from 'lucide-react';
+import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload, Send, X, MessageCircle, User, ArrowRight, RefreshCw } from 'lucide-react';
+import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 // 行业列表（与数据库值对应）
 const industries = [
@@ -78,7 +79,10 @@ export default function JobsPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [typingSeconds, setTypingSeconds] = useState(0);
+  const [chatError, setChatError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 获取岗位数据
   const fetchJobs = useCallback(async () => {
@@ -168,13 +172,26 @@ export default function JobsPage() {
     setIsTyping(true);
 
     try {
+      setChatError(null);
+      setTypingSeconds(0);
+      typingTimerRef.current = setInterval(() => {
+        setTypingSeconds(prev => prev + 1);
+      }, 1000);
+
       const response = await fetch('/api/partner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage.content })
       });
 
-      if (!response.ok) throw new Error('请求失败');
+      if (!response.ok) {
+        let errorMsg = `请求失败(HTTP ${response.status})`;
+        try {
+          const errData = await response.json();
+          errorMsg = errData.message || errData.msg || errorMsg;
+        } catch { /* ignore */ }
+        throw new Error(errorMsg);
+      }
 
       const reader = response.body?.getReader();
       if (!reader) throw new Error('无法读取响应');
@@ -182,6 +199,7 @@ export default function JobsPage() {
       const decoder = new TextDecoder();
       let fullContent = '';
       let done = false;
+      let hasReceivedData = false;
 
       // 添加一个空的assistant消息用于流式更新
       setMessages(prev => [...prev, {
@@ -189,6 +207,14 @@ export default function JobsPage() {
         content: '',
         timestamp: new Date()
       }]);
+
+      // 60秒超时
+      const streamTimeout = setTimeout(() => {
+        if (!hasReceivedData) {
+          done = true;
+          reader.cancel().catch(() => {});
+        }
+      }, 60000);
 
       while (!done) {
         const { done: streamDone, value } = await reader.read();
@@ -202,14 +228,22 @@ export default function JobsPage() {
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
+                if (data.type === 'error') {
+                  fullContent = '';
+                  setChatError(data.message || 'AI服务出现错误');
+                  done = true;
+                  break;
+                }
                 if (data.error) {
-                  fullContent = `抱歉，服务暂时不可用: ${data.error}`;
+                  fullContent = '';
+                  setChatError(`服务暂时不可用: ${data.error}`);
                   done = true;
                   break;
                 }
                 // 从 data.content.content.answer 或 data.content.answer 获取文本
                 const answer = data.content?.content?.answer || data.content?.answer;
                 if (answer && typeof answer === 'string') {
+                  hasReceivedData = true;
                   fullContent += answer;
                   // 实时更新最后一条消息
                   setMessages(prev => {
@@ -221,25 +255,43 @@ export default function JobsPage() {
                     return updated;
                   });
                 }
-                if (data.done) {
+                if (data.done || data.type === 'done') {
                   done = true;
                 }
-              } catch (e) {
+              } catch {
                 // 忽略解析错误
               }
             }
           }
         }
       }
+
+      clearTimeout(streamTimeout);
+
+      // 如果没有收到任何数据
+      if (!hasReceivedData && !fullContent && !chatError) {
+        setChatError('AI未返回任何内容，请重试');
+        // 移除空的assistant消息
+        setMessages(prev => prev.slice(0, -1));
+      }
     } catch (error) {
-      console.error('职搭子对话失败:', error);
-      setMessages(prev => [...prev.slice(0, -1), {
-        role: 'assistant',
-        content: '抱歉，我遇到了一些问题，请稍后再试。',
-        timestamp: new Date()
-      }]);
+      const errMsg = error instanceof Error ? error.message : '未知错误';
+      console.error('职搭子对话失败:', errMsg);
+      setChatError(errMsg);
+      // 移除可能残留的空assistant消息
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.role === 'assistant' && !last.content) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
     } finally {
       setIsTyping(false);
+      if (typingTimerRef.current) {
+        clearInterval(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
     }
   };
 
@@ -560,15 +612,21 @@ export default function JobsPage() {
                   </div>
                 )}
                 <div 
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 whitespace-pre-wrap ${
+                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     msg.role === 'user' 
                       ? 'bg-[#165DFF] text-white rounded-tr-sm' 
                       : 'bg-gray-100 text-gray-800 rounded-tl-sm'
                   }`}
                 >
-                  {msg.content}
-                  {isTyping && msg.role === 'assistant' && index === messages.length - 1 && (
-                    <span className="inline-block ml-2 animate-pulse">...</span>
+                  {msg.role === 'user' ? (
+                    <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
+                  ) : (
+                    <AIResponseRenderer rawText={msg.content} role="assistant" streaming={isTyping && index === messages.length - 1 && !chatError} />
+                  )}
+                  {isTyping && msg.role === 'assistant' && index === messages.length - 1 && !chatError && (
+                    <span className="inline-block ml-2 animate-pulse text-gray-400 text-xs">
+                      {typingSeconds >= 30 ? '生成时间较长，请耐心等待...' : typingSeconds >= 15 ? 'AI正在思考，请耐心等待...' : ''}
+                    </span>
                   )}
                 </div>
                 {msg.role === 'user' && (
@@ -580,6 +638,36 @@ export default function JobsPage() {
             ))}
             <div ref={messagesEndRef} />
           </div>
+          
+          {/* 错误提示 + 重试按钮 */}
+          {chatError && (
+            <div className="px-4 py-3 bg-red-50 border-t border-red-100 flex items-center gap-2">
+              <span className="text-sm text-red-600 flex-1">{chatError}</span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                onClick={() => {
+                  setChatError(null);
+                  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+                  if (lastUserMsg) {
+                    setInputMessage(lastUserMsg.content);
+                    // 移除最后的空assistant消息
+                    setMessages(prev => {
+                      const last = prev[prev.length - 1];
+                      if (last && last.role === 'assistant' && !last.content) {
+                        return prev.slice(0, -1);
+                      }
+                      return prev;
+                    });
+                  }
+                }}
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                重试
+              </Button>
+            </div>
+          )}
           
           {/* 输入框 */}
           <div className="p-4 border-t flex-shrink-0">
