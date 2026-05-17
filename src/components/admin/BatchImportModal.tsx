@@ -20,7 +20,7 @@ import {
   Edit3,
   RefreshCw
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { loadXLSX } from '@/lib/dynamic-imports';
 
 interface JDRow {
   id: string;
@@ -98,12 +98,14 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
   };
 
   // 下载模板
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
     const wsData = [
       ['岗位名称*', '企业名称*', '城市*', '薪资下限(K)', '薪资上限(K)', '行业', '企业类型', '岗位描述', '应届友好'],
       ['HRBP（校招）', '腾讯', '深圳', '12', '20', '互联网', '上市公司', '负责校园招聘...', '是'],
       ['产品经理', '阿里巴巴', '杭州', '15', '30', '互联网', '上市公司', '负责产品规划...', '是'],
     ];
+    // 动态加载xlsx（~300KB，按需加载）
+    const XLSX = await loadXLSX();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'JD导入模板');
@@ -152,9 +154,11 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
   // 解析文件
   const parseFile = async (file: File) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = e.target?.result;
+        // 动态加载xlsx（~300KB，按需加载）
+        const XLSX = await loadXLSX();
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
@@ -413,13 +417,15 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
   };
 
   // 下载错误报告
-  const downloadErrorReport = () => {
+  const downloadErrorReport = async () => {
     if (!importResult) return;
     
     const wsData = [
       ['行号', '错误原因'],
       ...importResult.errors.map(e => [e.rowIndex, e.error])
     ];
+    // 动态加载xlsx（~300KB，按需加载）
+    const XLSX = await loadXLSX();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, '导入错误报告');

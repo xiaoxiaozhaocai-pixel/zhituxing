@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { jsPDF } from 'jspdf';
+import { loadJSPDF } from '@/lib/dynamic-imports';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Share2, Download, Image } from 'lucide-react';
@@ -160,9 +160,11 @@ export default function SharePosterGenerator({
     canvas.height = 1334;
     
     const img = new window.Image();
-    img.onload = () => {
+    img.onload = async () => {
       ctx.drawImage(img, 0, 0);
       
+      // 动态加载jsPDF（~500KB，按需加载）
+      const jsPDF = await loadJSPDF();
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'px',

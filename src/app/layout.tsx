@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { Inspector } from 'react-dev-inspector';
 import './globals.css';
+import { FontPreload } from '@/components/FontPreload';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
@@ -9,6 +9,7 @@ import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
 import { MembershipProvider } from '@/contexts/MembershipContext';
+import InspectorWrapper from '@/components/InspectorWrapper';
 
 export const metadata: Metadata = {
   title: {
@@ -52,7 +53,8 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={`antialiased`}>
-        {isDev && <Inspector />}
+        <FontPreload />
+        {isDev && <InspectorWrapper />}
         <Providers>
           <ToastProvider>
             <MembershipProvider>

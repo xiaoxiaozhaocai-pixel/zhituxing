@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { loadJSPDF, loadHtml2Canvas } from '@/lib/dynamic-imports';
 import { Button } from '@/components/ui/button';
 import { Loader2, Download, FileText } from 'lucide-react';
 
@@ -113,6 +112,7 @@ export default function ArticlePDFGenerator({
 
       document.body.appendChild(tempElement);
 
+      const html2canvas = await loadHtml2Canvas();
       const canvas = await html2canvas(tempElement, {
         scale: 2,
         useCORS: true,
@@ -127,6 +127,7 @@ export default function ArticlePDFGenerator({
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
 
+      const jsPDF = await loadJSPDF();
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgData = canvas.toDataURL('image/png');
 

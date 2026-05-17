@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { loadJSPDF, loadHtml2Canvas } from '@/lib/dynamic-imports';
 import { Button } from '@/components/ui/button';
 import { Loader2, Download } from 'lucide-react';
 
@@ -46,7 +45,8 @@ export default function ReportPDFGenerator({
       tempElement.innerHTML = generateReportHTML(reportTitle, reportContent, reportType);
       document.body.appendChild(tempElement);
 
-      // 使用html2canvas将HTML转为canvas
+      // 动态加载html2canvas（~300KB，按需加载）
+      const html2canvas = await loadHtml2Canvas();
       const canvas = await html2canvas(tempElement, {
         scale: 2,
         useCORS: true,
@@ -64,6 +64,8 @@ export default function ReportPDFGenerator({
       let heightLeft = imgHeight;
       let position = 0;
 
+      // 动态加载jsPDF（~500KB，按需加载）
+      const jsPDF = await loadJSPDF();
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgData = canvas.toDataURL('image/png');
 
