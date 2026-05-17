@@ -264,62 +264,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 检查是否已有记录
-    const { data: existing } = await supabase
+    // 使用 upsert 一步完成插入或更新
+    console.log(`[user/profile] POST upsert for user_id=${userId}, major=${major}, grade=${grade}, target_city=${target_city}, job_intention=${job_intention}, skills_count=${Array.isArray(skillsValue) ? skillsValue.length : 0}`);
+    const result = await supabase
       .from('user_profiles')
-      .select('id')
-      .eq('user_id', userId)
+      .upsert({
+        user_id: userId,
+        personality_type,
+        major,
+        grade,
+        graduation_year,
+        city,
+        job_intention,
+        target_city,
+        skills: skillsValue,
+        internship_experience,
+        project_experience,
+        awards,
+        ability_background,
+        update_time: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+      .select()
       .single();
 
-    let result;
-    if (existing) {
-      result = await supabase
-        .from('user_profiles')
-        .update({
-          personality_type,
-          major,
-          grade,
-          graduation_year,
-          city,
-          job_intention,
-          target_city,
-          skills: skillsValue,
-          internship_experience,
-          project_experience,
-          awards,
-          ability_background,
-          update_time: new Date().toISOString(),
-        })
-        .eq('user_id', userId)
-        .select()
-        .single();
-    } else {
-      result = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: userId,
-          personality_type,
-          major,
-          grade,
-          graduation_year,
-          city,
-          job_intention,
-          target_city,
-          skills: skillsValue,
-          internship_experience,
-          project_experience,
-          awards,
-          ability_background,
-        })
-        .select()
-        .single();
-    }
-
     if (result.error) {
-      console.error('保存失败:', result.error.message, result.error.details, result.error.hint);
+      console.error('[user/profile] 保存失败:', result.error.message, result.error.details, result.error.hint);
       return NextResponse.json({ code: 500, message: `保存失败: ${result.error.message}` }, { status: 500 });
     }
 
+    console.log(`[user/profile] 保存成功, user_id=${userId}, record_id=${(result.data as Record<string, unknown>)?.id}`);
     return NextResponse.json({
       code: 200,
       message: '保存成功',

@@ -425,43 +425,47 @@ export default function ProfileInfoPage() {
       });
       const data = await response.json();
 
-      if (data.code === 200 && data.data?.profile) {
-        const profile = data.data.profile;
+        if (data.code === 200 && data.data?.profile) {
+          const profile = data.data.profile;
+          // 预填基本字段
+          const newForm = {
+            personality_type: profile.personalityType || '',
+            major: profile.major || '',
+            grade: profile.grade || '',
+            graduation_year: profile.graduationYear ? String(profile.graduationYear) : '',
+            city: profile.targetCity || profile.city || '',
+            job_intention: profile.jobIntention || '',
+            target_industry: '',
+            skills: [],
+            internship_experience: profile.internshipExperience || '',
+            project_experience: profile.projectExperience || '',
+            awards: profile.awards || '',
+          };
+          setForm(newForm);
 
-        setForm({
-          personality_type: profile.personalityType || '',
-          major: profile.major || '',
-          grade: profile.grade || '',
-          graduation_year: profile.graduationYear ? String(profile.graduationYear) : '',
-          city: profile.targetCity || '',
-          job_intention: profile.jobIntention || '',
-          target_industry: '',
-          skills: [],
-          internship_experience: profile.internshipExperience || '',
-          project_experience: profile.projectExperience || '',
-          awards: profile.awards || '',
-        });
-
-        // 如果已有技能数据，恢复选择状态
-        if (profile.abilityBackground) {
-          const ab = typeof profile.abilityBackground === 'string'
-            ? JSON.parse(profile.abilityBackground)
-            : profile.abilityBackground;
-          if (ab.professional_skills?.length) {
+          // 如果已有 jsonb 技能数据，恢复选择状态
+          const skills = data.data.skills;
+          if (Array.isArray(skills) && skills.length > 0 && typeof skills[0] === 'object') {
             const selections: Record<string, { selected: boolean; level: ProficiencyLevel }> = {};
-            for (const s of ab.professional_skills) {
-              const name = typeof s === 'string' ? s : s.name;
-              selections[`professional_${name}`] = { selected: true, level: '熟悉' };
-            }
-            if (ab.office_skills?.default_selected) {
-              for (const s of ab.office_skills.default_selected) {
-                selections[`office_${s}`] = { selected: true, level: '熟悉' };
+            for (const s of skills) {
+              const cat = (s as Record<string, unknown>).category as string;
+              const name = (s as Record<string, unknown>).name as string;
+              const level = (s as Record<string, unknown>).level as string;
+              if (cat && name) {
+                const levelMap: Record<string, ProficiencyLevel> = {
+                  '了解': '了解', '熟悉': '熟悉', '熟练': '熟练', '精通': '精通',
+                };
+                selections[`${cat}_${name}`] = { selected: true, level: levelMap[level] || '熟悉' };
               }
             }
-            setSkillSelections(selections);
+            if (Object.keys(selections).length > 0) {
+              setSkillSelections(selections);
+            }
           }
+        } else if (data.code === 404) {
+          // 新用户，无画像记录，保持默认空表单
+          console.log('[profile/info] 新用户，无已有画像');
         }
-      }
     } catch (error) {
       console.error('获取个人信息失败:', error);
     } finally {
