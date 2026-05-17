@@ -37,8 +37,9 @@ interface UserProfile {
   grade?: string;
   graduation_year?: number;
   city?: string;
+  target_city?: string;
   job_intention?: string;
-  skills?: string;
+  skills?: string[];
   internship_experience?: string;
   project_experience?: string;
   awards?: string;
@@ -59,7 +60,10 @@ export default function CareerPlanningPage() {
   const [form, setForm] = useState({
     major: '',
     grade: '',
-    city: ''
+    target_city: '',
+    job_intention: '',
+    personality_type: '',
+    skills: [] as string[],
   });
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -98,12 +102,15 @@ export default function CareerPlanningPage() {
       
       if (data.code === 200 && data.data) {
         setUserProfile(data.data);
-        // 自动填充表单
+        // 自动填充表单 - 从已保存的个人资料预填
         setForm(prev => ({
           ...prev,
           major: data.data.major || '',
           grade: data.data.grade || '',
-          city: data.data.city || ''
+          target_city: data.data.target_city || data.data.city || '',
+          job_intention: data.data.job_intention || '',
+          personality_type: data.data.personality_type || '',
+          skills: Array.isArray(data.data.skills) ? data.data.skills : (data.data.skills ? String(data.data.skills).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
         }));
       }
     } catch (error) {
@@ -138,6 +145,30 @@ export default function CareerPlanningPage() {
     doGenerate();
   };
 
+  // 保存个人信息到数据库（并行，不阻塞AI生成）
+  const saveProfileToDB = async () => {
+    if (!user) return;
+    try {
+      await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id.toString(),
+        },
+        body: JSON.stringify({
+          major: form.major,
+          grade: form.grade,
+          target_city: form.target_city,
+          job_intention: form.job_intention,
+          personality_type: form.personality_type,
+          skills: form.skills,
+        }),
+      });
+    } catch (e) {
+      console.error('保存个人信息失败:', e);
+    }
+  };
+
   // 执行流式生成
   const doGenerate = async () => {
     if (!user) return;
@@ -145,6 +176,9 @@ export default function CareerPlanningPage() {
     setGenerating(true);
     setGeneratedContent('');
     setMessage(null);
+    
+    // 并行保存个人信息到数据库
+    saveProfileToDB();
     
     try {
       // 调用流式API
@@ -157,9 +191,9 @@ export default function CareerPlanningPage() {
         body: JSON.stringify({
           major: form.major || userProfile?.major || '',
           grade: form.grade,
-          city: form.city || userProfile?.city || '',
-          skills: userProfile?.skills || '',
-          personality: userProfile?.personality_type || '',
+          city: form.target_city || userProfile?.target_city || userProfile?.city || '',
+          skills: form.skills?.join(', ') || userProfile?.skills?.join(', ') || '',
+          personality: form.personality_type || userProfile?.personality_type || '',
           workExperience: userProfile?.internship_experience || '',
           awards: userProfile?.awards || ''
         })
@@ -308,7 +342,7 @@ export default function CareerPlanningPage() {
         body: JSON.stringify({
           major: form.major || userProfile?.major || '',
           grade: form.grade,
-          city: form.city || userProfile?.city || '',
+          target_city: form.target_city || userProfile?.target_city || '',
           content: content // 传递生成的内容
         })
       });
@@ -560,11 +594,11 @@ export default function CareerPlanningPage() {
 
             {/* 意向城市 */}
             <div className="space-y-2">
-              <Label htmlFor="city" className="font-medium text-gray-700">意向城市（可选）</Label>
+              <Label htmlFor="target_city" className="font-medium text-gray-700">意向城市（可选）</Label>
               <Input
-                id="city"
-                value={form.city}
-                onChange={(e) => updateField('city', e.target.value)}
+                id="target_city"
+                value={form.target_city}
+                onChange={(e) => updateField('target_city', e.target.value)}
                 placeholder="如：北京、上海、深圳"
                 className="border-2 border-purple-200 focus:border-purple-500 h-12 text-base"
               />

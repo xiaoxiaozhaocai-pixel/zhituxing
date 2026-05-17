@@ -559,16 +559,24 @@ export default function ProfileInfoPage() {
             };
           } catch {
             // JSON解析失败，兼容旧数据格式
-            abilityData.professional_skills = profile.skills
-              ? profile.skills.split(',').filter(Boolean)
+            const skillsArr = profile.skills
+              ? (Array.isArray(profile.skills) ? profile.skills : String(profile.skills).split(',').filter(Boolean))
               : [];
+            abilityData.professional_skills = skillsArr;
           }
         } else if (profile.skills) {
           // 兼容旧数据：已有skills字段迁移到专业核心技能
-          abilityData.professional_skills = profile.skills.split(',').filter(Boolean);
+          abilityData.professional_skills = Array.isArray(profile.skills)
+            ? profile.skills
+            : String(profile.skills).split(',').filter(Boolean);
         }
 
         setAbilityBackground(abilityData);
+
+        // skills 可能是 text[] 或逗号分隔字符串
+        const skillsArray = profile.skills
+          ? (Array.isArray(profile.skills) ? profile.skills : String(profile.skills).split(',').filter(Boolean))
+          : [];
 
         setForm({
           personality_type: profile.personality_type || '',
@@ -577,7 +585,7 @@ export default function ProfileInfoPage() {
           graduation_year: profile.graduation_year?.toString() || '',
           city: profile.city || '',
           job_intention: profile.job_intention || '',
-          skills: profile.skills ? profile.skills.split(',').filter(Boolean) : [],
+          skills: skillsArray,
           internship_experience: profile.internship_experience || '',
           project_experience: profile.project_experience || '',
           awards: profile.awards || ''

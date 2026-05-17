@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     // 1. 基础画像
     const profileRows = await execSql(
-      `SELECT user_id, user_type, personality_type, major, grade, graduation_year, city, job_intention, skills, internship_experience, project_experience, awards, ability_background FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
+      `SELECT user_id, user_type, personality_type, major, grade, graduation_year, city, target_city, job_intention, skills, internship_experience, project_experience, awards, ability_background FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
     );
 
     if (!profileRows || profileRows.length === 0) {
@@ -167,6 +167,7 @@ export async function GET(request: NextRequest) {
           grade: profile.grade,
           graduationYear: profile.graduation_year,
           city: profile.city,
+          targetCity: profile.target_city,
           jobIntention: profile.job_intention,
           internshipExperience: profile.internship_experience,
           projectExperience: profile.project_experience,
@@ -222,6 +223,7 @@ export async function POST(request: NextRequest) {
       graduation_year,
       city,
       job_intention,
+      target_city,
       skills,
       internship_experience,
       project_experience,
@@ -247,6 +249,7 @@ export async function POST(request: NextRequest) {
           graduation_year,
           city,
           job_intention,
+          target_city,
           skills,
           internship_experience,
           project_experience,
@@ -268,6 +271,7 @@ export async function POST(request: NextRequest) {
           graduation_year,
           city,
           job_intention,
+          target_city,
           skills,
           internship_experience,
           project_experience,
