@@ -31,42 +31,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 测试模式：18775139647 固定验证码 123456
+    const isTestPhone = phone === '18775139647';
+    if (isTestPhone && code !== '123456') {
+      return NextResponse.json({ error: '验证码错误' }, { status: 400 });
+    }
+
     // 查询验证码
-    const verifyResult = await execSql(
-      `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'register' AND used = false ORDER BY created_at DESC LIMIT 1`
-    );
-
-    if (!verifyResult || verifyResult.length === 0) {
-      return NextResponse.json(
-        { error: '请先获取验证码' },
-        { status: 400 }
+    if (!isTestPhone) {
+      const verifyResult = await execSql(
+        `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'register' AND used = false ORDER BY created_at DESC LIMIT 1`
       );
+
+      if (!verifyResult || verifyResult.length === 0) {
+        return NextResponse.json({ error: '请先获取验证码' }, { status: 400 });
+      }
+
+      const verification = verifyResult[0] as { id: string; code: string; expires_at: string };
+
+      if (new Date(verification.expires_at) < new Date()) {
+        return NextResponse.json({ error: '验证码已过期，请重新获取' }, { status: 400 });
+      }
+
+      if (verification.code !== code) {
+        return NextResponse.json({ error: '验证码错误' }, { status: 400 });
+      }
+
+      // 标记验证码已使用
+      await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
     }
-
-    const verification = verifyResult[0] as {
-      id: string;
-      code: string;
-      expires_at: string;
-    };
-
-    // 检查验证码是否过期
-    if (new Date(verification.expires_at) < new Date()) {
-      return NextResponse.json(
-        { error: '验证码已过期，请重新获取' },
-        { status: 400 }
-      );
-    }
-
-    // 验证验证码是否正确
-    if (verification.code !== code) {
-      return NextResponse.json(
-        { error: '验证码错误' },
-        { status: 400 }
-      );
-    }
-
-    // 标记验证码已使用
-    await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
 
     // 检查用户是否已存在
     const userCheck = await execSql(`SELECT id FROM users WHERE phone = '${phone}' LIMIT 1`);
@@ -86,6 +79,22 @@ export async function POST(request: NextRequest) {
       if (inviterResult && inviterResult.length > 0) {
         inviterId = (inviterResult[0] as { id: string }).id;
       }
+    }
+
+    // 测试模式：直接返回成功
+    if (isTestPhone) {
+      const testUser = {
+        id: `test_${phone}`,
+        phone,
+        nickname: nickname || `用户${phone.slice(-4)}`,
+        created_at: new Date().toISOString(),
+        token: `test_token_${Date.now()}`
+      };
+      return NextResponse.json({
+        success: true,
+        message: '注册成功（测试模式）',
+        user: testUser
+      });
     }
 
     // 加密密码

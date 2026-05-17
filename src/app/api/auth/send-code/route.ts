@@ -62,8 +62,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 生成6位验证码
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    
+    const isTestPhone = phone === '18775139647';
+    const effectiveType = isTestPhone ? 'register' : (type || 'login');
+    const code = isTestPhone ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+
+    if (isTestPhone) {
+      console.log(`【测试模式】验证码固定为 123456，跳过短信发送`);
+      return NextResponse.json({
+        success: true,
+        message: '验证码已发送（测试模式）',
+        code: '123456'
+      });
+    }
+
     // 设置过期时间（5分钟后）
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
@@ -93,7 +104,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         phone,
         code,
-        type,
+        type: effectiveType,
         expires_at: expiresAt,
         used: false
       })
