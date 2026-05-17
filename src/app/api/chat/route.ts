@@ -24,15 +24,15 @@ import {
 
 export const runtime = 'edge';
 
-// 智能体路由选择（标准Bot API用）
+// 智能体路由选择（标准Bot API用 — V2版本）
 function selectBotId(botType?: string): string {
-  if (botType === 'jobs') return process.env.COZE_BOT_ID_JOBS || '';
-  if (botType === 'interview') return process.env.COZE_BOT_ID_INTERVIEW || '';
-  if (botType === 'decision') return process.env.COZE_BOT_ID_DECISION || '';
-  if (botType === 'career') return process.env.COZE_BOT_ID_CAREER || '';
-  if (botType === 'assessment') return process.env.COZE_BOT_ID_ASSESSMENT || '';
-  if (botType === 'competency') return process.env.COZE_BOT_ID_COMPETENCY || '';
-  return process.env.COZE_BOT_ID_JOBS || '';
+  if (botType === 'jobs') return process.env.COZE_BOT_JD_ASSISTANT || '';
+  if (botType === 'interview') return process.env.COZE_BOT_INTERVIEW || '';
+  if (botType === 'decision') return process.env.COZE_BOT_DECISION || '';
+  if (botType === 'career') return process.env.COZE_BOT_CAREER_PLANNING || '';
+  if (botType === 'assessment') return process.env.COZE_BOT_CAPABILITY || '';
+  if (botType === 'competency') return process.env.COZE_BOT_COMPETENCY || '';
+  return process.env.COZE_BOT_JD_ASSISTANT || '';
 }
 
 // 预设回复（fallback）
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
     // 回退到标准 Coze Bot API
     // ===========================
     const botId = selectBotId(botType);
-    const apiKey = process.env.COZE_API_KEY;
+    const apiKey = process.env.COZE_API_TOKEN;
 
     if (!apiKey || !botId) {
       console.log('[chat] No standard Bot API configured, using fallback');

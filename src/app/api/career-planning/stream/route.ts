@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
     // ===========================
     // 回退到标准 Coze Bot API
     // ===========================
-    const botId = process.env.COZE_BOT_ID_CAREER || process.env.COZE_BOT_ID_DECISION || '';
-    const apiKey = process.env.COZE_API_KEY;
+    const botId = process.env.COZE_BOT_CAREER_PLANNING || process.env.COZE_BOT_DECISION || '';
+    const apiKey = process.env.COZE_API_TOKEN;
 
     if (!apiKey || !botId) {
       console.log('[career] No Bot API configured, using fallback');

@@ -569,7 +569,7 @@ export async function callCozeStreamApi(params: {
   return fetch('https://api.coze.cn/v3/chat', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.COZE_API_KEY}`,
+      'Authorization': `Bearer ${process.env.COZE_API_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
