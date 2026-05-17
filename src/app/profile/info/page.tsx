@@ -1,20 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
-import { 
-  User, 
-  Briefcase, 
-  GraduationCap, 
-  Award, 
+import {
+  User,
+  Briefcase,
+  GraduationCap,
+  Award,
   MapPin,
   Save,
   RotateCcw,
@@ -22,22 +35,392 @@ import {
   X,
   Plus,
   Sparkles,
-  CircleCheck
+  CircleCheck,
+  Check,
+  ChevronsUpDown,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-// MBTI类型列表
+// ==================== 预设选项数据 ====================
+
+// MBTI类型列表（带描述）
 const MBTI_TYPES = [
-  'INTJ', 'INTP', 'ENTJ', 'ENTP',
-  'INFJ', 'INFP', 'ENFJ', 'ENFP',
-  'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',
-  'ISTP', 'ISFP', 'ESTP', 'ESFP'
+  { value: 'INTJ', label: 'INTJ - 策略家' },
+  { value: 'INTP', label: 'INTP - 逻辑学家' },
+  { value: 'ENTJ', label: 'ENTJ - 指挥官' },
+  { value: 'ENTP', label: 'ENTP - 辩论家' },
+  { value: 'INFJ', label: 'INFJ - 提倡者' },
+  { value: 'INFP', label: 'INFP - 调停者' },
+  { value: 'ENFJ', label: 'ENFJ - 主人公' },
+  { value: 'ENFP', label: 'ENFP - 竞选者' },
+  { value: 'ISTJ', label: 'ISTJ - 物流师' },
+  { value: 'ISFJ', label: 'ISFJ - 守卫者' },
+  { value: 'ESTJ', label: 'ESTJ - 总经理' },
+  { value: 'ESFJ', label: 'ESFJ - 执政官' },
+  { value: 'ISTP', label: 'ISTP - 鉴赏家' },
+  { value: 'ISFP', label: 'ISFP - 探险家' },
+  { value: 'ESTP', label: 'ESTP - 企业家' },
+  { value: 'ESFP', label: 'ESFP - 表演者' },
 ];
 
-// 年级列表
-const GRADES = [
-  '大一', '大二', '大三', '大四', 
-  '研一', '研二', '研三', '已毕业'
+// 专业选项
+const MAJOR_OPTIONS = [
+  '计算机科学与技术', '软件工程', '电子信息工程', '通信工程', '自动化',
+  '机械工程', '土木工程', '会计学', '金融学', '工商管理',
+  '市场营销', '人力资源管理', '法学', '英语', '新闻学',
+  '汉语言文学', '数学与应用数学', '物理学', '化学', '生物科学',
+  '临床医学', '护理学', '药学', '艺术设计', '环境设计',
+  '信息安全', '人工智能', '数据科学与大数据技术', '物联网工程', '电气工程及其自动化',
+  '建筑学', '统计学', '经济学', '国际经济与贸易', '公共事业管理',
+  '信息管理与信息系统', '电子商务', '物流管理', '旅游管理', '心理学',
 ];
+
+// 年级选项
+const GRADE_OPTIONS = [
+  { value: '大一', label: '大一' },
+  { value: '大二', label: '大二' },
+  { value: '大三', label: '大三' },
+  { value: '大四', label: '大四' },
+  { value: '研究生一年级', label: '研究生一年级' },
+  { value: '研究生二年级', label: '研究生二年级' },
+  { value: '研究生三年级', label: '研究生三年级' },
+];
+
+// 毕业年份选项
+const GRADUATION_YEAR_OPTIONS = [
+  { value: '2026', label: '2026' },
+  { value: '2027', label: '2027' },
+  { value: '2028', label: '2028' },
+  { value: '2029', label: '2029' },
+  { value: '2030', label: '2030' },
+];
+
+// 意向城市选项
+const CITY_OPTIONS = [
+  '北京', '上海', '广州', '深圳', '杭州', '成都', '武汉', '南京',
+  '重庆', '长沙', '西安', '苏州', '郑州', '东莞', '青岛', '合肥',
+  '佛山', '宁波', '昆明', '厦门', '福州', '无锡', '济南', '大连', '珠海',
+];
+
+// 求职意向选项
+const JOB_INTENTION_OPTIONS = [
+  'Java开发', 'Python开发', '前端开发', '后端开发', '产品经理',
+  'UI设计', '数据分析', '运营', '市场营销', '人力资源',
+  '财务', '管培生', '教师', '考公', '考研',
+  '算法工程师', '测试工程师', '运维工程师', '项目管理', '咨询顾问',
+];
+
+// 技能标签预设
+const SKILL_PRESETS = [
+  'Python', 'Java', 'JavaScript', 'C++', 'SQL', 'Excel', 'PPT', 'Word',
+  '数据分析', '产品设计', '项目管理', '机器学习', '深度学习', 'React',
+  'Vue', 'Node.js', 'Go', 'Docker', 'Linux', 'Git',
+  'Photoshop', 'Figma', 'SPSS', 'Tableau', 'Power BI',
+  '沟通能力', '团队协作', '领导力', '演讲能力', '写作能力',
+];
+
+// 预设办公软件选项
+const OFFICE_SOFTWARE_OPTIONS = ['Word', 'Excel', 'PPT', 'Outlook', 'WPS'];
+
+// 语种选项
+const LANGUAGE_OPTIONS = ['英语', '日语', '韩语', '法语', '德语', '其他'];
+
+// 熟练程度选项
+const PROFICIENCY_OPTIONS = ['入门', '日常交流', '熟练读写', '母语水平'];
+
+// ==================== Combobox 组件 ====================
+
+interface ComboboxProps {
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  className?: string;
+}
+
+function Combobox({
+  options,
+  value,
+  onChange,
+  placeholder = '请选择...',
+  searchPlaceholder = '搜索...',
+  emptyText = '未找到匹配项',
+  className,
+}: ComboboxProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'flex h-10 w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm',
+            'focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]',
+            'hover:border-gray-300 transition-colors',
+            !value && 'text-gray-400',
+            className
+          )}
+        >
+          <span className="truncate">{value || placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>
+              <div className="p-2">
+                <button
+                  className="w-full text-left px-2 py-1.5 text-sm text-[#165DFF] hover:bg-[#165DFF]/5 rounded"
+                  onClick={() => {
+                    // 允许自定义输入 - 使用搜索框当前值
+                    const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                    if (input?.value?.trim()) {
+                      onChange(input.value.trim());
+                      setOpen(false);
+                    }
+                  }}
+                >
+                  使用自定义输入
+                </button>
+              </div>
+            </CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue === value ? '' : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === option ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Select Combobox（用于选项固定的下拉，如年级、毕业年份、MBTI）
+interface SelectComboboxProps {
+  options: Array<{ value: string; label: string }>;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  className?: string;
+}
+
+function SelectCombobox({
+  options,
+  value,
+  onChange,
+  placeholder = '请选择...',
+  searchPlaceholder = '搜索...',
+  emptyText = '未找到匹配项',
+  className,
+}: SelectComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find(o => o.value === value)?.label;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'flex h-10 w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm',
+            'focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]',
+            'hover:border-gray-300 transition-colors',
+            !value && 'text-gray-400',
+            className
+          )}
+        >
+          <span className="truncate">{selectedLabel || placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.label}
+                  onSelect={() => {
+                    onChange(option.value === value ? '' : option.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === option.value ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Tag Input 组件（技能标签输入器）
+interface TagInputProps {
+  tags: string[];
+  onAdd: (tag: string) => void;
+  onRemove: (tag: string) => void;
+  suggestions: string[];
+  placeholder?: string;
+}
+
+function TagInput({ tags, onAdd, onRemove, suggestions, placeholder = '输入技能后按回车添加' }: TagInputProps) {
+  const [input, setInput] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // 过滤建议
+  useEffect(() => {
+    if (input.trim()) {
+      const filtered = suggestions.filter(
+        s => s.toLowerCase().includes(input.toLowerCase()) && !tags.includes(s)
+      );
+      setFilteredSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setFilteredSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [input, suggestions, tags]);
+
+  // 点击外部关闭建议
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const tag = input.trim();
+      if (tag && !tags.includes(tag)) {
+        onAdd(tag);
+        setInput('');
+        setShowSuggestions(false);
+      }
+    }
+  };
+
+  const handleSelect = (suggestion: string) => {
+    if (!tags.includes(suggestion)) {
+      onAdd(suggestion);
+    }
+    setInput('');
+    setShowSuggestions(false);
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      {/* 已选标签 */}
+      <div className="flex flex-wrap gap-2 mb-2">
+        {tags.map(tag => (
+          <span
+            key={tag}
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#165DFF]/10 text-[#165DFF] text-sm"
+          >
+            {tag}
+            <button
+              onClick={() => onRemove(tag)}
+              className="hover:text-red-500 transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        ))}
+      </div>
+      {/* 输入框 */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (input.trim() && filteredSuggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
+            placeholder={placeholder}
+          />
+          {/* 自动补全下拉 */}
+          {showSuggestions && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {filteredSuggestions.map(suggestion => (
+                <button
+                  key={suggestion}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-[#165DFF]/5 text-gray-700 transition-colors"
+                  onClick={() => handleSelect(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            const tag = input.trim();
+            if (tag && !tags.includes(tag)) {
+              onAdd(tag);
+              setInput('');
+              setShowSuggestions(false);
+            }
+          }}
+          disabled={!input.trim()}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ==================== 主页面组件 ====================
 
 // 用户信息表单接口
 interface ProfileForm {
@@ -55,41 +438,30 @@ interface ProfileForm {
 
 // 能力背景数据结构
 interface AbilityBackground {
-  professional_skills: string[];  // 专业核心技能
+  professional_skills: string[];
   office_skills: {
-    default_selected: string[];    // 预设选中的办公技能
-    custom_skills: string[];       // 自定义添加的办公技能
+    default_selected: string[];
+    custom_skills: string[];
   };
-  language_abilities: Array<{       // 外语能力数组
+  language_abilities: Array<{
     language: string;
     level: string;
     proficiency: string;
   }>;
-  certificates: string[];          // 职业技能证书
+  certificates: string[];
 }
-
-// 预设办公软件选项
-const OFFICE_SOFTWARE_OPTIONS = ['Word', 'Excel', 'PPT', 'Outlook', 'WPS'];
-
-// 语种选项
-const LANGUAGE_OPTIONS = ['英语', '日语', '韩语', '法语', '德语', '其他'];
-
-// 熟练程度选项
-const PROFICIENCY_OPTIONS = ['入门', '日常交流', '熟练读写', '母语水平'];
 
 export default function ProfileInfoPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
-  
+
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  
-  // 专业核心技能输入
-  const [skillInput, setSkillInput] = useState('');
+
   // 自定义办公软件输入
   const [customOfficeInput, setCustomOfficeInput] = useState('');
-  
+
   // 能力背景数据
   const [abilityBackground, setAbilityBackground] = useState<AbilityBackground>({
     professional_skills: [],
@@ -102,7 +474,7 @@ export default function ProfileInfoPage() {
     ],
     certificates: []
   });
-  
+
   // 表单数据
   const [form, setForm] = useState<ProfileForm>({
     personality_type: '',
@@ -126,14 +498,14 @@ export default function ProfileInfoPage() {
       form.graduation_year,
       form.city,
       form.job_intention,
-      form.skills.length > 0 ? form.skills.join(',') : '',
+      abilityBackground.professional_skills.length > 0 ? abilityBackground.professional_skills.join(',') : '',
       form.internship_experience,
       form.project_experience,
       form.awards
     ];
     const filledCount = fields.filter(f => f && f.toString().trim().length > 0).length;
     return Math.round((filledCount / fields.length) * 100);
-  }, [form]);
+  }, [form, abilityBackground.professional_skills]);
 
   // 页面加载时获取用户信息
   useEffect(() => {
@@ -155,12 +527,12 @@ export default function ProfileInfoPage() {
           'x-user-id': user?.id?.toString() || ''
         }
       });
-      
+
       const data = await response.json();
-      
+
       if (data.code === 200 && data.data?.profile) {
         const profile = data.data.profile;
-        
+
         // 处理能力背景数据回填
         let abilityData: AbilityBackground = {
           professional_skills: [],
@@ -168,11 +540,11 @@ export default function ProfileInfoPage() {
           language_abilities: [{ language: '', level: '', proficiency: '' }],
           certificates: []
         };
-        
+
         if (profile.ability_background) {
           try {
-            const parsed = typeof profile.ability_background === 'string' 
-              ? JSON.parse(profile.ability_background) 
+            const parsed = typeof profile.ability_background === 'string'
+              ? JSON.parse(profile.ability_background)
               : profile.ability_background;
             abilityData = {
               professional_skills: parsed.professional_skills || [],
@@ -180,24 +552,24 @@ export default function ProfileInfoPage() {
                 default_selected: parsed.office_skills?.default_selected || [],
                 custom_skills: parsed.office_skills?.custom_skills || []
               },
-              language_abilities: parsed.language_abilities?.length > 0 
-                ? parsed.language_abilities 
+              language_abilities: parsed.language_abilities?.length > 0
+                ? parsed.language_abilities
                 : [{ language: '', level: '', proficiency: '' }],
               certificates: parsed.certificates || []
             };
-          } catch (e) {
+          } catch {
             // JSON解析失败，兼容旧数据格式
-            abilityData.professional_skills = profile.skills 
-              ? profile.skills.split(',').filter(Boolean) 
+            abilityData.professional_skills = profile.skills
+              ? profile.skills.split(',').filter(Boolean)
               : [];
           }
         } else if (profile.skills) {
           // 兼容旧数据：已有skills字段迁移到专业核心技能
           abilityData.professional_skills = profile.skills.split(',').filter(Boolean);
         }
-        
+
         setAbilityBackground(abilityData);
-        
+
         setForm({
           personality_type: profile.personality_type || '',
           major: profile.major || '',
@@ -224,14 +596,12 @@ export default function ProfileInfoPage() {
   };
 
   // ========== 专业核心技能 ==========
-  const addProfessionalSkill = () => {
-    const skill = skillInput.trim();
-    if (skill && !abilityBackground.professional_skills.includes(skill)) {
+  const addProfessionalSkill = (skill: string) => {
+    if (!abilityBackground.professional_skills.includes(skill)) {
       setAbilityBackground(prev => ({
         ...prev,
         professional_skills: [...prev.professional_skills, skill]
       }));
-      setSkillInput('');
     }
   };
 
@@ -240,13 +610,6 @@ export default function ProfileInfoPage() {
       ...prev,
       professional_skills: prev.professional_skills.filter(s => s !== skill)
     }));
-  };
-
-  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addProfessionalSkill();
-    }
   };
 
   // ========== 办公软件技能 ==========
@@ -267,7 +630,7 @@ export default function ProfileInfoPage() {
 
   const addCustomOfficeSkill = () => {
     const skill = customOfficeInput.trim();
-    if (skill && !abilityBackground.office_skills.custom_skills.includes(skill) 
+    if (skill && !abilityBackground.office_skills.custom_skills.includes(skill)
         && !abilityBackground.office_skills.default_selected.includes(skill)) {
       setAbilityBackground(prev => ({
         ...prev,
@@ -348,23 +711,10 @@ export default function ProfileInfoPage() {
     }
   };
 
-  // ========== 技能标签（兼容旧逻辑） ==========
-  const addSkill = () => {
-    const skill = skillInput.trim();
-    if (skill && !form.skills.includes(skill)) {
-      updateField('skills', [...form.skills, skill]);
-      setSkillInput('');
-    }
-  };
-
-  const removeSkill = (skill: string) => {
-    updateField('skills', form.skills.filter(s => s !== skill));
-  };
-
   // 保存表单
   const handleSave = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const response = await fetch('/api/user/profile', {
@@ -380,8 +730,8 @@ export default function ProfileInfoPage() {
           graduation_year: form.graduation_year ? parseInt(form.graduation_year) : null,
           city: form.city || null,
           job_intention: form.job_intention || null,
-          skills: abilityBackground.professional_skills.length > 0 
-            ? abilityBackground.professional_skills.join(',') 
+          skills: abilityBackground.professional_skills.length > 0
+            ? abilityBackground.professional_skills.join(',')
             : (form.skills.length > 0 ? form.skills.join(',') : null),
           internship_experience: form.internship_experience || null,
           project_experience: form.project_experience || null,
@@ -391,7 +741,7 @@ export default function ProfileInfoPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.code === 200) {
         showToast('个人信息保存成功', 'success', 3000);
       } else {
@@ -425,7 +775,6 @@ export default function ProfileInfoPage() {
       language_abilities: [{ language: '', level: '', proficiency: '' }],
       certificates: []
     });
-    setSkillInput('');
     setCustomOfficeInput('');
     setCertificateInput('');
     showToast('表单已清空', 'success');
@@ -463,60 +812,55 @@ export default function ProfileInfoPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 人格测评结果 */}
+                {/* 人格测评结果 - SelectCombobox */}
                 <div className="space-y-2">
-                  <Label htmlFor="personality_type">人格测评结果</Label>
-                  <select
-                    id="personality_type"
+                  <Label>人格测评结果</Label>
+                  <SelectCombobox
+                    options={MBTI_TYPES}
                     value={form.personality_type}
-                    onChange={(e) => updateField('personality_type', e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
-                  >
-                    <option value="">请选择MBTI类型（可选）</option>
-                    {MBTI_TYPES.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* 所属专业 */}
-                <div className="space-y-2">
-                  <Label htmlFor="major">所属专业</Label>
-                  <Input
-                    id="major"
-                    value={form.major}
-                    onChange={(e) => updateField('major', e.target.value)}
-                    placeholder="如：人力资源管理"
+                    onChange={(value) => updateField('personality_type', value)}
+                    placeholder="请选择MBTI类型（可选）"
+                    searchPlaceholder="搜索MBTI类型..."
+                    emptyText="未找到匹配类型"
                   />
                 </div>
 
-                {/* 当前年级 */}
+                {/* 所属专业 - Combobox */}
                 <div className="space-y-2">
-                  <Label htmlFor="grade">当前年级</Label>
-                  <select
-                    id="grade"
-                    value={form.grade}
-                    onChange={(e) => updateField('grade', e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
-                  >
-                    <option value="">请选择年级（可选）</option>
-                    {GRADES.map(grade => (
-                      <option key={grade} value={grade}>{grade}</option>
-                    ))}
-                  </select>
+                  <Label>所属专业</Label>
+                  <Combobox
+                    options={MAJOR_OPTIONS}
+                    value={form.major}
+                    onChange={(value) => updateField('major', value)}
+                    placeholder="请选择或输入专业"
+                    searchPlaceholder="搜索专业..."
+                    emptyText="未找到匹配专业"
+                  />
                 </div>
 
-                {/* 毕业年份 */}
+                {/* 当前年级 - SelectCombobox */}
                 <div className="space-y-2">
-                  <Label htmlFor="graduation_year">毕业年份</Label>
-                  <Input
-                    id="graduation_year"
-                    type="number"
-                    min="2020"
-                    max="2035"
+                  <Label>当前年级</Label>
+                  <SelectCombobox
+                    options={GRADE_OPTIONS}
+                    value={form.grade}
+                    onChange={(value) => updateField('grade', value)}
+                    placeholder="请选择年级（可选）"
+                    searchPlaceholder="搜索年级..."
+                    emptyText="未找到匹配年级"
+                  />
+                </div>
+
+                {/* 毕业年份 - SelectCombobox */}
+                <div className="space-y-2">
+                  <Label>毕业年份</Label>
+                  <SelectCombobox
+                    options={GRADUATION_YEAR_OPTIONS}
                     value={form.graduation_year}
-                    onChange={(e) => updateField('graduation_year', e.target.value)}
-                    placeholder="如：2027"
+                    onChange={(value) => updateField('graduation_year', value)}
+                    placeholder="请选择毕业年份（可选）"
+                    searchPlaceholder="搜索年份..."
+                    emptyText="未找到匹配年份"
                   />
                 </div>
               </div>
@@ -533,32 +877,36 @@ export default function ProfileInfoPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 意向工作城市 */}
+                {/* 意向工作城市 - Combobox */}
                 <div className="space-y-2">
-                  <Label htmlFor="city">
+                  <Label>
                     <MapPin className="w-4 h-4 inline mr-1" />
                     意向工作城市
                   </Label>
-                  <Input
-                    id="city"
+                  <Combobox
+                    options={CITY_OPTIONS}
                     value={form.city}
-                    onChange={(e) => updateField('city', e.target.value)}
-                    placeholder="如：深圳、上海"
+                    onChange={(value) => updateField('city', value)}
+                    placeholder="请选择或输入城市"
+                    searchPlaceholder="搜索城市..."
+                    emptyText="未找到匹配城市"
                   />
                   <p className="text-xs text-gray-400">我们将为你推荐该城市的热门岗位和薪资</p>
                 </div>
 
-                {/* 求职意向 */}
+                {/* 求职意向 - Combobox */}
                 <div className="space-y-2">
-                  <Label htmlFor="job_intention">
+                  <Label>
                     <GraduationCap className="w-4 h-4 inline mr-1" />
                     求职意向
                   </Label>
-                  <Input
-                    id="job_intention"
+                  <Combobox
+                    options={JOB_INTENTION_OPTIONS}
                     value={form.job_intention}
-                    onChange={(e) => updateField('job_intention', e.target.value)}
-                    placeholder="如：互联网产品经理"
+                    onChange={(value) => updateField('job_intention', value)}
+                    placeholder="请选择或输入求职意向"
+                    searchPlaceholder="搜索岗位方向..."
+                    emptyText="未找到匹配岗位"
                   />
                   <p className="text-xs text-gray-400">帮助我们更精准地为你匹配合适的岗位方向</p>
                 </div>
@@ -575,41 +923,17 @@ export default function ProfileInfoPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              {/* 子板块1：专业核心技能 */}
+              {/* 子板块1：专业核心技能 - TagInput */}
               <div className="space-y-2">
                 <Label>专业核心技能</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {abilityBackground.professional_skills.map(skill => (
-                    <span 
-                      key={skill}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#165DFF]/10 text-[#165DFF] text-sm"
-                    >
-                      {skill}
-                      <button
-                        onClick={() => removeProfessionalSkill(skill)}
-                        className="hover:text-red-500"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={handleSkillKeyDown}
-                    placeholder="输入专业技能后按回车添加（如：招聘配置、Python、数据分析）"
-                  />
-                  <Button 
-                    variant="outline" 
-                    onClick={addProfessionalSkill}
-                    disabled={!skillInput.trim()}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-400">输入你的专业相关核心技能，按回车添加</p>
+                <TagInput
+                  tags={abilityBackground.professional_skills}
+                  onAdd={addProfessionalSkill}
+                  onRemove={removeProfessionalSkill}
+                  suggestions={SKILL_PRESETS}
+                  placeholder="输入技能后按回车添加，如：Python、数据分析"
+                />
+                <p className="text-xs text-gray-400">输入你的专业相关核心技能，支持自动补全和手动输入</p>
               </div>
 
               {/* 子板块2：办公软件技能 */}
@@ -624,8 +948,8 @@ export default function ProfileInfoPage() {
                         key={skill}
                         onClick={() => toggleOfficeSkill(skill)}
                         className={`px-3 py-1 rounded-lg text-sm transition-all ${
-                          isSelected 
-                            ? 'bg-purple-500 text-white' 
+                          isSelected
+                            ? 'bg-purple-500 text-white'
                             : 'bg-white border border-gray-200 text-gray-600 hover:border-purple-300'
                         }`}
                       >
@@ -637,7 +961,7 @@ export default function ProfileInfoPage() {
                 {/* 自定义输入 */}
                 <div className="flex flex-wrap gap-2 mb-2">
                   {abilityBackground.office_skills.custom_skills.map(skill => (
-                    <span 
+                    <span
                       key={skill}
                       className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-600 text-sm"
                     >
@@ -658,8 +982,8 @@ export default function ProfileInfoPage() {
                     onKeyDown={handleCustomOfficeKeyDown}
                     placeholder="输入其他办公软件（如：PS、XMind、SPSS）"
                   />
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={addCustomOfficeSkill}
                     disabled={!customOfficeInput.trim()}
                   >
@@ -703,8 +1027,8 @@ export default function ProfileInfoPage() {
                       </select>
                       <div className="flex gap-1">
                         {index === abilityBackground.language_abilities.length - 1 && abilityBackground.language_abilities.length < 5 ? (
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={addLanguageAbility}
                             className="h-10 px-2"
@@ -712,8 +1036,8 @@ export default function ProfileInfoPage() {
                             <Plus className="w-4 h-4" />
                           </Button>
                         ) : abilityBackground.language_abilities.length > 1 ? (
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={() => removeLanguageAbility(index)}
                             className="h-10 px-2 text-red-500 hover:text-red-600 hover:bg-red-50"
@@ -733,7 +1057,7 @@ export default function ProfileInfoPage() {
                 <Label>职业技能证书</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {abilityBackground.certificates.map(cert => (
-                    <span 
+                    <span
                       key={cert}
                       className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-sm"
                     >
@@ -754,8 +1078,8 @@ export default function ProfileInfoPage() {
                     onKeyDown={handleCertificateKeyDown}
                     placeholder="输入职业资格、技能等级证书（如：人力资源管理师、计算机二级）"
                   />
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={addCertificate}
                     disabled={!certificateInput.trim()}
                   >
@@ -836,13 +1160,13 @@ export default function ProfileInfoPage() {
                   </span>
                 </div>
                 <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className={`h-full rounded-full transition-all duration-500 ${completionPercent === 100 ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-purple-500 to-indigo-500'}`}
                     style={{ width: `${completionPercent}%` }}
                   />
                 </div>
               </div>
-              
+
               {/* 完善度提示 */}
               {completionPercent === 100 ? (
                 <div className="flex items-center justify-between">
@@ -867,15 +1191,15 @@ export default function ProfileInfoPage() {
 
           {/* 操作按钮 */}
           <div className="flex justify-end gap-4 pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleReset}
               disabled={loading}
             >
               <RotateCcw className="w-4 h-4 mr-2" />
               重置
             </Button>
-            <Button 
+            <Button
               onClick={handleSave}
               disabled={loading}
               className="bg-[#165DFF] hover:bg-[#165DFF]/90"
