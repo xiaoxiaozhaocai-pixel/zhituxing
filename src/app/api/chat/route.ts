@@ -30,7 +30,7 @@ function selectBotId(botType?: string): string {
   if (botType === 'interview') return process.env.COZE_BOT_INTERVIEW || '';
   if (botType === 'decision') return process.env.COZE_BOT_DECISION || '';
   if (botType === 'career') return process.env.COZE_BOT_CAREER_PLANNING || '';
-  if (botType === 'assessment') return process.env.COZE_BOT_CAPABILITY || '';
+  if (botType === 'assessment') return process.env.COZE_BOT_ASSESSMENT || process.env.COZE_BOT_CAPABILITY || '';
   if (botType === 'competency') return process.env.COZE_BOT_COMPETENCY || '';
   return process.env.COZE_BOT_JD_ASSISTANT || '';
 }

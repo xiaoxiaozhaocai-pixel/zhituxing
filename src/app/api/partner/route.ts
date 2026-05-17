@@ -9,8 +9,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Coze API 配置
 const COZE_API_URL = 'https://api.coze.cn/open_api/v2/chat';
-const COZE_API_TOKEN = process.env.COZE_API_TOKEN || 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjUwNzgwN2ZkLWVhMzEtNGYyYS04NjE4LWE3OWMxODY3MzI2NyJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbIlhFaXo3c3hJRU44T1lOVkJ6MnVvWldlZlVOb0I1dnlsIl0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzc2OTk0MjEzLCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NjI5NjU2MjI3MjEwODU0NDM2Iiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NjMyMTMyMDMxODc0MzM0NzcxIn0.Y-AByHckRELtgME2T1fOx9wrHdgkesPTXduaO3rQaQZSBq1Ybik6Wj8kwrP8h_dcPgzenwg6ur3h5ydPnl35Ith-ARanFG-l6SNmfraTj4rC5sFIFZ7c64jZ_pYqVY2v4lc22aB4qwkR6QsbZNFvv5rV_DtSSZjmA4HUsJ0T4oAcI1upj3PKDdy7pezlY6AZqTV6qRW0blKpgXnI2LcIG2mgUU0rzflFCLPfwF12cweHnDXDMpV4LDZQdFzmOdlYpfM0QkEMzg6RK_3UABA8ulg3zWirbniwlWr-RRWixCHdz_QPAQt8Qi0qavNVj8Vx_4aba2xyWTy_QqWTn-T4yg';
-const BOT_ID = process.env.COZE_BOT_ID || '7629654356933050409';
+const COZE_API_TOKEN = process.env.COZE_API_TOKEN || '';
+const BOT_ID = process.env.COZE_BOT_JD_ASSISTANT || process.env.COZE_BOT_ID || '';
 
 // 生成用户ID（简化版，实际应从session获取）
 function getUserId(request: NextRequest): string {
