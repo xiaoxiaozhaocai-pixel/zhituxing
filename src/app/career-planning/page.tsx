@@ -151,7 +151,8 @@ export default function CareerPlanningPage() {
       const response = await fetch('/api/career-planning/stream', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'x-user-id': user?.id || '',
         },
         body: JSON.stringify({
           major: form.major || userProfile?.major || '',
@@ -184,13 +185,19 @@ export default function CareerPlanningPage() {
         }
       }, 15000);
 
+      const longWaitTimer = setTimeout(() => {
+        if (!fullContent) {
+          setMessage({ type: 'info', text: '生成时间较长，请耐心等待...' });
+        }
+      }, 30000);
+
       const timeoutTimer = setTimeout(() => {
         if (!fullContent) {
           setMessage({ type: 'error', text: '请求超时，请重试' });
           setGenerating(false);
           reader.cancel().catch(() => {});
         }
-      }, 30000);
+      }, 60000);
 
       try {
         while (true) {
@@ -230,6 +237,7 @@ export default function CareerPlanningPage() {
 
               if (data.type === 'text' && data.content) {
                 clearTimeout(thinkingTimer);
+                clearTimeout(longWaitTimer);
                 clearTimeout(timeoutTimer);
                 fullContent += data.content;
                 // 过滤残留的 <<DATA>> 标记
@@ -238,9 +246,11 @@ export default function CareerPlanningPage() {
                 setMessage(null);
               } else if (data.type === 'done') {
                 clearTimeout(thinkingTimer);
+                clearTimeout(longWaitTimer);
                 clearTimeout(timeoutTimer);
               } else if (data.type === 'error') {
                 clearTimeout(thinkingTimer);
+                clearTimeout(longWaitTimer);
                 clearTimeout(timeoutTimer);
                 throw new Error(data.message || 'AI生成出错');
               }

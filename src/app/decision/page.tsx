@@ -108,27 +108,84 @@ export default function DecisionPage() {
 
       if (response.status === 403) {
         const data = await response.json();
-        setMessages(prev => prev.slice(0, -1));
+        setMessages(prev => [...prev.slice(0, -1), { 
+          role: 'assistant', 
+          content: `🔒 ${data.message || '该功能为会员专享，请开通会员后使用'}` 
+        }]);
         setLoading(false);
         return;
       }
 
       if (!response.ok) {
-        throw new Error('请求失败');
+        throw new Error(`请求失败 (${response.status})`);
       }
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let fullContent = '';
+      let sseBuffer = '';
+
+      // 超时计时器
+      const thinkingTimer = setTimeout(() => {
+        if (!fullContent) {
+          setMessages(prev => [...prev.slice(0, -1), { role: 'assistant', content: '⏳ AI正在思考，请耐心等待...' }]);
+        }
+      }, 15000);
+
+      const timeoutTimer = setTimeout(() => {
+        if (!fullContent) {
+          reader?.cancel().catch(() => {});
+          setMessages(prev => [...prev.slice(0, -1), { role: 'assistant', content: '❌ 请求超时，请重试' }]);
+          setLoading(false);
+        }
+      }, 60000);
 
       if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          fullContent += chunk;
-          setStreamingContent(fullContent);
+            const chunk = decoder.decode(value, { stream: true });
+            sseBuffer += chunk;
+
+            // 解析SSE事件
+            const lines = sseBuffer.split('\n');
+            sseBuffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.type === 'text') {
+                    fullContent += data.content;
+                    setStreamingContent(fullContent);
+                    clearTimeout(thinkingTimer);
+                    clearTimeout(timeoutTimer);
+                  } else if (data.type === 'error') {
+                    clearTimeout(thinkingTimer);
+                    clearTimeout(timeoutTimer);
+                    setMessages(prev => [...prev.slice(0, -1), { role: 'assistant', content: `❌ ${data.message || '生成失败，请重试'}` }]);
+                    setLoading(false);
+                    return;
+                  } else if (data.type === 'done') {
+                    clearTimeout(thinkingTimer);
+                    clearTimeout(timeoutTimer);
+                  }
+                } catch {
+                  // 非JSON数据，尝试作为纯文本
+                  const textContent = line.slice(6).trim();
+                  if (textContent) {
+                    fullContent += textContent;
+                    setStreamingContent(fullContent);
+                  }
+                }
+              }
+            }
+          }
+        } finally {
+          clearTimeout(thinkingTimer);
+          clearTimeout(timeoutTimer);
         }
       }
 

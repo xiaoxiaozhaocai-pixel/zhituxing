@@ -307,6 +307,25 @@ export function createWorkflowSSEStream(params: {
 
   return new ReadableStream({
     async start(controller) {
+      // 检查是否为非流式响应（如认证失败的JSON错误）
+      const contentType = workflowResponse.headers.get('content-type') || '';
+      if (contentType.includes('application/json') || !workflowResponse.ok) {
+        try {
+          const errorBody = await workflowResponse.text();
+          let errorMsg = 'AI服务请求失败';
+          try {
+            const errorJson = JSON.parse(errorBody);
+            errorMsg = errorJson.msg || errorJson.message || errorJson.error || errorMsg;
+          } catch { /* use default error msg */ }
+          sendError(controller, errorMsg);
+        } catch {
+          sendError(controller, `AI服务请求失败(HTTP ${workflowResponse.status})`);
+        }
+        sendDone(controller);
+        try { controller.close(); } catch { /* ignore */ }
+        return;
+      }
+
       const reader = workflowResponse.body?.getReader();
       const decoder = new TextDecoder();
 
@@ -566,8 +585,33 @@ export function createCozeSSEStream(params: {
     ctrl.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
   }
 
+  // 发送SSE错误事件
+  function sendError(ctrl: { enqueue: (d: Uint8Array) => void }, message: string) {
+    const enc = new TextEncoder();
+    ctrl.enqueue(enc.encode(`data: ${JSON.stringify({ type: 'error', message })}\n\n`));
+  }
+
   return new ReadableStream({
     async start(controller) {
+      // 检查是否为非流式响应（如认证失败的JSON错误）
+      const contentType = cozeResponse.headers.get('content-type') || '';
+      if (contentType.includes('application/json') || !cozeResponse.ok) {
+        try {
+          const errorBody = await cozeResponse.text();
+          let errorMsg = 'AI服务请求失败';
+          try {
+            const errorJson = JSON.parse(errorBody);
+            errorMsg = errorJson.msg || errorJson.message || errorJson.error || errorMsg;
+          } catch { /* use default error msg */ }
+          sendError(controller, errorMsg);
+        } catch {
+          sendError(controller, `AI服务请求失败(HTTP ${cozeResponse.status})`);
+        }
+        sendDone(controller);
+        try { controller.close(); } catch { /* ignore */ }
+        return;
+      }
+
       const reader = cozeResponse.body?.getReader();
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
