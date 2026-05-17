@@ -7,9 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
-  getWorkflowConfig,
-  callWorkflowStreamApi,
-  createWorkflowSSEStream,
+  callCozeStreamApi,
+  createCozeSSEStream,
   createTextStream,
 } from '@/lib/coze-stream';
 
@@ -78,11 +77,10 @@ SKILL_SUMMARY_END
 
     const finalMessage = userContext + queryContent;
 
-    // 4. 获取 Workflow 配置
-    const config = getWorkflowConfig('skill_portrait');
-
-    if (!config) {
-      console.log('Skill Portrait Workflow API not configured, using fallback');
+    // 4. 获取 Bot ID（标准 Bot 模式）
+    const botId = process.env.COZE_BOT_SKILL_PORTRAIT;
+    if (!botId) {
+      console.error('COZE_BOT_SKILL_PORTRAIT not configured');
       const fallback = getSkillPortraitFallback(major, target_city);
       return new Response(createTextStream(fallback), {
         headers: {
@@ -93,16 +91,16 @@ SKILL_SUMMARY_END
       });
     }
 
-    // 5. 调用 Workflow stream_run API
-    const cozeResponse = await callWorkflowStreamApi({
-      botType: 'skill_portrait',
+    // 5. 调用标准 Bot stream API
+    const cozeResponse = await callCozeStreamApi({
+      botId,
       message: finalMessage,
-      userContext,
+      userType: userType,
     });
 
     // 检查响应状态
     if (!cozeResponse.ok) {
-      console.error('Skill Portrait Workflow API error:', cozeResponse.status);
+      console.error('Skill Portrait Bot API error:', cozeResponse.status);
       const fallback = getSkillPortraitFallback(major, target_city);
       return new Response(createTextStream(fallback), {
         headers: {
@@ -117,7 +115,7 @@ SKILL_SUMMARY_END
     const contentType = cozeResponse.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const errorData = await cozeResponse.json();
-      console.error('Skill Portrait Workflow API JSON error:', errorData);
+      console.error('Skill Portrait Bot API JSON error:', errorData);
       const fallback = getSkillPortraitFallback(major, target_city);
       return new Response(createTextStream(fallback), {
         headers: {
@@ -129,8 +127,8 @@ SKILL_SUMMARY_END
     }
 
     // 6. 创建 SSE 流
-    const stream = createWorkflowSSEStream({
-      workflowResponse: cozeResponse,
+    const stream = createCozeSSEStream({
+      cozeResponse,
       userId,
       botType: 'skill_portrait',
       fallbackText: getSkillPortraitFallback(major, target_city),
