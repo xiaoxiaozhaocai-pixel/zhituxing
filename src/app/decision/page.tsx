@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Send, Loader2, GraduationCap, Briefcase, TrendingUp, Target, Sparkles, Share2, Download, Crown, AlertCircle, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -230,10 +231,8 @@ export default function DecisionPage() {
                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
                     : 'bg-white border border-gray-200 text-gray-800'
                 }`}>
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-                    {message.content}
-                  </div>
-                  
+                  <AIResponseRenderer rawText={message.content} role={message.role as 'user' | 'assistant'} />
+
                   {/* 报告操作按钮 */}
                   {message.role === 'assistant' && message.isReport && (
                     <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2 justify-end">
@@ -269,10 +268,7 @@ export default function DecisionPage() {
               </div>
               <div className="max-w-[80%]">
                 <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-                    {streamingContent}
-                    <span className="inline-block w-2 h-4 bg-orange-500 animate-pulse ml-1" />
-                  </div>
+                  <AIResponseRenderer rawText={streamingContent} streaming role="assistant" />
                 </div>
               </div>
             </div>

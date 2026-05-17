@@ -11,21 +11,12 @@ import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, Al
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
-import CareerPlanCard from '@/components/cards/CareerPlanCard';
-import InterviewResultCard from '@/components/cards/InterviewResultCard';
-import JdMatchCard from '@/components/cards/JdMatchCard';
-import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
-
-interface StructuredDataItem {
-  type: string;
-  data: Record<string, unknown>;
-}
+import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  structuredData?: StructuredDataItem[];
 }
 
 /** 过滤文本中残留的 <<DATA:type=xxx>>...<<END>> 标记（安全网） */
@@ -463,22 +454,24 @@ export default function AssistantPage() {
 
             if (!dataLine) continue;
 
-            // 结构化数据事件 — 保存到消息中，后续渲染数据卡片
+            // 结构化数据事件 — 追加到消息文本中，由AIResponseRenderer统一渲染
             if (eventType === 'structured_data') {
               try {
                 const parsed = JSON.parse(dataLine);
-                const sData: StructuredDataItem = { type: parsed.type, data: parsed.data };
-                setMessages(prev => {
-                  const newMsgs = [...prev];
-                  const last = newMsgs[newMsgs.length - 1];
-                  if (last && last.role === 'assistant') {
-                    newMsgs[newMsgs.length - 1] = {
-                      ...last,
-                      structuredData: [...(last.structuredData || []), sData],
-                    };
-                  }
-                  return newMsgs;
-                });
+                if (parsed.type && parsed.data) {
+                  setMessages(prev => {
+                    const newMsgs = [...prev];
+                    const last = newMsgs[newMsgs.length - 1];
+                    if (last && last.role === 'assistant') {
+                      // 将结构化数据以JSON块形式追加到文本末尾，AIResponseRenderer会自动解析
+                      newMsgs[newMsgs.length - 1] = {
+                        ...last,
+                        content: last.content + '\n\n' + JSON.stringify({ type: parsed.type, ...parsed.data }),
+                      };
+                    }
+                    return newMsgs;
+                  });
+                }
               } catch {
                 // 忽略解析错误
               }
@@ -736,49 +729,36 @@ export default function AssistantPage() {
                       : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
                   }`}
                 >
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {msg.content}
-                    {index === messages.length - 1 && isLoading && msg.content && !msg.content.includes('AI正在思考') && !msg.content.includes('请求超时') && (
-                      <span className="inline-block animate-pulse ml-1">▊</span>
-                    )}
-                    {index === messages.length - 1 && isLoading && !msg.content && (
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                        </div>
-                        <span className="text-xs">AI正在生成...</span>
-                      </div>
-                    )}
-                    {msg.content.includes('请求超时') && (
-                      <button
-                        onClick={() => sendMessage(msg.content.replace('[超时] ', '').replace('请求超时，请重试', '').trim())}
-                        className="mt-2 px-4 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
-                      >
-                        重新生成
-                      </button>
-                    )}
-                  </div>
-                  {/* 结构化数据卡片 */}
-                  {msg.structuredData && msg.structuredData.length > 0 && (
-                    <div className="mt-3 space-y-3">
-                      {msg.structuredData.map((sd, sdIdx) => {
-                        if (sd.type === 'career_plan') {
-                          return <CareerPlanCard key={sdIdx} data={sd.data as Parameters<typeof CareerPlanCard>[0]['data']} />;
-                        }
-                        if (sd.type === 'interview_result') {
-                          return <InterviewResultCard key={sdIdx} data={sd.data as Parameters<typeof InterviewResultCard>[0]['data']} />;
-                        }
-                        if (sd.type === 'jd_match' || sd.type === 'skill_job_match') {
-                          return <JdMatchCard key={sdIdx} data={sd.data as Parameters<typeof JdMatchCard>[0]['data']} />;
-                        }
-                        if (sd.type === 'skill_assessment') {
-                          return <SkillAssessmentCard key={sdIdx} data={sd.data as Parameters<typeof SkillAssessmentCard>[0]['data']} />;
-                        }
-                        return null;
-                      })}
+                  {msg.role === 'user' ? (
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {msg.content}
                     </div>
+                  ) : (
+                    <AIResponseRenderer
+                      rawText={msg.content}
+                      streaming={index === messages.length - 1 && isLoading}
+                      role="assistant"
+                    />
+                  )}
+                  {/* 加载动画 */}
+                  {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
+                      <span className="text-xs">AI正在生成...</span>
+                    </div>
+                  )}
+                  {/* 超时重试 */}
+                  {msg.content.includes('请求超时') && (
+                    <button
+                      onClick={() => sendMessage(msg.content.replace('[超时] ', '').replace('请求超时，请重试', '').trim())}
+                      className="mt-2 px-4 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      重新生成
+                    </button>
                   )}
                 </div>
               </div>

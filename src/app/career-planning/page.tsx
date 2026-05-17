@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import GenerateGuideModal from '@/components/GenerateGuideModal';
-import CareerPlanCard from '@/components/cards/CareerPlanCard';
-import InterviewResultCard from '@/components/cards/InterviewResultCard';
-import JdMatchCard from '@/components/cards/JdMatchCard';
-import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
+import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { 
   Sparkles, 
   Loader2, 
@@ -47,62 +44,6 @@ interface UserProfile {
   awards?: string;
 }
 
-// 格式化JSON内容为可读文本
-function formatJsonContent(jsonStr: string): ReactNode {
-  try {
-    // 尝试解析JSON
-    const parsed = JSON.parse(jsonStr);
-    
-    // 递归提取所有文本内容
-    const extractText = (obj: unknown, indent: number = 0): React.ReactNode => {
-      if (typeof obj === 'string') return obj;
-      if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
-      if (obj === null || obj === undefined) return null;
-      
-      if (Array.isArray(obj)) {
-        return obj.map((item, index) => (
-          <span key={index}>
-            {extractText(item, indent)}
-            {index < obj.length - 1 && <br />}
-          </span>
-        ));
-      }
-      
-      if (typeof obj === 'object') {
-        const entries = Object.entries(obj as object);
-        return entries.map(([key, value], index) => (
-          <span key={key}>
-            {'  '.repeat(indent)}
-            <span className="text-purple-600 font-medium">{key}: </span>
-            {typeof value === 'object' && value !== null ? (
-              <>
-                {extractText(value, indent + 1)}
-              </>
-            ) : (
-              <span className="text-gray-800">{extractText(value)}</span>
-            )}
-            {index < entries.length - 1 && <br />}
-          </span>
-        ));
-      }
-      
-      return null;
-    };
-    
-    return extractText(parsed);
-  } catch (e) {
-    // 如果不是有效JSON，显示原始文本
-    return jsonStr;
-  }
-}
-
-// 检查是否为JSON格式
-function isJsonFormat(str: string): boolean {
-  const trimmed = str.trim();
-  return (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-         (trimmed.startsWith('[') && trimmed.endsWith(']'));
-}
-
 export default function CareerPlanningPage() {
   const router = useRouter();
   const { user, quota, loading: authLoading } = useAuth();
@@ -110,7 +51,6 @@ export default function CareerPlanningPage() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
-  const [structuredData, setStructuredData] = useState<Array<{ type: string; data: Record<string, unknown> }>>([]);
   const [message, setMessage] = useState<{type: 'success' | 'error' | 'info', text: string} | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -204,7 +144,6 @@ export default function CareerPlanningPage() {
     
     setGenerating(true);
     setGeneratedContent('');
-    setStructuredData([]);
     setMessage(null);
     
     try {
@@ -282,12 +221,7 @@ export default function CareerPlanningPage() {
 
             // 结构化数据事件 — 保存状态，后续渲染卡片
             if (eventType === 'structured_data') {
-              try {
-                const parsed = JSON.parse(dataLine);
-                setStructuredData(prev => [...prev, { type: parsed.type, data: parsed.data }]);
-              } catch {
-                // 忽略解析错误
-              }
+              // 结构化数据已由后端解析保存，前端由AIResponseRenderer自动渲染
               continue;
             }
 
@@ -391,7 +325,6 @@ export default function CareerPlanningPage() {
   // 关闭生成结果，重新开始
   const resetGeneration = () => {
     setGeneratedContent('');
-    setStructuredData([]);
     setMessage(null);
   };
 
@@ -439,40 +372,11 @@ export default function CareerPlanningPage() {
                 className="min-h-[400px] max-h-[600px] overflow-y-auto prose prose-purple max-w-none"
               >
                 {generatedContent ? (
-                  <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                    {isJsonFormat(generatedContent) ? (
-                      formatJsonContent(generatedContent)
-                    ) : (
-                      generatedContent
-                    )}
-                    {generating && (
-                      <span className="inline-block w-2 h-5 bg-purple-600 animate-pulse ml-1" />
-                    )}
-                  </div>
+                  <AIResponseRenderer rawText={generatedContent} streaming={generating} role="assistant" />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
                     <Loader2 className="w-8 h-8 animate-spin mb-4" />
                     <p>正在思考中，请稍候...</p>
-                  </div>
-                )}
-                {/* 结构化数据卡片 */}
-                {structuredData.length > 0 && (
-                  <div className="mt-4 space-y-3">
-                    {structuredData.map((sd, idx) => {
-                      if (sd.type === 'career_plan') {
-                        return <CareerPlanCard key={idx} data={sd.data as Parameters<typeof CareerPlanCard>[0]['data']} />;
-                      }
-                      if (sd.type === 'interview_result') {
-                        return <InterviewResultCard key={idx} data={sd.data as Parameters<typeof InterviewResultCard>[0]['data']} />;
-                      }
-                      if (sd.type === 'jd_match' || sd.type === 'skill_job_match') {
-                        return <JdMatchCard key={idx} data={sd.data as Parameters<typeof JdMatchCard>[0]['data']} />;
-                      }
-                      if (sd.type === 'skill_assessment') {
-                        return <SkillAssessmentCard key={idx} data={sd.data as Parameters<typeof SkillAssessmentCard>[0]['data']} />;
-                      }
-                      return null;
-                    })}
                   </div>
                 )}
               </div>
