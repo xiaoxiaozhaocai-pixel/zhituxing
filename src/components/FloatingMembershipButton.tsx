@@ -69,10 +69,10 @@ export default function FloatingMembershipButton() {
           
           {/* 悬停提示 */}
           <div className="absolute right-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            <div className="bg-gray-900 text-white text-sm px-3 py-2 rounded-lg">
+            <div className="bg-[#1E40AF] text-white text-sm px-3 py-2 rounded-lg shadow-lg">
               <div className="font-medium">开通会员</div>
-              <div className="text-xs text-gray-300">无限次AI服务</div>
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 border-8 border-transparent border-l-gray-900" />
+              <div className="text-xs text-blue-200">无限次AI服务</div>
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 border-8 border-transparent border-l-[#1E40AF]" />
             </div>
           </div>
 
