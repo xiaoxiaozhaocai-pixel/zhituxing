@@ -6,9 +6,16 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import {
+  Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
+  Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
+  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Upload, Send, X, MessageCircle, User, ArrowRight, RefreshCw } from 'lucide-react';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 // 行业列表（与数据库值对应）
@@ -81,6 +88,10 @@ export default function JobsPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [typingSeconds, setTypingSeconds] = useState(0);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [jdUrlInput, setJdUrlInput] = useState('');
+  const [jdUrl, setJdUrl] = useState('');
+  const [jdUrlLoading, setJdUrlLoading] = useState(false);
+  const [jdUrlError, setJdUrlError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -156,6 +167,35 @@ export default function JobsPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // JD 链接解析
+  const handleFetchJdUrl = async () => {
+    if (!jdUrl.trim()) return;
+    setJdUrlLoading(true);
+    setJdUrlError(null);
+    try {
+      const res = await fetch('/api/fetch-jd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: jdUrl.trim() }),
+      });
+      const data = await res.json();
+      if (data.code === 200 && data.data?.content) {
+        setJdUrlInput(prev => {
+          const prefix = `\n【我粘贴的招聘链接内容】\n${data.data.content}\n【内容结束】\n\n`;
+          return prev ? prev + prefix : prefix;
+        });
+        setJdUrl('');
+        setJdUrlError(null);
+      } else {
+        setJdUrlError(data.message || '无法解析该链接，请手动粘贴岗位描述');
+      }
+    } catch {
+      setJdUrlError('网络错误，请检查链接或手动粘贴岗位描述');
+    } finally {
+      setJdUrlLoading(false);
+    }
+  };
 
   // 发送消息
   const handleSendMessage = async () => {
@@ -670,6 +710,39 @@ export default function JobsPage() {
           )}
           
           {/* 输入框 */}
+          {/* JD 链接粘贴 */}
+          {showAssistant && (
+            <div className="px-4 pb-3 border-b border-gray-100 flex-shrink-0">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="粘贴招聘链接自动解析（支持Boss直聘/拉勾/猎聘）"
+                  value={jdUrlInput}
+                  onChange={(e) => setJdUrlInput(e.target.value)}
+                  disabled={isTyping || jdUrlLoading}
+                  className="flex-1 text-sm border-blue-200 focus:border-blue-400"
+                />
+                <Button
+                  onClick={handleFetchJdUrl}
+                  disabled={!jdUrlInput.trim() || isTyping || jdUrlLoading}
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50 whitespace-nowrap"
+                >
+                  {jdUrlLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <LinkIcon className="w-4 h-4 mr-1" />
+                      解析JD
+                    </>
+                  )}
+                </Button>
+              </div>
+              {jdUrlError && (
+                <p className="text-xs text-amber-600 mt-1">{jdUrlError}</p>
+              )}
+            </div>
+          )}
           <div className="p-4 border-t flex-shrink-0">
             <div className="flex gap-2">
               <Input

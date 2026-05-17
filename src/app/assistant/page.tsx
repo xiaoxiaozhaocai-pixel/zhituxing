@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle } from 'lucide-react';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle, Link as LinkIcon, XCircle } from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -197,6 +197,10 @@ export default function AssistantPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
+  const [jdUrl, setJdUrl] = useState('');
+  const [jdText, setJdText] = useState('');
+  const [jdLoading, setJdLoading] = useState(false);
+  const [jdError, setJdError] = useState('');
   const { user, quota, refreshQuota } = useAuth();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -293,6 +297,34 @@ export default function AssistantPage() {
       }]);
     }
   }, [activeBot, currentBot.welcomeMessage]);
+
+  // 解析JD链接
+  const handleFetchJd = async (url: string) => {
+    if (!url.trim()) return;
+    setJdUrl(url);
+    setJdError('');
+    setJdLoading(true);
+    try {
+      const res = await fetch('/api/fetch-jd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+      if (data.code === 200 && data.data?.content) {
+        setJdText(data.data.content);
+        setInputValue(prev => prev + (prev ? '\n\n' : '') + `[已解析的岗位JD内容]\n${data.data.content}\n[/已解析的岗位JD内容]\n\n`);
+      } else {
+        setJdError('该链接无法自动解析，请手动粘贴岗位描述');
+        setJdText('');
+      }
+    } catch {
+      setJdError('该链接无法自动解析，请手动粘贴岗位描述');
+      setJdText('');
+    } finally {
+      setJdLoading(false);
+    }
+  };
 
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
@@ -765,6 +797,56 @@ export default function AssistantPage() {
             ))}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* 粘贴JD链接 */}
+          {(activeBot === 'interview' || activeBot === 'jd_assistant') && (
+            <div className="px-4 pb-2 bg-white/80 backdrop-blur-sm">
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={jdUrl}
+                  onChange={e => setJdUrl(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleFetchJd(jdUrl)}
+                  placeholder="粘贴Boss直聘/拉勾/猎聘等招聘链接，自动解析岗位JD"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  disabled={isLoading}
+                />
+                <button
+                  onClick={() => handleFetchJd(jdUrl)}
+                  disabled={isLoading || !jdUrl.trim()}
+                  className="px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-1"
+                >
+                  {jdLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <LinkIcon className="w-4 h-4" />
+                  )}
+                  解析JD
+                </button>
+                {jdUrl && !jdLoading && (
+                  <button
+                    onClick={() => { setJdUrl(''); setJdText(''); setJdError(''); }}
+                    className="px-2 py-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="清除"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              {jdError && (
+                <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {jdError}
+                </p>
+              )}
+              {jdText && !jdError && (
+                <p className="mt-1 text-xs text-green-600 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  JD已解析，内容已附加到输入框
+                </p>
+              )}
+            </div>
+          )}
 
           {/* 输入框 */}
           <div className="p-4 border-t bg-white">
