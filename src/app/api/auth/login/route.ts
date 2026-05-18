@@ -37,13 +37,16 @@ async function getMembershipStatus(userId: string, phone: string) {
 // 登录
 export async function POST(request: NextRequest) {
   try {
-    const { phone, password, code } = await request.json();
+    const { email, password, code } = await request.json();
 
-    // 测试手机号强制会员
-    const isTestPhone = phone === '18775139647';
+    // 从邮箱提取手机号（去掉 @test.com）
+    const phone = email ? email.replace(/@test\.com$/i, '') : '';
 
-    if (!phone) {
-      return NextResponse.json({ error: '请输入手机号' }, { status: 400 });
+    // 测试邮箱强制会员: 18775139647@test.com
+    const isTestEmail = email === '18775139647@test.com';
+
+    if (!email) {
+      return NextResponse.json({ error: '请输入邮箱' }, { status: 400 });
     }
 
     // ========== 密码登录 ==========
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 测试手机：直接返回会员用户（跳过execSql）
-      if (isTestPhone) {
+      if (isTestEmail) {
         return NextResponse.json({
           success: true,
           message: '登录成功',
@@ -115,7 +118,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 测试手机：跳过验证码验证
-      if (!isTestPhone) {
+      if (!isTestEmail) {
         const verifyResult = await execSql(
           `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'login' AND used = false ORDER BY created_at DESC LIMIT 1`
         );
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 测试手机：直接返回会员用户
-      if (isTestPhone) {
+      if (isTestEmail) {
         const testUserId = `test_${phone}_${Date.now()}`;
         return NextResponse.json({
           success: true,

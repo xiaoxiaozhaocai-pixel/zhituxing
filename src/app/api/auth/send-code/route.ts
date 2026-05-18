@@ -52,21 +52,24 @@ async function execSql(sql: string): Promise<unknown[]> {
 // 发送验证码
 export async function POST(request: NextRequest) {
   try {
-    const { phone, type = 'login' } = await request.json();
+    const { email, type = 'login' } = await request.json();
 
-    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+    // 从邮箱提取手机号
+    const phone = email ? email.replace(/@test\.com$/i, '') : '';
+
+    if (!email || !/^1[3-9]\d{9}@test\.com$/i.test(email)) {
       return NextResponse.json(
-        { error: '请输入正确的手机号' },
+        { error: '请输入正确的邮箱格式（手机号@test.com）' },
         { status: 400 }
       );
     }
 
     // 生成6位验证码
-    const isTestPhone = phone === '18775139647';
-    const effectiveType = isTestPhone ? 'register' : (type || 'login');
-    const code = isTestPhone ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+    const isTestEmail = email === '18775139647@test.com';
+    const effectiveType = isTestEmail ? 'register' : (type || 'login');
+    const code = isTestEmail ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
 
-    if (isTestPhone) {
+    if (isTestEmail) {
       console.log(`【测试模式】验证码固定为 123456，跳过短信发送`);
       return NextResponse.json({
         success: true,

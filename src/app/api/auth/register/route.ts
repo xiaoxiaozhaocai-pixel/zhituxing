@@ -5,20 +5,23 @@ import { execSql } from '@/lib/exec-sql';
 // 注册
 export async function POST(request: NextRequest) {
   try {
-    const { phone, password, code, nickname, invite_code } = await request.json();
+    const { email, password, code, nickname, invite_code } = await request.json();
+
+    // 从邮箱提取手机号（去掉 @test.com）
+    const phone = email ? email.replace(/@test\.com$/i, '') : '';
 
     // 验证必填项
-    if (!phone || !password || !code) {
+    if (!email || !password || !code) {
       return NextResponse.json(
         { error: '请填写完整信息' },
         { status: 400 }
       );
     }
 
-    // 验证手机号格式
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
+    // 验证邮箱格式（手机号@test.com）
+    if (!/^1[3-9]\d{9}@test\.com$/i.test(email)) {
       return NextResponse.json(
-        { error: '请输入正确的手机号' },
+        { error: '请输入正确的邮箱格式（手机号@test.com）' },
         { status: 400 }
       );
     }
@@ -31,14 +34,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 测试模式：18775139647 固定验证码 123456，同时开通会员
-    const isTestPhone = phone === '18775139647';
-    if (isTestPhone && code !== '123456') {
+    // 测试模式：18775139647@test.com 固定验证码 123456，同时开通会员
+    const isTestEmail = email === '18775139647@test.com';
+    if (isTestEmail && code !== '123456') {
       return NextResponse.json({ error: '验证码错误' }, { status: 400 });
     }
 
-    // 查询验证码（测试手机跳过）
-    if (!isTestPhone) {
+    // 查询验证码（测试邮箱跳过）
+    if (!isTestEmail) {
       const verifyResult = await execSql(
         `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'register' AND used = false ORDER BY created_at DESC LIMIT 1`
       );
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 测试模式：直接返回成功，并写入生产 Supabase user_profiles
-    if (isTestPhone) {
+    if (isTestEmail) {
       const testUserId = `test_${phone}_${Date.now()}`;
       const testUser = {
         id: testUserId,

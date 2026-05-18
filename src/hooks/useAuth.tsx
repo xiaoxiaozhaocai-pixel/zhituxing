@@ -112,10 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendCode = async (phone: string, type: string = 'login'): Promise<{ success: boolean; message: string; code?: string }> => {
     try {
+      // 自动拼接 @test.com 形成邮箱
+      const email = `${phone}@test.com`;
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, type }),
+        body: JSON.stringify({ email, type }),
       });
       
       const data = await response.json();
@@ -128,10 +130,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (phone: string, password?: string, code?: string): Promise<{ success: boolean; message: string }> => {
     try {
+      // 自动拼接 @test.com 形成邮箱
+      const email = `${phone}@test.com`;
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password, code }),
+        body: JSON.stringify({ email, password, code }),
       });
       
       const data = await response.json();
@@ -160,10 +164,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (phone: string, password: string, code: string, nickname?: string, inviteCode?: string): Promise<{ success: boolean; message: string }> => {
     try {
+      // 自动拼接 @test.com 形成邮箱
+      const email = `${phone}@test.com`;
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password, code, nickname, invite_code: inviteCode }),
+        body: JSON.stringify({ email, password, code, nickname, invite_code: inviteCode }),
       });
       
       const data = await response.json();
