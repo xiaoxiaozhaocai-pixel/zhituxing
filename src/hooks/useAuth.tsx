@@ -76,7 +76,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      // 从 localStorage 获取用户 ID
+      const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      const userId = storedUser ? JSON.parse(storedUser)?.id : null;
+      
+      const response = await fetch('/api/auth/me', {
+        headers: userId ? { 'x-user-id': userId } : {}
+      });
       const data = await response.json();
       
       if (data.success && data.user) {
@@ -98,7 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 刷新配额信息
   const refreshQuota = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      // 从 localStorage 获取用户 ID
+      const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      const userId = storedUser ? JSON.parse(storedUser)?.id : null;
+      
+      const response = await fetch('/api/auth/me', {
+        headers: userId ? { 'x-user-id': userId } : {}
+      });
       const data = await response.json();
       
       if (data.success && data.user) {
@@ -141,13 +153,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (data.success && data.user) {
+        // 存储用户信息到 localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
         // 登录后获取完整用户信息（包含配额）
-        const meResponse = await fetch('/api/auth/me');
+        const meResponse = await fetch('/api/auth/me', {
+          headers: { 'x-user-id': data.user.id }
+        });
         const meData = await meResponse.json();
         
         if (meData.success && meData.user) {
           setUser(meData.user);
           setQuota(meData.user.quota);
+          // 更新 localStorage 中的用户信息
+          localStorage.setItem('user', JSON.stringify(meData.user));
         } else {
           setUser(data.user);
         }
@@ -175,19 +194,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (data.success && data.user) {
+        // 存储用户信息到 localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
-        // 注册后设置默认配额
+        
+        // 根据用户类型设置配额
+        const isMember = data.user.user_type === 'member' || data.user.membership_type === 'member';
         setQuota({
-          career_planning: { remaining: -1, unlimited: true },
-          interview: { remaining: 3, unlimited: false },
-          assessment: { remaining: 1, unlimited: false },
+          career_planning: { remaining: -1, unlimited: isMember },
+          interview: { remaining: isMember ? -1 : 3, unlimited: isMember },
+          assessment: { remaining: isMember ? -1 : 1, unlimited: isMember },
           competency: { is_member_only: true, requires_report: true },
-          decision: { remaining: 3, unlimited: false },
-          remaining: 3,
+          decision: { remaining: isMember ? -1 : 3, unlimited: isMember },
+          remaining: isMember ? -1 : 3,
           reset_time: '',
-          is_member: false,
-          member_type: 'free',
-          member_expire_time: null
+          is_member: isMember,
+          member_type: isMember ? 'member' : 'free',
+          member_expire_time: data.user.membership_expires_at || null
         });
         return { success: true, message: '注册成功' };
       } else {
@@ -202,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      localStorage.removeItem('user');
       setUser(null);
       setQuota(null);
     } catch (error) {
