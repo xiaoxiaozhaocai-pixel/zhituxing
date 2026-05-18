@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -366,6 +366,21 @@ interface ProfileForm {
 }
 
 export default function ProfileInfoPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
+          <p className="text-sm text-gray-500">加载中...</p>
+        </div>
+      </div>
+    }>
+      <ProfileInfoContent />
+    </Suspense>
+  );
+}
+
+function ProfileInfoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromPage = searchParams.get('from') || '';

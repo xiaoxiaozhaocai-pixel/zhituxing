@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { ArrowLeft, Loader2, Gift } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
-export default function AuthPage() {
+function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, login, register, sendCode } = useAuth();
@@ -330,5 +330,17 @@ export default function AuthPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
+      </div>
+    }>
+      <AuthContent />
+    </Suspense>
   );
 }
