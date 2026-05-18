@@ -31,13 +31,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 测试模式：18775139647 固定验证码 123456
+    // 测试模式：18775139647 固定验证码 123456，同时开通会员
     const isTestPhone = phone === '18775139647';
     if (isTestPhone && code !== '123456') {
       return NextResponse.json({ error: '验证码错误' }, { status: 400 });
     }
 
-    // 查询验证码
+    // 查询验证码（测试手机跳过）
     if (!isTestPhone) {
       const verifyResult = await execSql(
         `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'register' AND used = false ORDER BY created_at DESC LIMIT 1`
@@ -57,7 +57,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '验证码错误' }, { status: 400 });
       }
 
-      // 标记验证码已使用
       await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
     }
 
@@ -81,18 +80,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 测试模式：直接返回成功
+    // 测试模式：直接返回成功，并写入生产 Supabase user_profiles
     if (isTestPhone) {
+      const testUserId = `test_${phone}_${Date.now()}`;
       const testUser = {
-        id: `test_${phone}`,
+        id: testUserId,
         phone,
         nickname: nickname || `用户${phone.slice(-4)}`,
         created_at: new Date().toISOString(),
-        token: `test_token_${Date.now()}`
+        token: `test_token_${Date.now()}`,
+        user_type: 'member',
+        membership_type: 'member'
       };
+
+      // 写入生产 Supabase user_profiles 表
+      try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gpwekhlltsvoalmqzjy.supabase.co';
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdwd2VraGxsdHN2b2FsbXF6anl2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Njc1Nzc0NiwiZXhwIjoyMDkyMzMzNzQ2fQ.-hP6eVgWEUsYkM9pyVkXPT9bMP_ek30_wgOeZ0PL1X4';
+        await fetch(`${supabaseUrl}/rest/v1/user_profiles`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify({
+            user_id: testUserId,
+            phone: phone,
+            nickname: testUser.nickname,
+            user_type: 'member',
+            membership_type: 'member',
+            membership_expires_at: '2030-12-31T23:59:59Z',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+        });
+      } catch (e) {
+        console.log('Supabase write failed (expected in dev):', e);
+      }
+
       return NextResponse.json({
         success: true,
-        message: '注册成功（测试模式）',
+        message: '注册成功（测试模式，会员已开通）',
         user: testUser
       });
     }
