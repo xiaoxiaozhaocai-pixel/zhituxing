@@ -46,9 +46,9 @@ interface SearchResult {
 async function searchFromDatabase(query: string): Promise<SearchResult[]> {
   try {
     const { data, error } = await supabase
-      .from('jobs')
-      .select('job_name, company_name, city, salary_range, industry, company_type, jd_content, is_fresh_friendly, source')
-      .or('job_name.ilike.%' + query + '%,company_name.ilike.%' + query + '%,city.ilike.%' + query + '%')
+      .from('job_descriptions')
+      .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly, source_platform')
+      .or('job_title.ilike.%' + query + '%,company.ilike.%' + query + '%,city.ilike.%' + query + '%')
       .limit(20);
 
     if (error) {
@@ -57,15 +57,15 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
     }
 
     return (data || []).map((job: Record<string, unknown>) => ({
-      source: (job.source as string) || 'ZhiTuXing Database',
-      job_name: (job.job_name as string) || '',
-      company_name: (job.company_name as string) || 'Unknown',
+      source: (job.source_platform as string) || 'ZhiTuXing Database',
+      job_name: (job.job_title as string) || '',
+      company_name: (job.company as string) || 'Unknown',
       city: (job.city as string) || 'Unknown',
       salary_range: (job.salary_range as string) || 'Negotiable',
       industry: (job.industry as string) || 'General',
-      company_type: (job.company_type as string) || 'Unknown',
-      job_description: (job.jd_content as string) || 'No detailed information',
-      is_fresh_friendly: job.is_fresh_friendly === 1,
+      company_type: '',
+      job_description: (job.responsibilities as string) || 'No detailed information',
+      is_fresh_friendly: job.fresh_graduate_friendly === true,
     }));
   } catch (error) {
     console.error('Database search exception:', error);

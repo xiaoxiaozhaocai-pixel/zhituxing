@@ -39,17 +39,16 @@ export async function POST(request: NextRequest) {
       errors: [] as { rowIndex: number; error: string }[]
     };
 
-    // 批量插入数据
+    // 批量插入数据（字段名映射到 job_descriptions 表的实际列名）
     const jobsToInsert = jobs.map((job: any, index: number) => ({
-      job_name: job.job_name,
-      company_name: job.company_name,
+      job_title: job.job_name,
+      company: job.company_name,
       city: job.city,
       salary_range: job.salary_range || null,
       industry: job.industry || null,
-      company_type: job.company_type || null,
-      job_description: job.job_description || null,
-      is_fresh_friendly: job.is_fresh_friendly ?? 1,
-      source: job.source || '管理员批量导入',
+      responsibilities: job.job_description || null,
+      fresh_graduate_friendly: job.is_fresh_friendly ?? true,
+      source_platform: job.source || '管理员批量导入',
       status: 'approved',
       created_at: new Date().toISOString()
     }));
@@ -62,16 +61,16 @@ export async function POST(request: NextRequest) {
         try {
           // 检查是否存在
           const { data: existing } = await supabase
-            .from('jobs')
+            .from('job_descriptions')
             .select('id')
-            .eq('job_name', job.job_name)
-            .eq('company_name', job.company_name)
+            .eq('job_title', job.job_name)
+            .eq('company', job.company_name)
             .eq('city', job.city)
             .single();
 
           if (existing) {
             // 删除现有数据
-            await supabase.from('jobs').delete().eq('id', existing.id);
+            await supabase.from('job_descriptions').delete().eq('id', existing.id);
           }
         } catch (e) {
           // 继续处理
@@ -81,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // 批量插入
     const { data, error } = await supabase
-      .from('jobs')
+      .from('job_descriptions')
       .insert(jobsToInsert)
       .select();
 
