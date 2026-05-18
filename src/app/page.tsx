@@ -227,8 +227,10 @@ export default function HomePage() {
               全行业全岗位 AI 模拟甄选与职业能力发展平台
             </span>
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-[#1E293B] mb-8 leading-[1.2] tracking-tight anim-up-d2">
-            AI生成你的专属<br />
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[#1E293B] mb-4 leading-[1.2] tracking-tight anim-up-d2">
+            AI生成你的专属
+          </h2>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-[1.2] tracking-tight anim-up-d2">
             <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">大学四年职业规划</span>
           </h1>
           <p className="text-lg md:text-xl text-[#64748B] max-w-2xl mx-auto mb-4 anim-up-d2">
