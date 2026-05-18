@@ -2,6 +2,21 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+// 从 localStorage 获取当前用户 ID
+function getCurrentUserId(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      return user?.id || null;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 export interface MembershipState {
   membershipType: 'free' | 'member';
   isMember: boolean;
@@ -35,8 +50,13 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
   const refresh = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true }));
+      const userId = getCurrentUserId();
+      if (!userId) {
+        setState(prev => ({ ...prev, loading: false }));
+        return;
+      }
       const res = await fetch('/api/user/membership', {
-        headers: { 'x-user-id': '999' }, // TODO: 替换为真实用户ID
+        headers: { 'x-user-id': userId },
       });
       if (res.ok) {
         const json = await res.json();
@@ -57,11 +77,13 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
 
   const upgrade = useCallback(async (plan: string): Promise<boolean> => {
     try {
+      const userId = getCurrentUserId();
+      if (!userId) return false;
       const res = await fetch('/api/user/membership', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': '999', // TODO: 替换为真实用户ID
+          'x-user-id': userId,
         },
         body: JSON.stringify({ plan }),
       });

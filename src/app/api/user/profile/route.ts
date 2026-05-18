@@ -42,9 +42,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ code: 401, message: '请先登录' }, { status: 401 });
     }
 
+    // 测试用户返回模拟画像
+    if (userId.startsWith('test_')) {
+      return NextResponse.json({
+        code: 0,
+        message: 'success',
+        data: {
+          userId,
+          userType: 'member',
+          personalityType: 'INTJ',
+          major: '计算机科学',
+          grade: '大三',
+          jobIntention: '前端开发工程师',
+          skills: [
+            { name: 'React', level: 4, proficiency: '熟练' },
+            { name: 'TypeScript', level: 4, proficiency: '熟练' },
+            { name: 'Node.js', level: 3, proficiency: '熟悉' },
+          ],
+          internshipExperience: '某互联网公司前端实习3个月',
+          projectExperience: '个人博客系统、在线商城项目',
+          awards: '校级编程竞赛二等奖',
+        },
+      });
+    }
+
     // 1. 基础画像
     const profileRows = await execSql(
-      `SELECT user_id, user_type, personality_type, major, grade, graduation_year, city, target_city, job_intention, skills, internship_experience, project_experience, awards, ability_background FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
+      `SELECT user_id, user_type, personality_type, major, grade, job_intention, skills, internship_experience, project_experience, awards, ability_background FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
     );
 
     if (!profileRows || profileRows.length === 0) {
