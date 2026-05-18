@@ -43,13 +43,39 @@ interface SearchResult {
   is_fresh_friendly: boolean;
 }
 
+const PLACEHOLDER_PATTERNS = ['placeholder', 'your-project', 'undefined', 'null', ''];
+
+function isValidConfig(url: string, key: string): boolean {
+  if (!url || !key) return false;
+  const lower = url.toLowerCase() + key.toLowerCase();
+  return !PLACEHOLDER_PATTERNS.some(p => lower === p.toLowerCase() || (p === '' && lower.trim() === ''));
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Database query timeout after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 async function searchFromDatabase(query: string): Promise<SearchResult[]> {
+  // 跳过无效的 Supabase 配置，避免挂起
+  if (!isValidConfig(supabaseUrl, supabaseServiceKey)) {
+    console.warn('[Search] Skipping database search: invalid Supabase config');
+    return [];
+  }
+
   try {
-    const { data, error } = await supabase
-      .from('job_descriptions')
-      .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly, source_platform')
-      .or('job_title.ilike.%' + query + '%,company.ilike.%' + query + '%,city.ilike.%' + query + '%')
-      .limit(20);
+    const { data, error } = await withTimeout(
+      supabase
+        .from('job_descriptions')
+        .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly, source_platform')
+        .or('job_title.ilike.%' + query + '%,company.ilike.%' + query + '%,city.ilike.%' + query + '%')
+        .limit(20),
+      5000
+    );
 
     if (error) {
       console.error('Database search error:', error);
@@ -67,8 +93,13 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
       job_description: (job.responsibilities as string) || 'No detailed information',
       is_fresh_friendly: job.fresh_graduate_friendly === true,
     }));
-  } catch (error) {
-    console.error('Database search exception:', error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes('timeout')) {
+      console.error('[Search] Database query timeout:', msg);
+    } else {
+      console.error('Database search exception:', error);
+    }
     return [];
   }
 }
