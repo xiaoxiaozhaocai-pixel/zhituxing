@@ -13,27 +13,29 @@ import InspectorWrapper from '@/components/InspectorWrapper';
 
 export const metadata: Metadata = {
   title: {
-    default: '职途星——你的AI职业规划助手',
+    default: '职途星 - AI职业规划与模拟面试平台 | 大学生一站式求职服务',
     template: '%s | 职途星',
   },
   description:
-    '职途星是基于全行业真实招聘JD的AI职业规划助手，为大学生提供一站式求职服务。',
+    '职途星是专注于大学生求职的AI智能平台，提供AI职业规划、模拟面试、能力测评、岗位精准匹配等一站式服务。基于500万+真实招聘数据分析，助你科学规划职业方向，提升求职竞争力。',
   keywords: [
     '职途星',
     'AI职业规划',
     '大学生求职',
-    '岗位查询',
     '模拟面试',
+    '能力测评',
+    '岗位匹配',
     '职业规划',
     '应届生求职',
     '全行业岗位',
+    '求职助手',
   ],
   authors: [{ name: '职途星团队' }],
   generator: '职途星',
   openGraph: {
-    title: '职途星——你的AI职业规划助手',
+    title: '职途星 - AI职业规划与模拟面试平台',
     description:
-      '基于500万+全行业真实职业数据智能分析，为你推荐最适合的职业方向。',
+      '专注于大学生求职的AI智能平台，提供职业规划、模拟面试、能力测评、岗位匹配等一站式服务，助你科学规划职业方向。',
     locale: 'zh_CN',
     type: 'website',
   },

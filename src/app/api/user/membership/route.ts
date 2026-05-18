@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     const rows = await execSql(
-      `SELECT membership_type, membership_plan, membership_expires_at, user_type
+      `SELECT membership_type, membership_expires_at, user_type
        FROM user_profiles WHERE user_id = '${userId}'`
     );
 
@@ -31,7 +31,6 @@ export async function GET(request: NextRequest) {
 
     const row = rows[0] as Record<string, unknown>;
     const membershipType = (row.membership_type as string) || (row.user_type as string) || 'free';
-    const membershipPlan = row.membership_plan as string | null;
     const expiresAt = row.membership_expires_at as string | null;
 
     // 检查会员是否过期
@@ -51,7 +50,6 @@ export async function GET(request: NextRequest) {
       data: {
         membershipType: isExpired ? 'free' : membershipType,
         isMember: !isExpired && membershipType === 'member',
-        membershipPlan: isExpired ? null : membershipPlan,
         expiresAt: isExpired ? null : expiresAt,
       },
     });
