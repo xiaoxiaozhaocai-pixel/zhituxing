@@ -38,6 +38,16 @@ export const metadata: Metadata = {
       '专注于大学生求职的AI智能平台，提供职业规划、模拟面试、能力测评、岗位匹配等一站式服务，助你科学规划职业方向。',
     locale: 'zh_CN',
     type: 'website',
+    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - AI职业规划与模拟面试平台' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '职途星 - AI职业规划与模拟面试平台',
+    description: '专注于大学生求职的AI智能平台，提供职业规划、模拟面试、能力测评、岗位匹配等一站式服务。',
+    images: ['https://s.coze.cn/image/9JW8vCo1HrY/'],
+  },
+  alternates: {
+    canonical: 'https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site',
   },
   robots: {
     index: true,
@@ -56,6 +66,32 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className={`antialiased`}>
         <FontPreload />
+        {/* Organization JSON-LD */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "职途星",
+              "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site",
+              "description": "AI职业规划与模拟面试平台，大学生一站式求职服务",
+              "logo": "https://s.coze.cn/image/9JW8vCo1HrY/"
+            })
+          }}
+        />
+        {/* WebSite JSON-LD */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "职途星",
+              "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site"
+            })
+          }}
+        />
         {isDev && <InspectorWrapper />}
         <Providers>
           <ToastProvider>
