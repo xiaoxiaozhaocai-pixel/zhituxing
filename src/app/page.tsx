@@ -500,6 +500,31 @@ export default function HomePage() {
       </section>
 
       {/* 页脚由全局 Footer 组件渲染 */}
+
+      {/* Schema.org JSON-LD 结构化数据 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "职途星",
+            "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site",
+            "description": "AI职业规划与模拟面试平台，为大学生提供一站式求职服务"
+          })
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "职途星",
+            "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site"
+          })
+        }}
+      />
     </div>
   );
 }
