@@ -79,8 +79,8 @@ async function exportMembers(supabase: any, dateRange?: { start: string; end: st
 // 导出岗位数据
 async function exportJobs(supabase: any, dateRange?: { start: string; end: string }) {
   let query = supabase
-    .from('jobs')
-    .select('id, job_name, company_name, city, salary_range, source, created_at')
+    .from('job_descriptions')
+    .select('id, job_title, company, city, salary_range, source_platform, created_at')
     .order('created_at', { ascending: false });
 
   if (dateRange?.start) {
@@ -96,11 +96,11 @@ async function exportJobs(supabase: any, dateRange?: { start: string; end: strin
   
   return (data || []).map((job: any) => ({
     'ID': job.id,
-    '岗位名称': job.job_name,
-    '公司名称': job.company_name,
+    '岗位名称': job.job_title,
+    '公司名称': job.company,
     '城市': job.city || '-',
     '薪资范围': job.salary_range || '-',
-    '来源平台': job.source || '手动添加',
+    '来源平台': job.source_platform || 'ZhiTuXing',
     '创建时间': job.created_at
   }));
 }

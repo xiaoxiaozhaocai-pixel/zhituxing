@@ -32,8 +32,8 @@ export async function GET() {
 
     // 测试4：查询jobs表
     const { data: jobs, error: jobsError } = await supabaseAdmin
-      .from('jobs')
-      .select('id, job_name, company_name, city')
+      .from('job_descriptions')
+      .select('id, job_title, company, city')
       .limit(3);
 
     return NextResponse.json({
@@ -45,7 +45,7 @@ export async function GET() {
       tables: {
         users: { count: users?.length ?? 0, error: usersError?.message || null, sample: users },
         user_profiles: { count: profiles?.length ?? 0, error: profilesError?.message || null, sample: profiles },
-        jobs: { count: jobs?.length ?? 0, error: jobsError?.message || null, sample: jobs },
+        jobs: { count: jobs?.length ?? 0, error: jobsError?.message || null, sample: jobs?.map(j => ({...j, job_title: j.job_title, company: j.company})) },
       }
     });
   } catch (error) {

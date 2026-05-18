@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     
     // 构建查询
     let query = supabaseAdmin
-      .from('jobs')
+      .from('job_descriptions')
       .select('*', { count: 'exact' });
     
     // 应用筛选条件
@@ -26,14 +26,11 @@ export async function GET(request: NextRequest) {
     if (city) {
       query = query.eq('city', city);
     }
-    if (companyType) {
-      query = query.eq('company_type', companyType);
-    }
     if (freshOnly) {
-      query = query.eq('is_fresh_friendly', 1);
+      query = query.eq('fresh_graduate_friendly', true);
     }
     if (keyword) {
-      query = query.or(`job_name.ilike.%${keyword}%,skills.ilike.%${keyword}%`);
+      query = query.or(`job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`);
     }
     
     // 分页
@@ -49,17 +46,17 @@ export async function GET(request: NextRequest) {
     // 格式化返回数据
     const formattedData = data?.map(job => ({
       id: job.id,
-      name: job.job_name,
+      name: job.job_title,
       industry: job.industry,
       city: job.city,
-      companyType: job.company_type,
-      salary: `${job.salary_min/1000}k-${job.salary_max/1000}k`,
-      salaryMin: job.salary_min,
-      salaryMax: job.salary_max,
+      companyType: '',
+      salary: job.salary_range || '面议',
+      salaryMin: 0,
+      salaryMax: 0,
       skills: job.skills?.split(',') || [],
-      friendliness: job.is_fresh_friendly === 1 ? '极度友好' : '社招为主',
-      isFreshFriendly: job.is_fresh_friendly === 1,
-      jdContent: job.jd_content
+      friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
+      isFreshFriendly: job.fresh_graduate_friendly === true,
+      jdContent: job.responsibilities
     })) || [];
     
     return NextResponse.json({
