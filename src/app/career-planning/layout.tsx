@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AI职业规划 - 智能分析职业方向',
-  description: '职途星AI职业规划服务，基于你的专业背景、技能特长和求职意向，智能分析最适合你的职业发展方向。生成个性化职业发展路径，提供阶段性目标和能力提升建议，助你科学规划职业生涯。',
+  title: 'AI职业规划 - 智能分析你的职业方向',
+  description: '输入你的专业和兴趣，AI基于全行业真实岗位数据为你规划最优职业路径。覆盖27个行业11,000+岗位，精准匹配你的发展方向。',
 };
 
 export default function CareerPlanningLayout({

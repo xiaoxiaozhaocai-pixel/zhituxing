@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '技能画像 - 可视化职业技能树',
-  description: '职途星技能画像服务，AI智能分析你的专业技能、通用技能和软技能，生成可视化技能树。清晰展示技能掌握程度，发现能力短板，推荐学习路径，助你系统化提升职业竞争力。',
+  title: '技能画像 - 可视化你的职业技能树',
+  description: 'AI分析你的职业技能，生成可视化技能画像。对比目标岗位要求，发现技能差距，制定个性化学习路径。',
 };
 
 export default function SkillPortraitLayout({

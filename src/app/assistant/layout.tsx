@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '职搭子JD助手 - 全行业岗位智能查询',
-  description: '职搭子是职途星旗下的AI岗位查询助手，覆盖全行业9546+真实招聘JD数据。智能搜索岗位信息，分析技能要求、薪资范围、发展前景，为大学生提供精准的岗位推荐和求职指导服务。',
+  description: 'AI智能解读岗位描述，一键查询全行业11,000+真实招聘JD。覆盖互联网、金融、教育等27个行业，帮你快速了解岗位要求。',
 };
 
 export default function AssistantLayout({
