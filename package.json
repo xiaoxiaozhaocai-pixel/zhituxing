@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production next build",
-    "dev": "next start -p ${PORT:-5000}",
+    "dev": "next dev -p ${PORT:-5000}",
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint",
     "start": "next start -p ${PORT:-5000}",
