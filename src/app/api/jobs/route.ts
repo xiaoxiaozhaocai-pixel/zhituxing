@@ -53,13 +53,15 @@ export async function GET(request: NextRequest) {
       // 获取同义词对应的行业名
       const synonymIndustries = INDUSTRY_SYNONYMS[keyword] || [];
       
-      // 并行查询5个字段 + 同义词行业查询
+      // 并行查询3个字符串字段 + 同义词行业查询
+      // 注意：hard_skills/soft_skills 是 JSONB 数组，不能用 ilike，改用 contains
       const queries = [
         buildBaseQuery().ilike('job_title', `%${keyword}%`),
         buildBaseQuery().ilike('responsibilities', `%${keyword}%`),
         buildBaseQuery().ilike('industry', `%${keyword}%`),
-        buildBaseQuery().ilike('hard_skills', `%${keyword}%`),
-        buildBaseQuery().ilike('soft_skills', `%${keyword}%`),
+        // JSONB 数组包含查询（精确匹配数组元素）
+        buildBaseQuery().contains('hard_skills', [keyword]),
+        buildBaseQuery().contains('soft_skills', [keyword]),
         // 同义词行业精确匹配
         ...synonymIndustries.map(syn => 
           buildBaseQuery().eq('industry', syn)
