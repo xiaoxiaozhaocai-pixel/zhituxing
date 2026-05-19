@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 版本号 - 用于验证部署是否成功
 const VERSION = '2833971';
 
 export async function GET() {
+  // 基础响应
+  const baseResponse = {
+    timestamp: new Date().toISOString(),
+    version: VERSION
+  };
+  
   try {
+    // 动态导入 Supabase，避免构建时错误
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
     const supabase = getSupabaseAdmin();
     
     // 测试数据库连接
@@ -25,15 +32,13 @@ export async function GET() {
     return NextResponse.json({
       status: 'ok',
       database,
-      timestamp: new Date().toISOString(),
-      version: VERSION
+      ...baseResponse
     });
   } catch (error: any) {
     return NextResponse.json({
       status: 'error',
       database: 'error',
-      timestamp: new Date().toISOString(),
-      version: VERSION,
+      ...baseResponse,
       error: error?.message || 'Unknown error'
     }, { status: 500 });
   }
