@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * 统一岗位搜索API
  * 供智能体调用，也支持前端直接搜索

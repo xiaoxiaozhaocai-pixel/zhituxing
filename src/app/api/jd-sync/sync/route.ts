@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { syncAllPlatforms, syncSinglePlatform, getLastSyncStatus, getJobsStats, getPlatformStats } from '@/lib/jd-sync-service';
 

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * 模拟面试AI智能体流式API
  * 

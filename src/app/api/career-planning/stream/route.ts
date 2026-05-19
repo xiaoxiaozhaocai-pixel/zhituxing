@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * 职业规划AI智能体流式API
  * 

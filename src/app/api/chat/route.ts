@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * 通用聊天API — 路由到不同Coze智能体
  * 

@@ -18,7 +18,9 @@ export function getSupabase(): SupabaseClient {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.COZE_SUPABASE_ANON_KEY;
   
   if (!url || !key) {
-    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    // 构建阶段环境变量可能缺失，返回空 client 避免构建失败
+    console.warn('[Supabase] Missing environment variables, returning dummy client for build');
+    return createDummyClient();
   }
   
   clientInstance = createClient(url, key);
@@ -36,11 +38,18 @@ export function getSupabaseAdmin(): SupabaseClient {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.COZE_SUPABASE_SERVICE_ROLE_KEY;
   
   if (!url || !key) {
-    throw new Error('Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    // 构建阶段环境变量可能缺失，返回空 client 避免构建失败
+    console.warn('[Supabase] Missing environment variables, returning dummy client for build');
+    return createDummyClient();
   }
   
   adminInstance = createClient(url, key);
   return adminInstance;
+}
+
+// 创建一个空 client，用于构建阶段
+function createDummyClient(): SupabaseClient {
+  return createClient('https://placeholder.supabase.co', 'placeholder-key');
 }
 
 // ========== 兼容旧代码的导出 ==========

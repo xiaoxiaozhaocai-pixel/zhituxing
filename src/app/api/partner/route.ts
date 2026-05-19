@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * 职搭子AI智能体流式API
  * 调用Coze平台职搭子智能体，通过SSE协议返回流式响应

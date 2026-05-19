@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { FetchClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 

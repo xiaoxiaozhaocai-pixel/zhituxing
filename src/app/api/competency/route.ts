@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * 胜任力评估AI智能体流式API
  * 使用Coze Workflow stream_run API，通过SSE协议返回流式响应
