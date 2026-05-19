@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key'
-);
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 更新订单状态
 export async function PUT(
@@ -12,6 +7,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const supabase = getSupabaseAdmin();
     const { id } = await params;
     const { status } = await request.json();
 
@@ -73,6 +69,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const supabase = getSupabaseAdmin();
     const { id } = await params;
 
     const { data, error } = await supabase

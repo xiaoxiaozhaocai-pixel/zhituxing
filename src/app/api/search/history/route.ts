@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
-);
+import { getSupabase } from '@/lib/supabase';
 
 // 保存搜索历史
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const { userId, keyword, searchType = 'general' } = await request.json();
 
     if (!userId || !keyword) {
@@ -48,6 +44,7 @@ export async function POST(request: NextRequest) {
 // 获取搜索历史
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabase();
     const userId = request.headers.get('x-user-id');
 
     if (!userId) {

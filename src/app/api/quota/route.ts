@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key'
-);
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 手动重置所有用户配额（管理员专用）
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseAdmin();
     // 简单验证：检查是否为管理员（实际应使用更严格的验证）
     const adminKey = request.headers.get('x-admin-key');
     if (adminKey !== process.env.ADMIN_SECRET_KEY && adminKey !== 'admin-reset-key') {
@@ -50,6 +46,7 @@ export async function POST(request: NextRequest) {
 // 获取配额重置状态
 export async function GET() {
   try {
+    const supabase = getSupabaseAdmin();
     // 获取配额重置配置
     const { data, error } = await supabase
       .from('user_quotas')

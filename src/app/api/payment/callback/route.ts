@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key'
-);
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 会员套餐天数配置
 const planDays = {
@@ -16,6 +11,7 @@ const planDays = {
 // 支付回调（模拟）
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseAdmin();
     const body = await request.json();
     const { orderNo, status, paidAt } = body;
 
