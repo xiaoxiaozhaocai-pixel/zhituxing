@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: '服务条款 - 职途星',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { SITE_URL } from '@/lib/config';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Check, Target, TrendingUp, Gift, Users, Star, ThumbsUp, ChevronRight, Sparkles, Briefcase, MessageSquare, GraduationCap, Calendar, ArrowRight } from 'lucide-react';
@@ -509,7 +510,7 @@ export default function HomePage() {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "职途星",
-            "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site",
+            "url": SITE_URL,
             "description": "AI职业规划与模拟面试平台，为大学生提供一站式求职服务"
           })
         }}
@@ -521,7 +522,7 @@ export default function HomePage() {
             "@context": "https://schema.org",
             "@type": "WebSite",
             "name": "职途星",
-            "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site"
+            "url": SITE_URL
           })
         }}
       />

@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // 环境变量配置
+  env: {
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "https://t498zk3cs9.coze.site",
+  },
   // 添加空的 turbopack 配置以支持自定义 webpack
   turbopack: {},
   webpack: (config, { isServer }) => {

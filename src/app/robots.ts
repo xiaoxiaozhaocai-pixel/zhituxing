@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/config';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/auth', '/profile/'],
       },
     ],
-    sitemap: 'https://t498zk3cs9.coze.site/sitemap.xml',
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

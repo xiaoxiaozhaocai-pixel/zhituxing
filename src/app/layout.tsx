@@ -10,6 +10,7 @@ import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
 import { MembershipProvider } from '@/contexts/MembershipContext';
 import InspectorWrapper from '@/components/InspectorWrapper';
+import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: {
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
     images: ['https://s.coze.cn/image/9JW8vCo1HrY/'],
   },
   alternates: {
-    canonical: 'https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site',
+    canonical: SITE_URL,
   },
   robots: {
     index: true,
@@ -74,7 +75,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Organization",
               "name": "职途星",
-              "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site",
+              "url": SITE_URL,
               "description": "AI职业规划与模拟面试平台，大学生一站式求职服务",
               "logo": "https://s.coze.cn/image/9JW8vCo1HrY/"
             })
@@ -88,7 +89,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "职途星",
-              "url": "https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site"
+              "url": SITE_URL
             })
           }}
         />
