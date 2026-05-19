@@ -24,7 +24,17 @@ export async function GET(request: NextRequest) {
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (queryError || !result) {
+    // 详细错误处理
+    if (queryError) {
+      console.error('[auth/me] Supabase query error:', queryError);
+      return NextResponse.json(
+        { error: '查询失败', details: queryError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!result) {
+      console.warn('[auth/me] User not found:', userId);
       return NextResponse.json(
         { error: '用户不存在' },
         { status: 404 }

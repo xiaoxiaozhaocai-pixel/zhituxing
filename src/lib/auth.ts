@@ -119,12 +119,17 @@ async function verifyUserExists(userId: string): Promise<boolean> {
       .maybeSingle();
 
     if (error) {
-      console.error('Auth: user verification error:', error);
+      console.error('[Auth] User verification error:', error);
       return false;
     }
+    
+    if (!data) {
+      console.warn('[Auth] User not found in user_profiles:', userId);
+    }
+    
     return !!data;
   } catch (e) {
-    console.error('Auth: user verification failed:', e);
+    console.error('[Auth] User verification failed:', e);
     return false;
   }
 }
