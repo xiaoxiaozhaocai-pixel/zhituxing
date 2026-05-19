@@ -16,11 +16,11 @@ export async function GET(request: NextRequest) {
     }
     const userId = authResult.userId;
 
-    // 查询用户信息
+    // 查询用户信息（user_profiles表实际字段）
     const supabase = getSupabaseAdmin();
     const { data: result, error: queryError } = await supabase
       .from('user_profiles')
-      .select('user_id, phone, nickname, avatar_url, created_at, member_type, member_expire_time')
+      .select('user_id, phone, nickname, user_type, membership_type, membership_expires_at, created_at')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -43,23 +43,23 @@ export async function GET(request: NextRequest) {
 
     const user = result as {
       user_id: string;
-      phone: string;
-      nickname: string;
-      avatar_url: string | null;
+      phone: string | null;
+      nickname: string | null;
+      user_type: string | null;
+      membership_type: string | null;
+      membership_expires_at: string | null;
       created_at: string;
-      member_type: string;
-      member_expire_time: string | null;
     };
 
     // 计算是否为会员
     const isVip = await isMember(userId);
     
     // 格式化响应 - 新配额结构
+    const memberType = user.membership_type || user.user_type || 'free';
     const userInfo = {
       id: user.user_id,
       phone: user.phone,
       nickname: user.nickname,
-      avatar_url: user.avatar_url,
       created_at: user.created_at,
       quota: {
         // 职业规划始终免费
@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
           unlimited: isVip
         },
         // 会员状态
-        member_type: user.member_type,
-        member_expire_time: user.member_expire_time,
+        member_type: memberType,
+        member_expire_time: user.membership_expires_at,
         // 兼容旧字段
         remaining: isVip ? -1 : 3,
         is_member: isVip
