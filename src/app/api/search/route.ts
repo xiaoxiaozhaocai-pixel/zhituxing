@@ -95,6 +95,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: results,
       query: q
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
     });
 
   } catch (error) {

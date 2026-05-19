@@ -67,6 +67,8 @@ export async function GET(request: NextRequest) {
       page,
       pageSize,
       totalPages: Math.ceil((count || 0) / pageSize)
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
     });
   } catch (error) {
     console.error('API错误:', error);

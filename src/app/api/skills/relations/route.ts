@@ -79,6 +79,8 @@ export async function GET(request: NextRequest) {
         relationType: relationType || null,
         relationColors,
       },
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
     });
   } catch (error) {
     console.error('[skills/relations] API Error:', error);
