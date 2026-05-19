@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authenticateUser } from '@/lib/auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -14,12 +15,12 @@ const DEV_USER_PROFILE = {
 
 export async function GET(request: NextRequest) {
   try {
-    // 从请求头获取用户ID
-    const userId = request.headers.get('x-user-id');
-    
-    if (!userId) {
+    // JWT双认证
+    const authResult = await authenticateUser(request);
+    if (!authResult) {
       return NextResponse.json({ code: 401, message: '请先登录' }, { status: 401 });
     }
+    const userId = authResult.userId;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { data, error } = await supabase
