@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     // 如果是拒绝，发送通知给用户
     if (action === 'reject') {
-      const submission = await execSql(`SELECT user_id FROM jd_submissions WHERE id = ${id}`) as Array<{ user_id: string }>;
+      const submission = await execSql('SELECT user_id FROM jd_submissions WHERE id = %s', id) as Array<{ user_id: string }>;
       if (submission[0]?.user_id) {
         await execSql(`
           INSERT INTO notifications (user_id, type, title, content, created_at)

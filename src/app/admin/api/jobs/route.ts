@@ -163,7 +163,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ code: 400, message: '缺少ID' }, { status: 400 });
     }
 
-    await execSql(`DELETE FROM jobs WHERE id = ${id}`);
+    await execSql('DELETE FROM jobs WHERE id = %s', id);
 
     await execSql(`
       INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)

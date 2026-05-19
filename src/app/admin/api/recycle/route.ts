@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取记录
-    const record = await execSql(`SELECT * FROM recycle_bin WHERE id = ${id}`) as any[];
+    const record = await execSql('SELECT * FROM recycle_bin WHERE id = %s', id) as any[];
 
     if (!record || record.length === 0) {
       return NextResponse.json({ code: 404, message: '记录不存在' }, { status: 404 });
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 删除回收站记录
-      await execSql(`DELETE FROM recycle_bin WHERE id = ${id}`);
+      await execSql('DELETE FROM recycle_bin WHERE id = %s', id);
 
       await execSql(`
         INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ code: 200, message: '恢复成功' });
     } else if (action === 'permanent_delete') {
       // 永久删除
-      await execSql(`DELETE FROM recycle_bin WHERE id = ${id}`);
+      await execSql('DELETE FROM recycle_bin WHERE id = %s', id);
 
       await execSql(`
         INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)

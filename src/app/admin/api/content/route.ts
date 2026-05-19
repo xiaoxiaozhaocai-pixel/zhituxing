@@ -182,11 +182,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (type === 'faq') {
-      await execSql(`DELETE FROM faqs WHERE id = ${id}`);
+      await execSql('DELETE FROM faqs WHERE id = %s', id);
     } else if (type === 'article') {
-      await execSql(`DELETE FROM articles WHERE id = '${id}'`);
+      await execSql('DELETE FROM articles WHERE id = %L', id);
     } else if (type === 'announcement') {
-      await execSql(`DELETE FROM announcements WHERE id = ${id}`);
+      await execSql('DELETE FROM announcements WHERE id = %s', id);
     }
 
     await execSql(`

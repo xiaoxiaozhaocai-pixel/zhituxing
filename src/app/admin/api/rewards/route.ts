@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取用户名
-    const userResult = await execSql(`SELECT id, nickname FROM users WHERE id = '${userId}'`) as any[];
+    const userResult = await execSql('SELECT id, nickname FROM users WHERE id = %L', userId) as any[];
     const username = userResult[0]?.nickname || userId;
 
     // 更新用户会员状态
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       updateSql = `UPDATE users SET member_type = 'monthly', member_expire_time = '${expireTime.toISOString()}' WHERE id = '${userId}'`;
     } else if (rewardType === 'bonus_months') {
       // 额外增加月数
-      const user = await execSql(`SELECT member_expire_time FROM users WHERE id = '${userId}'`) as any[];
+      const user = await execSql('SELECT member_expire_time FROM users WHERE id = %L', userId) as any[];
       if (user[0]?.member_expire_time) {
         const currentExpire = new Date(user[0].member_expire_time);
         currentExpire.setMonth(currentExpire.getMonth() + (parseInt(rewardValue) || 1));

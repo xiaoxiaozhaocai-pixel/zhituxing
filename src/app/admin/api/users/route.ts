@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       // 拉黑用户
       if (deleteUserJd === true) {
         // 先将用户上传的JD放入回收站再删除
-        const userJds = await execSql(`SELECT * FROM jd_submissions WHERE user_id = '${userId}'`) as any[];
+        const userJds = await execSql('SELECT * FROM jd_submissions WHERE user_id = %L', userId) as any[];
         for (const jd of userJds) {
           await execSql(`
             INSERT INTO recycle_bin (original_table, original_id, deleted_data, deleted_by, deleted_at)
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
           `);
         }
         // 删除用户上传的JD
-        await execSql(`DELETE FROM jd_submissions WHERE user_id = '${userId}'`);
+        await execSql('DELETE FROM jd_submissions WHERE user_id = %L', userId);
       }
       
       await execSql(`

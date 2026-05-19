@@ -130,7 +130,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ code: 400, message: '缺少ID' }, { status: 400 });
     }
 
-    await execSql(`DELETE FROM notifications WHERE id = ${id}`);
+    await execSql('DELETE FROM notifications WHERE id = %s', id);
 
     return NextResponse.json({ code: 200, message: '删除成功' });
   } catch (error) {
