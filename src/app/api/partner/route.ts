@@ -6,6 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createDeepSeekSSEStream } from '@/lib/deepseek-chat';
+import { searchRelevantJDs, buildJDAssistantPrompt } from '@/lib/jd-rag';
 
 // Coze API 配置
 const COZE_API_URL = 'https://api.coze.cn/open_api/v2/chat';
@@ -20,10 +22,44 @@ function getUserId(request: NextRequest): string {
 // 流式对话
 export async function POST(request: NextRequest) {
   try {
+    const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
     const body = await request.json();
-    const { message, sessionId } = body;
+    const { message, sessionId, messages } = body;
 
-    if (!message || typeof message !== 'string') {
+    // DeepSeek 分支
+    if (USE_DEEPSEEK) {
+      try {
+        const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content || message || '';
+        
+        // RAG检索相关JD
+        const ragContext = await searchRelevantJDs(lastUserMsg);
+        const systemPrompt = buildJDAssistantPrompt(ragContext);
+        
+        // 构建DeepSeek消息列表
+        const chatMessages = [
+          { role: 'system' as const, content: systemPrompt },
+          ...(messages || []).filter((m: any) => m.role !== 'system')
+        ];
+        
+        // 返回DeepSeek SSE流
+        const stream = createDeepSeekSSEStream({ messages: chatMessages });
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+        });
+      } catch (error) {
+        console.error('DeepSeek chat error, falling back to Coze:', error);
+        // 出错时回退到Coze，继续执行下面的Coze逻辑
+      }
+    }
+
+    // Coze API 分支
+    const messageText = message;
+
+    if (!messageText || typeof messageText !== 'string') {
       return NextResponse.json(
         { code: 400, message: '消息内容不能为空' },
         { status: 400 }
@@ -40,7 +76,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         bot_id: BOT_ID,
         user: getUserId(request),
-        query: message,
+        query: messageText,
         stream: true,
         conversation_id: sessionId || undefined,
       })
