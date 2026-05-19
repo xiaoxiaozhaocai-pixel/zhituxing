@@ -1,10 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
+// 管理员鉴权验证
+async function verifyAdmin(request: NextRequest): Promise<boolean> {
+  const adminToken = request.headers.get('x-admin-token') || request.headers.get('Authorization')?.replace('Bearer ', '');
+  const validToken = process.env.ADMIN_SECRET_KEY || 'admin-secret-key';
+  return adminToken === validToken;
+}
+
 // GET: 查询JD列表（分页+搜索+筛选）+ 统计
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // 鉴权检查
+  if (!(await verifyAdmin(request))) {
+    return NextResponse.json({ error: '未授权访问' }, { status: 401 });
+  }
+  
   try {
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, Number(searchParams.get('page') || 1));

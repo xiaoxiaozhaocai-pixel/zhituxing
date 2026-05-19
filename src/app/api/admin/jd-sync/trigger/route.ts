@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncAllPlatforms, syncSinglePlatform } from '@/lib/jd-sync-service';
 
+// 管理员鉴权验证
+async function verifyAdmin(request: NextRequest): Promise<boolean> {
+  const adminToken = request.headers.get('x-admin-token') || request.headers.get('Authorization')?.replace('Bearer ', '');
+  const validToken = process.env.ADMIN_SECRET_KEY || 'admin-secret-key';
+  return adminToken === validToken;
+}
+
 // 手动触发同步任务
 export async function POST(request: NextRequest) {
+  // 鉴权检查
+  if (!(await verifyAdmin(request))) {
+    return NextResponse.json({ code: 401, message: '未授权访问' }, { status: 401 });
+  }
+  
   try {
     const body = await request.json().catch(() => ({}));
     const platformId = body.platform; // 可选，指定单个平台

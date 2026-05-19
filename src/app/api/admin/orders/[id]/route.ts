@@ -1,11 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
+// 管理员鉴权验证
+async function verifyAdmin(request: NextRequest): Promise<boolean> {
+  const adminToken = request.headers.get('x-admin-token') || request.headers.get('Authorization')?.replace('Bearer ', '');
+  const validToken = process.env.ADMIN_SECRET_KEY || 'admin-secret-key';
+  return adminToken === validToken;
+}
+
 // 更新订单状态
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // 鉴权检查
+  if (!(await verifyAdmin(request))) {
+    return NextResponse.json({ error: '未授权访问' }, { status: 401 });
+  }
+  
   try {
     const supabase = getSupabaseAdmin();
     const { id } = await params;

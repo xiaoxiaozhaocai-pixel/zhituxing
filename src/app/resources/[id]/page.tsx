@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, User, Eye, Loader2, Tag, ThumbsUp, MessageSquare, 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface Article {
   id: string;
@@ -318,7 +319,7 @@ export default function ArticleDetailPage() {
             {/* Content */}
             <div
               className="prose prose-blue max-w-none mt-6"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
             />
 
             {/* Like & Share */}
