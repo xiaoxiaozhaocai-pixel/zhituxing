@@ -20,6 +20,14 @@ import {
   createTextStream,
   getWorkflowConfig,
 } from '@/lib/coze-stream';
+import {
+  extractKeywords,
+  querySupabase,
+  buildRAGContext,
+  createDeepSeekRAGStream,
+} from '@/lib/rag-utils';
+
+const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
 export const runtime = 'edge';
 
@@ -103,6 +111,68 @@ export async function POST(request: NextRequest) {
     const queryContent = message || `请根据以下信息，为我生成一份专属的职业规划报告：\n\n【基本信息】\n- 所属专业：${major || '未填写'}\n- 当前年级：${grade || '未填写'}\n- 意向城市：${city || '未填写'}\n\n请生成一份详细的职业规划报告。`;
     const finalMessage = userContext + queryContent;
     const fallbackText = getCareerFallback(major, grade, city);
+
+    // ===========================
+    // DeepSeek + RAG 分支
+    // ===========================
+    if (USE_DEEPSEEK) {
+      console.log('[career] Using DeepSeek + RAG');
+      try {
+        const keywords = extractKeywords(queryContent);
+        const industry = keywords.industry || major;
+        const targetCity = keywords.city || city;
+
+        // 并行查询多个表
+        const [jds, careerPaths, resources, articles] = await Promise.all([
+          querySupabase('job_descriptions', [
+            ...(industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${industry}%` }] : []),
+            ...(targetCity ? [{ field: 'city', operator: 'ilike' as const, value: `%${targetCity}%` }] : []),
+          ], 8),
+          querySupabase('career_paths', [
+            ...(industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${industry}%` }] : []),
+          ], 5),
+          querySupabase('learning_resources', [
+            ...(industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${industry}%` }] : []),
+          ], 6),
+          querySupabase('articles', [
+            { field: 'category', operator: 'ilike' as const, value: '%考研%' },
+          ], 3),
+        ]);
+
+        // 构建 RAG 上下文
+        const ragContext = buildRAGContext([
+          { tableName: 'job_descriptions', displayName: '岗位数据', data: jds },
+          { tableName: 'career_paths', displayName: '职业路径', data: careerPaths },
+          { tableName: 'learning_resources', displayName: '学习资源', data: resources },
+          { tableName: 'articles', displayName: '相关文章', data: articles },
+        ]);
+
+        const systemPrompt = `你是学业与职业规划顾问"抉择"，擅长用SWOT分析法帮用户在考研vs就业之间做决策。
+
+你的能力：
+1. 根据用户的个人情况（专业、年级、城市），分析考研和就业两条路
+2. 给出短期收益、长期发展、风险、机会成本的量化分析
+3. 提供具体可行的行动建议和时间规划
+4. 引用真实的岗位数据和薪资信息支撑分析
+
+回答规范：
+- 使用SWOT框架清晰呈现分析过程
+- 量化分析要有数据支撑（薪资、竞争比、成功率等）
+- 给出明确的建议结论和理由
+- 如果检索不到相关数据，坦诚说明`;
+
+        const stream = createDeepSeekRAGStream(
+          systemPrompt + (ragContext ? `\n\n--- 参考数据 ---\n${ragContext}\n---` : ''),
+          finalMessage,
+          []
+        );
+
+        return new Response(stream, { headers: SSE_HEADERS });
+      } catch (error) {
+        console.error('[career] DeepSeek error, falling back to Coze:', error);
+        // 继续走 Coze 逻辑
+      }
+    }
 
     // ===========================
     // 优先尝试 stream_run API
