@@ -20,8 +20,17 @@ import {
   createTextStream,
   getWorkflowConfig,
 } from '@/lib/coze-stream';
+import {
+  extractKeywords,
+  querySupabase,
+  buildRAGContext,
+  createDeepSeekRAGStream,
+} from '@/lib/rag-utils';
 
 export const runtime = 'edge';
+
+// DeepSeek 开关
+const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
 // 面试官开场白
 const DEMO_INTERVIEW_INTRO = `👋你好！我是职途星AI面试官，将为你还原真实的企业校招全流程面试。
@@ -121,6 +130,62 @@ export async function POST(request: NextRequest) {
     }
 
     const fallbackText = getInterviewFallback(message);
+
+    // ===========================
+    // DeepSeek + RAG 分支
+    // ===========================
+    if (USE_DEEPSEEK) {
+      console.log('[interview] Using DeepSeek + RAG');
+      try {
+        // 提取关键词
+        const keywords = extractKeywords(message);
+        
+        // 并行查询面试题库和JD数据
+        const [questions, jds] = await Promise.all([
+          querySupabase('interview_questions', [
+            ...(keywords.industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${keywords.industry}%` }] : []),
+            ...(keywords.jobTitle ? [{ field: 'job_title', operator: 'ilike' as const, value: `%${keywords.jobTitle}%` }] : []),
+          ], 10),
+          querySupabase('job_descriptions', [
+            { field: 'status', operator: 'eq' as const, value: 'parsed' },
+            ...(keywords.industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${keywords.industry}%` }] : []),
+            ...(keywords.jobTitle ? [{ field: 'job_title', operator: 'ilike' as const, value: `%${keywords.jobTitle}%` }] : []),
+          ], 3),
+        ]);
+        
+        // 构建 RAG 上下文
+        const ragContext = buildRAGContext([
+          { tableName: 'interview_questions', displayName: '面试题库', data: questions },
+          { tableName: 'job_descriptions', displayName: '岗位JD', data: jds },
+        ]);
+        
+        // 构建系统提示词
+        const systemPrompt = `你是经验丰富的HR面试官"面面"，来自职途星平台。
+
+你的职责：
+1. 根据面试题库和岗位要求模拟真实面试场景
+2. 每次只问一道题，等待用户回答
+3. 用户回答后给出专业点评：指出亮点、改进建议、参考答案要点
+4. 完成3-5题后给出整体评估报告
+
+面试风格：
+- 专业但不严厉，适当鼓励求职者
+- 问题要有针对性，结合岗位JD要求
+- 点评要具体，避免"很好"等空泛评价
+
+${ragContext ? `--- 参考资料 ---\n${ragContext}\n--- 请基于参考资料设计面试问题 ---` : ''}`;
+        
+        // 构建 DeepSeek 消息
+        const history = (body.history || []).filter((m: any) => m.role !== 'system');
+        
+        // 返回 DeepSeek SSE 流
+        const stream = createDeepSeekRAGStream(systemPrompt, message, history);
+        return new Response(stream, { headers: SSE_HEADERS });
+      } catch (error) {
+        console.error('[interview] DeepSeek error, falling back to Coze:', error);
+        // 出错时回退到 Coze
+      }
+    }
 
     // ===========================
     // 优先尝试 stream_run API
