@@ -2,7 +2,34 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
+// ============================================================
+// 内存缓存 - 5分钟TTL
+// ============================================================
+const searchCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5分钟
+
+function getCachedResult(key: string): any | null {
+  const cached = searchCache.get(key);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > CACHE_TTL) {
+    searchCache.delete(key);
+    return null;
+  }
+  return cached.data;
+}
+
+function setCachedResult(key: string, data: any): void {
+  // 防止缓存无限增长，超过200条时清理最旧的
+  if (searchCache.size > 200) {
+    const oldest = [...searchCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
+    if (oldest) searchCache.delete(oldest[0]);
+  }
+  searchCache.set(key, { data, timestamp: Date.now() });
+}
+
+// ============================================================
 // 行业同义词映射：用户输入→数据库中的行业名
+// ============================================================
 const INDUSTRY_SYNONYMS: Record<string, string[]> = {
   '会计': ['财务'],
   '财务': ['会计'],
@@ -22,6 +49,19 @@ const INDUSTRY_SYNONYMS: Record<string, string[]> = {
   '设计': ['互联网/IT'],
 };
 
+// ============================================================
+// 模块级工具函数
+// ============================================================
+function safeToArray(val: any): string[] {
+  if (Array.isArray(val)) return val.map(String);
+  if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+  if (val == null) return [];
+  return [String(val)];
+}
+
+// 搜索阶段只查轻量字段（不含responsibilities）
+const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -34,17 +74,28 @@ export async function GET(request: NextRequest) {
     const keyword = searchParams.get('keyword') || '';
     
     const offset = (page - 1) * pageSize;
+
+    // ============================================================
+    // 缓存检查
+    // ============================================================
+    const cacheKey = `jobs:${keyword}:${industry}:${city}:${freshOnly}:${page}:${pageSize}`;
+    const cached = getCachedResult(cacheKey);
+    if (cached) {
+      console.log('[jobs] 缓存命中:', cacheKey);
+      return NextResponse.json(cached, {
+        headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
+      });
+    }
+
     const supabaseAdmin = getSupabaseAdmin();
 
     // ===== 关键词搜索：多个查询合并（更可靠） =====
     if (keyword) {
-      const selectFields = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,responsibilities,education,experience,created_at,fresh_graduate_friendly';
-      
       const buildBaseQuery = () => {
         let q = supabaseAdmin
           .from('job_descriptions')
-          .select(selectFields)
-          .limit(80);
+          .select(LIGHT_SELECT_FIELDS)
+          .limit(50); // 减少limit，5个查询合并后已足够
         if (industry) q = q.eq('industry', industry);
         if (city) q = q.eq('city', city);
         if (freshOnly) q = q.eq('fresh_graduate_friendly', true);
@@ -54,16 +105,13 @@ export async function GET(request: NextRequest) {
       // 获取同义词对应的行业名
       const synonymIndustries = INDUSTRY_SYNONYMS[keyword] || [];
       
-      // 并行查询3个字符串字段 + 同义词行业查询
-      // 注意：hard_skills/soft_skills 是 JSONB 数组，不能用 ilike，改用 contains
+      // 并行查询3个字符串字段 + JSONB contains + 同义词行业
       const queries = [
         buildBaseQuery().ilike('job_title', `%${keyword}%`),
         buildBaseQuery().ilike('responsibilities', `%${keyword}%`),
         buildBaseQuery().ilike('industry', `%${keyword}%`),
-        // JSONB 数组包含查询（精确匹配数组元素）
         buildBaseQuery().contains('hard_skills', [keyword]),
         buildBaseQuery().contains('soft_skills', [keyword]),
-        // 同义词行业精确匹配
         ...synonymIndustries.map(syn => 
           buildBaseQuery().eq('industry', syn)
         ),
@@ -71,22 +119,10 @@ export async function GET(request: NextRequest) {
       
       const results = await Promise.all(queries);
       
-      // 记录每个查询的结果状态
-      console.log('[jobs] 查询结果:', results.map((r, i) => ({
-        index: i,
-        hasError: !!r.error,
-        errorMsg: r.error?.message || null,
-        dataCount: r.data?.length || 0
-      })));
-      
       // 检查是否所有查询都失败
       const allErrors = results.every(r => r.error);
       if (allErrors) {
-        console.error('[jobs] 所有查询都失败:', JSON.stringify(results.map(r => ({
-          message: r.error?.message,
-          code: r.error?.code,
-          details: r.error?.details
-        }))));
+        console.error('[jobs] 所有查询都失败');
         return NextResponse.json({ error: '查询失败' }, { status: 500 });
       }
       
@@ -105,57 +141,40 @@ export async function GET(request: NextRequest) {
       }
       
       if (uniqueResults.length === 0) {
-        return NextResponse.json({
+        const emptyResult = {
           success: true,
           data: [],
           total: 0,
           page,
           pageSize,
           totalPages: 0
-        });
+        };
+        setCachedResult(cacheKey, emptyResult);
+        return NextResponse.json(emptyResult);
       }
       
       // 计算相关性评分
       const keywordLower = keyword.toLowerCase();
       const scoredData = uniqueResults.map(job => {
-        let relevance = 5; // 默认：仅技能包含
+        let relevance = 5;
         const titleLower = (job.job_title || '').toLowerCase();
         const industryLower = (job.industry || '').toLowerCase();
         const respLower = (job.responsibilities || '').toLowerCase();
+        const hardSkillsLower = safeToArray(job.hard_skills).join(',').toLowerCase();
+        const softSkillsLower = safeToArray(job.soft_skills).join(',').toLowerCase();
         
-        // hard_skills/soft_skills 类型安全处理：可能是数组、字符串、null、undefined
-        const safeToArray = (val: any): string[] => {
-          if (Array.isArray(val)) return val.map(String);
-          if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
-          if (val == null) return [];
-          return [String(val)];
-        };
-        const hardSkillsArr = safeToArray(job.hard_skills);
-        const softSkillsArr = safeToArray(job.soft_skills);
-        const hardSkillsLower = hardSkillsArr.join(',').toLowerCase();
-        const softSkillsLower = softSkillsArr.join(',').toLowerCase();
-        
-        if (titleLower === keywordLower) {
-          relevance = 0;
-        } else if (titleLower.startsWith(keywordLower)) {
-          relevance = 1;
-        } else if (titleLower.includes(keywordLower)) {
-          relevance = 2;
-        } else if (respLower.includes(keywordLower)) {
-          relevance = 3;
-        } else if (hardSkillsLower.includes(keywordLower) || softSkillsLower.includes(keywordLower)) {
-          relevance = 4;
-        } else if (industryLower.includes(keywordLower)) {
-          relevance = 5;
-        }
+        if (titleLower === keywordLower) relevance = 0;
+        else if (titleLower.startsWith(keywordLower)) relevance = 1;
+        else if (titleLower.includes(keywordLower)) relevance = 2;
+        else if (respLower.includes(keywordLower)) relevance = 3;
+        else if (hardSkillsLower.includes(keywordLower) || softSkillsLower.includes(keywordLower)) relevance = 4;
+        else if (industryLower.includes(keywordLower)) relevance = 5;
         
         return { ...job, _relevance: relevance };
       });
       
       scoredData.sort((a, b) => {
-        if (a._relevance !== b._relevance) {
-          return a._relevance - b._relevance;
-        }
+        if (a._relevance !== b._relevance) return a._relevance - b._relevance;
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
       
@@ -163,45 +182,55 @@ export async function GET(request: NextRequest) {
       const totalPages = Math.ceil(total / pageSize);
       const paginatedData = scoredData.slice(offset, offset + pageSize);
       
-      const formattedData = paginatedData.map(job => {
-        // 使用相同的类型安全处理函数
-        const safeToArray = (val: any): string[] => {
-          if (Array.isArray(val)) return val.map(String);
-          if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
-          if (val == null) return [];
-          return [String(val)];
-        };
-        const skills = safeToArray(job.hard_skills);
-        const softSkills = safeToArray(job.soft_skills);
+      // ============================================================
+      // 两阶段查询：只为当前页查询 responsibilities
+      // ============================================================
+      if (paginatedData.length > 0) {
+        const pageIds = paginatedData.map(j => j.id);
+        const { data: fullData } = await supabaseAdmin
+          .from('job_descriptions')
+          .select('id, responsibilities')
+          .in('id', pageIds);
         
-        return {
-          id: job.id,
-          name: job.job_title,
-          industry: job.industry,
-          city: job.city,
-          companyType: '',
-          salary: job.salary_range || '面议',
-          salaryMin: 0,
-          salaryMax: 0,
-          skills,
-          softSkills,
-          education: job.education || '',
-          experience: job.experience || '',
-          friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
-          isFreshFriendly: job.fresh_graduate_friendly === true,
-          jdContent: job.responsibilities,
-          _relevance: job._relevance
-        };
-      });
+        // 合并 responsibilities
+        if (fullData) {
+          const respMap = new Map(fullData.map(d => [d.id, d.responsibilities]));
+          for (const job of paginatedData) {
+            job.responsibilities = respMap.get(job.id) || job.responsibilities;
+          }
+        }
+      }
       
-      return NextResponse.json({
+      const formattedData = paginatedData.map(job => ({
+        id: job.id,
+        name: job.job_title,
+        industry: job.industry,
+        city: job.city,
+        companyType: '',
+        salary: job.salary_range || '面议',
+        salaryMin: 0,
+        salaryMax: 0,
+        skills: safeToArray(job.hard_skills),
+        softSkills: safeToArray(job.soft_skills),
+        education: job.education || '',
+        experience: job.experience || '',
+        friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
+        isFreshFriendly: job.fresh_graduate_friendly === true,
+        jdContent: job.responsibilities,
+        _relevance: job._relevance
+      }));
+      
+      const result = {
         success: true,
         data: formattedData,
         total,
         page,
         pageSize,
         totalPages
-      }, {
+      };
+      
+      setCachedResult(cacheKey, result);
+      return NextResponse.json(result, {
         headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
       });
     }
@@ -211,18 +240,10 @@ export async function GET(request: NextRequest) {
       .from('job_descriptions')
       .select('*', { count: 'exact' });
     
-    // 应用筛选条件
-    if (industry) {
-      query = query.eq('industry', industry);
-    }
-    if (city) {
-      query = query.eq('city', city);
-    }
-    if (freshOnly) {
-      query = query.eq('fresh_graduate_friendly', true);
-    }
+    if (industry) query = query.eq('industry', industry);
+    if (city) query = query.eq('city', city);
+    if (freshOnly) query = query.eq('fresh_graduate_friendly', true);
     
-    // 分页
     const { data, error, count } = await query
       .range(offset, offset + pageSize - 1)
       .order('created_at', { ascending: false });
@@ -232,45 +253,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '查询失败' }, { status: 500 });
     }
     
-    // 格式化返回数据
-    const formattedData = data?.map(job => {
-      // 使用类型安全处理函数
-      const safeToArray = (val: any): string[] => {
-        if (Array.isArray(val)) return val.map(String);
-        if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
-        if (val == null) return [];
-        return [String(val)];
-      };
-      const skills = safeToArray(job.hard_skills);
-      const softSkills = safeToArray(job.soft_skills);
-      
-      return {
-        id: job.id,
-        name: job.job_title,
-        industry: job.industry,
-        city: job.city,
-        companyType: '',
-        salary: job.salary_range || '面议',
-        salaryMin: 0,
-        salaryMax: 0,
-        skills,
-        softSkills,
-        education: job.education || '',
-        experience: job.experience || '',
-        friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
-        isFreshFriendly: job.fresh_graduate_friendly === true,
-        jdContent: job.responsibilities
-      };
-    }) || [];
+    const formattedData = data?.map(job => ({
+      id: job.id,
+      name: job.job_title,
+      industry: job.industry,
+      city: job.city,
+      companyType: '',
+      salary: job.salary_range || '面议',
+      salaryMin: 0,
+      salaryMax: 0,
+      skills: safeToArray(job.hard_skills),
+      softSkills: safeToArray(job.soft_skills),
+      education: job.education || '',
+      experience: job.experience || '',
+      friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
+      isFreshFriendly: job.fresh_graduate_friendly === true,
+      jdContent: job.responsibilities
+    })) || [];
     
-    return NextResponse.json({
+    const result = {
       success: true,
       data: formattedData,
       total: count || 0,
       page,
       pageSize,
       totalPages: Math.ceil((count || 0) / pageSize)
-    }, {
+    };
+    
+    setCachedResult(cacheKey, result);
+    return NextResponse.json(result, {
       headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
     });
   } catch (error: any) {
