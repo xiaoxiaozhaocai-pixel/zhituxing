@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import {
   getUserInfoFromRequest,
   callCozeStreamApi,
@@ -20,10 +20,6 @@ import {
 } from '@/lib/coze-stream';
 
 export const runtime = 'edge';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',
@@ -61,9 +57,12 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 async function searchFromDatabase(query: string): Promise<SearchResult[]> {
-  // 跳过无效的 Supabase 配置，避免挂起
-  if (!isValidConfig(supabaseUrl, supabaseServiceKey)) {
-    console.warn('[Search] Skipping database search: invalid Supabase config');
+  // 懒加载获取 Supabase 客户端
+  let supabase;
+  try {
+    supabase = getSupabaseAdmin();
+  } catch (e) {
+    console.warn('[Search] Skipping database search: Supabase not configured');
     return [];
   }
 

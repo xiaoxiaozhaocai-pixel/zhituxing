@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export async function GET() {
+  const supabaseAdmin = getSupabaseAdmin();
   try {
     // 测试1：检查环境变量
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
