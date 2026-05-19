@@ -107,8 +107,15 @@ export async function GET(request: NextRequest) {
         const titleLower = (job.job_title || '').toLowerCase();
         const industryLower = (job.industry || '').toLowerCase();
         const respLower = (job.responsibilities || '').toLowerCase();
-        const hardSkillsLower = (job.hard_skills || '').toLowerCase();
-        const softSkillsLower = (job.soft_skills || '').toLowerCase();
+        // hard_skills/soft_skills 可能是数组或字符串，统一转为字符串
+        const hardSkillsStr = Array.isArray(job.hard_skills) 
+          ? job.hard_skills.join(',') 
+          : (job.hard_skills || '');
+        const softSkillsStr = Array.isArray(job.soft_skills) 
+          ? job.soft_skills.join(',') 
+          : (job.soft_skills || '');
+        const hardSkillsLower = hardSkillsStr.toLowerCase();
+        const softSkillsLower = softSkillsStr.toLowerCase();
         
         if (titleLower === keywordLower) {
           relevance = 0;
@@ -138,24 +145,34 @@ export async function GET(request: NextRequest) {
       const totalPages = Math.ceil(total / pageSize);
       const paginatedData = scoredData.slice(offset, offset + pageSize);
       
-      const formattedData = paginatedData.map(job => ({
-        id: job.id,
-        name: job.job_title,
-        industry: job.industry,
-        city: job.city,
-        companyType: '',
-        salary: job.salary_range || '面议',
-        salaryMin: 0,
-        salaryMax: 0,
-        skills: job.hard_skills?.split(',') || [],
-        softSkills: job.soft_skills?.split(',') || [],
-        education: job.education || '',
-        experience: job.experience || '',
-        friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
-        isFreshFriendly: job.fresh_graduate_friendly === true,
-        jdContent: job.responsibilities,
-        _relevance: job._relevance
-      }));
+      const formattedData = paginatedData.map(job => {
+        // 处理技能字段：可能是数组或字符串
+        const skills = Array.isArray(job.hard_skills) 
+          ? job.hard_skills 
+          : (job.hard_skills?.split(',') || []);
+        const softSkills = Array.isArray(job.soft_skills) 
+          ? job.soft_skills 
+          : (job.soft_skills?.split(',') || []);
+        
+        return {
+          id: job.id,
+          name: job.job_title,
+          industry: job.industry,
+          city: job.city,
+          companyType: '',
+          salary: job.salary_range || '面议',
+          salaryMin: 0,
+          salaryMax: 0,
+          skills,
+          softSkills,
+          education: job.education || '',
+          experience: job.experience || '',
+          friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
+          isFreshFriendly: job.fresh_graduate_friendly === true,
+          jdContent: job.responsibilities,
+          _relevance: job._relevance
+        };
+      });
       
       return NextResponse.json({
         success: true,
