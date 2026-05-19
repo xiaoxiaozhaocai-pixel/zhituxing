@@ -15,40 +15,57 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
     const supabaseAdmin = getSupabaseAdmin();
 
-    // ===== 关键词搜索：简单可靠的逻辑 =====
+    // ===== 关键词搜索：多个查询合并（更可靠） =====
     if (keyword) {
       // 前端需要的完整字段
       const selectFields = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,responsibilities,education,experience,created_at,fresh_graduate_friendly';
       
-      // 构建基础查询
-      let query = supabaseAdmin
-        .from('job_descriptions')
-        .select(selectFields, { count: 'exact' })
-        .or(`job_title.ilike.*${keyword}*,responsibilities.ilike.*${keyword}*`)
-        .limit(200)  // 限制最多200条，避免数据量过大
-        .order('created_at', { ascending: false });
+      // 构建基础查询条件（不含关键词）
+      const buildBaseQuery = () => {
+        let q = supabaseAdmin
+          .from('job_descriptions')
+          .select(selectFields)
+          .limit(200);
+        if (industry) q = q.eq('industry', industry);
+        if (city) q = q.eq('city', city);
+        if (freshOnly) q = q.eq('fresh_graduate_friendly', true);
+        return q;
+      };
       
-      // 应用额外筛选条件
-      if (industry) {
-        query = query.eq('industry', industry);
-      }
-      if (city) {
-        query = query.eq('city', city);
-      }
-      if (freshOnly) {
-        query = query.eq('fresh_graduate_friendly', true);
-      }
+      // 并行查询：job_title 匹配 + responsibilities 匹配
+      const [titleResult, respResult] = await Promise.all([
+        buildBaseQuery().ilike('job_title', `*${keyword}*`).order('created_at', { ascending: false }),
+        buildBaseQuery().ilike('responsibilities', `*${keyword}*`).order('created_at', { ascending: false })
+      ]);
       
-      // 执行查询
-      const { data, error, count } = await query;
-      
-      if (error) {
-        console.error('[jobs] 查询错误:', error);
+      if (titleResult.error && respResult.error) {
+        console.error('[jobs] 查询错误:', titleResult.error, respResult.error);
         return NextResponse.json({ error: '查询失败' }, { status: 500 });
       }
       
+      // 合并结果并去重（按id）
+      const titleData = titleResult.data || [];
+      const respData = respResult.data || [];
+      const seenIds = new Set<string>();
+      const uniqueResults: any[] = [];
+      
+      // 先添加 title 匹配的（优先级高）
+      for (const job of titleData) {
+        if (!seenIds.has(job.id)) {
+          seenIds.add(job.id);
+          uniqueResults.push(job);
+        }
+      }
+      // 再添加 responsibilities 匹配的
+      for (const job of respData) {
+        if (!seenIds.has(job.id)) {
+          seenIds.add(job.id);
+          uniqueResults.push(job);
+        }
+      }
+      
       // 无结果时直接返回空
-      if (!data || data.length === 0) {
+      if (uniqueResults.length === 0) {
         return NextResponse.json({
           success: true,
           data: [],
@@ -61,7 +78,7 @@ export async function GET(request: NextRequest) {
       
       // 计算相关性评分并排序
       const keywordLower = keyword.toLowerCase();
-      const scoredData = data.map(job => {
+      const scoredData = uniqueResults.map(job => {
         let relevance = 3; // 默认：仅职责包含
         const titleLower = (job.job_title || '').toLowerCase();
         
@@ -85,7 +102,8 @@ export async function GET(request: NextRequest) {
       });
       
       // 分页
-      const totalPages = Math.ceil((count || scoredData.length) / pageSize);
+      const total = scoredData.length;
+      const totalPages = Math.ceil(total / pageSize);
       const paginatedData = scoredData.slice(offset, offset + pageSize);
       
       // 格式化返回数据
@@ -111,7 +129,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: formattedData,
-        total: count || scoredData.length,
+        total,
         page,
         pageSize,
         totalPages
