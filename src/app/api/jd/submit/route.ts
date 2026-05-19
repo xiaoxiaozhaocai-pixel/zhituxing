@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 提交JD
 export async function POST(request: NextRequest) {
@@ -34,16 +34,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查是否已存在相同的JD（防止重复上传）
-    const existing = await execSql(`
-      SELECT id FROM jd_submissions 
-      WHERE user_id = '${userId}' 
-      AND job_name = '${job_name.replace(/'/g, "''")}' 
-      AND company_name = '${company_name.replace(/'/g, "''")}'
-      LIMIT 1
-    `) as Array<{ id: number }>;
+    const supabase = getSupabaseAdmin();
 
-    if (existing && existing.length > 0) {
+    // 检查是否已存在相同的JD（防止重复上传）
+    const { data: existing } = await supabase
+      .from('jd_submissions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('job_name', job_name)
+      .eq('company_name', company_name)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
       return NextResponse.json(
         { code: 400, message: '该JD已上传，请勿重复提交', data: null },
         { status: 400 }
@@ -51,27 +54,33 @@ export async function POST(request: NextRequest) {
     }
 
     // 插入数据库
-    const result = await execSql(`
-      INSERT INTO jd_submissions (
-        user_id, job_name, industry, city, company_name, company_type,
-        salary_min, salary_max, skills, jd_content, status
-      ) VALUES (
-        '${userId}',
-        '${job_name.replace(/'/g, "''")}',
-        ${industry ? `'${industry.replace(/'/g, "''")}'` : 'NULL'},
-        ${city ? `'${city.replace(/'/g, "''")}'` : 'NULL'},
-        '${company_name.replace(/'/g, "''")}',
-        ${company_type ? `'${company_type.replace(/'/g, "''")}'` : 'NULL'},
-        ${salary_min || 'NULL'},
-        ${salary_max || 'NULL'},
-        ${skills ? `'${skills.replace(/'/g, "''")}'` : 'NULL'},
-        '${jd_content.replace(/'/g, "''")}',
-        0
-      )
-      RETURNING id
-    `);
+    const { data: result, error: insertError } = await supabase
+      .from('jd_submissions')
+      .insert({
+        user_id: userId,
+        job_name,
+        industry: industry || null,
+        city: city || null,
+        company_name,
+        company_type: company_type || null,
+        salary_min: salary_min || null,
+        salary_max: salary_max || null,
+        skills: skills || null,
+        jd_content,
+        status: 0
+      })
+      .select('id')
+      .single();
 
-    const submissionId = (result as Array<{ id: number }>)?.[0]?.id;
+    if (insertError) {
+      console.error('插入JD失败:', insertError);
+      return NextResponse.json(
+        { code: 500, message: '提交失败，请稍后重试', data: null },
+        { status: 500 }
+      );
+    }
+
+    const submissionId = result?.id;
 
     // 检查是否满足奖励条件（累计3条审核通过）
     await checkAndGrantReward(userId);
@@ -111,59 +120,58 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const offset = (page - 1) * pageSize;
 
+    const supabase = getSupabaseAdmin();
+
     // 构建查询
-    let whereClause = `WHERE user_id = '${userId}'`;
+    let query = supabase
+      .from('jd_submissions')
+      .select('id, job_name, industry, city, company_name, company_type, salary_min, salary_max, skills, status, reject_reason, reward_granted, created_at, reviewed_at', { count: 'exact' })
+      .eq('user_id', userId);
+
     if (status !== null && status !== '') {
-      whereClause += ` AND status = '${status}'`;
+      query = query.eq('status', status);
     }
 
-    // 获取总数
-    const countResult = await execSql(`
-      SELECT COUNT(*) as total FROM jd_submissions ${whereClause}
-    `) as Array<{ total: number }>;
-    const total = countResult[0]?.total || 0;
-
     // 获取列表
-    const submissions = await execSql(`
-      SELECT id, job_name, industry, city, company_name, company_type,
-             salary_min, salary_max, skills, status, reject_reason,
-             reward_granted, created_at, reviewed_at
-      FROM jd_submissions
-      ${whereClause}
-      ORDER BY created_at DESC
-      LIMIT ${pageSize} OFFSET ${offset}
-    `);
+    const { data: submissions, count: total, error: queryError } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
+
+    if (queryError) {
+      console.error('查询JD列表失败:', queryError);
+    }
 
     // 获取审核通过的总数（用于计算进度）
-    const approvedResult = await execSql(`
-      SELECT COUNT(*) as approved FROM jd_submissions 
-      WHERE user_id = '${userId}' AND status = 1 AND reward_granted = FALSE
-    `) as Array<{ approved: number }>;
-    const approvedCount = approvedResult[0]?.approved || 0;
+    const { count: approvedCount } = await supabase
+      .from('jd_submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 1)
+      .eq('reward_granted', false);
 
     // 获取用户会员状态
-    const userResult = await execSql(`
-      SELECT member_type, member_expire_time, is_lifetime_member 
-      FROM users WHERE id = '${userId}'
-    `) as Array<{ member_type: string; member_expire_time: string; is_lifetime_member: boolean }>;
-    const user = userResult?.[0];
+    const { data: user } = await supabase
+      .from('users')
+      .select('member_type, member_expire_time, is_lifetime_member')
+      .eq('id', userId)
+      .maybeSingle();
 
     return NextResponse.json({
       code: 200,
       data: {
-        list: submissions,
+        list: submissions || [],
         pagination: {
           page,
           pageSize,
-          total
+          total: total || 0
         },
         progress: {
-          approved: approvedCount,
+          approved: approvedCount || 0,
           required: 3,
-          remaining: Math.max(0, 3 - approvedCount),
-          isComplete: approvedCount >= 3,
+          remaining: Math.max(0, 3 - (approvedCount || 0)),
+          isComplete: (approvedCount || 0) >= 3,
           isLifetimeMember: user?.is_lifetime_member || false,
-          currentReward: approvedCount >= 3 ? '终身会员' : (approvedCount >= 3 ? `${approvedCount}/3` : null)
+          currentReward: (approvedCount || 0) >= 3 ? '终身会员' : ((approvedCount || 0) >= 3 ? `${approvedCount}/3` : null)
         },
         memberStatus: {
           isMember: !!user?.member_type || user?.is_lifetime_member,
@@ -186,18 +194,22 @@ export async function GET(request: NextRequest) {
 // 检查并发放奖励
 async function checkAndGrantReward(userId: string) {
   try {
+    const supabase = getSupabaseAdmin();
+
     // 检查审核通过的JD数量（未领取奖励的）
-    const approvedResult = await execSql(`
-      SELECT COUNT(*) as approved FROM jd_submissions 
-      WHERE user_id = '${userId}' AND status = 1 AND reward_granted = FALSE
-    `) as Array<{ approved: number }>;
-    const approvedCount = approvedResult[0]?.approved || 0;
+    const { count: approvedCount } = await supabase
+      .from('jd_submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 1)
+      .eq('reward_granted', false);
 
     // 获取用户会员状态
-    const userResult = await execSql(`
-      SELECT member_type, is_lifetime_member FROM users WHERE id = '${userId}'
-    `) as Array<{ member_type: string; is_lifetime_member: boolean }>;
-    const user = userResult?.[0];
+    const { data: user } = await supabase
+      .from('users')
+      .select('member_type, is_lifetime_member')
+      .eq('id', userId)
+      .maybeSingle();
 
     // 如果已有终身会员，不再发放
     if (user?.is_lifetime_member) {
@@ -205,41 +217,52 @@ async function checkAndGrantReward(userId: string) {
     }
 
     // 检查是否满足奖励条件（3条审核通过）
-    if (approvedCount >= 3) {
+    if ((approvedCount || 0) >= 3) {
       // 标记所有已审核的JD为已发放奖励
-      await execSql(`
-        UPDATE jd_submissions 
-        SET reward_granted = TRUE 
-        WHERE user_id = '${userId}' AND status = 1
-      `);
+      await supabase
+        .from('jd_submissions')
+        .update({ reward_granted: true })
+        .eq('user_id', userId)
+        .eq('status', 1);
 
       // 如果用户已有月度会员，延长6个月
       if (user?.member_type) {
-        await execSql(`
-          UPDATE users 
-          SET member_expire_time = COALESCE(member_expire_time, NOW()) + INTERVAL '6 months'
-          WHERE id = '${userId}'
-        `);
+        const { error: rpcError } = await supabase.rpc('extend_membership', {
+          p_user_id: userId,
+          p_months: 6
+        });
+        
+        if (rpcError) {
+          // 如果 RPC 不存在，直接更新
+          await supabase
+            .from('users')
+            .update({ 
+              member_expire_time: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString() 
+            })
+            .eq('id', userId);
+        }
       } else {
         // 开通终身会员
-        await execSql(`
-          UPDATE users 
-          SET is_lifetime_member = TRUE, 
-              member_type = 'lifetime',
-              member_expire_time = '2099-12-31 23:59:59'
-          WHERE id = '${userId}'
-        `);
+        await supabase
+          .from('users')
+          .update({
+            is_lifetime_member: true,
+            member_type: 'lifetime',
+            member_expire_time: '2099-12-31 23:59:59'
+          })
+          .eq('id', userId);
       }
 
       // 更新配额表
-      await execSql(`
-        INSERT INTO user_quotas (user_id, member_type, quota, used_quota, member_expires_at)
-        VALUES ('${userId}', 'lifetime', -1, 0, '2099-12-31 23:59:59')
-        ON CONFLICT (user_id) DO UPDATE SET
-          member_type = 'lifetime',
-          quota = -1,
-          member_expires_at = '2099-12-31 23:59:59'
-      `);
+      await supabase
+        .from('user_quotas')
+        .upsert({
+          user_id: userId,
+          member_type: 'lifetime',
+          quota: -1,
+          used_quota: 0,
+          member_expires_at: '2099-12-31 23:59:59'
+        }, { onConflict: 'user_id' });
     }
   } catch (error) {
     console.error('检查奖励失败:', error);

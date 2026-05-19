@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'edge';
 
@@ -9,31 +9,43 @@ export const runtime = 'edge';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const supabase = getSupabaseAdmin();
 
     // 批量上报：{ events: [...] }
     if (body.events && Array.isArray(body.events)) {
-      let inserted = 0;
-      for (const evt of body.events) {
-        const userId = evt.user_id ? String(evt.user_id).replace(/'/g, "''") : null;
-        const eventType = String(evt.event_type || '').replace(/'/g, "''");
-        const eventData = evt.event_data ? JSON.stringify(evt.event_data).replace(/'/g, "''") : null;
-        const ts = evt.timestamp ? `'${evt.timestamp}'` : 'NOW()';
-        const sql = `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES (${userId ? `'${userId}'` : 'NULL'}, '${eventType}', '${eventData}'::jsonb, ${ts})`;
-        const res = await execSql(sql);
-        if (Array.isArray(res) && (res as Record<string, unknown>[]).length > 0) inserted++;
+      const eventsToInsert = body.events.map((evt: any) => ({
+        user_id: evt.user_id || null,
+        event_type: evt.event_type || '',
+        event_data: evt.event_data || null,
+        created_at: evt.timestamp || new Date().toISOString(),
+      }));
+
+      const { error } = await supabase
+        .from('analytics_events')
+        .insert(eventsToInsert);
+
+      if (error) {
+        console.error('[analytics] Batch insert error:', error);
+        return NextResponse.json({ success: false, error: '批量上报失败' }, { status: 500 });
       }
-      return NextResponse.json({ success: true, inserted });
+
+      return NextResponse.json({ success: true, inserted: eventsToInsert.length });
     }
 
     // 单条上报
-    const userId = body.user_id ? String(body.user_id).replace(/'/g, "''") : null;
-    const eventType = String(body.event_type || '').replace(/'/g, "''");
-    const eventData = body.event_data ? JSON.stringify(body.event_data).replace(/'/g, "''") : null;
-    const ts = body.timestamp ? `'${body.timestamp}'` : 'NOW()';
+    const { error } = await supabase
+      .from('analytics_events')
+      .insert({
+        user_id: body.user_id || null,
+        event_type: body.event_type || '',
+        event_data: body.event_data || null,
+        created_at: body.timestamp || new Date().toISOString(),
+      });
 
-    await execSql(
-      `INSERT INTO analytics_events (user_id, event_type, event_data, created_at) VALUES (${userId ? `'${userId}'` : 'NULL'}, '${eventType}', '${eventData}'::jsonb, ${ts})`
-    );
+    if (error) {
+      console.error('[analytics] Insert error:', error);
+      return NextResponse.json({ success: false, error: '上报失败' }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -55,18 +67,52 @@ export async function GET(request: NextRequest) {
       return await handleDashboardQuery(days);
     }
 
-    // 默认：查询近期事件概要
+    const supabase = getSupabaseAdmin();
     const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-    const rows = await execSql(
-      `SELECT event_type, COUNT(*) as count, COUNT(DISTINCT user_id) as unique_users FROM analytics_events WHERE created_at >= '${sinceDate}' GROUP BY event_type ORDER BY count DESC`
-    );
-    const summaryRows = await execSql(
-      `SELECT COUNT(*) as total_events, COUNT(DISTINCT user_id) as total_users, COUNT(DISTINCT event_type) as total_event_types FROM analytics_events WHERE created_at >= '${sinceDate}'`
-    );
-    const summary = (summaryRows as Record<string, unknown>[])[0] || {};
+
+    // 查询近期事件
+    const { data: events, error } = await supabase
+      .from('analytics_events')
+      .select('event_type, user_id')
+      .gte('created_at', sinceDate);
+
+    if (error) throw error;
+
+    // JS 聚合计算
+    const eventCounts: Record<string, { count: number; users: Set<string> }> = {};
+    const uniqueUsers = new Set<string>();
+
+    for (const evt of events || []) {
+      if (!evt.event_type) continue;
+      if (!eventCounts[evt.event_type]) {
+        eventCounts[evt.event_type] = { count: 0, users: new Set() };
+      }
+      eventCounts[evt.event_type].count++;
+      if (evt.user_id) {
+        eventCounts[evt.event_type].users.add(evt.user_id);
+        uniqueUsers.add(evt.user_id);
+      }
+    }
+
+    const daily = Object.entries(eventCounts)
+      .map(([event_type, data]) => ({
+        event_type,
+        count: data.count,
+        unique_users: data.users.size,
+      }))
+      .sort((a, b) => b.count - a.count);
+
     return NextResponse.json({
       success: true,
-      data: { daily: rows, summary: { totalEvents: Number(summary.total_events) || 0, totalUsers: Number(summary.total_users) || 0, totalEventTypes: Number(summary.total_event_types) || 0, period: `${days} days` } },
+      data: {
+        daily,
+        summary: {
+          totalEvents: events?.length || 0,
+          totalUsers: uniqueUsers.size,
+          totalEventTypes: Object.keys(eventCounts).length,
+          period: `${days} days`,
+        },
+      },
     });
   } catch (error) {
     console.error('[analytics] GET error:', error);
@@ -75,52 +121,100 @@ export async function GET(request: NextRequest) {
 }
 
 // ============================================================
-// Dashboard 聚合查询 — 用 JS 计算日期避免 SQL INTERVAL 问题
+// Dashboard 聚合查询 — 用 JS 计算聚合
 // ============================================================
 async function handleDashboardQuery(days: number) {
+  const supabase = getSupabaseAdmin();
   const sinceDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const where = `created_at >= '${sinceDate}'`;
+  const today = new Date().toISOString().split('T')[0];
 
-  // 1. 核心指标
-  const metricsRows = await execSql(
-    `SELECT COUNT(DISTINCT CASE WHEN DATE(created_at) = CURRENT_DATE THEN user_id END) as dau, COUNT(CASE WHEN event_type = 'chat_send' THEN 1 END) as chat_count, COUNT(CASE WHEN event_type = 'assessment_complete' THEN 1 END) as assessment_complete_count, COUNT(CASE WHEN event_type = 'assessment_start' THEN 1 END) as assessment_start_count, COUNT(CASE WHEN event_type = 'paywall_convert' THEN 1 END) as paywall_convert_count, COUNT(CASE WHEN event_type = 'paywall_show' THEN 1 END) as paywall_show_count FROM analytics_events WHERE ${where}`
-  );
-  const m = ((metricsRows as Record<string, unknown>[])[0]) || {};
-  const chatCount = Number(m.chat_count) || 0;
-  const assessmentStart = Number(m.assessment_start_count) || 0;
-  const assessmentComplete = Number(m.assessment_complete_count) || 0;
-  const paywallShow = Number(m.paywall_show_count) || 0;
-  const paywallConvert = Number(m.paywall_convert_count) || 0;
+  // 获取所有事件数据
+  const { data: events, error } = await supabase
+    .from('analytics_events')
+    .select('event_type, user_id, event_data, created_at')
+    .gte('created_at', sinceDate);
 
-  // 2. 事件分布
-  const distributionRows = await execSql(
-    `SELECT event_type, COUNT(*) as count FROM analytics_events WHERE ${where} GROUP BY event_type ORDER BY count DESC`
-  );
-  const distribution = (distributionRows as Record<string, unknown>[]).filter(r => r.event_type !== undefined);
+  if (error) throw error;
 
-  // 3. 行为漏斗
-  const funnelRows = await execSql(
-    `SELECT COUNT(DISTINCT CASE WHEN event_type = 'page_view' THEN user_id END) as page_view_users, COUNT(DISTINCT CASE WHEN event_type = 'chat_send' THEN user_id END) as chat_users, COUNT(DISTINCT CASE WHEN event_type = 'assessment_start' THEN user_id END) as assessment_users, COUNT(DISTINCT CASE WHEN event_type = 'paywall_convert' THEN user_id END) as convert_users FROM analytics_events WHERE ${where}`
-  );
-  const f = ((funnelRows as Record<string, unknown>[])[0]) || {};
+  // JS 聚合计算
+  const dauUsers = new Set<string>();
+  let chatCount = 0;
+  let assessmentStart = 0;
+  let assessmentComplete = 0;
+  let paywallShow = 0;
+  let paywallConvert = 0;
 
-  // 4. 趋势图
-  const trendRows = await execSql(
-    `SELECT DATE(created_at) as date, event_type, COUNT(*) as count FROM analytics_events WHERE ${where} GROUP BY DATE(created_at), event_type ORDER BY date ASC`
-  );
-  const trend = (trendRows as Record<string, unknown>[]).filter(r => r.date !== undefined);
+  const eventDistribution: Record<string, number> = {};
+  const pageViewUsers = new Set<string>();
+  const chatUsers = new Set<string>();
+  const assessmentUsers = new Set<string>();
+  const convertUsers = new Set<string>();
+  const trendByDate: Record<string, Record<string, number>> = {};
+  const pageViews: Record<string, number> = {};
 
-  // 5. 热门页面
-  const topPagesRows = await execSql(
-    `SELECT (event_data->>'page')::text as page, COUNT(*) as views FROM analytics_events WHERE event_type = 'page_view' AND event_data->>'page' IS NOT NULL AND ${where} GROUP BY (event_data->>'page')::text ORDER BY views DESC LIMIT 10`
-  );
-  const topPages = (topPagesRows as Record<string, unknown>[]).filter(r => r.page !== undefined);
+  for (const evt of events || []) {
+    const evtDate = (evt.created_at as string).split('T')[0];
+    const eventType = evt.event_type as string;
+    const userId = evt.user_id as string;
+
+    // DAU（今日活跃用户）
+    if (evtDate === today && userId) {
+      dauUsers.add(userId);
+    }
+
+    // 核心指标
+    if (eventType === 'chat_send') chatCount++;
+    if (eventType === 'assessment_start') assessmentStart++;
+    if (eventType === 'assessment_complete') assessmentComplete++;
+    if (eventType === 'paywall_show') paywallShow++;
+    if (eventType === 'paywall_convert') paywallConvert++;
+
+    // 事件分布
+    eventDistribution[eventType] = (eventDistribution[eventType] || 0) + 1;
+
+    // 漏斗
+    if (userId) {
+      if (eventType === 'page_view') pageViewUsers.add(userId);
+      if (eventType === 'chat_send') chatUsers.add(userId);
+      if (eventType === 'assessment_start') assessmentUsers.add(userId);
+      if (eventType === 'paywall_convert') convertUsers.add(userId);
+    }
+
+    // 趋势
+    if (!trendByDate[evtDate]) trendByDate[evtDate] = {};
+    trendByDate[evtDate][eventType] = (trendByDate[evtDate][eventType] || 0) + 1;
+
+    // 热门页面
+    if (eventType === 'page_view' && evt.event_data) {
+      const page = (evt.event_data as any)?.page;
+      if (page) {
+        pageViews[page] = (pageViews[page] || 0) + 1;
+      }
+    }
+  }
+
+  // 格式化输出
+  const distribution = Object.entries(eventDistribution)
+    .map(([event_type, count]) => ({ event_type, count }))
+    .sort((a, b) => b.count - a.count);
+
+  const trend = Object.entries(trendByDate)
+    .map(([date, types]) => ({
+      date,
+      ...types,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const topPages = Object.entries(pageViews)
+    .map(([page, views]) => ({ page, views }))
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 10);
 
   return NextResponse.json({
     success: true,
     data: {
       metrics: {
-        dau: Number(m.dau) || 0,
+        dau: dauUsers.size,
         chatCount,
         assessmentCompleteRate: assessmentStart > 0 ? Math.round((assessmentComplete / assessmentStart) * 100) : 0,
         paywallConvertRate: paywallShow > 0 ? Math.round((paywallConvert / paywallShow) * 100) : 0,
@@ -128,10 +222,10 @@ async function handleDashboardQuery(days: number) {
       distribution,
       funnel: {
         stages: [
-          { name: '浏览页面', count: Number(f.page_view_users) || 0 },
-          { name: '发起对话', count: Number(f.chat_users) || 0 },
-          { name: '开始测评', count: Number(f.assessment_users) || 0 },
-          { name: '付费转化', count: Number(f.convert_users) || 0 },
+          { name: '浏览页面', count: pageViewUsers.size },
+          { name: '发起对话', count: chatUsers.size },
+          { name: '开始测评', count: assessmentUsers.size },
+          { name: '付费转化', count: convertUsers.size },
         ],
       },
       trend,
