@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('articles')
       .select('*')
-      .eq('is_published', true)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -39,7 +38,7 @@ export async function GET(request: NextRequest) {
           tags: a.tags || [],
           views: a.views || 0,
           isFeatured: a.is_featured || false,
-          isPublished: a.is_published,
+          author: a.author,
           createdAt: a.created_at
         })),
         total: count || 0,
@@ -74,8 +73,7 @@ export async function POST(request: NextRequest) {
         tags: tags || [],
         content: content || '',
         views: 0,
-        is_featured: false,
-        is_published: true
+        is_featured: false
       })
       .select()
       .single();
