@@ -4,6 +4,40 @@
  * 支持参数化查询，防止SQL注入
  */
 
+/**
+ * PostgreSQL参数安全转义
+ * 将参数值转换为安全的SQL字面量
+ */
+function escapeParam(value: any): string {
+  if (value === null || value === undefined) {
+    return 'NULL';
+  }
+  
+  if (typeof value === 'number') {
+    return String(value);
+  }
+  
+  if (typeof value === 'boolean') {
+    return value ? 'TRUE' : 'FALSE';
+  }
+  
+  if (typeof value === 'string') {
+    // PostgreSQL标准转义：单引号替换为两个单引号
+    const escaped = value.replace(/'/g, "''");
+    return `'${escaped}'`;
+  }
+  
+  if (value instanceof Date) {
+    const escaped = value.toISOString().replace(/'/g, "''");
+    return `'${escaped}'`;
+  }
+  
+  // 其他类型：JSON序列化后转义
+  const jsonStr = JSON.stringify(value);
+  const escaped = jsonStr.replace(/'/g, "''");
+  return `'${escaped}'`;
+}
+
 // 执行SQL查询（支持参数化）
 export async function execSql(template: string, ...params: any[]): Promise<unknown[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,36 +49,34 @@ export async function execSql(template: string, ...params: any[]): Promise<unkno
   }
 
   try {
-    let response: Response;
+    let finalSql: string;
     
     if (params.length === 0) {
       // 旧调用方式：直接执行SQL字符串
-      response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': serviceKey,
-          'Authorization': `Bearer ${serviceKey}`,
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({ query: template })
-      });
+      finalSql = template;
     } else {
       // 新调用方式：参数化查询（安全）
-      response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql_safe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': serviceKey,
-          'Authorization': `Bearer ${serviceKey}`,
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({ 
-          query_template: template, 
-          params: params.map(p => String(p)) 
-        })
+      // 将 %L 占位符依次替换为转义后的参数值
+      let index = 0;
+      finalSql = template.replace(/%L/g, () => {
+        if (index < params.length) {
+          return escapeParam(params[index++]);
+        }
+        return '%L'; // 参数不足，保留占位符
       });
     }
+
+    // 调用exec_sql RPC函数
+    const response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ query: finalSql })
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
