@@ -32,24 +32,26 @@ export async function GET(request: NextRequest) {
         return q;
       };
       
-      // 并行查询：job_title 匹配 + responsibilities 匹配
-      const [titleResult, respResult] = await Promise.all([
-        buildBaseQuery().ilike('job_title', `*${keyword}*`).order('created_at', { ascending: false }),
-        buildBaseQuery().ilike('responsibilities', `*${keyword}*`).order('created_at', { ascending: false })
+      // 并行查询：job_title 匹配 + responsibilities 匹配 + industry 匹配
+      const [titleResult, respResult, industryResult] = await Promise.all([
+        buildBaseQuery().ilike('job_title', `%${keyword}%`).order('created_at', { ascending: false }),
+        buildBaseQuery().ilike('responsibilities', `%${keyword}%`).order('created_at', { ascending: false }),
+        buildBaseQuery().ilike('industry', `%${keyword}%`).order('created_at', { ascending: false })
       ]);
       
-      if (titleResult.error && respResult.error) {
-        console.error('[jobs] 查询错误:', titleResult.error, respResult.error);
+      if (titleResult.error && respResult.error && industryResult.error) {
+        console.error('[jobs] 查询错误:', titleResult.error, respResult.error, industryResult.error);
         return NextResponse.json({ error: '查询失败' }, { status: 500 });
       }
       
       // 合并结果并去重（按id）
       const titleData = titleResult.data || [];
       const respData = respResult.data || [];
+      const industryData = industryResult.data || [];
       const seenIds = new Set<string>();
       const uniqueResults: any[] = [];
       
-      // 先添加 title 匹配的（优先级高）
+      // 先添加 title 匹配的（优先级最高）
       for (const job of titleData) {
         if (!seenIds.has(job.id)) {
           seenIds.add(job.id);
@@ -58,6 +60,13 @@ export async function GET(request: NextRequest) {
       }
       // 再添加 responsibilities 匹配的
       for (const job of respData) {
+        if (!seenIds.has(job.id)) {
+          seenIds.add(job.id);
+          uniqueResults.push(job);
+        }
+      }
+      // 最后添加 industry 匹配的（优先级最低）
+      for (const job of industryData) {
         if (!seenIds.has(job.id)) {
           seenIds.add(job.id);
           uniqueResults.push(job);
@@ -79,8 +88,10 @@ export async function GET(request: NextRequest) {
       // 计算相关性评分并排序
       const keywordLower = keyword.toLowerCase();
       const scoredData = uniqueResults.map(job => {
-        let relevance = 3; // 默认：仅职责包含
+        let relevance = 4; // 默认：仅行业包含
         const titleLower = (job.job_title || '').toLowerCase();
+        const industryLower = (job.industry || '').toLowerCase();
+        const respLower = (job.responsibilities || '').toLowerCase();
         
         if (titleLower === keywordLower) {
           relevance = 0; // 精确匹配
@@ -88,6 +99,10 @@ export async function GET(request: NextRequest) {
           relevance = 1; // 前缀匹配
         } else if (titleLower.includes(keywordLower)) {
           relevance = 2; // 标题包含
+        } else if (respLower.includes(keywordLower)) {
+          relevance = 3; // 职责包含
+        } else if (industryLower.includes(keywordLower)) {
+          relevance = 4; // 行业包含
         }
         
         return { ...job, _relevance: relevance };
