@@ -1,14 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
-// 直接执行SQL查询
-async function execSql(sql: string): Promise<unknown[]> {
+// PostgreSQL 参数转义
+function escapeParam(value: unknown): string {
+  if (value === null || value === undefined) return 'NULL';
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+  if (typeof value === 'string') {
+    const escaped = value.replace(/'/g, "''");
+    return `'${escaped}'`;
+  }
+  if (value instanceof Date) {
+    return `'${value.toISOString()}'`;
+  }
+  const json = JSON.stringify(value);
+  const escaped = json.replace(/'/g, "''");
+  return `'${escaped}'`;
+}
+
+// 直接执行SQL查询（支持参数化）
+async function execSql(template: string, ...params: unknown[]): Promise<unknown[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!baseUrl || !serviceKey) {
     console.error('Missing config:', { baseUrl, hasServiceKey: !!serviceKey });
     return [];
+  }
+
+  let sql = template;
+  if (params.length > 0) {
+    params.forEach((param) => {
+      sql = sql.replace('%L', escapeParam(param));
+    });
   }
 
   try {

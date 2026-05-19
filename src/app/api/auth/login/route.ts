@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
 
       // 查询用户
       const userResult = await execSql(
-        `SELECT * FROM users WHERE phone = '${phone}' LIMIT 1`
+        'SELECT * FROM users WHERE phone = %L LIMIT 1',
+        phone
       );
 
       if (!userResult || userResult.length === 0) {
@@ -101,7 +102,8 @@ export async function POST(request: NextRequest) {
 
       // 验证验证码
       const verifyResult = await execSql(
-        `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'login' AND used = false ORDER BY created_at DESC LIMIT 1`
+        "SELECT * FROM verification_codes WHERE phone = %L AND type = 'login' AND used = false ORDER BY created_at DESC LIMIT 1",
+        phone
       );
       if (!verifyResult || verifyResult.length === 0) {
         return NextResponse.json({ error: '请先获取验证码' }, { status: 400 });
@@ -113,16 +115,19 @@ export async function POST(request: NextRequest) {
       if (verification.code !== code) {
         return NextResponse.json({ error: '验证码错误' }, { status: 400 });
       }
-      await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
+      await execSql('UPDATE verification_codes SET used = true WHERE id = %L', verification.id);
 
       // 查询或创建用户
       let userResult = await execSql(
-        `SELECT * FROM users WHERE phone = '${phone}' LIMIT 1`
+        'SELECT * FROM users WHERE phone = %L LIMIT 1',
+        phone
       );
 
       if (!userResult || userResult.length === 0) {
         userResult = await execSql(
-          `INSERT INTO users (phone, nickname) VALUES ('${phone}', '用户${phone.slice(-4)}') RETURNING *`
+          'INSERT INTO users (phone, nickname) VALUES (%L, %L) RETURNING *',
+          phone,
+          `用户${phone.slice(-4)}`
         );
         if (!userResult || userResult.length === 0) {
           return NextResponse.json({ error: '登录失败' }, { status: 500 });
