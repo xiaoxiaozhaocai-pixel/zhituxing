@@ -674,7 +674,7 @@ export default function AssistantPage() {
               <button
                 key={bot.id}
                 onClick={() => {
-                  if (bot.isVipOnly && !user?.is_vip) {
+                  if (bot.isVipOnly && !quota?.is_member) {
                     setShowQuotaDialog(true);
                     return;
                   }
@@ -683,7 +683,7 @@ export default function AssistantPage() {
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
                   activeBot === bot.id
                     ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
-                    : bot.isVipOnly && !user?.is_vip
+                    : bot.isVipOnly && !quota?.is_member
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
                       : 'text-gray-600 hover:bg-white hover:shadow'
                 }`}
