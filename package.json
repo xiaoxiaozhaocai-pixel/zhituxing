@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "NEXT_TURBO=0 NODE_ENV=production next build",
+    "build": "NODE_ENV=production next build --no-turbopack",
     "dev": "echo 'Use production mode' && exit 1",
     "preinstall": "npx only-allow pnpm",
     "lint": "eslint",
