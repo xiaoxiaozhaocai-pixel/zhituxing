@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       let query = supabaseAdmin
         .from('job_descriptions')
         .select(selectFields, { count: 'exact' })
-        .or(`job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`)
+        .or(`job_title.ilike.*${keyword}*,responsibilities.ilike.*${keyword}*`)
         .limit(200)  // 限制最多200条，避免数据量过大
         .order('created_at', { ascending: false });
       
