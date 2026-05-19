@@ -121,15 +121,18 @@ export async function GET(request: NextRequest) {
         const titleLower = (job.job_title || '').toLowerCase();
         const industryLower = (job.industry || '').toLowerCase();
         const respLower = (job.responsibilities || '').toLowerCase();
-        // hard_skills/soft_skills 可能是数组或字符串，统一转为字符串
-        const hardSkillsStr = Array.isArray(job.hard_skills) 
-          ? job.hard_skills.join(',') 
-          : (job.hard_skills || '');
-        const softSkillsStr = Array.isArray(job.soft_skills) 
-          ? job.soft_skills.join(',') 
-          : (job.soft_skills || '');
-        const hardSkillsLower = hardSkillsStr.toLowerCase();
-        const softSkillsLower = softSkillsStr.toLowerCase();
+        
+        // hard_skills/soft_skills 类型安全处理：可能是数组、字符串、null、undefined
+        const safeToArray = (val: any): string[] => {
+          if (Array.isArray(val)) return val.map(String);
+          if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+          if (val == null) return [];
+          return [String(val)];
+        };
+        const hardSkillsArr = safeToArray(job.hard_skills);
+        const softSkillsArr = safeToArray(job.soft_skills);
+        const hardSkillsLower = hardSkillsArr.join(',').toLowerCase();
+        const softSkillsLower = softSkillsArr.join(',').toLowerCase();
         
         if (titleLower === keywordLower) {
           relevance = 0;
@@ -160,13 +163,15 @@ export async function GET(request: NextRequest) {
       const paginatedData = scoredData.slice(offset, offset + pageSize);
       
       const formattedData = paginatedData.map(job => {
-        // 处理技能字段：可能是数组或字符串
-        const skills = Array.isArray(job.hard_skills) 
-          ? job.hard_skills 
-          : (job.hard_skills?.split(',') || []);
-        const softSkills = Array.isArray(job.soft_skills) 
-          ? job.soft_skills 
-          : (job.soft_skills?.split(',') || []);
+        // 使用相同的类型安全处理函数
+        const safeToArray = (val: any): string[] => {
+          if (Array.isArray(val)) return val.map(String);
+          if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+          if (val == null) return [];
+          return [String(val)];
+        };
+        const skills = safeToArray(job.hard_skills);
+        const softSkills = safeToArray(job.soft_skills);
         
         return {
           id: job.id,
@@ -228,10 +233,14 @@ export async function GET(request: NextRequest) {
     
     // 格式化返回数据
     const formattedData = data?.map(job => {
-      // 处理技能字段：可能是数组或字符串
-      const skills = Array.isArray(job.skills) 
-        ? job.skills 
-        : (job.skills?.split(',') || []);
+      // 使用类型安全处理函数
+      const safeToArray = (val: any): string[] => {
+        if (Array.isArray(val)) return val.map(String);
+        if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+        if (val == null) return [];
+        return [String(val)];
+      };
+      const skills = safeToArray(job.skills);
       
       return {
         id: job.id,
