@@ -1,60 +1,164 @@
 import { Metadata } from 'next';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Shield, Eye, Lock, Cookie, ExternalLink, UserCircle, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: '隐私政策',
-  description: '职途星隐私政策，了解我们如何收集、使用和保护您的个人信息。',
-  alternates: { canonical: 'https://432b6b32-abdf-4fba-9528-738980f50a36.dev.coze.site/privacy' },
+  title: '隐私政策 - 职途星',
+  description: '职途星隐私政策，了解我们如何收集、使用和保护您的个人信息，保障您的数据安全与隐私权益。',
 };
+
+const sections = [
+  {
+    icon: <Eye className="w-6 h-6 text-blue-600" />,
+    title: '一、信息收集',
+    content: `我们收集您在使用职途星服务时主动提供的信息，包括但不限于：`,
+    list: [
+      '注册信息：手机号码、邮箱地址（可选）',
+      '个人资料：昵称、头像、学校、专业、年级、求职意向',
+      '使用数据：职业规划记录、测评结果、面试记录、岗位匹配历史',
+      '设备信息：浏览器类型、操作系统、设备标识（用于安全防护）',
+    ],
+  },
+  {
+    icon: <Shield className="w-6 h-6 text-green-600" />,
+    title: '二、信息使用',
+    content: `我们收集的信息仅用于以下目的：`,
+    list: [
+      '提供和维护职途星的AI职业规划、模拟面试、能力测评等核心服务功能',
+      '个性化和改善您的使用体验，提供精准的岗位推荐和学习建议',
+      '发送与服务相关的通知（如测评完成提醒、会员到期提醒）',
+      '安全防护、欺诈预防和违规行为检测',
+      '匿名化数据分析，用于产品优化和服务改进',
+    ],
+  },
+  {
+    icon: <Lock className="w-6 h-6 text-purple-600" />,
+    title: '三、数据安全',
+    content: `我们采用行业标准的加密技术和安全措施保护您的个人信息：`,
+    list: [
+      '数据传输加密：全站HTTPS/TLS加密传输',
+      '数据库加密存储：敏感信息采用AES-256加密',
+      '访问控制：严格的权限管理和身份验证',
+      '安全审计：定期进行安全漏洞扫描和渗透测试',
+      '数据备份：多地冗余备份，确保数据不丢失',
+    ],
+  },
+  {
+    icon: <Cookie className="w-6 h-6 text-orange-600" />,
+    title: '四、Cookie政策',
+    content: `我们使用Cookie和类似技术来：`,
+    list: [
+      '维持您的登录状态和会话信息（必要Cookie）',
+      '记住您的偏好设置（如主题、语言）',
+      '分析网站使用情况，优化用户体验（分析Cookie）',
+    ],
+    note: '您可以在浏览器设置中管理Cookie偏好。禁用必要Cookie可能影响部分功能使用。',
+  },
+  {
+    icon: <ExternalLink className="w-6 h-6 text-cyan-600" />,
+    title: '五、第三方服务',
+    content: `我们使用以下第三方服务来提供功能：`,
+    list: [
+      'Coze AI平台：提供AI对话、模拟面试等智能服务',
+      'Supabase：提供数据存储和用户认证服务',
+      '微信/QQ分享SDK：社交分享功能',
+    ],
+    note: '这些服务商均有严格的数据保护协议，不会将您的数据用于其他目的。',
+  },
+  {
+    icon: <UserCircle className="w-6 h-6 text-indigo-600" />,
+    title: '六、用户权利',
+    content: `您对个人信息享有以下权利：`,
+    list: [
+      '访问权：随时查看您的个人资料和使用记录',
+      '更正权：修改和更新您的个人信息',
+      '删除权：申请删除您的账户和相关数据',
+      '导出权：下载您的数据副本（JSON格式）',
+      '撤回同意：撤回对信息处理的同意',
+    ],
+    note: '如需行使以上权利，请通过页面底部的联系方式联系我们。',
+  },
+];
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">隐私政策</h1>
-        <div className="bg-white rounded-lg shadow-sm p-8 space-y-6 text-gray-700 leading-relaxed">
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">一、信息收集</h2>
-            <p>我们收集您在使用职途星服务时主动提供的信息，包括但不限于：</p>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>注册信息：邮箱地址、手机号码</li>
-              <li>个人资料：昵称、头像、学校、专业、年级</li>
-              <li>使用数据：职业规划记录、测评结果、面试记录</li>
-            </ul>
-          </section>
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">二、信息使用</h2>
-            <p>我们收集的信息仅用于以下目的：</p>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>提供和维护职途星的服务功能</li>
-              <li>个性化和改善您的使用体验</li>
-              <li>发送与服务相关的通知（不包含营销信息）</li>
-              <li>安全防护和欺诈预防</li>
-            </ul>
-          </section>
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">三、信息保护</h2>
-            <p>我们采用行业标准的加密技术和安全措施保护您的个人信息，包括数据传输加密（HTTPS/TLS）、数据库加密存储、严格的访问控制等。</p>
-          </section>
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">四、Cookie使用</h2>
-            <p>我们使用必要的Cookie来维持您的登录状态和会话信息，不使用第三方追踪Cookie。您可以在浏览器设置中管理Cookie偏好。</p>
-          </section>
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">五、用户权利</h2>
-            <p>您有权访问、更正、删除您的个人信息，也可以随时注销账户。如需行使这些权利，请通过页面底部的联系方式与我们取得联系。</p>
-          </section>
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">六、政策更新</h2>
-            <p>我们可能会不时更新本隐私政策。重大变更时，我们会通过应用内通知或邮件告知您。继续使用我们的服务即表示您接受更新后的政策。</p>
-          </section>
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">七、联系我们</h2>
-            <p>如有任何关于隐私政策的问题，请通过以下方式联系我们：</p>
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li>微信公众号：职途星</li>
-              <li>客服微信：zhituxing_service</li>
-            </ul>
-          </section>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Shield className="w-10 h-10" />
+            <h1 className="text-3xl sm:text-4xl font-bold">隐私政策</h1>
+          </div>
+          <p className="text-blue-100 text-lg">
+            最后更新日期：2025年1月1日
+          </p>
+          <p className="text-blue-100 mt-2">
+            我们重视并保护您的隐私。本政策说明我们如何收集、使用和保护您的个人信息。
+          </p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+        {sections.map((section, index) => (
+          <Card key={index} className="border-0 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                {section.icon}
+                <span>{section.title}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-gray-700 leading-relaxed">
+              <p className="mb-4">{section.content}</p>
+              <ul className="list-disc pl-6 space-y-2">
+                {section.list.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+              {section.note && (
+                <p className="mt-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                  {section.note}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Contact Section */}
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <Mail className="w-6 h-6 text-blue-600" />
+              <span>七、联系我们</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-gray-700">
+            <p className="mb-4">
+              如果您对本隐私政策有任何疑问、意见或需要行使您的用户权利，请通过以下方式联系我们：
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="font-medium text-gray-900">邮箱</p>
+                <p className="text-blue-600">privacy@zhituxing.com</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <p className="font-medium text-gray-900">微信公众号</p>
+                <p className="text-gray-600">职途星</p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm text-gray-500">
+              我们将在收到您的请求后15个工作日内予以回复。
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Footer Note */}
+        <div className="text-center text-sm text-gray-500 py-8">
+          <p>
+            本隐私政策适用于职途星（zhituxing.com）提供的所有服务。
+            如本政策发生变更，我们将在网站显著位置公告。
+          </p>
         </div>
       </div>
     </div>
