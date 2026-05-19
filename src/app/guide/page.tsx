@@ -51,7 +51,7 @@ const steps = [
     title: '岗位查询',
     description: '搜索目标岗位，查看真实JD和薪资',
     details: [
-      '覆盖15+主流行业500万+真实JD',
+      '覆盖27个行业20,000+真实JD',
       '多维度筛选：城市/薪资/企业类型',
       '一键获取核心技能要求和准入门槛'
     ],
@@ -168,7 +168,7 @@ export default function GuidePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">真实数据</h3>
-                  <p className="text-sm text-gray-600">基于500万+全行业真实招聘JD，信息准确可靠</p>
+                  <p className="text-sm text-gray-600">基于20,000+全行业真实招聘JD，信息准确可靠</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
