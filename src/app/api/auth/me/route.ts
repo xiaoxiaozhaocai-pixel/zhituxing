@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { execSql } from '@/lib/exec-sql';
 import { isMember, getUserQuota } from '@/lib/quota';
+import { authenticateUser } from '@/lib/auth';
 
 // 获取当前用户
 export async function GET(request: NextRequest) {
   try {
-    // 从请求头获取用户ID
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
+    // JWT双认证
+    const authResult = await authenticateUser(request);
+    if (!authResult) {
       return NextResponse.json(
         { error: '未登录' },
         { status: 401 }
       );
     }
+    const userId = authResult.userId;
 
     // 查询用户信息
     const result = await execSql(
