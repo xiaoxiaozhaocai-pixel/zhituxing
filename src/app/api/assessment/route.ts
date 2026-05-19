@@ -9,8 +9,17 @@ import {
 } from '@/lib/coze-stream';
 import { execSql } from '@/lib/exec-sql';
 import { calculateCompetencyPercentile, type CompetencyPercentileResult, type PeerMatchScore } from '@/lib/matching-algorithm';
+import {
+  extractKeywords,
+  querySupabase,
+  buildRAGContext,
+  createDeepSeekRAGStream,
+} from '@/lib/rag-utils';
 
 export const runtime = 'edge';
+
+// DeepSeek 开关
+const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
 // ============================================================
 // GET - 获取测评历史 + 竞争力百分位
@@ -138,7 +147,78 @@ function getAssessmentFallback(major?: string, grade?: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { major, grade, message, sessionId } = body;
+    const { major, grade, message, sessionId, history } = body;
+
+    // ============================================================
+    // DeepSeek + RAG 分支
+    // ============================================================
+    if (USE_DEEPSEEK) {
+      try {
+        // 1. 用户验证
+        const userInfo = await getUserInfoFromRequest(request);
+        const userId = userInfo?.userId || null;
+
+        // 2. 从用户消息提取关键词
+        const userMessage = message || `请根据以下信息，为我生成一份专业能力测评报告：\n\n【基本信息】\n- 所属专业：${major || '未填写'}\n- 当前年级：${grade || '未填写'}`;
+        const keywords = extractKeywords(userMessage);
+
+        // 3. RAG 检索：查询 skill_assessments 题库
+        const filters: { field: string; operator: 'eq' | 'ilike'; value: string | number | boolean | string[] }[] = [];
+        if (keywords.industry) filters.push({ field: 'industry', operator: 'ilike', value: keywords.industry });
+        if (keywords.jobTitle) filters.push({ field: 'skill_name', operator: 'ilike', value: keywords.jobTitle });
+
+        const assessmentQuestions = await querySupabase('skill_assessments', filters, 15);
+
+        // 4. 构建系统提示词
+        const ragContext = buildRAGContext([
+          { tableName: 'skill_assessments', displayName: '测评题库', data: assessmentQuestions.slice(0, 10), fields: ['question', 'options', 'skill_name'] },
+        ]);
+
+        const systemPrompt = `你是"测测"——职途星平台的专业能力测评助手。
+
+你的职责：
+1. 根据用户的${major ? `专业（${major}）` : '专业方向'}和${grade ? `年级（${grade}）` : '当前阶段'}出题
+2. 每次出一道选择题（4个选项），等用户回答后再出下一道
+3. 用户回答后，给出正确答案和解析
+4. 测评结束后，给出各维度评分和提升建议
+
+测评维度：
+• 专业知识掌握度
+• 实践应用能力
+• 沟通表达能力
+• 逻辑思维能力
+• 团队协作能力
+• 创新思维能力
+
+${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ''}
+
+请根据题库出题，如果题库不匹配，请根据用户专业自行设计合理的测评题目。`;
+
+        // 5. 构建 DeepSeek 消息列表
+        const messages = [
+          { role: 'system' as const, content: systemPrompt },
+          ...(history || []).filter((m: { role: string }) => m.role !== 'system'),
+          { role: 'user' as const, content: userMessage },
+        ];
+
+        // 6. 返回 DeepSeek SSE 流
+        const stream = createDeepSeekRAGStream(systemPrompt, userMessage, history || []);
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+        });
+      } catch (deepSeekError) {
+        console.error('[assessment] DeepSeek error, falling back to Coze:', deepSeekError);
+        // 出错时回退到 Coze
+      }
+    }
+
+    // ============================================================
+    // Coze Workflow 分支（原有逻辑）
+    // ============================================================
 
     // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
