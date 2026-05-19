@@ -70,10 +70,22 @@ export async function GET(request: NextRequest) {
       
       const results = await Promise.all(queries);
       
+      // 记录每个查询的结果状态
+      console.log('[jobs] 查询结果:', results.map((r, i) => ({
+        index: i,
+        hasError: !!r.error,
+        errorMsg: r.error?.message || null,
+        dataCount: r.data?.length || 0
+      })));
+      
       // 检查是否所有查询都失败
       const allErrors = results.every(r => r.error);
       if (allErrors) {
-        console.error('[jobs] 查询错误:', results.map(r => r.error));
+        console.error('[jobs] 所有查询都失败:', JSON.stringify(results.map(r => ({
+          message: r.error?.message,
+          code: r.error?.code,
+          details: r.error?.details
+        }))));
         return NextResponse.json({ error: '查询失败' }, { status: 500 });
       }
       
@@ -248,12 +260,11 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
     });
   } catch (error: any) {
-    console.error('API错误:', error?.message, error?.stack, error);
-    console.error('API错误详情:', JSON.stringify({
+    console.error('API错误:', JSON.stringify({
       message: error?.message,
-      name: error?.name,
-      stack: error?.stack?.split('\n').slice(0, 5)
-    }, null, 2));
+      stack: error?.stack?.substring(0, 500),
+      name: error?.name
+    }));
     return NextResponse.json({ 
       error: '服务器错误',
       details: error?.message 
