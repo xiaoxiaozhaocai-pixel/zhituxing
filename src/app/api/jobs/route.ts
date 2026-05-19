@@ -15,19 +15,24 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
     const supabaseAdmin = getSupabaseAdmin();
 
-    // ===== 关键词搜索：使用 Supabase 查询构建器（性能优化） =====
+    // ===== 关键词搜索：使用 Supabase 查询构建器（深度性能优化） =====
     if (keyword) {
       // 构建 OR 条件：job_title 或 responsibilities 包含关键词
       const orConditions = `job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`;
       
-      // 性能优化：限制排序数据量，最多获取 MAX_SORT_LIMIT 条进行排序
-      const MAX_SORT_LIMIT = 200;
+      // 性能优化配置
+      const MAX_RESULTS = 200;  // 最多获取条数
+      const FAST_MODE_THRESHOLD = 200;  // 超过此数量启用快速模式（不排序）
+      
+      // 性能优化1：只select必要字段（减少数据传输量）
+      const searchFields = 'id,job_title,industry,city,salary_range,hard_skills,responsibilities,created_at,fresh_graduate_friendly';
       
       let query = supabaseAdmin
         .from('job_descriptions')
-        .select('*', { count: 'exact' })
+        .select(searchFields)  // 不用 count: 'exact'，count在大表上很慢
         .or(orConditions)
-        .limit(MAX_SORT_LIMIT);  // 排序前截断，减少排序数据量
+        .limit(MAX_RESULTS)
+        .order('created_at', { ascending: false });  // 先按时间排序
       
       // 应用额外筛选条件
       if (industry) {
@@ -40,24 +45,25 @@ export async function GET(request: NextRequest) {
         query = query.eq('fresh_graduate_friendly', true);
       }
       
-      // 查询超时保护：3秒超时
-      const queryPromise = query.order('created_at', { ascending: false });
+      // 查询超时保护：2秒超时
+      const queryPromise = query;
       const timeoutPromise = new Promise<null>((_, reject) => 
-        setTimeout(() => reject(new Error('查询超时')), 3000)
+        setTimeout(() => reject(new Error('查询超时')), 2000)
       );
       
       let data: any[] | null = null;
       let error: any = null;
-      let count: number | null = null;
+      let fastMode = false;  // 快速模式标记
+      
+      const startTime = Date.now();
       
       try {
         const result = await Promise.race([
           queryPromise,
           timeoutPromise
-        ]) as { data: any[] | null; error: any; count: number | null };
+        ]) as { data: any[] | null; error: any };
         data = result.data;
         error = result.error;
-        count = result.count;
       } catch (timeoutError) {
         console.warn('[jobs] 查询超时，返回空结果');
         return NextResponse.json({
@@ -67,6 +73,7 @@ export async function GET(request: NextRequest) {
           page,
           pageSize,
           totalPages: 0,
+          hasMore: false,
           timeout: true
         });
       }
@@ -76,37 +83,49 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: '查询失败' }, { status: 500 });
       }
       
-      // 在 JS 中计算相关性评分并排序（最多200条，性能可控）
-      const scoredData = (data || []).map(job => {
-        let relevance = 3; // 默认：仅职责包含
-        const titleLower = (job.job_title || '').toLowerCase();
-        const keywordLower = keyword.toLowerCase();
-        
-        if (titleLower === keywordLower) {
-          relevance = 0; // 精确匹配
-        } else if (titleLower.startsWith(keywordLower)) {
-          relevance = 1; // 前缀匹配
-        } else if (titleLower.includes(keywordLower)) {
-          relevance = 2; // 标题包含
-        }
-        
-        return { ...job, _relevance: relevance };
-      });
+      const queryTime = Date.now() - startTime;
+      const resultCount = (data || []).length;
       
-      // 按 relevance 升序排序（精确匹配在前）
-      scoredData.sort((a, b) => {
-        if (a._relevance !== b._relevance) {
-          return a._relevance - b._relevance;
-        }
-        // 相关性相同时，按创建时间降序
-        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-      });
+      // 性能优化2：结果数>阈值时，直接返回前N条不排序（快速模式）
+      let sortedData: any[];
+      if (resultCount > FAST_MODE_THRESHOLD) {
+        // 快速模式：直接使用Supabase排序结果，不做相关性排序
+        fastMode = true;
+        sortedData = (data || []).slice(0, pageSize);
+      } else {
+        // 标准模式：计算相关性评分并排序
+        const scoredData = (data || []).map(job => {
+          let relevance = 3; // 默认：仅职责包含
+          const titleLower = (job.job_title || '').toLowerCase();
+          const keywordLower = keyword.toLowerCase();
+          
+          if (titleLower === keywordLower) {
+            relevance = 0; // 精确匹配
+          } else if (titleLower.startsWith(keywordLower)) {
+            relevance = 1; // 前缀匹配
+          } else if (titleLower.includes(keywordLower)) {
+            relevance = 2; // 标题包含
+          }
+          
+          return { ...job, _relevance: relevance };
+        });
+        
+        // 按 relevance 升序排序（精确匹配在前）
+        scoredData.sort((a, b) => {
+          if (a._relevance !== b._relevance) {
+            return a._relevance - b._relevance;
+          }
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        });
+        
+        sortedData = scoredData.slice(0, pageSize);
+      }
       
-      // 排序后分页截取
-      const pagedData = scoredData.slice(offset, offset + pageSize);
+      // 性能优化3：不返回total，改为hasMore布尔值（避免count查询）
+      const hasMore = resultCount >= MAX_RESULTS || (page * pageSize) < resultCount;
       
       // 格式化返回数据
-      const formattedData = pagedData.map(job => ({
+      const formattedData = sortedData.map(job => ({
         id: job.id,
         name: job.job_title,
         industry: job.industry,
@@ -115,7 +134,7 @@ export async function GET(request: NextRequest) {
         salary: job.salary_range || '面议',
         salaryMin: 0,
         salaryMax: 0,
-        skills: job.skills?.split(',') || [],
+        skills: job.hard_skills?.split(',') || [],
         friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
         isFreshFriendly: job.fresh_graduate_friendly === true,
         jdContent: job.responsibilities,
@@ -125,11 +144,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: formattedData,
-        total: count || 0,
+        total: resultCount,  // 当前页的结果数，不是总数
         page,
         pageSize,
-        totalPages: Math.ceil((count || 0) / pageSize),
-        sortedFrom: Math.min(scoredData.length, MAX_SORT_LIMIT)  // 告知前端实际排序数据量
+        hasMore,  // 是否有更多结果
+        queryTime,  // 查询耗时（毫秒）
+        fastMode,  // 是否快速模式
+        sortedFrom: resultCount  // 告知前端实际数据量
       }, {
         headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
       });
