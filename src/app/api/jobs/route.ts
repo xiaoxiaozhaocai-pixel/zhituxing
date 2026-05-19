@@ -20,10 +20,14 @@ export async function GET(request: NextRequest) {
       // 构建 OR 条件：job_title 或 responsibilities 包含关键词
       const orConditions = `job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`;
       
+      // 性能优化：限制排序数据量，最多获取 MAX_SORT_LIMIT 条进行排序
+      const MAX_SORT_LIMIT = 200;
+      
       let query = supabaseAdmin
         .from('job_descriptions')
         .select('*', { count: 'exact' })
-        .or(orConditions);
+        .or(orConditions)
+        .limit(MAX_SORT_LIMIT);  // 排序前截断，减少排序数据量
       
       // 应用额外筛选条件
       if (industry) {
@@ -36,17 +40,43 @@ export async function GET(request: NextRequest) {
         query = query.eq('fresh_graduate_friendly', true);
       }
       
-      // 执行查询（获取更多数据用于排序，然后取分页）
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false })
-        .range(offset, offset + pageSize - 1);
+      // 查询超时保护：3秒超时
+      const queryPromise = query.order('created_at', { ascending: false });
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('查询超时')), 3000)
+      );
+      
+      let data: any[] | null = null;
+      let error: any = null;
+      let count: number | null = null;
+      
+      try {
+        const result = await Promise.race([
+          queryPromise,
+          timeoutPromise
+        ]) as { data: any[] | null; error: any; count: number | null };
+        data = result.data;
+        error = result.error;
+        count = result.count;
+      } catch (timeoutError) {
+        console.warn('[jobs] 查询超时，返回空结果');
+        return NextResponse.json({
+          success: true,
+          data: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 0,
+          timeout: true
+        });
+      }
       
       if (error) {
         console.error('数据库查询错误:', error);
         return NextResponse.json({ error: '查询失败' }, { status: 500 });
       }
       
-      // 在 JS 中计算相关性评分并排序
+      // 在 JS 中计算相关性评分并排序（最多200条，性能可控）
       const scoredData = (data || []).map(job => {
         let relevance = 3; // 默认：仅职责包含
         const titleLower = (job.job_title || '').toLowerCase();
@@ -72,8 +102,11 @@ export async function GET(request: NextRequest) {
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
       
+      // 排序后分页截取
+      const pagedData = scoredData.slice(offset, offset + pageSize);
+      
       // 格式化返回数据
-      const formattedData = scoredData.map(job => ({
+      const formattedData = pagedData.map(job => ({
         id: job.id,
         name: job.job_title,
         industry: job.industry,
@@ -95,7 +128,8 @@ export async function GET(request: NextRequest) {
         total: count || 0,
         page,
         pageSize,
-        totalPages: Math.ceil((count || 0) / pageSize)
+        totalPages: Math.ceil((count || 0) / pageSize),
+        sortedFrom: Math.min(scoredData.length, MAX_SORT_LIMIT)  // 告知前端实际排序数据量
       }, {
         headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
       });
