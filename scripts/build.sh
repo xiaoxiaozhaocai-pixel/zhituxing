@@ -33,7 +33,8 @@ if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
   export NEXT_PUBLIC_SUPABASE_URL="https://gpwekhlltsvoalmqzjyv.supabase.co"
 fi
 if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
-  echo "WARNING: NEXT_PUBLIC_SUPABASE_ANON_KEY is not set, build may fail"
+  echo "WARNING: NEXT_PUBLIC_SUPABASE_ANON_KEY is not set, using fallback value"
+  export NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdwd2VraGxsdHN2b2FsbXF6anl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTc3NDYsImV4cCI6MjA5MjMzMzc0Nn0.mYAEZo9kp_caWYzXexCBIrpFF7soCAG1stuqGWjJILQ"
 fi
 echo "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY configured for build"
 # ==========================================
