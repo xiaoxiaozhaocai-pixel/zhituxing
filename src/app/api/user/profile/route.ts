@@ -24,22 +24,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ code: 401, message: '请先登录' }, { status: 401 });
     }
 
-    // 测试用户特殊处理
-    if (userId.startsWith('test_')) {
-      const phone = userId.replace('test_', '');
+    // 测试用户/开发环境特殊处理
+    if (userId.startsWith('test_') || process.env.NODE_ENV === 'development') {
+      const phone = userId.startsWith('test_') ? userId.replace('test_', '') : userId;
       return NextResponse.json({
         code: 200,
         data: {
           id: userId,
           user_id: userId,
           phone: phone,
-          nickname: '测试用户',
+          nickname: `用户${phone.slice(-4)}`,
           avatar_url: null,
           user_type: 'member',
           membership_type: 'member',
           membership_expires_at: '2030-12-31T23:59:59Z',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          major: '计算机科学',
+          grade: '大三',
+          skills: ['React', 'TypeScript', 'Node.js'],
+          job_intention: '前端开发工程师',
         }
       });
     }
@@ -47,7 +51,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('id, user_id, phone, nickname, avatar_url, user_type, membership_type, membership_expires_at, created_at, updated_at')
+      .select('id, user_id, user_type, membership_type, membership_expires_at, created_at, major, grade, skills, job_intention')
       .eq('user_id', userId)
       .single();
 
@@ -57,7 +61,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       code: 200,
-      data: data
+      data: {
+        ...data,
+        phone: userId,
+        nickname: `用户${userId.slice(-4)}`,
+        avatar_url: null,
+        updated_at: data.created_at,
+      }
     });
   } catch (err) {
     console.error('Profile API error:', err);

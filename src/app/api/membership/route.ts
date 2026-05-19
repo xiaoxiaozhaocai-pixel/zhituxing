@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ code: 401, message: '请先登录' }, { status: 401 });
     }
 
-    // 测试用户特殊处理
-    if (userId.startsWith('test_')) {
+    // 测试用户/开发环境特殊处理
+    if (userId.startsWith('test_') || process.env.NODE_ENV === 'development') {
       return NextResponse.json({
         code: 200,
         data: {
