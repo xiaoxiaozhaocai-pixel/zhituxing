@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+// SECURITY-TODO: migrate to Supabase query builder to prevent SQL injection
 import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import crypto from 'crypto';
 
 // 会员套餐天数配置
 const planDays = {
@@ -8,14 +9,33 @@ const planDays = {
   yearly: 365
 };
 
-// 支付回调（模拟）
+// 支付回调
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
     const body = await request.json();
-    const { orderNo, status, paidAt } = body;
+    const { orderNo, status, paidAt, sign, amount, tradeNo } = body;
 
-    // 查找订单
+    // === 签名验证 ===
+    const signKey = process.env.PAYMENT_SIGN_KEY;
+    if (!signKey) {
+      console.error('[payment/callback] PAYMENT_SIGN_KEY not configured');
+      return NextResponse.json({ success: false, error: '支付配置错误' }, { status: 500 });
+    }
+    
+    // 计算期望签名: hmac_sha256(orderNo + tradeNo + status + amount, signKey)
+    const expectedSign = crypto
+      .createHmac('sha256', signKey)
+      .update(`${orderNo}${tradeNo || ''}${status}${amount || ''}`)
+      .digest('hex');
+    
+    if (sign !== expectedSign) {
+      console.warn('[payment/callback] Signature mismatch', { orderNo, expectedSign, receivedSign: sign });
+      return NextResponse.json({ success: false, error: '签名验证失败' }, { status: 400 });
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    // === 查找订单 ===
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
@@ -26,7 +46,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '订单不存在' }, { status: 404 });
     }
 
-    // 如果订单已支付，直接返回
+    // === 金额验证 ===
+    if (amount !== undefined && Math.abs(Number(amount) - Number(order.amount)) > 0.01) {
+      console.warn('[payment/callback] Amount mismatch', { orderNo, expected: order.amount, received: amount });
+      return NextResponse.json({ success: false, error: '金额不一致' }, { status: 400 });
+    }
+
+    // === 幂等性检查 ===
     if (order.status === 'paid') {
       return NextResponse.json({ success: true, message: '订单已支付' });
     }

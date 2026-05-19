@@ -7,6 +7,7 @@ import {
   createWorkflowSSEStream,
   createTextStream,
 } from '@/lib/coze-stream';
+// SECURITY-TODO: migrate to Supabase query builder to prevent SQL injection
 import { execSql } from '@/lib/exec-sql';
 import { calculateCompetencyPercentile, type CompetencyPercentileResult, type PeerMatchScore } from '@/lib/matching-algorithm';
 

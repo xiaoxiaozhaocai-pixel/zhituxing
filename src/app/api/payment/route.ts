@@ -55,6 +55,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '无效的套餐' }, { status: 400 });
     }
 
+    // 如果客户端传入了amount，验证与服务端价格一致
+    if (body.amount !== undefined && Math.abs(Number(body.amount) - plan.price) > 0.01) {
+      return NextResponse.json({ success: false, error: '支付金额不匹配' }, { status: 400 });
+    }
+
     // 生成订单号
     const orderNo = `ZX${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 

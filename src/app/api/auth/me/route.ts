@@ -1,30 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { isMember, getUserQuota } from '@/lib/quota';
+import { getAuthUser } from '@/lib/auth';
 
 // 获取当前用户
 export async function GET(request: NextRequest) {
   try {
-    // 从请求头获取用户ID
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: '未登录' },
-        { status: 401 }
-      );
+    // 优先JWT认证，兼容x-user-id
+    const authUser = await getAuthUser(request);
+    let userId: string;
+    
+    if (authUser) {
+      userId = authUser.id;
+    } else {
+      // JWT验证失败，尝试x-user-id兼容
+      const headerUserId = request.headers.get('x-user-id');
+      if (!headerUserId) {
+        return NextResponse.json({ error: '未登录' }, { status: 401 });
+      }
+      console.warn('[DEPRECATED] /api/auth/me using x-user-id fallback');
+      userId = headerUserId;
     }
 
-    // 查询用户信息
-    const result = await execSql(
-      `SELECT id, phone, nickname, avatar_url, created_at, 
-              monthly_quota, quota_reset_time, member_type, member_expire_time,
-              interview_quota, interview_quota_reset_time,
-              assessment_quota, assessment_quota_reset_time
-       FROM users WHERE id = '${userId}' LIMIT 1`
-    );
+    // 使用Supabase查询构建器防止SQL注入
+    const supabase = getSupabaseAdmin();
+    const { data: result, error: queryError } = await supabase
+      .from('users')
+      .select('id, phone, nickname, avatar_url, created_at, monthly_quota, quota_reset_time, member_type, member_expire_time, interview_quota, interview_quota_reset_time, assessment_quota, assessment_quota_reset_time')
+      .eq('id', userId)
+      .limit(1);
 
-    if (!result || result.length === 0) {
+    if (queryError || !result || result.length === 0) {
       return NextResponse.json(
         { error: '用户不存在' },
         { status: 404 }

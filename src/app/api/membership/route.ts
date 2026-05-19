@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getUserId } from '@/lib/auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -14,17 +15,8 @@ const DEV_USER_PROFILE = {
 
 export async function GET(request: NextRequest) {
   try {
-    let userId = request.headers.get('x-user-id') || request.headers.get('X-User-Id') || request.headers.get('user-id');
-    
-    const authHeader = request.headers.get('Authorization');
-    if (!userId && authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '');
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      const { data: { user }, error } = await supabase.auth.getUser(token);
-      if (!error && user) {
-        userId = user.id;
-      }
-    }
+    // 使用统一认证工具（优先JWT，兼容x-user-id）
+    const userId = await getUserId(request);
     
     if (!userId) {
       return NextResponse.json({ code: 401, message: '请先登录' }, { status: 401 });
