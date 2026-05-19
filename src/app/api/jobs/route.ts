@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { execSql } from '@/lib/exec-sql';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,74 +13,95 @@ export async function GET(request: NextRequest) {
     const keyword = searchParams.get('keyword') || '';
     
     const offset = (page - 1) * pageSize;
+    const supabaseAdmin = getSupabaseAdmin();
 
-    // ===== 关键词搜索：使用相关性排序SQL =====
+    // ===== 关键词搜索：使用 Supabase 查询构建器（性能优化） =====
     if (keyword) {
-      const safeKeyword = keyword.replace(/'/g, "''");
+      // 构建 OR 条件：job_title 或 responsibilities 包含关键词
+      const orConditions = `job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`;
       
-      // 构建WHERE条件
-      const conditions: string[] = [
-        `(job_title ILIKE '%${safeKeyword}%' OR responsibilities ILIKE '%${safeKeyword}%')`
-      ];
-      if (industry) conditions.push(`industry = '${industry.replace(/'/g, "''")}'`);
-      if (city) conditions.push(`city = '${city.replace(/'/g, "''")}'`);
-      if (freshOnly) conditions.push(`fresh_graduate_friendly = true`);
+      let query = supabaseAdmin
+        .from('job_descriptions')
+        .select('*', { count: 'exact' })
+        .or(orConditions);
       
-      const whereClause = conditions.join(' AND ');
+      // 应用额外筛选条件
+      if (industry) {
+        query = query.eq('industry', industry);
+      }
+      if (city) {
+        query = query.eq('city', city);
+      }
+      if (freshOnly) {
+        query = query.eq('fresh_graduate_friendly', true);
+      }
       
-      // 相关性评分：精确匹配 > 前缀匹配 > 标题包含 > 仅职责包含
-      const relevanceCase = `CASE 
-        WHEN job_title = '${safeKeyword}' THEN 0
-        WHEN job_title ILIKE '${safeKeyword}%' THEN 1
-        WHEN job_title ILIKE '%${safeKeyword}%' THEN 2
-        ELSE 3
-      END`;
+      // 执行查询（获取更多数据用于排序，然后取分页）
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1);
       
-      // 计数查询
-      const countSql = `SELECT COUNT(*) as total FROM job_descriptions WHERE ${whereClause}`;
-      const countResult = await execSql(countSql) as Array<{total: number}>;
-      const total = countResult?.[0]?.total || 0;
+      if (error) {
+        console.error('数据库查询错误:', error);
+        return NextResponse.json({ error: '查询失败' }, { status: 500 });
+      }
       
-      // 数据查询（按相关性排序）
-      const dataSql = `SELECT *, ${relevanceCase} as relevance 
-        FROM job_descriptions 
-        WHERE ${whereClause}
-        ORDER BY relevance ASC, created_at DESC
-        LIMIT ${pageSize} OFFSET ${offset}`;
+      // 在 JS 中计算相关性评分并排序
+      const scoredData = (data || []).map(job => {
+        let relevance = 3; // 默认：仅职责包含
+        const titleLower = (job.job_title || '').toLowerCase();
+        const keywordLower = keyword.toLowerCase();
+        
+        if (titleLower === keywordLower) {
+          relevance = 0; // 精确匹配
+        } else if (titleLower.startsWith(keywordLower)) {
+          relevance = 1; // 前缀匹配
+        } else if (titleLower.includes(keywordLower)) {
+          relevance = 2; // 标题包含
+        }
+        
+        return { ...job, _relevance: relevance };
+      });
       
-      const data = await execSql(dataSql) as Array<Record<string, unknown>>;
+      // 按 relevance 升序排序（精确匹配在前）
+      scoredData.sort((a, b) => {
+        if (a._relevance !== b._relevance) {
+          return a._relevance - b._relevance;
+        }
+        // 相关性相同时，按创建时间降序
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      });
       
       // 格式化返回数据
-      const formattedData = data?.map((job: Record<string, unknown>) => ({
+      const formattedData = scoredData.map(job => ({
         id: job.id,
         name: job.job_title,
         industry: job.industry,
         city: job.city,
         companyType: '',
-        salary: (job.salary_range as string) || '面议',
+        salary: job.salary_range || '面议',
         salaryMin: 0,
         salaryMax: 0,
-        skills: typeof job.skills === 'string' ? job.skills.split(',') : [],
+        skills: job.skills?.split(',') || [],
         friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
         isFreshFriendly: job.fresh_graduate_friendly === true,
-        jdContent: job.responsibilities
-      })) || [];
+        jdContent: job.responsibilities,
+        _relevance: job._relevance
+      }));
       
       return NextResponse.json({
         success: true,
         data: formattedData,
-        total,
+        total: count || 0,
         page,
         pageSize,
-        totalPages: Math.ceil(total / pageSize)
+        totalPages: Math.ceil((count || 0) / pageSize)
       }, {
         headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
       });
     }
 
     // ===== 无关键词：保持原有Supabase客户端查询 =====
-    const supabaseAdmin = getSupabaseAdmin();
-    
     let query = supabaseAdmin
       .from('job_descriptions')
       .select('*', { count: 'exact' });
