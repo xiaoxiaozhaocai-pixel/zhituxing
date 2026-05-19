@@ -53,10 +53,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '验证码错误' }, { status: 400 });
     }
 
-    await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
+    await execSql('UPDATE verification_codes SET used = true WHERE id = %L', verification.id);
 
     // 检查用户是否已存在
-    const userCheck = await execSql(`SELECT id FROM users WHERE phone = '${phone}' LIMIT 1`);
+    const userCheck = await execSql('SELECT id FROM users WHERE phone = %L LIMIT 1', phone);
     if (userCheck && userCheck.length > 0) {
       return NextResponse.json(
         { error: '该手机号已注册，请直接登录' },

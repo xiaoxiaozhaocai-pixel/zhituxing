@@ -239,7 +239,7 @@ export async function PUT(request: NextRequest) {
           sets.push(`aliases = ${aliasesStr}::jsonb`);
         }
         if (sets.length === 0) return NextResponse.json({ error: '无更新字段' }, { status: 400 });
-        await execSql(`UPDATE skill_taxonomy SET ${sets.join(', ')} WHERE id = ${Number(id)}`);
+        await execSql(`UPDATE skill_taxonomy SET ${sets.join(', ')} WHERE id = %s`, Number(id));
         return NextResponse.json({ success: true });
       }
 
@@ -252,7 +252,7 @@ export async function PUT(request: NextRequest) {
         if (relation_type !== undefined) sets.push(`relation_type = '${relation_type}'`);
         if (weight !== undefined) sets.push(`weight = ${Number(weight)}`);
         if (sets.length === 0) return NextResponse.json({ error: '无更新字段' }, { status: 400 });
-        await execSql(`UPDATE skill_relations SET ${sets.join(', ')} WHERE id = ${Number(id)}`);
+        await execSql(`UPDATE skill_relations SET ${sets.join(', ')} WHERE id = %s`, Number(id));
         return NextResponse.json({ success: true });
       }
 
@@ -280,11 +280,11 @@ export async function DELETE(request: NextRequest) {
 
     switch (action) {
       case 'taxonomy':
-        await execSql(`DELETE FROM skill_taxonomy WHERE id = ${Number(id)}`);
+        await execSql('DELETE FROM skill_taxonomy WHERE id = %s', Number(id));
         return NextResponse.json({ success: true });
 
       case 'relation':
-        await execSql(`DELETE FROM skill_relations WHERE id = ${Number(id)}`);
+        await execSql('DELETE FROM skill_relations WHERE id = %s', Number(id));
         return NextResponse.json({ success: true });
 
       default:

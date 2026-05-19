@@ -107,7 +107,7 @@ export async function PUT(request: Request) {
     }
 
     const idList = ids.join(',');
-    await execSql(`UPDATE jobs SET status = '${status}' WHERE id IN (${idList})`);
+    await execSql(`UPDATE jobs SET status = %L WHERE id IN (${idList})`, status);
 
     return NextResponse.json({ success: true, updated: ids.length });
   } catch (error) {
