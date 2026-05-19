@@ -6,10 +6,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  User, 
-  Bot, 
-  Gift, 
-  Headphones,
+  LayoutGrid,
+  Database,
+  Crown,
+  BookOpen,
+  Shield,
   HelpCircle,
   MessageSquare,
   ChevronRight,
@@ -20,111 +21,168 @@ import {
 } from 'lucide-react';
 
 const faqCategories = [
-  { id: 'account', label: '账户与会员', icon: <User className="w-5 h-5" /> },
-  { id: 'ai', label: 'AI服务与配额', icon: <Bot className="w-5 h-5" /> },
-  { id: 'invite', label: '邀请奖励', icon: <Gift className="w-5 h-5" /> },
-  { id: 'support', label: '技术支持', icon: <Headphones className="w-5 h-5" /> }
+  { id: 'platform', label: '平台功能', icon: <LayoutGrid className="w-5 h-5" /> },
+  { id: 'data', label: '数据相关', icon: <Database className="w-5 h-5" /> },
+  { id: 'membership', label: '会员服务', icon: <Crown className="w-5 h-5" /> },
+  { id: 'guide', label: '使用指南', icon: <BookOpen className="w-5 h-5" /> },
+  { id: 'privacy', label: '隐私安全', icon: <Shield className="w-5 h-5" /> }
 ];
 
 const faqs = [
-  // 账户与会员
+  // 平台功能
   {
-    category: 'account',
-    question: '如何注册职途星账号？',
-    answer: '点击首页的「注册」按钮，输入手机号并获取验证码，设置密码后即可完成注册。注册后自动获得5次免费AI服务次数。'
+    category: 'platform',
+    question: '职途星是什么？',
+    answer: '职途星是专注于大学生求职的AI智能平台，提供职业规划、模拟面试、能力测评、岗位匹配等一站式服务，助你科学规划职业方向。'
   },
   {
-    category: 'account',
-    question: '忘记密码怎么办？',
-    answer: '在登录页面点击「忘记密码」，输入注册时的手机号，接收验证码后即可重置新密码。'
+    category: 'platform',
+    question: '岗位匹配的准确率如何？',
+    answer: '我们基于20,000+真实招聘JD，结合AI语义匹配和技能图谱分析，匹配准确率远超关键词搜索。系统会综合你的专业、技能、意向城市等多维度信息进行智能推荐。'
   },
   {
-    category: 'account',
-    question: '收不到验证码怎么办？',
-    answer: '1. 检查手机信号是否正常；2. 确认短信拦截箱是否有拦截记录；3. 尝试重新获取验证码；4. 如仍有问题，可联系客服微信：zhituxing_kefu'
+    category: 'platform',
+    question: '能力测评测的是什么？',
+    answer: '能力测评涵盖专业硬技能、通用软技能和职业性格三个维度，通过标准化评估帮助你发现优势与短板，为职业规划提供数据支撑。'
   },
   {
-    category: 'account',
-    question: '会员权益和免费用户有什么区别？',
-    answer: '免费用户每月可使用5次AI服务；会员可享受无限次AI服务、可下载PDF格式的职业规划报告、免费下载海量求职资源、优先客服支持等特权。'
+    category: 'platform',
+    question: '技能图谱有什么用？',
+    answer: '技能图谱可视化展示各岗位所需技能体系及技能间关联关系，帮你明确学习路径，补齐技能短板，提升求职竞争力。'
   },
   {
-    category: 'account',
-    question: '会员可以退款吗？',
-    answer: '会员开通后7天内如未使用任何会员特权，可申请全额退款；超过7天或已使用会员特权，不予退款，敬请谅解。'
+    category: 'platform',
+    question: '如何使用AI职业规划功能？',
+    answer: '进入AI职业规划页面，填写你的专业、技能、意向等信息，系统会基于真实岗位数据为你生成个性化的职业规划报告，包含方向推荐、能力差距分析和学习建议。'
   },
   {
-    category: 'account',
-    question: '如何查看我的会员状态？',
-    answer: '登录后进入「个人中心」，点击「我的会员」即可查看当前会员状态、到期时间和剩余天数。'
+    category: 'platform',
+    question: '手机能用吗？需要下载APP吗？',
+    answer: '职途星支持手机浏览器直接访问，无需下载APP。我们针对移动端做了适配优化，体验流畅。'
   },
-  // AI服务与配额
+  // 数据相关
   {
-    category: 'ai',
-    question: '每月免费次数用完了怎么办？',
-    answer: '有三种方式：1. 邀请好友注册并完成首次AI提问，双方各获得3次免费AI次数+7天会员；2. 开通会员享受无限次使用；3. 关注平台活动，获取额外赠送次数。'
-  },
-  {
-    category: 'ai',
-    question: '每月免费次数会清零吗？',
-    answer: '是的，每月免费次数会在每月最后一天清零，新的一月重新获得5次免费次数。会员的无限次权益不受影响。'
+    category: 'data',
+    question: '你们的岗位数据从哪来？',
+    answer: '岗位数据来源于各大主流招聘平台的真实招聘JD，经过标准化解析和去重处理后入库，确保信息真实可靠。'
   },
   {
-    category: 'ai',
+    category: 'data',
+    question: '数据多久更新一次？',
+    answer: '我们每周定期从招聘平台同步最新岗位信息，确保数据的时效性和准确性。'
+  },
+  {
+    category: 'data',
     question: '岗位信息是真实的吗？',
     answer: '所有岗位信息均来自BOSS直聘、智联招聘、拉勾网等各大招聘平台的真实JD，我们每周更新数据，确保信息准确可靠。'
   },
   {
-    category: 'ai',
+    category: 'data',
     question: '支持哪些行业和岗位？',
     answer: '目前覆盖互联网、金融、制造、教育、医疗、房地产、零售等15+主流行业，包含技术、产品、运营、市场、职能、设计等8大类岗位，后续会持续扩展更多行业。'
   },
   {
-    category: 'ai',
-    question: 'AI生成的职业规划报告准确吗？',
-    answer: '职途星的AI职业规划基于500万+全行业真实招聘数据分析生成，报告仅供参考。建议结合自身实际情况和市场需求综合考虑，最终的职业选择仍需你自行决策。'
+    category: 'data',
+    question: '搜索结果按什么排序？',
+    answer: '搜索结果默认按与你的匹配度排序，综合考量技能匹配度、行业相关性、城市偏好等因素，你也可以切换为按薪资或更新时间排序。'
   },
-  // 邀请奖励
+  // 会员服务
   {
-    category: 'invite',
+    category: 'membership',
+    question: '月度会员9.9元包含什么？',
+    answer: '月度会员可享受无限次AI模拟面试、无限次能力测评、胜任力评估、考研就业决策等专属功能，以及优先客服支持。'
+  },
+  {
+    category: 'membership',
+    question: '会员权益和免费用户有什么区别？',
+    answer: '免费用户每月可使用5次AI服务；会员可享受无限次AI服务、可下载PDF格式的职业规划报告、免费下载海量求职资源、优先客服支持等特权。'
+  },
+  {
+    category: 'membership',
+    question: '如何取消会员？',
+    answer: '你可以在会员中心点击取消续费，当前会员权益将在到期日前继续有效，不会立即失效。'
+  },
+  {
+    category: 'membership',
+    question: '会员可以退款吗？',
+    answer: '会员开通后7天内如未使用任何会员特权，可申请全额退款；超过7天或已使用会员特权，不予退款，敬请谅解。'
+  },
+  {
+    category: 'membership',
+    question: '会员到期后数据会丢失吗？',
+    answer: '不会。你的测评报告、面试记录、职业规划等数据永久保留，会员到期后仅限制部分高级功能的使用，数据不会丢失。'
+  },
+  {
+    category: 'membership',
+    question: '如何查看我的会员状态？',
+    answer: '登录后进入「个人中心」，点击「我的会员」即可查看当前会员状态、到期时间和剩余天数。'
+  },
+  // 使用指南
+  {
+    category: 'guide',
+    question: '如何注册职途星账号？',
+    answer: '点击首页的「注册」按钮，输入手机号并获取验证码，设置密码后即可完成注册。注册后自动获得5次免费AI服务次数。'
+  },
+  {
+    category: 'guide',
+    question: '如何修改个人信息？',
+    answer: '登录后进入个人中心，点击编辑资料即可修改昵称、专业、年级、意向城市等信息，修改后立即生效。'
+  },
+  {
+    category: 'guide',
+    question: '忘记密码怎么办？',
+    answer: '在登录页面点击「忘记密码」，输入注册时的手机号，接收验证码后即可重置新密码。'
+  },
+  {
+    category: 'guide',
+    question: '收不到验证码怎么办？',
+    answer: '1. 检查手机信号是否正常；2. 确认短信拦截箱是否有拦截记录；3. 尝试重新获取验证码；4. 如仍有问题，可联系客服微信：zhituxing_kefu'
+  },
+  {
+    category: 'guide',
+    question: '每月免费次数用完了怎么办？',
+    answer: '有三种方式：1. 邀请好友注册并完成首次AI提问，双方各获得3次免费AI次数+7天会员；2. 开通会员享受无限次使用；3. 关注平台活动，获取额外赠送次数。'
+  },
+  {
+    category: 'guide',
     question: '如何邀请好友？',
     answer: '登录后进入「个人中心」→「我的邀请」，复制你的专属邀请链接或邀请码发送给好友，好友通过你的链接注册并完成首次AI提问后，双方即可获得奖励。'
   },
   {
-    category: 'invite',
+    category: 'guide',
     question: '邀请好友的奖励怎么领取？',
     answer: '奖励会自动发放。当好友通过你的邀请链接注册并完成首次AI提问后，系统会自动将3次免费AI次数和7天会员时长添加到你的账户，无需手动领取。'
   },
+  // 隐私安全
   {
-    category: 'invite',
-    question: '累计邀请奖励有哪些？',
-    answer: '邀请1位好友：双方各获得3次AI次数+7天会员；累计邀请3人：额外获得30天会员时长；累计邀请10人：额外获得90天会员+1次简历精修服务。'
+    category: 'privacy',
+    question: '我的个人信息安全吗？',
+    answer: '我们采用银行级加密存储，所有敏感数据传输均使用HTTPS加密，严格遵守《个人信息保护法》，不会向第三方出售或共享你的个人信息。'
   },
   {
-    category: 'invite',
-    question: '好友已经注册过了，还能用邀请码吗？',
-    answer: '抱歉，邀请码只能在好友注册时使用，已注册的老用户无法通过邀请码获得奖励。建议将邀请链接分享给还未注册的朋友。'
-  },
-  // 技术支持
-  {
-    category: 'support',
-    question: '页面打不开怎么办？',
-    answer: '1. 刷新页面或清除浏览器缓存后重试；2. 更换浏览器尝试；3. 检查网络连接是否正常；4. 如仍有问题，联系客服处理。'
+    category: 'privacy',
+    question: '你们会泄露我的数据吗？',
+    answer: '绝对不会。我们承诺绝不向任何第三方出售、出租或共享用户个人数据。数据仅用于为你提供更好的服务体验。'
   },
   {
-    category: 'support',
+    category: 'privacy',
+    question: '如何注销账号？',
+    answer: '你可以在设置中选择注销账号，注销后所有个人数据将在7个工作日内彻底删除，且不可恢复，请谨慎操作。'
+  },
+  {
+    category: 'privacy',
     question: '遇到bug怎么反馈？',
     answer: '可以通过以下方式反馈：1. 点击页面右下角的「意见反馈」提交问题；2. 发送邮件至 business@zhituxing.com；3. 添加客服微信：zhituxing_kefu。我们会尽快处理。'
   },
   {
-    category: 'support',
-    question: '如何联系人工客服？',
-    answer: '你可以：1. 添加客服微信 zhituxing_kefu（推荐）；2. 发送邮件至 business@zhituxing.com；3. 在「联系我们」页面提交表单。工作时间：周一至周五 9:00-18:00'
+    category: 'privacy',
+    question: '页面打不开怎么办？',
+    answer: '1. 刷新页面或清除浏览器缓存后重试；2. 更换浏览器尝试；3. 检查网络连接是否正常；4. 如仍有问题，联系客服处理。'
   },
   {
-    category: 'support',
-    question: '数据更新频率是怎样的？',
-    answer: '岗位JD数据每周更新一次，确保信息时效性。AI推荐算法持续优化，会根据用户反馈和市场需求不断改进。如发现过期信息，欢迎反馈。'
+    category: 'privacy',
+    question: '如何联系人工客服？',
+    answer: '你可以：1. 添加客服微信 zhituxing_kefu（推荐）；2. 发送邮件至 business@zhituxing.com；3. 在「联系我们」页面提交表单。工作时间：周一至周五 9:00-18:00'
   }
 ];
 
