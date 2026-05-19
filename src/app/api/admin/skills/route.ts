@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { execSql, escapeParam } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
@@ -230,29 +230,31 @@ export async function PUT(request: NextRequest) {
       case 'update_taxonomy': {
         const { id, skill_name, category, domain, aliases } = body;
         if (!id) return NextResponse.json({ error: '缺少id' }, { status: 400 });
-        const sets: string[] = [];
-        if (skill_name !== undefined) sets.push(`skill_name = '${skill_name.replace(/'/g, "''")}'`);
-        if (category !== undefined) sets.push(`category = ${category ? `'${category.replace(/'/g, "''")}'` : 'NULL'}`);
-        if (domain !== undefined) sets.push(`domain = ${domain ? `'${domain.replace(/'/g, "''")}'` : 'NULL'}`);
+        const setParts: string[] = [];
+        const params: unknown[] = [];
+        if (skill_name !== undefined) { setParts.push('skill_name = %L'); params.push(skill_name); }
+        if (category !== undefined) { setParts.push('category = %L'); params.push(category); }
+        if (domain !== undefined) { setParts.push('domain = %L'); params.push(domain); }
         if (aliases !== undefined) {
-          const aliasesStr = Array.isArray(aliases) && aliases.length > 0 ? `'${JSON.stringify(aliases)}'` : 'NULL';
-          sets.push(`aliases = ${aliasesStr}::jsonb`);
+          setParts.push('aliases = %L::jsonb');
+          params.push(Array.isArray(aliases) && aliases.length > 0 ? JSON.stringify(aliases) : null);
         }
-        if (sets.length === 0) return NextResponse.json({ error: '无更新字段' }, { status: 400 });
-        await execSql(`UPDATE skill_taxonomy SET ${sets.join(', ')} WHERE id = %s`, Number(id));
+        if (setParts.length === 0) return NextResponse.json({ error: '无更新字段' }, { status: 400 });
+        await execSql(`UPDATE skill_taxonomy SET ${setParts.join(', ')} WHERE id = %s`, ...params, Number(id));
         return NextResponse.json({ success: true });
       }
 
       case 'update_relation': {
         const { id, source_skill, target_skill, relation_type, weight } = body;
         if (!id) return NextResponse.json({ error: '缺少id' }, { status: 400 });
-        const sets: string[] = [];
-        if (source_skill !== undefined) sets.push(`source_skill = '${source_skill.replace(/'/g, "''")}'`);
-        if (target_skill !== undefined) sets.push(`target_skill = '${target_skill.replace(/'/g, "''")}'`);
-        if (relation_type !== undefined) sets.push(`relation_type = '${relation_type}'`);
-        if (weight !== undefined) sets.push(`weight = ${Number(weight)}`);
-        if (sets.length === 0) return NextResponse.json({ error: '无更新字段' }, { status: 400 });
-        await execSql(`UPDATE skill_relations SET ${sets.join(', ')} WHERE id = %s`, Number(id));
+        const setParts: string[] = [];
+        const params: unknown[] = [];
+        if (source_skill !== undefined) { setParts.push('source_skill = %L'); params.push(source_skill); }
+        if (target_skill !== undefined) { setParts.push('target_skill = %L'); params.push(target_skill); }
+        if (relation_type !== undefined) { setParts.push('relation_type = %L'); params.push(relation_type); }
+        if (weight !== undefined) { setParts.push('weight = %s'); params.push(Number(weight)); }
+        if (setParts.length === 0) return NextResponse.json({ error: '无更新字段' }, { status: 400 });
+        await execSql(`UPDATE skill_relations SET ${setParts.join(', ')} WHERE id = %s`, ...params, Number(id));
         return NextResponse.json({ success: true });
       }
 

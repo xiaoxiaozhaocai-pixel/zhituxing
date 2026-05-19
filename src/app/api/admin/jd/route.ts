@@ -106,8 +106,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: '无效的状态值' }, { status: 400 });
     }
 
-    const idList = ids.join(',');
-    await execSql(`UPDATE jobs SET status = %L WHERE id IN (${idList})`, status);
+    // 安全校验：ids 已经过 Number() 处理，均为数字
+    const safeIds = ids.map(i => Number(i));
+    const placeholders = safeIds.map(() => '%s').join(', ');
+    await execSql(`UPDATE jobs SET status = %L WHERE id IN (${placeholders})`, status, ...safeIds);
 
     return NextResponse.json({ success: true, updated: ids.length });
   } catch (error) {
@@ -126,8 +128,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: '请选择要删除的JD' }, { status: 400 });
     }
 
-    const idList = ids.join(',');
-    await execSql(`DELETE FROM jobs WHERE id IN (${idList})`);
+    // 安全校验：ids 已经过 Number() 处理，均为数字
+    const safeIds = ids.map(i => Number(i));
+    const placeholders = safeIds.map(() => '%s').join(', ');
+    await execSql(`DELETE FROM jobs WHERE id IN (${placeholders})`, ...safeIds);
 
     return NextResponse.json({ success: true, deleted: ids.length });
   } catch (error) {
