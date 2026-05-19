@@ -21,8 +21,16 @@ import {
   createTextStream,
   getWorkflowConfig,
 } from '@/lib/coze-stream';
+import {
+  extractKeywords,
+  querySupabase,
+  buildRAGContext,
+  createDeepSeekRAGStream,
+} from '@/lib/rag-utils';
 
 export const runtime = 'edge';
+
+const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
 // 智能体路由选择（标准Bot API用 — V2版本）
 function selectBotId(botType?: string): string {
@@ -191,6 +199,74 @@ export async function POST(request: NextRequest) {
     }
 
     const fallbackText = getFallbackResponse(botType, message);
+
+    // ===========================
+    // DeepSeek + RAG 分支（当 DEEPSEEK_ENABLED=true 时优先使用）
+    // ===========================
+    if (USE_DEEPSEEK) {
+      try {
+        console.log(`[chat] Using DeepSeek + RAG for botType=${botType}`);
+        
+        // 提取关键词
+        const keywords = extractKeywords(message);
+        
+        // 并行查询多个数据源
+        const [jds, careerPaths, skills, resources] = await Promise.all([
+          // 查询 JD
+          querySupabase('job_descriptions', [
+            keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+            keywords.jobTitle ? { field: 'job_title', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
+          ].filter(Boolean) as any, 10, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city'),
+          
+          // 查询职业路径
+          querySupabase('career_paths', [
+            keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+          ].filter(Boolean) as any, 5, '*'),
+          
+          // 查询技能分类
+          querySupabase('skill_taxonomy', [
+            keywords.industry ? { field: 'domain', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+          ].filter(Boolean) as any, 10, 'skill_name,category,domain'),
+          
+          // 查询学习资源
+          querySupabase('learning_resources', [
+            keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+          ].filter(Boolean) as any, 5, 'title,url,type'),
+        ]);
+        
+        // 构建 RAG 上下文
+        const ragContext = buildRAGContext([
+          { tableName: 'job_descriptions', displayName: '岗位信息', data: jds },
+          { tableName: 'career_paths', displayName: '职业路径', data: careerPaths },
+          { tableName: 'skill_taxonomy', displayName: '技能分类', data: skills },
+          { tableName: 'learning_resources', displayName: '学习资源', data: resources },
+        ]);
+        
+        // 构建系统提示词（AI职业规划师"职伴"）
+        const systemPrompt = `你是"职伴"——职途星平台的AI职业规划师。你精通27个行业的职业发展路径，能帮大学生制定清晰的4年职业规划。
+
+你的能力：
+1. 根据用户的兴趣、专业、年级，推荐适合的职业方向
+2. 制定大一到大四的分阶段成长计划（每年核心目标、技能提升、证书考取）
+3. 推荐相关的实习岗位和项目经验
+4. 预估各阶段的薪资范围
+
+回答规范：
+- 基于检索到的真实岗位和职业路径数据回答
+- 给出具体、可执行的建议，不要泛泛而谈
+- 规划要符合大学四年的时间节奏
+- 适当引用数据支撑你的建议
+
+${ragContext}`;
+
+        const history: { role: 'user' | 'assistant'; content: string }[] = [];
+        const stream = createDeepSeekRAGStream(systemPrompt, message, history);
+        return new Response(stream, { headers: SSE_HEADERS });
+      } catch (error) {
+        console.error('[chat] DeepSeek RAG error, falling back to Coze:', error);
+        // 出错时回退到 Coze
+      }
+    }
 
     // ===========================
     // 优先尝试 stream_run API（扣子编程 Workflow 部署方式）
