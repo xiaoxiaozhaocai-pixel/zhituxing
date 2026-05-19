@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
@@ -13,7 +14,21 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     const body = await request.json();
-    const { orderNo, status, paidAt } = body;
+    const { orderNo, status, paidAt, sign } = body;
+
+    // 签名验证（启用时执行）
+    const SIGNATURE_ENABLED = process.env.PAYMENT_SIGNATURE_ENABLED === 'true';
+    if (SIGNATURE_ENABLED) {
+      const signKey = process.env.PAYMENT_SIGN_KEY;
+      if (!signKey) {
+        return NextResponse.json({ success: false, error: '支付配置错误' }, { status: 500 });
+      }
+      const payload = `${orderNo}${status}`;
+      const expectedSign = crypto.createHmac('sha256', signKey).update(payload).digest('hex');
+      if (!sign || sign !== expectedSign) {
+        return NextResponse.json({ success: false, error: '签名验证失败' }, { status: 401 });
+      }
+    }
 
     // 查找订单
     const { data: order, error: orderError } = await supabase
