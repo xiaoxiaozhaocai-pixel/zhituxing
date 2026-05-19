@@ -3,6 +3,30 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 const supabase = getSupabaseAdmin();
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const { data: assessment, error } = await supabase
+      .from('assessment_results')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !assessment) {
+      return NextResponse.json({ error: '测评不存在' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: assessment });
+  } catch (error) {
+    console.error('获取测评详情失败:', error);
+    return NextResponse.json({ error: '获取失败' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,7 +39,7 @@ export async function DELETE(
     }
 
     const { error } = await supabase
-      .from('chat_history')
+      .from('assessment_results')
       .delete()
       .eq('id', id)
       .eq('user_id', userId);
@@ -24,7 +48,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: '删除成功' });
   } catch (error) {
-    console.error('删除历史失败:', error);
+    console.error('删除测评失败:', error);
     return NextResponse.json({ error: '删除失败' }, { status: 500 });
   }
 }

@@ -14,20 +14,18 @@ export async function GET(
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { data: favorite, error } = await supabase
-      .from('favorites')
+    const { data: messages, error } = await supabase
+      .from('chat_history')
       .select('*')
-      .eq('id', id)
       .eq('user_id', userId)
-      .single();
+      .eq('session_id', id)
+      .order('created_at', { ascending: true });
 
-    if (error || !favorite) {
-      return NextResponse.json({ error: '收藏不存在' }, { status: 404 });
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ success: true, data: favorite });
+    return NextResponse.json({ success: true, data: messages || [] });
   } catch (error) {
-    console.error('获取收藏失败:', error);
+    console.error('获取会话失败:', error);
     return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }
@@ -44,16 +42,16 @@ export async function DELETE(
     }
 
     const { error } = await supabase
-      .from('favorites')
+      .from('chat_history')
       .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('session_id', id);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true, message: '删除成功' });
   } catch (error) {
-    console.error('删除收藏失败:', error);
+    console.error('删除会话失败:', error);
     return NextResponse.json({ error: '删除失败' }, { status: 500 });
   }
 }

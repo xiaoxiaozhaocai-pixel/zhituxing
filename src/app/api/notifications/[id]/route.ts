@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-// 标记通知为已读
+const supabase = getSupabaseAdmin();
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const { data: notification, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !notification) {
+      return NextResponse.json({ error: '通知不存在' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: notification });
+  } catch (error) {
+    console.error('获取通知失败:', error);
+    return NextResponse.json({ error: '获取失败' }, { status: 500 });
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -9,53 +39,26 @@ export async function PUT(
   try {
     const { id } = await params;
     const userId = request.headers.get('x-user-id');
-
     if (!userId) {
-      return NextResponse.json(
-        { error: '请先登录' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 检查是否是特殊路径
-    if (id === 'read-all') {
-      // 标记全部已读
-      await execSql(
-        `UPDATE notifications 
-         SET status = 'read'
-         WHERE (user_id = '${userId}' OR is_global = TRUE) AND status = 'unread'`
-      );
-      return NextResponse.json({
-        success: true,
-        message: '全部已标记为已读'
-      });
-    }
+    const body = await request.json();
+    const { read } = body;
 
-    // 更新单条通知
-    const result = await execSql(
-      `UPDATE notifications 
-       SET status = 'read'
-       WHERE id = '${id}' AND (user_id = '${userId}' OR is_global = TRUE)
-       RETURNING id`
-    );
+    const { data: notification, error } = await supabase
+      .from('notifications')
+      .update({ read })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
 
-    if (!result || result.length === 0) {
-      return NextResponse.json(
-        { error: '通知不存在' },
-        { status: 404 }
-      );
-    }
+    if (error) throw error;
 
-    return NextResponse.json({
-      success: true,
-      message: '已标记为已读'
-    });
-
+    return NextResponse.json({ success: true, data: notification });
   } catch (error) {
-    console.error('标记已读失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    console.error('更新通知失败:', error);
+    return NextResponse.json({ error: '更新失败' }, { status: 500 });
   }
 }

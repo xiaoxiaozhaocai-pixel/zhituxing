@@ -10,19 +10,19 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const { data: feedback, error } = await supabase
-      .from('feedback')
+    const { data: partner, error } = await supabase
+      .from('partners')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (error || !feedback) {
-      return NextResponse.json({ error: '反馈不存在' }, { status: 404 });
+    if (error || !partner) {
+      return NextResponse.json({ error: '合作伙伴不存在' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: feedback });
+    return NextResponse.json({ success: true, data: partner });
   } catch (error) {
-    console.error('获取反馈失败:', error);
+    console.error('获取合作伙伴失败:', error);
     return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }
@@ -34,20 +34,19 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, reply } = body;
 
-    const { data: feedback, error } = await supabase
-      .from('feedback')
-      .update({ status, reply, updated_at: new Date().toISOString() })
+    const { data: partner, error } = await supabase
+      .from('partners')
+      .update(body)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, data: feedback });
+    return NextResponse.json({ success: true, data: partner });
   } catch (error) {
-    console.error('更新反馈失败:', error);
+    console.error('更新合作伙伴失败:', error);
     return NextResponse.json({ error: '更新失败' }, { status: 500 });
   }
 }

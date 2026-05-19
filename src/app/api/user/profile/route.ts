@@ -1,57 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { authenticateUser } from '@/lib/auth';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// 开发环境模拟数据
-function getDevUserProfile(userId: string) {
-  return {
-    id: userId,
-    user_id: userId,
-    user_type: 'member',
-    membership_type: 'member',
-    membership_expires_at: '2030-12-31T23:59:59Z',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-}
+const supabase = getSupabaseAdmin();
 
 export async function GET(request: NextRequest) {
   try {
-    // JWT双认证
-    const authResult = await authenticateUser(request);
-    if (!authResult) {
-      return NextResponse.json({ code: 401, message: '请先登录' }, { status: 401 });
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
-    const userId = authResult.userId;
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data, error } = await supabase
+    const { data: profile, error } = await supabase
       .from('user_profiles')
-      .select('id, user_id, user_type, membership_type, membership_expires_at, created_at, updated_at')
+      .select('*')
       .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, data: profile });
+  } catch (error) {
+    console.error('获取用户画像失败:', error);
+    return NextResponse.json({ error: '获取失败' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .update(body)
+      .eq('user_id', userId)
+      .select()
       .single();
 
-    // 如果查询失败或无数据，开发环境返回模拟数据
-    if (error || !data) {
-      if (process.env.NODE_ENV === 'development' || process.env.COZE_PROJECT_ENV === 'DEV') {
-        console.log('Profile API: 返回开发环境模拟数据');
-        return NextResponse.json({ code: 200, data: getDevUserProfile(userId) });
-      }
-      console.error('Profile query error:', error);
-      return NextResponse.json({ code: 404, message: '用户信息不存在' }, { status: 404 });
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ code: 200, data: data });
-  } catch (err) {
-    console.error('Profile API error:', err);
-    // 开发环境返回模拟数据
-    if (process.env.NODE_ENV === 'development' || process.env.COZE_PROJECT_ENV === 'DEV') {
-      const userId = request.headers.get('x-user-id') || 'unknown';
-      return NextResponse.json({ code: 200, data: getDevUserProfile(userId) });
-    }
-    return NextResponse.json({ code: 500, message: '服务器错误' }, { status: 500 });
+    return NextResponse.json({ success: true, data: profile });
+  } catch (error) {
+    console.error('更新用户画像失败:', error);
+    return NextResponse.json({ error: '更新失败' }, { status: 500 });
   }
 }

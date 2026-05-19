@@ -9,25 +9,20 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 });
-    }
 
-    const { data: resume, error } = await supabase
-      .from('resumes')
+    const { data: jd, error } = await supabase
+      .from('jd_library')
       .select('*')
       .eq('id', id)
-      .eq('user_id', userId)
       .single();
 
-    if (error || !resume) {
-      return NextResponse.json({ error: '简历不存在' }, { status: 404 });
+    if (error || !jd) {
+      return NextResponse.json({ error: 'JD不存在' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: resume });
+    return NextResponse.json({ success: true, data: jd });
   } catch (error) {
-    console.error('获取简历失败:', error);
+    console.error('获取JD失败:', error);
     return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }
@@ -38,26 +33,20 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 });
-    }
-
     const body = await request.json();
 
-    const { data: resume, error } = await supabase
-      .from('resumes')
+    const { data: jd, error } = await supabase
+      .from('jd_library')
       .update(body)
       .eq('id', id)
-      .eq('user_id', userId)
       .select()
       .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, data: resume });
+    return NextResponse.json({ success: true, data: jd });
   } catch (error) {
-    console.error('更新简历失败:', error);
+    console.error('更新JD失败:', error);
     return NextResponse.json({ error: '更新失败' }, { status: 500 });
   }
 }
@@ -68,22 +57,17 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 });
-    }
 
     const { error } = await supabase
-      .from('resumes')
+      .from('jd_library')
       .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
+      .eq('id', id);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true, message: '删除成功' });
   } catch (error) {
-    console.error('删除简历失败:', error);
+    console.error('删除JD失败:', error);
     return NextResponse.json({ error: '删除失败' }, { status: 500 });
   }
 }

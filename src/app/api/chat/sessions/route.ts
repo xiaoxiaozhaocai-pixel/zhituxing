@@ -10,17 +10,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { data: reports, error } = await supabase
-      .from('career_plans')
+    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '20');
+
+    const { data: sessions, error } = await supabase
+      .from('chat_sessions')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, data: reports || [] });
+    return NextResponse.json({ success: true, data: sessions || [] });
   } catch (error) {
-    console.error('获取报告失败:', error);
+    console.error('获取会话列表失败:', error);
     return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }

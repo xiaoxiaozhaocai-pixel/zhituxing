@@ -1,154 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-// PostgreSQL 参数转义
-function escapeParam(value: unknown): string {
-  if (value === null || value === undefined) return 'NULL';
-  if (typeof value === 'number') return String(value);
-  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
-  if (typeof value === 'string') {
-    const escaped = value.replace(/'/g, "''");
-    return `'${escaped}'`;
-  }
-  if (value instanceof Date) {
-    return `'${value.toISOString()}'`;
-  }
-  const json = JSON.stringify(value);
-  const escaped = json.replace(/'/g, "''");
-  return `'${escaped}'`;
-}
-
-// 直接执行SQL查询（支持参数化）
-async function execSql(template: string, ...params: unknown[]): Promise<unknown[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!baseUrl || !serviceKey) {
-    console.error('Missing config:', { baseUrl, hasServiceKey: !!serviceKey });
-    return [];
-  }
-
-  let sql = template;
-  if (params.length > 0) {
-    params.forEach((param) => {
-      sql = sql.replace('%L', escapeParam(param));
-    });
-  }
-
-  try {
-    // 调用exec_sql RPC函数
-    const response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': serviceKey,
-        'Authorization': `Bearer ${serviceKey}`,
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ sql_query: sql })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('SQL执行失败:', errorText);
-      return [];
-    }
-
-    const data = await response.json();
-    console.log('SQL执行结果:', data);
-    
-    // 处理返回的数据 - 可能是字符串或对象数组
-    if (typeof data === 'string') {
-      return JSON.parse(data);
-    } else if (Array.isArray(data)) {
-      return data;
-    } else if (data && typeof data === 'object') {
-      // 如果返回的是单个对象，可能是{result: ...}格式
-      return [data];
-    }
-    return [];
-  } catch (error) {
-    console.error('SQL执行异常:', error);
-    return [];
-  }
-}
+const supabase = getSupabaseAdmin();
 
 // 发送验证码
 export async function POST(request: NextRequest) {
   try {
-    const { email, type = 'login' } = await request.json();
+    const body = await request.json();
+    const { phone, email, type } = body;
+    const targetPhone = phone || (email ? email.split('@')[0] : '');
+    const effectiveType = type || 'login';
 
-    // 从邮箱提取手机号
-    const phone = email ? email.replace(/@test\.com$/i, '') : '';
-
-    if (!email || !/^1[3-9]\d{9}@test\.com$/i.test(email)) {
-      return NextResponse.json(
-        { error: '请输入正确的邮箱格式（手机号@test.com）' },
-        { status: 400 }
-      );
+    if (!targetPhone) {
+      return NextResponse.json({ error: '请输入手机号' }, { status: 400 });
     }
 
-    // 生成6位验证码
-    const effectiveType = type || 'login';
+    // 生成验证码
     const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5分钟过期
 
-    // 设置过期时间（5分钟后）
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-
-    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
-    // 先删除旧验证码
-    const deleteUrl = `${baseUrl}/rest/v1/verification_codes?phone=eq.${phone}&used=eq.false`;
-    await fetch(deleteUrl, {
-      method: 'DELETE',
-      headers: {
-        'apikey': serviceKey || '',
-        'Authorization': `Bearer ${serviceKey || ''}`
-      }
-    });
-
-    // 插入新验证码
-    const insertUrl = `${baseUrl}/rest/v1/verification_codes`;
-    const response = await fetch(insertUrl, {
-      method: 'POST',
-      headers: {
-        'apikey': serviceKey || '',
-        'Authorization': `Bearer ${serviceKey || ''}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({
-        phone,
+    // 保存验证码
+    const { error } = await supabase
+      .from('verification_codes')
+      .insert({
+        phone: targetPhone,
         code,
         type: effectiveType,
-        expires_at: expiresAt,
+        expires_at: expiresAt.toISOString(),
         used: false
-      })
-    });
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('插入验证码失败:', errorText);
-      return NextResponse.json(
-        { error: '发送验证码失败' },
-        { status: 500 }
-      );
+    if (error) {
+      console.error('保存验证码失败:', error);
+      return NextResponse.json({ error: '发送失败' }, { status: 500 });
     }
 
-    console.log(`验证码已发送至 ${phone}: ${code}`);
+    // 实际发送验证码（这里模拟发送）
+    console.log(`[验证码] ${targetPhone}: ${code}`);
 
     return NextResponse.json({
       success: true,
-      message: '验证码已发送',
-      code: process.env.NODE_ENV === 'development' ? code : undefined
+      message: '验证码已发送'
     });
-
   } catch (error) {
     console.error('发送验证码失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '发送失败' }, { status: 500 });
   }
 }

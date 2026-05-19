@@ -7,7 +7,7 @@ import {
   createWorkflowSSEStream,
   createTextStream,
 } from '@/lib/coze-stream';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { calculateCompetencyPercentile, type CompetencyPercentileResult, type PeerMatchScore } from '@/lib/matching-algorithm';
 import {
   extractKeywords,
@@ -15,6 +15,8 @@ import {
   buildRAGContext,
   createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
+
+const supabase = getSupabaseAdmin();
 
 export const runtime = 'edge';
 
@@ -38,16 +40,20 @@ export async function GET(request: NextRequest) {
     const targetPosition = searchParams.get('target_position') || '';
 
     // 1. 获取用户测评历史
-    const assessRows = await execSql(
-      `SELECT id, result_data, created_at FROM assessment_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 10`
-    );
+    const { data: assessRows, error: assessError } = await supabase
+      .from('assessment_results')
+      .select('id, result_data, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(10);
 
-    const history = (assessRows || [] as unknown[]).map((row) => {
-      const r = row as Record<string, unknown>;
+    if (assessError) throw assessError;
+
+    const history = (assessRows || []).map((row) => {
       return {
-        id: r.id,
-        data: typeof r.result_data === 'string' ? JSON.parse(r.result_data) : r.result_data,
-        createdAt: r.created_at,
+        id: row.id,
+        data: typeof row.result_data === 'string' ? JSON.parse(row.result_data) : row.result_data,
+        createdAt: row.created_at,
       };
     });
 
@@ -55,14 +61,17 @@ export async function GET(request: NextRequest) {
     let percentile: CompetencyPercentileResult | null = null;
     if (targetPosition) {
       // 获取同岗位其他用户的匹配度
-      const matchRows = await execSql(
-        `SELECT match_data, user_id FROM skill_job_match WHERE match_data::text ILIKE '%${targetPosition.replace(/'/g, "''")}%'`
-      );
+      const { data: matchRows, error: matchError } = await supabase
+        .from('skill_job_match')
+        .select('match_data, user_id')
+        .ilike('match_data', `%${targetPosition}%`);
+
+      if (matchError) throw matchError;
 
       const peerScores: PeerMatchScore[] = [];
       let userScore = 0;
 
-      for (const row of matchRows as Array<Record<string, unknown>>) {
+      for (const row of matchRows || []) {
         try {
           const data = typeof row.match_data === 'string' ? JSON.parse(row.match_data) : row.match_data;
           const rowUserId = row.user_id as (string | number);

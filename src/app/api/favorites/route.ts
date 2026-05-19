@@ -1,114 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-// 获取收藏列表
+const supabase = getSupabaseAdmin();
+
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
-
     if (!userId) {
-      return NextResponse.json(
-        { error: '请先登录' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const type = request.nextUrl.searchParams.get('type');
 
-    const result = await execSql(
-      `SELECT id, job_id, job_title, company, salary, location, source, created_at
-       FROM job_favorites
-       WHERE user_id = '${userId}'
-       ORDER BY created_at DESC
-       LIMIT ${limit} OFFSET ${offset}`
-    );
+    let query = supabase
+      .from('favorites')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-    // 获取总数
-    const countResult = await execSql(
-      `SELECT COUNT(*) as total FROM job_favorites WHERE user_id = '${userId}'`
-    );
-    const total = countResult && countResult.length > 0 
-      ? parseInt((countResult[0] as { total: string }).total) || 0 
-      : 0;
+    if (type) {
+      query = query.eq('type', type);
+    }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        favorites: (result || []).map((f: unknown) => {
-          const favorite = f as {
-            id: string;
-            job_id: string;
-            job_title: string;
-            company: string | null;
-            salary: string | null;
-            location: string | null;
-            source: string | null;
-            created_at: string;
-          };
-          return {
-            id: favorite.id,
-            jobId: favorite.job_id,
-            jobTitle: favorite.job_title,
-            company: favorite.company,
-            salary: favorite.salary,
-            location: favorite.location,
-            source: favorite.source,
-            createdAt: favorite.created_at
-          };
-        }),
-        total
-      }
-    });
+    const { data: favorites, error } = await query;
 
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, data: favorites || [] });
   } catch (error) {
     console.error('获取收藏失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }
 
-// 添加收藏
 export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
-    const { jobId, jobTitle, company, salary, location, source } = await request.json();
-
     if (!userId) {
-      return NextResponse.json(
-        { error: '请先登录' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    if (!jobId || !jobTitle) {
-      return NextResponse.json(
-        { error: '缺少必要参数' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { type, targetId, title, data } = body;
 
-    const result = await execSql(
-      `INSERT INTO job_favorites (user_id, job_id, job_title, company, salary, location, source)
-       VALUES ('${userId}', '${jobId}', '${jobTitle.replace(/'/g, "''")}', ${company ? `'${company.replace(/'/g, "''")}'` : 'NULL'}, ${salary ? `'${salary.replace(/'/g, "''")}'` : 'NULL'}, ${location ? `'${location.replace(/'/g, "''")}'` : 'NULL'}, ${source ? `'${source}'` : 'NULL'})
-       ON CONFLICT (user_id, job_id) DO UPDATE SET job_title = EXCLUDED.job_title, company = EXCLUDED.company
-       RETURNING id`
-    );
+    const { data: favorite, error } = await supabase
+      .from('favorites')
+      .insert({
+        user_id: userId,
+        type,
+        target_id: targetId,
+        title,
+        data,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
-    return NextResponse.json({
-      success: true,
-      message: '收藏成功',
-      data: { id: (result?.[0] as { id: string })?.id }
-    });
+    if (error) throw error;
 
+    return NextResponse.json({ success: true, data: favorite });
   } catch (error) {
     console.error('添加收藏失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '添加失败' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const targetId = request.nextUrl.searchParams.get('targetId');
+    const type = request.nextUrl.searchParams.get('type');
+
+    if (!targetId || !type) {
+      return NextResponse.json({ error: '缺少参数' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .eq('target_id', targetId)
+      .eq('type', type);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, message: '取消收藏成功' });
+  } catch (error) {
+    console.error('取消收藏失败:', error);
+    return NextResponse.json({ error: '取消失败' }, { status: 500 });
   }
 }

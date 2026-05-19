@@ -1,35 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-// 标记全部通知为已读
-export async function PUT(request: NextRequest) {
+const supabase = getSupabaseAdmin();
+
+export async function POST(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
-
     if (!userId) {
-      return NextResponse.json(
-        { error: '请先登录' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 更新所有未读通知
-    await execSql(
-      `UPDATE notifications 
-       SET status = 'read'
-       WHERE (user_id = '${userId}' OR is_global = TRUE) AND status = 'unread'`
-    );
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('read', false);
 
-    return NextResponse.json({
-      success: true,
-      message: '全部已标记为已读'
-    });
+    if (error) throw error;
 
+    return NextResponse.json({ success: true, message: '全部已读' });
   } catch (error) {
     console.error('标记已读失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '操作失败' }, { status: 500 });
   }
 }

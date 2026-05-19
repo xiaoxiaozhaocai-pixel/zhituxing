@@ -10,17 +10,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { data: reports, error } = await supabase
-      .from('career_plans')
+    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '20');
+
+    const { data: history, error } = await supabase
+      .from('assessment_results')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, data: reports || [] });
+    return NextResponse.json({ success: true, data: history || [] });
   } catch (error) {
-    console.error('获取报告失败:', error);
+    console.error('获取测评历史失败:', error);
     return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }
