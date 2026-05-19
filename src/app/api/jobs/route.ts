@@ -213,20 +213,27 @@ export async function GET(request: NextRequest) {
     }
     
     // 格式化返回数据
-    const formattedData = data?.map(job => ({
-      id: job.id,
-      name: job.job_title,
-      industry: job.industry,
-      city: job.city,
-      companyType: '',
-      salary: job.salary_range || '面议',
-      salaryMin: 0,
-      salaryMax: 0,
-      skills: job.skills?.split(',') || [],
-      friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
-      isFreshFriendly: job.fresh_graduate_friendly === true,
-      jdContent: job.responsibilities
-    })) || [];
+    const formattedData = data?.map(job => {
+      // 处理技能字段：可能是数组或字符串
+      const skills = Array.isArray(job.skills) 
+        ? job.skills 
+        : (job.skills?.split(',') || []);
+      
+      return {
+        id: job.id,
+        name: job.job_title,
+        industry: job.industry,
+        city: job.city,
+        companyType: '',
+        salary: job.salary_range || '面议',
+        salaryMin: 0,
+        salaryMax: 0,
+        skills,
+        friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
+        isFreshFriendly: job.fresh_graduate_friendly === true,
+        jdContent: job.responsibilities
+      };
+    }) || [];
     
     return NextResponse.json({
       success: true,
