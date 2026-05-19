@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
+import { authenticateUser } from '@/lib/auth';
 
 // 会员套餐配置
 const membershipPlans = {
@@ -41,13 +42,14 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
     const body = await request.json();
-    const { planId, paymentMethod } = body;
+    const { planId, paymentMethod, amount } = body;
 
-    // 获取当前用户
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
+    // JWT双认证
+    const authResult = await authenticateUser(request);
+    if (!authResult) {
       return NextResponse.json({ success: false, error: '请先登录' }, { status: 401 });
     }
+    const userId = authResult.userId;
 
     // 验证套餐
     const plan = membershipPlans[planId as keyof typeof membershipPlans];
@@ -55,18 +57,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '无效的套餐' }, { status: 400 });
     }
 
+    // 服务端价格校验（防止金额篡改）
+    const PLAN_PRICES: Record<string, number> = {
+      trial: 9.9,
+      semester: 29.9,
+      yearly: 49.9,
+      'resume-refine': 39.9,
+      'interview-review': 59.9,
+      'career-report': 99.9
+    };
+    const expectedPrice = PLAN_PRICES[planId];
+    if (!expectedPrice) {
+      return NextResponse.json({ success: false, error: '无效的套餐' }, { status: 400 });
+    }
+    if (amount !== undefined && Math.abs(amount - expectedPrice) > 0.01) {
+      return NextResponse.json({ success: false, error: '金额不匹配' }, { status: 400 });
+    }
+
     // 生成订单号
     const orderNo = `ZX${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-    // 创建订单记录
+    // 创建订单记录（使用服务端价格，不信任客户端金额）
     const { data: order, error } = await supabase
       .from('orders')
       .insert({
         order_no: orderNo,
-        user_id: authHeader.replace('Bearer ', ''),
+        user_id: userId,
         plan_id: planId,
         plan_name: plan.name,
-        amount: plan.price,
+        amount: expectedPrice,
         payment_method: paymentMethod || 'wechat',
         status: 'pending'
       })
@@ -83,7 +102,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderId: order.id,
         orderNo: order.order_no,
-        amount: plan.price,
+        amount: expectedPrice,
         planName: plan.name,
         // 模拟支付链接，实际应调用微信/支付宝API
         paymentUrl: `/payment/${order.order_no}`
@@ -100,12 +119,13 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
+
+    // JWT双认证
+    const authResult = await authenticateUser(request);
+    if (!authResult) {
       return NextResponse.json({ success: false, error: '请先登录' }, { status: 401 });
     }
-
-    const userId = authHeader.replace('Bearer ', '');
+    const userId = authResult.userId;
 
     const { data: orders, error } = await supabase
       .from('orders')
