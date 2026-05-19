@@ -241,7 +241,8 @@ export async function GET(request: NextRequest) {
         if (val == null) return [];
         return [String(val)];
       };
-      const skills = safeToArray(job.skills);
+      const skills = safeToArray(job.hard_skills);
+      const softSkills = safeToArray(job.soft_skills);
       
       return {
         id: job.id,
@@ -253,6 +254,9 @@ export async function GET(request: NextRequest) {
         salaryMin: 0,
         salaryMax: 0,
         skills,
+        softSkills,
+        education: job.education || '',
+        experience: job.experience || '',
         friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
         isFreshFriendly: job.fresh_graduate_friendly === true,
         jdContent: job.responsibilities
