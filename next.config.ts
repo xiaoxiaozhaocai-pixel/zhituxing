@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: '/workspace/projects',
   },
+  devIndicators: false,
   images: {
     remotePatterns: [
       {
