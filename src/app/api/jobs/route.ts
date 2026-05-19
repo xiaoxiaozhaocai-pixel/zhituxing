@@ -17,22 +17,20 @@ export async function GET(request: NextRequest) {
 
     // ===== 关键词搜索：使用 Supabase 查询构建器（深度性能优化） =====
     if (keyword) {
-      // 构建 OR 条件：job_title 或 responsibilities 包含关键词
-      const orConditions = `job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`;
-      
       // 性能优化配置
       const MAX_RESULTS = 200;  // 最多获取条数
-      const FAST_MODE_THRESHOLD = 200;  // 超过此数量启用快速模式（不排序）
+      const pageSize_clamped = Math.min(pageSize, 50);  // 单页最多50条
       
-      // 性能优化1：只select必要字段（减少数据传输量）
-      const searchFields = 'id,job_title,industry,city,salary_range,hard_skills,responsibilities,created_at,fresh_graduate_friendly';
+      // 性能优化1：select前端需要的完整字段
+      const searchFields = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,responsibilities,education,experience,created_at,fresh_graduate_friendly';
       
+      // 构建查询：使用 or 条件搜索 job_title 或 responsibilities
       let query = supabaseAdmin
         .from('job_descriptions')
-        .select(searchFields)  // 不用 count: 'exact'，count在大表上很慢
-        .or(orConditions)
+        .select(searchFields)
+        .or(`job_title.ilike.%${keyword}%,responsibilities.ilike.%${keyword}%`)
         .limit(MAX_RESULTS)
-        .order('created_at', { ascending: false });  // 先按时间排序
+        .order('created_at', { ascending: false });
       
       // 应用额外筛选条件
       if (industry) {
@@ -86,12 +84,29 @@ export async function GET(request: NextRequest) {
       const queryTime = Date.now() - startTime;
       const resultCount = (data || []).length;
       
-      // 性能优化2：结果数>阈值时，直接返回前N条不排序（快速模式）
+      // 无结果时直接返回空
+      if (resultCount === 0) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          total: 0,
+          page,
+          pageSize: pageSize_clamped,
+          hasMore: false,
+          queryTime,
+          fastMode: false,
+          sortedFrom: 0
+        });
+      }
+      
+      // 性能优化2：结果数>100时，直接返回前N条不排序（快速模式）
+      const FAST_MODE_THRESHOLD = 100;
       let sortedData: any[];
+      
       if (resultCount > FAST_MODE_THRESHOLD) {
         // 快速模式：直接使用Supabase排序结果，不做相关性排序
         fastMode = true;
-        sortedData = (data || []).slice(0, pageSize);
+        sortedData = (data || []).slice(0, pageSize_clamped);
       } else {
         // 标准模式：计算相关性评分并排序
         const scoredData = (data || []).map(job => {
@@ -118,13 +133,10 @@ export async function GET(request: NextRequest) {
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
         });
         
-        sortedData = scoredData.slice(0, pageSize);
+        sortedData = scoredData.slice(0, pageSize_clamped);
       }
       
-      // 性能优化3：不返回total，改为hasMore布尔值（避免count查询）
-      const hasMore = resultCount >= MAX_RESULTS || (page * pageSize) < resultCount;
-      
-      // 格式化返回数据
+      // 格式化返回数据（包含前端需要的所有字段）
       const formattedData = sortedData.map(job => ({
         id: job.id,
         name: job.job_title,
@@ -135,6 +147,9 @@ export async function GET(request: NextRequest) {
         salaryMin: 0,
         salaryMax: 0,
         skills: job.hard_skills?.split(',') || [],
+        softSkills: job.soft_skills?.split(',') || [],
+        education: job.education || '',
+        experience: job.experience || '',
         friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
         isFreshFriendly: job.fresh_graduate_friendly === true,
         jdContent: job.responsibilities,
@@ -146,8 +161,8 @@ export async function GET(request: NextRequest) {
         data: formattedData,
         total: resultCount,  // 当前页的结果数，不是总数
         page,
-        pageSize,
-        hasMore,  // 是否有更多结果
+        pageSize: pageSize_clamped,
+        hasMore: resultCount >= MAX_RESULTS,  // 是否可能有更多结果
         queryTime,  // 查询耗时（毫秒）
         fastMode,  // 是否快速模式
         sortedFrom: resultCount  // 告知前端实际数据量
