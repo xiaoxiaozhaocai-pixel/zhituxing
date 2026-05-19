@@ -15,31 +15,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 测试用户直接返回会员状态（匹配 test_18775139647_* 或 test_18775139647）
-    if (userId && (userId.startsWith('test_18775139647') || userId.startsWith('test_'))) {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: userId,
-          phone: '18775139647',
-          nickname: '测试用户',
-          avatar_url: null,
-          created_at: new Date().toISOString(),
-          quota: {
-            career_planning: { remaining: -1, unlimited: true },
-            interview: { remaining: -1, unlimited: true },
-            assessment: { remaining: -1, unlimited: true },
-            competency: { is_member_only: true, requires_report: true },
-            decision: { remaining: -1, unlimited: true },
-            member_type: 'member',
-            member_expire_time: '2030-12-31T23:59:59Z',
-            remaining: -1,
-            is_member: true
-          }
-        }
-      });
-    }
-
     // 查询用户信息
     const result = await execSql(
       `SELECT id, phone, nickname, avatar_url, created_at, 

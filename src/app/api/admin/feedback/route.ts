@@ -4,7 +4,11 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 // 管理员鉴权验证
 async function verifyAdmin(request: NextRequest): Promise<boolean> {
   const adminToken = request.headers.get('x-admin-token') || request.headers.get('Authorization')?.replace('Bearer ', '');
-  const validToken = process.env.ADMIN_SECRET_KEY || 'admin-secret-key';
+  const validToken = process.env.ADMIN_SECRET_KEY;
+  if (!validToken) {
+    console.error('ADMIN_SECRET_KEY is not configured');
+    return false;
+  }
   return adminToken === validToken;
 }
 
