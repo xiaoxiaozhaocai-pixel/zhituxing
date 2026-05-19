@@ -245,8 +245,16 @@ export async function GET(request: NextRequest) {
     }, {
       headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
     });
-  } catch (error) {
-    console.error('API错误:', error);
-    return NextResponse.json({ error: '服务器错误' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API错误:', error?.message, error?.stack, error);
+    console.error('API错误详情:', JSON.stringify({
+      message: error?.message,
+      name: error?.name,
+      stack: error?.stack?.split('\n').slice(0, 5)
+    }, null, 2));
+    return NextResponse.json({ 
+      error: '服务器错误',
+      details: error?.message 
+    }, { status: 500 });
   }
 }
