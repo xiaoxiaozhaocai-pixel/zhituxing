@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
+
+const supabase = getSupabaseAdmin();
 
 // 获取内容列表（支持文章、公告、FAQ）
 export async function GET(request: NextRequest) {
@@ -26,27 +28,57 @@ export async function GET(request: NextRequest) {
     }
 
     // 获取总数
-    const countResult = await execSql(`
-      SELECT COUNT(*) as total FROM ${table}
-    `) as Array<{ total: number }>;
-    const total = countResult[0]?.total || 0;
+    const { count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true });
+    const total = count || 0;
 
-    // 获取列表 - 根据表结构选择正确的查询
-    let listSql = '';
+    // 获取列表
+    let query = supabase.from(table).select('*');
+    
     if (type === 'faq') {
-      listSql = `SELECT id, question as title, answer as content, category, sort_order, is_published, created_at, updated_at FROM ${table} ORDER BY sort_order ASC NULLS LAST, created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
-    } else if (type === 'announcement') {
-      listSql = `SELECT id, title, content, category, priority as sort_order, is_published, is_pinned, created_at, updated_at FROM ${table} ORDER BY is_pinned DESC NULLS LAST, created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
+      query = query.order('sort_order', { ascending: true, nullsFirst: false });
     } else {
-      listSql = `SELECT id, title, content, category, sort_order, is_published, is_pinned, created_at, updated_at FROM ${table} ORDER BY is_pinned DESC NULLS LAST, created_at DESC LIMIT ${pageSize} OFFSET ${offset}`;
+      query = query.order('is_pinned', { ascending: false, nullsFirst: false });
     }
     
-    const list = await execSql(listSql);
+    const { data: list } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
+
+    // 根据类型转换字段名
+    const transformedList = (list || []).map(item => {
+      if (type === 'faq') {
+        return {
+          id: item.id,
+          title: item.question,
+          content: item.answer,
+          category: item.category,
+          sort_order: item.sort_order,
+          is_published: item.is_published,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        };
+      } else if (type === 'announcement') {
+        return {
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          category: item.category,
+          sort_order: item.priority,
+          is_published: item.is_published,
+          is_pinned: item.is_pinned,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        };
+      }
+      return item;
+    });
 
     return NextResponse.json({
       code: 200,
       data: {
-        list,
+        list: transformedList,
         pagination: { page, pageSize, total }
       }
     });
@@ -65,46 +97,58 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { type, title, content, category, isPublished, isPinned, sortOrder, adminId, adminUsername } = body;
 
+    let insertData: Record<string, unknown> = {};
+    let table = '';
+
     if (type === 'faq') {
-      const result = await execSql(`
-        INSERT INTO faqs (question, answer, category, sort_order, is_published, created_at, updated_at)
-        VALUES ('${title?.replace(/'/g, "''")}', '${content?.replace(/'/g, "''")}', '${category || ''}', ${sortOrder || 0}, ${isPublished ? 'TRUE' : 'FALSE'}, NOW(), NOW())
-        RETURNING id
-      `);
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'content_create', '创建${type}: ${title}')
-      `);
-      return NextResponse.json({ code: 200, message: '创建成功', data: { id: (result as any[])?.[0]?.id } });
+      table = 'faqs';
+      insertData = {
+        question: title,
+        answer: content,
+        category: category || '',
+        sort_order: sortOrder || 0,
+        is_published: isPublished || false
+      };
+    } else if (type === 'article') {
+      table = 'articles';
+      insertData = {
+        title,
+        content,
+        category: category || '',
+        is_published: isPublished || false,
+        is_pinned: isPinned || false
+      };
+    } else if (type === 'announcement') {
+      table = 'announcements';
+      insertData = {
+        title,
+        content,
+        category: category || '',
+        is_published: isPublished || false,
+        is_pinned: isPinned || false,
+        priority: sortOrder || 0
+      };
+    } else {
+      return NextResponse.json({ code: 400, message: '无效的内容类型' }, { status: 400 });
     }
 
-    if (type === 'article') {
-      const result = await execSql(`
-        INSERT INTO articles (title, content, category, is_published, is_pinned, created_at, updated_at)
-        VALUES ('${title?.replace(/'/g, "''")}', '${content?.replace(/'/g, "''")}', '${category || ''}', ${isPublished ? 'TRUE' : 'FALSE'}, ${isPinned ? 'TRUE' : 'FALSE'}, NOW(), NOW())
-        RETURNING id
-      `);
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'content_create', '创建${type}: ${title}')
-      `);
-      return NextResponse.json({ code: 200, message: '创建成功', data: { id: (result as any[])?.[0]?.id } });
-    }
+    const { data: result, error } = await supabase
+      .from(table)
+      .insert(insertData)
+      .select('id')
+      .single();
 
-    if (type === 'announcement') {
-      const result = await execSql(`
-        INSERT INTO announcements (title, content, category, is_published, is_pinned, priority, created_at, updated_at)
-        VALUES ('${title?.replace(/'/g, "''")}', '${content?.replace(/'/g, "''")}', '${category || ''}', ${isPublished ? 'TRUE' : 'FALSE'}, ${isPinned ? 'TRUE' : 'FALSE'}, ${sortOrder || 0}, NOW(), NOW())
-        RETURNING id
-      `);
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'content_create', '创建${type}: ${title}')
-      `);
-      return NextResponse.json({ code: 200, message: '创建成功', data: { id: (result as any[])?.[0]?.id } });
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ code: 400, message: '无效的内容类型' }, { status: 400 });
+    // 记录操作日志
+    await supabase.from('admin_operation_logs').insert({
+      admin_id: adminId || 0,
+      admin_username: adminUsername || 'unknown',
+      operation_type: 'content_create',
+      operation_content: `创建${type}: ${title}`
+    });
+
+    return NextResponse.json({ code: 200, message: '创建成功', data: { id: result?.id } });
   } catch (error) {
     console.error('创建内容失败:', error);
     return NextResponse.json(
@@ -124,43 +168,55 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ code: 400, message: '缺少ID' }, { status: 400 });
     }
 
+    let updateData: Record<string, unknown> = {};
+    let table = '';
+
     if (type === 'faq') {
-      await execSql(`
-        UPDATE faqs SET question = '${title?.replace(/'/g, "''")}', answer = '${content?.replace(/'/g, "''")}', category = '${category || ''}', sort_order = ${sortOrder || 0}, updated_at = NOW()
-        WHERE id = ${id}
-      `);
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'content_update', '更新${type} #${id}: ${title || ''}')
-      `);
-      return NextResponse.json({ code: 200, message: '更新成功' });
+      table = 'faqs';
+      updateData = {
+        question: title,
+        answer: content,
+        category: category || '',
+        sort_order: sortOrder || 0
+      };
+    } else if (type === 'article') {
+      table = 'articles';
+      updateData = {
+        title,
+        content,
+        category: category || '',
+        is_published: isPublished || false,
+        is_pinned: isPinned || false
+      };
+    } else if (type === 'announcement') {
+      table = 'announcements';
+      updateData = {
+        title,
+        content,
+        is_published: isPublished || false,
+        is_pinned: isPinned || false,
+        priority: sortOrder || 0
+      };
+    } else {
+      return NextResponse.json({ code: 400, message: '无效的内容类型' }, { status: 400 });
     }
 
-    if (type === 'article') {
-      await execSql(`
-        UPDATE articles SET title = '${title?.replace(/'/g, "''")}', content = '${content?.replace(/'/g, "''")}', category = '${category || ''}', is_published = ${isPublished ? 'TRUE' : 'FALSE'}, is_pinned = ${isPinned ? 'TRUE' : 'FALSE'}, updated_at = NOW()
-        WHERE id = '${id}'
-      `);
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'content_update', '更新${type} #${id}: ${title || ''}')
-      `);
-      return NextResponse.json({ code: 200, message: '更新成功' });
-    }
+    const { error } = await supabase
+      .from(table)
+      .update(updateData)
+      .eq('id', id);
 
-    if (type === 'announcement') {
-      await execSql(`
-        UPDATE announcements SET title = '${title?.replace(/'/g, "''")}', content = '${content?.replace(/'/g, "''")}', is_published = ${isPublished ? 'TRUE' : 'FALSE'}, is_pinned = ${isPinned ? 'TRUE' : 'FALSE'}, priority = ${sortOrder || 0}, updated_at = NOW()
-        WHERE id = ${id}
-      `);
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'content_update', '更新${type} #${id}: ${title || ''}')
-      `);
-      return NextResponse.json({ code: 200, message: '更新成功' });
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ code: 400, message: '无效的内容类型' }, { status: 400 });
+    // 记录操作日志
+    await supabase.from('admin_operation_logs').insert({
+      admin_id: adminId || 0,
+      admin_username: adminUsername || 'unknown',
+      operation_type: 'content_update',
+      operation_content: `更新${type} #${id}: ${title || ''}`
+    });
+
+    return NextResponse.json({ code: 200, message: '更新成功' });
   } catch (error) {
     console.error('更新内容失败:', error);
     return NextResponse.json(
@@ -181,18 +237,23 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ code: 400, message: '缺少参数' }, { status: 400 });
     }
 
-    if (type === 'faq') {
-      await execSql('DELETE FROM faqs WHERE id = %s', id);
-    } else if (type === 'article') {
-      await execSql('DELETE FROM articles WHERE id = %L', id);
-    } else if (type === 'announcement') {
-      await execSql('DELETE FROM announcements WHERE id = %s', id);
+    let table = '';
+    if (type === 'faq') table = 'faqs';
+    else if (type === 'article') table = 'articles';
+    else if (type === 'announcement') table = 'announcements';
+
+    if (table) {
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) throw error;
     }
 
-    await execSql(`
-      INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-      VALUES (0, 'unknown', 'content_delete', '删除${type} #${id}')
-    `);
+    // 记录操作日志
+    await supabase.from('admin_operation_logs').insert({
+      admin_id: 0,
+      admin_username: 'unknown',
+      operation_type: 'content_delete',
+      operation_content: `删除${type} #${id}`
+    });
 
     return NextResponse.json({
       code: 200,

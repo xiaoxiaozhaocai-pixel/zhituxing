@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
+
+const supabase = getSupabaseAdmin();
 
 // 获取回收站列表
 export async function GET(request: NextRequest) {
@@ -7,47 +9,30 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '20');
-    const tableType = searchParams.get('tableType');
+    const table = searchParams.get('table');
     const offset = (page - 1) * pageSize;
 
-    let whereClause = 'WHERE 1=1 AND expire_at > NOW()';
-    if (tableType && tableType !== 'all') {
-      whereClause += ` AND original_table = '${tableType}'`;
+    let query = supabase
+      .from('recycle_bin')
+      .select('*', { count: 'exact' });
+
+    if (table) {
+      query = query.eq('original_table', table);
     }
 
-    // 获取总数
-    const countResult = await execSql(`
-      SELECT COUNT(*) as total FROM recycle_bin ${whereClause}
-    `) as Array<{ total: number }>;
-    const total = countResult[0]?.total || 0;
-
-    // 获取列表
-    const records = await execSql(`
-      SELECT * FROM recycle_bin
-      ${whereClause}
-      ORDER BY deleted_at DESC
-      LIMIT ${pageSize} OFFSET ${offset}
-    `);
-
-    // 获取即将过期的数量
-    const expiringSoon = await execSql(`
-      SELECT COUNT(*) as count FROM recycle_bin 
-      WHERE expire_at > NOW() AND expire_at < NOW() + INTERVAL '1 day'
-    `) as Array<{ count: number }>;
+    const { data: list, count: total } = await query
+      .order('deleted_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
     return NextResponse.json({
       code: 200,
       data: {
-        list: records,
-        stats: {
-          total: total,
-          expiringSoon: expiringSoon[0]?.count || 0
-        },
-        pagination: { page, pageSize, total }
+        list: list || [],
+        pagination: { page, pageSize, total: total || 0 }
       }
     });
   } catch (error) {
-    console.error('获取回收站失败:', error);
+    console.error('获取回收站列表失败:', error);
     return NextResponse.json({ code: 500, message: '获取列表失败' }, { status: 500 });
   }
 }
@@ -62,80 +47,77 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ code: 400, message: '参数不完整' }, { status: 400 });
     }
 
-    // 获取记录
-    const record = await execSql('SELECT * FROM recycle_bin WHERE id = %s', id) as any[];
+    // 获取回收站记录
+    const { data: record, error: fetchError } = await supabase
+      .from('recycle_bin')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!record || record.length === 0) {
+    if (fetchError || !record) {
       return NextResponse.json({ code: 404, message: '记录不存在' }, { status: 404 });
     }
 
-    const { original_table, original_id, deleted_data } = record[0];
+    let message = '';
 
     if (action === 'restore') {
       // 恢复数据
-      if (original_table === 'jobs') {
-        const data = deleted_data;
-        await execSql(`
-          INSERT INTO jobs (job_name, company_name, city, salary_min, salary_max, industry, source, jd_content, is_fresh_friendly, created_at, updated_at)
-          VALUES ('${data.job_name || ''}', '${data.company_name || ''}', '${data.city || ''}', ${data.salary_min || 0}, ${data.salary_max || 0}, '${data.industry || ''}', '${data.source || ''}', '${(data.jd_content || '').replace(/'/g, "''")}', ${data.is_fresh_friendly ? 1 : 0}, '${data.created_at || new Date().toISOString()}', NOW())
-        `);
-      } else if (original_table === 'articles') {
-        const data = deleted_data;
-        await execSql(`
-          INSERT INTO articles (title, content, category, is_published, is_pinned, sort_order, created_at, updated_at)
-          VALUES ('${(data.title || '').replace(/'/g, "''")}', '${(data.content || '').replace(/'/g, "''")}', '${data.category || ''}', ${data.is_published ? 'TRUE' : 'FALSE'}, ${data.is_pinned ? 'TRUE' : 'FALSE'}, ${data.sort_order || 0}, '${data.created_at || new Date().toISOString()}', NOW())
-        `);
-      } else if (original_table === 'announcements') {
-        const data = deleted_data;
-        await execSql(`
-          INSERT INTO announcements (title, content, priority, is_published, is_pinned, created_at, updated_at)
-          VALUES ('${(data.title || '').replace(/'/g, "''")}', '${(data.content || '').replace(/'/g, "''")}', ${data.priority || 0}, ${data.is_published ? 'TRUE' : 'FALSE'}, ${data.is_pinned ? 'TRUE' : 'FALSE'}, '${data.created_at || new Date().toISOString()}', NOW())
-        `);
-      }
+      const originalData = typeof record.deleted_data === 'string' 
+        ? JSON.parse(record.deleted_data) 
+        : record.deleted_data;
 
-      // 删除回收站记录
-      await execSql('DELETE FROM recycle_bin WHERE id = %s', id);
+      const { error: restoreError } = await supabase
+        .from(record.original_table)
+        .insert(originalData);
 
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'recycle_restore', '恢复数据: ${original_table} #${original_id}')
-      `);
+      if (restoreError) throw restoreError;
 
-      return NextResponse.json({ code: 200, message: '恢复成功' });
-    } else if (action === 'permanent_delete') {
+      // 从回收站删除
+      await supabase.from('recycle_bin').delete().eq('id', id);
+      message = '数据已恢复';
+    } else if (action === 'delete') {
       // 永久删除
-      await execSql('DELETE FROM recycle_bin WHERE id = %s', id);
+      const { error: deleteError } = await supabase
+        .from('recycle_bin')
+        .delete()
+        .eq('id', id);
 
-      await execSql(`
-        INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-        VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', 'recycle_delete', '永久删除: ${original_table} #${original_id}')
-      `);
-
-      return NextResponse.json({ code: 200, message: '永久删除成功' });
+      if (deleteError) throw deleteError;
+      message = '数据已永久删除';
     }
 
-    return NextResponse.json({ code: 400, message: '无效操作' }, { status: 400 });
+    // 记录操作日志
+    await supabase.from('admin_operation_logs').insert({
+      admin_id: adminId || 0,
+      admin_username: adminUsername || 'unknown',
+      operation_type: 'recycle_' + action,
+      operation_content: `${message}: ${record.original_table} #${record.original_id}`
+    });
+
+    return NextResponse.json({ code: 200, message });
   } catch (error) {
-    console.error('回收站操作失败:', error);
+    console.error('操作失败:', error);
     return NextResponse.json({ code: 500, message: '操作失败' }, { status: 500 });
   }
 }
 
-// 自动清理过期数据（定时任务）
+// 清空回收站
 export async function DELETE(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const action = searchParams.get('action');
+    const table = searchParams.get('table');
 
-    if (action === 'cleanup') {
-      // 清理过期数据
-      const result = await execSql(`DELETE FROM recycle_bin WHERE expire_at < NOW()`);
-      return NextResponse.json({ code: 200, message: '清理完成' });
+    let query = supabase.from('recycle_bin').delete();
+    if (table) {
+      query = query.eq('original_table', table);
     }
 
-    return NextResponse.json({ code: 400, message: '无效操作' }, { status: 400 });
+    const { error } = await query;
+    if (error) throw error;
+
+    return NextResponse.json({ code: 200, message: '回收站已清空' });
   } catch (error) {
-    console.error('清理失败:', error);
-    return NextResponse.json({ code: 500, message: '清理失败' }, { status: 500 });
+    console.error('清空回收站失败:', error);
+    return NextResponse.json({ code: 500, message: '操作失败' }, { status: 500 });
   }
 }

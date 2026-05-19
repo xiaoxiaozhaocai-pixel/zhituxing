@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
+
+const supabase = getSupabaseAdmin();
 
 // 获取用户列表
 export async function GET(request: NextRequest) {
@@ -12,55 +14,61 @@ export async function GET(request: NextRequest) {
     const filterBlocked = searchParams.get('blocked');
     const offset = (page - 1) * pageSize;
 
-    let whereClause = 'WHERE 1=1';
+    // 构建查询
+    let query = supabase
+      .from('users')
+      .select('id, nickname, email, created_at, last_sign_in_at, member_type, member_expire_time, is_lifetime_member, interview_quota, assessment_quota, is_blocked, blocked_reason, blocked_at', { count: 'exact' });
+
+    // 关键词搜索
     if (keyword) {
-      whereClause += ` AND (COALESCE(nickname, '') LIKE '%${keyword.replace(/'/g, "''")}%' OR COALESCE(email, '') LIKE '%${keyword.replace(/'/g, "''")}%')`;
-    }
-    if (memberType === 'member') {
-      whereClause += ` AND (member_type IS NOT NULL OR is_lifetime_member = TRUE)`;
-    } else if (memberType === 'normal') {
-      whereClause += ` AND (member_type IS NULL AND is_lifetime_member = FALSE)`;
-    }
-    if (filterBlocked === 'true') {
-      whereClause += ` AND is_blocked = TRUE`;
-    } else if (filterBlocked === 'false') {
-      whereClause += ` AND (is_blocked = FALSE OR is_blocked IS NULL)`;
+      query = query.or(`nickname.ilike.%${keyword}%,email.ilike.%${keyword}%`);
     }
 
-    // 获取总数
-    const countResult = await execSql(`
-      SELECT COUNT(*) as total FROM users ${whereClause}
-    `) as Array<{ total: number }>;
-    const total = countResult[0]?.total || 0;
+    // 会员类型筛选
+    if (memberType === 'member') {
+      query = query.or('member_type.is.not.null,is_lifetime_member.eq.true');
+    } else if (memberType === 'normal') {
+      query = query.is('member_type', null).eq('is_lifetime_member', false);
+    }
+
+    // 拉黑状态筛选
+    if (filterBlocked === 'true') {
+      query = query.eq('is_blocked', true);
+    } else if (filterBlocked === 'false') {
+      query = query.or('is_blocked.is.null,is_blocked.eq.false');
+    }
 
     // 获取列表
-    const users = await execSql(`
-      SELECT 
-        id, COALESCE(nickname, '未设置') as username, email, created_at, last_sign_in_at as last_login_time,
-        member_type, member_expire_time, is_lifetime_member,
-        interview_quota, assessment_quota,
-        is_blocked, blocked_reason, blocked_at
-      FROM users
-      ${whereClause}
-      ORDER BY created_at DESC
-      LIMIT ${pageSize} OFFSET ${offset}
-    `);
+    const { data: users, count: total, error } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
+
+    if (error) throw error;
 
     // 获取统计数据
-    const stats = await execSql(`
-      SELECT 
-        COUNT(*) FILTER (WHERE is_blocked = TRUE) as blocked_count,
-        COUNT(*) FILTER (WHERE is_blocked = FALSE OR is_blocked IS NULL) as normal_count
-      FROM users
-    `) as any;
+    const { count: blockedCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_blocked', true);
+
+    const { count: normalCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .or('is_blocked.is.null,is_blocked.eq.false');
 
     // 获取每个用户的上传JD数量
     const usersWithStats = await Promise.all(
-      (users as any[]).map(async (user) => {
-        const jdCount = await execSql(`
-          SELECT COUNT(*) as count FROM jd_submissions WHERE user_id = '${user.id}'
-        `) as Array<{ count: number }>;
-        return { ...user, jd_count: jdCount[0]?.count || 0 };
+      (users || []).map(async (user) => {
+        const { count } = await supabase
+          .from('jd_submissions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+        return {
+          ...user,
+          username: user.nickname || '未设置',
+          last_login_time: user.last_sign_in_at,
+          jd_count: count || 0
+        };
       })
     );
 
@@ -69,11 +77,11 @@ export async function GET(request: NextRequest) {
       data: {
         list: usersWithStats,
         stats: {
-          total,
-          blocked: stats[0]?.blocked_count || 0,
-          normal: stats[0]?.normal_count || 0
+          total: total || 0,
+          blocked: blockedCount || 0,
+          normal: normalCount || 0
         },
-        pagination: { page, pageSize, total }
+        pagination: { page, pageSize, total: total || 0 }
       }
     });
   } catch (error) {
@@ -97,75 +105,93 @@ export async function POST(request: NextRequest) {
     if (action === 'open') {
       // 开通会员
       if (memberType === 'lifetime') {
-        await execSql(`
-          UPDATE users 
-          SET is_lifetime_member = TRUE, 
-              member_type = 'lifetime',
-              member_expire_time = '2099-12-31 23:59:59'
-          WHERE id = '${userId}'
-        `);
+        const { error } = await supabase
+          .from('users')
+          .update({
+            is_lifetime_member: true,
+            member_type: 'lifetime',
+            member_expire_time: '2099-12-31 23:59:59'
+          })
+          .eq('id', userId);
+        if (error) throw error;
         message = '终身会员开通成功';
       } else {
         const expireTime = new Date();
         expireTime.setMonth(expireTime.getMonth() + 1);
-        await execSql(`
-          UPDATE users 
-          SET member_type = 'monthly',
-              member_expire_time = '${expireTime.toISOString()}'
-          WHERE id = '${userId}'
-        `);
+        const { error } = await supabase
+          .from('users')
+          .update({
+            member_type: 'monthly',
+            member_expire_time: expireTime.toISOString()
+          })
+          .eq('id', userId);
+        if (error) throw error;
         message = '月度会员开通成功';
       }
     } else if (action === 'cancel') {
       // 取消会员
-      await execSql(`
-        UPDATE users 
-        SET is_lifetime_member = FALSE,
-            member_type = NULL,
-            member_expire_time = NULL
-        WHERE id = '${userId}'
-      `);
+      const { error } = await supabase
+        .from('users')
+        .update({
+          is_lifetime_member: false,
+          member_type: null,
+          member_expire_time: null
+        })
+        .eq('id', userId);
+      if (error) throw error;
       message = '会员已取消';
     } else if (action === 'block') {
       // 拉黑用户
       if (deleteUserJd === true) {
         // 先将用户上传的JD放入回收站再删除
-        const userJds = await execSql('SELECT * FROM jd_submissions WHERE user_id = %L', userId) as any[];
-        for (const jd of userJds) {
-          await execSql(`
-            INSERT INTO recycle_bin (original_table, original_id, deleted_data, deleted_by, deleted_at)
-            VALUES ('jd_submissions', ${jd.id}, '${JSON.stringify(jd).replace(/'/g, "''")}', '${adminUsername || 'system'}', NOW())
-          `);
+        const { data: userJds } = await supabase
+          .from('jd_submissions')
+          .select('*')
+          .eq('user_id', userId);
+
+        for (const jd of userJds || []) {
+          await supabase.from('recycle_bin').insert({
+            original_table: 'jd_submissions',
+            original_id: jd.id,
+            deleted_data: JSON.stringify(jd),
+            deleted_by: adminUsername || 'system'
+          });
         }
         // 删除用户上传的JD
-        await execSql('DELETE FROM jd_submissions WHERE user_id = %L', userId);
+        await supabase.from('jd_submissions').delete().eq('user_id', userId);
       }
-      
-      await execSql(`
-        UPDATE users 
-        SET is_blocked = TRUE,
-            blocked_reason = '${(blockReason || '违规操作').replace(/'/g, "''")}',
-            blocked_at = NOW()
-        WHERE id = '${userId}'
-      `);
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          is_blocked: true,
+          blocked_reason: blockReason || '违规操作',
+          blocked_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      if (error) throw error;
       message = `用户已被拉黑${deleteUserJd ? '，已删除该用户上传的所有JD' : ''}`;
     } else if (action === 'unblock') {
       // 取消拉黑
-      await execSql(`
-        UPDATE users 
-        SET is_blocked = FALSE,
-            blocked_reason = NULL,
-            blocked_at = NULL
-        WHERE id = '${userId}'
-      `);
+      const { error } = await supabase
+        .from('users')
+        .update({
+          is_blocked: false,
+          blocked_reason: null,
+          blocked_at: null
+        })
+        .eq('id', userId);
+      if (error) throw error;
       message = '用户已取消拉黑';
     }
 
     // 记录操作日志
-    await execSql(`
-      INSERT INTO admin_operation_logs (admin_id, admin_username, operation_type, operation_content)
-      VALUES (${adminId || 0}, '${adminUsername || 'unknown'}', action IN ('block', 'unblock') ? 'user_block' : 'member_manage', '${message}: 用户 #${userId}')
-    `);
+    await supabase.from('admin_operation_logs').insert({
+      admin_id: adminId || 0,
+      admin_username: adminUsername || 'unknown',
+      operation_type: ['block', 'unblock'].includes(action) ? 'user_block' : 'member_manage',
+      operation_content: `${message}: 用户 #${userId}`
+    });
 
     return NextResponse.json({
       code: 200,
