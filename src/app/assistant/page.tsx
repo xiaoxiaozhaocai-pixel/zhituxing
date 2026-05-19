@@ -196,6 +196,7 @@ export default function AssistantPage() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [quotaFeature, setQuotaFeature] = useState<string>('');
   const [hasProfile, setHasProfile] = useState(false);
   const [jdUrl, setJdUrl] = useState('');
   const [jdText, setJdText] = useState('');
@@ -675,6 +676,7 @@ export default function AssistantPage() {
                 key={bot.id}
                 onClick={() => {
                   if (bot.isVipOnly && !quota?.is_member) {
+                    setQuotaFeature(bot.name);
                     setShowQuotaDialog(true);
                     return;
                   }
@@ -927,10 +929,10 @@ export default function AssistantPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-[#FF7D00]" />
-              AI模拟面试次数已用完
+              {quotaFeature || 'VIP功能'}需要会员权限
             </DialogTitle>
             <DialogDescription className="space-y-3 pt-2">
-              <p>你的3次免费AI模拟面试机会已用完，开通会员可解锁无限次全流程模拟面试</p>
+              <p>你正在尝试使用「{quotaFeature || 'VIP功能'}」，该功能仅对会员开放。开通会员可解锁全部高级功能。</p>
               <div className="space-y-2">
                 <p className="font-medium text-gray-900">会员专属权益：</p>
                 <ul className="text-sm text-gray-600 space-y-1">
@@ -938,11 +940,12 @@ export default function AssistantPage() {
                   <li>完整版能力测评报告</li>
                   <li>胜任力评估雷达图</li>
                   <li>考研就业决策完整版</li>
+                  <li>AI职业规划完整版</li>
                 </ul>
                 <div className="flex flex-col gap-2 pt-2">
                   <Link href="/membership" onClick={() => setShowQuotaDialog(false)}>
                     <Button className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A2E] hover:opacity-90 text-white">
-                      开通会员 解锁无限次
+                      开通会员 解锁全部功能
                     </Button>
                   </Link>
                   <Link href="/profile/invite" onClick={() => setShowQuotaDialog(false)}>
