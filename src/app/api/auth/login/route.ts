@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { execSql } from '@/lib/exec-sql';
+import { generateJWT } from '@/lib/auth';
 
 // 查询用户会员状态（从生产 Supabase）
 async function getMembershipStatus(userId: string, phone: string) {
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: '登录成功',
+        access_token: generateJWT(user.id),
         user: {
           id: user.id, phone: user.phone, nickname: user.nickname,
           avatar_url: user.avatar_url, created_at: user.created_at,
@@ -136,6 +138,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: '登录成功',
+        access_token: null,
         user: {
           id: user.id, phone: user.phone, nickname: user.nickname,
           avatar_url: user.avatar_url, created_at: user.created_at,
