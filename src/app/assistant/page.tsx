@@ -664,7 +664,7 @@ export default function AssistantPage() {
             AI职业助手
           </h1>
           <p className="text-gray-600 text-sm">
-            四大智能体协同服务，助你求职无忧
+            七大智能体协同服务，助你求职无忧
           </p>
         </div>
 

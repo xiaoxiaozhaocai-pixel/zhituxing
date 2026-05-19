@@ -177,7 +177,7 @@ export default function GuidePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">AI智能</h3>
-                  <p className="text-sm text-gray-600">4大AI智能体矩阵，全方位助你求职</p>
+                  <p className="text-sm text-gray-600">7大AI智能体矩阵，全方位助你求职</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
