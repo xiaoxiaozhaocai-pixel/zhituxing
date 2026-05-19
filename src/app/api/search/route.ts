@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 全站搜索
 export async function GET(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const keyword = q.trim().replace(/'/g, "''");
+    const keyword = q.trim();
     const results: {
       jobs: Array<{
         id: string;
@@ -62,23 +62,16 @@ export async function GET(request: NextRequest) {
     // 搜索文章
     if (!type || type === 'all' || type === 'articles') {
       try {
-        const articlesResult = await execSql(
-          `SELECT id, title, summary, category, views
-           FROM articles
-           WHERE is_published = TRUE 
-             AND (title ILIKE '%${keyword}%' OR COALESCE(summary, '') ILIKE '%${keyword}%')
-           ORDER BY views DESC
-           LIMIT ${limit}`
-        );
+        const supabase = getSupabaseAdmin();
+        const { data: articlesResult, error } = await supabase
+          .from('articles')
+          .select('id, title, summary, category, views')
+          .or(`title.ilike.%${keyword}%,summary.ilike.%${keyword}%`)
+          .order('views', { ascending: false })
+          .limit(limit);
 
-        if (articlesResult) {
-          results.articles = (articlesResult as Array<{
-            id: string;
-            title: string;
-            summary: string | null;
-            category: string;
-            views: number;
-          }>).map(a => ({
+        if (!error && articlesResult) {
+          results.articles = articlesResult.map(a => ({
             id: a.id,
             title: a.title,
             summary: a.summary,
