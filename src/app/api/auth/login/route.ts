@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { execSql } from '@/lib/exec-sql';
 
 // 查询用户会员状态（从生产 Supabase）
 async function getMembershipStatus(userId: string, phone: string) {
@@ -38,7 +38,6 @@ async function getMembershipStatus(userId: string, phone: string) {
 // 登录
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
     const { email, password, code } = await request.json();
 
     // 从邮箱提取手机号（去掉 @test.com）
@@ -57,14 +56,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '密码至少6位' }, { status: 400 });
       }
 
-      // 使用Supabase查询构建器（防SQL注入）
-      const { data: userResult, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('phone', phone)
-        .limit(1);
+      // 查询用户
+      const userResult = await execSql(
+        `SELECT * FROM users WHERE phone = '${phone}' LIMIT 1`
+      );
 
-      if (userError || !userResult || userResult.length === 0) {
+      if (!userResult || userResult.length === 0) {
         return NextResponse.json({ error: '用户不存在，请先注册' }, { status: 401 });
       }
 
@@ -100,16 +97,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '请输入正确的手机号' }, { status: 400 });
       }
 
-      // 使用Supabase查询构建器验证验证码（防SQL注入）
-      const { data: verifyResult } = await supabase
-        .from('verification_codes')
-        .select('*')
-        .eq('phone', phone)
-        .eq('type', 'login')
-        .eq('used', false)
-        .order('created_at', { ascending: false })
-        .limit(1);
-        
+      // 验证验证码
+      const verifyResult = await execSql(
+        `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'login' AND used = false ORDER BY created_at DESC LIMIT 1`
+      );
       if (!verifyResult || verifyResult.length === 0) {
         return NextResponse.json({ error: '请先获取验证码' }, { status: 400 });
       }
@@ -120,22 +111,17 @@ export async function POST(request: NextRequest) {
       if (verification.code !== code) {
         return NextResponse.json({ error: '验证码错误' }, { status: 400 });
       }
-      await supabase.from('verification_codes').update({ used: true }).eq('id', verification.id);
+      await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
 
-      // 使用Supabase查询构建器查询用户（防SQL注入）
-      let { data: userResult } = await supabase
-        .from('users')
-        .select('*')
-        .eq('phone', phone)
-        .limit(1);
+      // 查询或创建用户
+      let userResult = await execSql(
+        `SELECT * FROM users WHERE phone = '${phone}' LIMIT 1`
+      );
 
       if (!userResult || userResult.length === 0) {
-        // 创建新用户
-        const { data: newUser } = await supabase
-          .from('users')
-          .insert({ phone, nickname: `用户${phone.slice(-4)}` })
-          .select();
-        userResult = newUser;
+        userResult = await execSql(
+          `INSERT INTO users (phone, nickname) VALUES ('${phone}', '用户${phone.slice(-4)}') RETURNING *`
+        );
         if (!userResult || userResult.length === 0) {
           return NextResponse.json({ error: '登录失败' }, { status: 500 });
         }

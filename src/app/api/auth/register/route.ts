@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { execSql } from '@/lib/exec-sql';
 
 // 注册
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
     const { email, password, code, nickname, invite_code } = await request.json();
 
     // 从邮箱提取手机号（去掉 @test.com）
@@ -35,15 +34,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 使用Supabase查询构建器验证验证码（防SQL注入）
-    const { data: verifyResult } = await supabase
-      .from('verification_codes')
-      .select('*')
-      .eq('phone', phone)
-      .eq('type', 'register')
-      .eq('used', false)
-      .order('created_at', { ascending: false })
-      .limit(1);
+    // 查询验证码
+    const verifyResult = await execSql(
+      `SELECT * FROM verification_codes WHERE phone = '${phone}' AND type = 'register' AND used = false ORDER BY created_at DESC LIMIT 1`
+    );
 
     if (!verifyResult || verifyResult.length === 0) {
       return NextResponse.json({ error: '请先获取验证码' }, { status: 400 });
@@ -59,15 +53,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '验证码错误' }, { status: 400 });
     }
 
-    await supabase.from('verification_codes').update({ used: true }).eq('id', verification.id);
+    await execSql(`UPDATE verification_codes SET used = true WHERE id = '${verification.id}'`);
 
-    // 检查用户是否已存在（防SQL注入）
-    const { data: userCheck } = await supabase
-      .from('users')
-      .select('id')
-      .eq('phone', phone)
-      .limit(1);
-      
+    // 检查用户是否已存在
+    const userCheck = await execSql(`SELECT id FROM users WHERE phone = '${phone}' LIMIT 1`);
     if (userCheck && userCheck.length > 0) {
       return NextResponse.json(
         { error: '该手机号已注册，请直接登录' },
@@ -75,16 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 查找邀请人（如果有邀请码）（防SQL注入）
+    // 查找邀请人（如果有邀请码）
     let inviterId: string | null = null;
     if (invite_code) {
-      const { data: inviterResult } = await supabase
-        .from('users')
-        .select('id')
-        .eq('invite_code', invite_code)
-        .limit(1);
+      const inviterResult = await execSql(
+        `SELECT id FROM users WHERE invite_code = '${invite_code}' LIMIT 1`
+      );
       if (inviterResult && inviterResult.length > 0) {
-        inviterId = inviterResult[0].id;
+        inviterId = (inviterResult[0] as { id: string }).id;
       }
     }
 
@@ -95,29 +82,16 @@ export async function POST(request: NextRequest) {
     // 生成用户的邀请码
     const userInviteCode = `U${phone.slice(-6)}`;
 
-    // 计算配额重置时间（下个月末）
-    const now = new Date();
-    const quotaResetTime = new Date(now.getFullYear(), now.getMonth() + 2, 0, 23, 59, 59);
-
-    // 创建用户（使用Supabase，防SQL注入）
-    const { data: insertResult } = await supabase
-      .from('users')
-      .insert({
-        phone,
-        password: hashedPassword,
-        nickname: userNickname,
-        invite_code: userInviteCode,
-        monthly_quota: 5,
-        quota_reset_time: quotaResetTime.toISOString()
-      })
-      .select();
+    // 创建用户
+    await execSql(
+      `INSERT INTO users (phone, password, nickname, invite_code, monthly_quota, quota_reset_time) 
+       VALUES ('${phone}', '${hashedPassword}', '${userNickname}', '${userInviteCode}', 5, DATE_TRUNC('month', NOW()) + INTERVAL '1 month' - INTERVAL '1 second')`
+    );
 
     // 查询新创建的用户
-    const { data: userResult } = await supabase
-      .from('users')
-      .select('id, phone, nickname, created_at')
-      .eq('phone', phone)
-      .limit(1);
+    const userResult = await execSql(
+      `SELECT id, phone, nickname, created_at FROM users WHERE phone = '${phone}' LIMIT 1`
+    );
 
     if (!userResult || userResult.length === 0) {
       return NextResponse.json(
@@ -136,64 +110,45 @@ export async function POST(request: NextRequest) {
     // 如果有邀请人，创建邀请记录并自动发放奖励
     if (inviterId) {
       // 创建邀请记录
-      await supabase.from('invites').insert({
-        inviter_id: inviterId,
-        invitee_id: newUser.id,
-        invite_code: invite_code,
-        reward_quota: 3,
-        reward_days: 7,
-        reward_status: 'claimed',
-        claimed_at: new Date().toISOString()
-      });
+      await execSql(
+        `INSERT INTO invites (inviter_id, invitee_id, invite_code, reward_quota, reward_days, reward_status, claimed_at)
+         VALUES ('${inviterId}', '${newUser.id}', '${invite_code}', 3, 7, 'claimed', NOW())`
+      );
 
       // 自动发放奖励给邀请人
-      const { data: inviterData } = await supabase
-        .from('users')
-        .select('monthly_quota')
-        .eq('id', inviterId)
-        .single();
-      
-      await supabase
-        .from('users')
-        .update({ monthly_quota: (inviterData?.monthly_quota || 0) + 3 })
-        .eq('id', inviterId);
+      await execSql(
+        `UPDATE users SET monthly_quota = monthly_quota + 3 WHERE id = '${inviterId}'`
+      );
 
       // 检查并延长邀请人的会员时间
-      const { data: inviterExpire } = await supabase
-        .from('users')
-        .select('member_expire_time')
-        .eq('id', inviterId)
-        .single();
+      const inviterResult = await execSql(
+        `SELECT member_expire_time FROM users WHERE id = '${inviterId}' LIMIT 1`
+      );
       
-      if (inviterExpire) {
+      if (inviterResult && inviterResult.length > 0) {
+        const inviter = inviterResult[0] as { member_expire_time: string };
+        const now = new Date();
         let newExpireTime: Date;
-        if (inviterExpire.member_expire_time) {
-          const currentExpire = new Date(inviterExpire.member_expire_time);
+
+        if (inviter.member_expire_time) {
+          const currentExpire = new Date(inviter.member_expire_time);
           newExpireTime = new Date(currentExpire.getTime() + 7 * 24 * 60 * 60 * 1000);
         } else {
           newExpireTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         }
 
-        await supabase
-          .from('users')
-          .update({
-            member_type: 'monthly',
-            member_expire_time: newExpireTime.toISOString()
-          })
-          .eq('id', inviterId);
+        await execSql(
+          `UPDATE users SET 
+            member_type = 'monthly',
+            member_expire_time = '${newExpireTime.toISOString()}'
+           WHERE id = '${inviterId}'`
+        );
       }
 
       // 自动给被邀请人发放奖励（注册即可获得3次免费次数）
-      const { data: userData } = await supabase
-        .from('users')
-        .select('monthly_quota')
-        .eq('id', newUser.id)
-        .single();
-      
-      await supabase
-        .from('users')
-        .update({ monthly_quota: (userData?.monthly_quota || 0) + 3 })
-        .eq('id', newUser.id);
+      await execSql(
+        `UPDATE users SET monthly_quota = monthly_quota + 3 WHERE id = '${newUser.id}'`
+      );
     }
 
     // 返回用户信息
