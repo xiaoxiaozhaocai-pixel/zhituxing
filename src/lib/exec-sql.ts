@@ -8,7 +8,7 @@
  * PostgreSQL参数安全转义
  * 将参数值转换为安全的SQL字面量
  */
-function escapeParam(value: any): string {
+export function escapeParam(value: any): string {
   if (value === null || value === undefined) {
     return 'NULL';
   }
