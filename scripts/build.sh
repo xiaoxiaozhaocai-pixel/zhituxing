@@ -35,4 +35,31 @@ echo "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY set for build"
 
 NODE_OPTIONS='--max-old-space-size=2048' pnpm next build
 
+# ========== Standalone 静态文件复制 ==========
+# standalone 模式需要手动复制 static 和 public 目录
+echo "Copying static files for standalone mode..."
+
+# 找到 standalone 目录（server.js 所在目录）
+STANDALONE_DIR=$(find .next/standalone -name "server.js" -type f | grep -v node_modules | head -1 | xargs dirname)
+
+if [ -n "$STANDALONE_DIR" ]; then
+  echo "Standalone directory: $STANDALONE_DIR"
+  
+  # 复制 .next/static 到 standalone/.next/static
+  if [ -d ".next/static" ]; then
+    mkdir -p "$STANDALONE_DIR/.next/static"
+    cp -r .next/static/* "$STANDALONE_DIR/.next/static/"
+    echo "✓ Copied .next/static"
+  fi
+  
+  # 复制 public 到 standalone/public
+  if [ -d "public" ]; then
+    cp -r public "$STANDALONE_DIR/"
+    echo "✓ Copied public"
+  fi
+else
+  echo "WARNING: standalone directory not found!"
+fi
+# ==========================================
+
 echo "Build completed successfully!"
