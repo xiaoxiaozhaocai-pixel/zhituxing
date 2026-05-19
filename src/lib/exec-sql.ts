@@ -1,10 +1,11 @@
 /**
  * 执行SQL的辅助函数
  * 用于在API路由中直接执行SQL语句
+ * 支持参数化查询，防止SQL注入
  */
 
-// 直接执行SQL查询
-export async function execSql(sql: string): Promise<unknown[]> {
+// 执行SQL查询（支持参数化）
+export async function execSql(template: string, ...params: any[]): Promise<unknown[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -14,17 +15,36 @@ export async function execSql(sql: string): Promise<unknown[]> {
   }
 
   try {
-    // 调用exec_sql RPC函数
-    const response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': serviceKey,
-        'Authorization': `Bearer ${serviceKey}`,
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ query: sql })
-    });
+    let response: Response;
+    
+    if (params.length === 0) {
+      // 旧调用方式：直接执行SQL字符串
+      response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ query: template })
+      });
+    } else {
+      // 新调用方式：参数化查询（安全）
+      response = await fetch(`${baseUrl}/rest/v1/rpc/exec_sql_safe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ 
+          query_template: template, 
+          params: params.map(p => String(p)) 
+        })
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
