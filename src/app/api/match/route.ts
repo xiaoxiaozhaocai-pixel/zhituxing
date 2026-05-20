@@ -88,6 +88,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 匹配逻辑：根据技能交集计算匹配度
+    console.log('[match] User skills:', validSkills);
+    console.log('[match] Total jobs:', jdData.length);
+    
     const matches = jdData.map((jd: {
       id: string;
       job_title: string;
@@ -102,8 +105,34 @@ export async function POST(request: NextRequest) {
       tags: string[] | null;
       fresh_graduate_friendly: boolean | null;
     }) => {
+      // 处理 hard_skills 和 soft_skills（可能是数组、JSONB字符串或null）
+      let hardSkillsArr: string[] = [];
+      let softSkillsArr: string[] = [];
+      
+      if (jd.hard_skills) {
+        if (Array.isArray(jd.hard_skills)) {
+          hardSkillsArr = jd.hard_skills.filter((s): s is string => typeof s === 'string');
+        } else if (typeof jd.hard_skills === 'string') {
+          try {
+            const parsed = JSON.parse(jd.hard_skills);
+            hardSkillsArr = Array.isArray(parsed) ? parsed.filter((s): s is string => typeof s === 'string') : [];
+          } catch { /* ignore */ }
+        }
+      }
+      
+      if (jd.soft_skills) {
+        if (Array.isArray(jd.soft_skills)) {
+          softSkillsArr = jd.soft_skills.filter((s): s is string => typeof s === 'string');
+        } else if (typeof jd.soft_skills === 'string') {
+          try {
+            const parsed = JSON.parse(jd.soft_skills);
+            softSkillsArr = Array.isArray(parsed) ? parsed.filter((s): s is string => typeof s === 'string') : [];
+          } catch { /* ignore */ }
+        }
+      }
+      
       // 合并硬技能和软技能
-      const jdSkills = [...(jd.hard_skills || []), ...(jd.soft_skills || [])];
+      const jdSkills = [...hardSkillsArr, ...softSkillsArr];
       
       // 技能匹配：用户技能与岗位技能的交集
       const matchedSkills = validSkills.filter((s: string) => 
@@ -113,9 +142,9 @@ export async function POST(request: NextRequest) {
         )
       );
       
-      // 计算匹配度
-      const skillMatchScore = jdSkills.length > 0 
-        ? Math.round((matchedSkills.length / jdSkills.length) * 100)
+      // 计算匹配度 - 基于用户技能匹配比例（而不是岗位技能）
+      const skillMatchScore = validSkills.length > 0 
+        ? Math.round((matchedSkills.length / validSkills.length) * 100)
         : 0;
 
       // 行业匹配加分
@@ -137,6 +166,9 @@ export async function POST(request: NextRequest) {
           s.toLowerCase().includes(js.toLowerCase())
         )
       );
+      
+      // 计算匹配分数
+      const totalMatchScore = skillMatchScore;
 
       return {
         id: jd.id,
