@@ -64,7 +64,7 @@ const features = [
     icon: <MessageSquare className="w-9 h-9" />,
     title: 'AI模拟面试',
     description: '模拟真实面试，获得即时反馈',
-    badge: '免费3次',
+    badge: '免费',
     badgeClass: 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200',
     buttonText: '去体验',
     buttonLink: '/assistant?bot=interview',
