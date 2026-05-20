@@ -1,15 +1,27 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getUserInfoFromRequest } from '@/lib/coze-stream';
 import { calculateSkillMatch, estimateSalaryRange } from '@/lib/matching-algorithm';
 
 const supabase = getSupabaseAdmin();
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    // ============================================================
+    // 安全检查：必须登录（从 cookie 读取 sb-access-token）
+    // ============================================================
+    const accessToken = request.cookies.get('sb-access-token');
+    if (!accessToken) {
+      return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    }
+
+    // 获取用户信息
+    const userInfo = await getUserInfoFromRequest(request);
+    const userId = userInfo?.userId;
+    
     if (!userId) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 });
+      return NextResponse.json({ error: '用户信息获取失败，请重新登录' }, { status: 401 });
     }
 
     const body = await request.json();

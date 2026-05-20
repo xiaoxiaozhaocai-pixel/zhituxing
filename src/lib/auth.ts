@@ -10,11 +10,22 @@ interface AuthResult {
 
 /**
  * JWT双认证中间件
- * 优先JWT Bearer Token，回退x-user-id兼容认证
+ * 1. 优先 sb-access-token cookie（Supabase Auth session）
+ * 2. 回退 JWT Bearer Token
+ * 3. 最后回退 x-user-id header
  * 排除test_前缀（安全后门已关闭）
  */
 export async function authenticateUser(request: NextRequest): Promise<AuthResult | null> {
-  // 1. 优先JWT Bearer Token
+  // 1. 优先从 cookie 读取 sb-access-token（Supabase Auth session）
+  const accessTokenCookie = request.cookies.get('sb-access-token');
+  if (accessTokenCookie?.value) {
+    const userId = await verifySupabaseSession(accessTokenCookie.value);
+    if (userId && !userId.startsWith('test_')) {
+      return { userId, authMethod: 'jwt' };
+    }
+  }
+
+  // 2. 回退 JWT Bearer Token
   const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
@@ -25,7 +36,7 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
     }
   }
 
-  // 2. 回退x-user-id header
+  // 3. 最后回退 x-user-id header
   const headerUserId = request.headers.get('x-user-id');
   if (headerUserId) {
     if (headerUserId.startsWith('test_')) return null;
@@ -77,6 +88,25 @@ function verifyJWT(token: string): string | null {
     if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
 
     return payload.sub || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 验证 Supabase Session Token
+ * 通过 Supabase Auth API 验证 access token 并返回 user_id
+ */
+async function verifySupabaseSession(accessToken: string): Promise<string | null> {
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    
+    if (error || !data.user) {
+      return null;
+    }
+    
+    return data.user.id;
   } catch {
     return null;
   }
