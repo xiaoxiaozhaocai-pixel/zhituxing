@@ -228,26 +228,29 @@ export default function HomePage() {
               全行业全岗位 AI 模拟甄选与职业能力发展平台
             </span>
           </div>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-[#1E293B] mb-4 leading-[1.2] tracking-tight anim-up-d2">
-            AI生成你的专属
-          </h2>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-[1.2] tracking-tight anim-up-d2">
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">大学四年职业规划</span>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.2] tracking-tight anim-up-d2">
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">3分钟，用AI找到你的职业方向</span>
           </h1>
-          <p className="text-lg md:text-xl text-[#64748B] max-w-2xl mx-auto mb-4 anim-up-d2">
-            <span className="text-[#1E293B] font-semibold">永久免费</span>{' '}<span className="text-slate-300">·</span>{' '}
-            <span className="text-[#1E293B] font-semibold">无次数限制</span>{' '}<span className="text-slate-300">·</span>{' '}
-            <span className="text-[#1E293B] font-semibold">30秒生成</span>
+          <p className="text-xl md:text-2xl text-[#64748B] max-w-3xl mx-auto mb-6 anim-up-d2">
+            基于<span className="text-[#1E293B] font-semibold">2万+真实岗位数据</span>，AI智能匹配你的职业发展路径
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 anim-up-d3">
-            <Link href="/career-planning">
-              <button className="glow-btn bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 text-white text-lg px-10 py-4 rounded-xl font-semibold transition-all duration-300">
-                立即免费生成我的规划
+          <p className="text-base text-[#94A3B8] mb-8 anim-up-d3">
+            已有 <span className="text-[#1E293B] font-semibold">10,000+</span> 用户正在使用 · 覆盖 <span className="text-[#1E293B] font-semibold">28</span> 个行业 · <span className="text-[#1E293B] font-semibold">20,000+</span> 真实岗位
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 anim-up-d3">
+            <Link href="/assessment">
+              <button className="glow-btn bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 text-white text-xl px-12 py-5 rounded-2xl font-bold transition-all duration-300 shadow-xl">
+                免费开始职业测评
+              </button>
+            </Link>
+            <Link href="/jobs">
+              <button className="px-10 py-4 rounded-xl font-semibold text-lg border-2 border-[#E2E8F0] text-[#1E293B] hover:border-blue-300 hover:bg-blue-50 transition-all duration-300">
+                浏览岗位百科
               </button>
             </Link>
           </div>
-          <p className="text-base text-[#64748B] anim-up-d4">
-            已帮助 <AnimatedNumber target={15680} />+ 大学生找到心仪工作
+          <p className="text-sm text-[#94A3B8] anim-up-d4">
+            ✨ 无需注册，免费体验
           </p>
         </div>
       </section>

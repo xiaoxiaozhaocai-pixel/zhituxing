@@ -10,6 +10,7 @@ import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
 import { MembershipProvider } from '@/contexts/MembershipContext';
 import InspectorWrapper from '@/components/InspectorWrapper';
+import FirstVisitModal from '@/components/FirstVisitModal';
 import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {

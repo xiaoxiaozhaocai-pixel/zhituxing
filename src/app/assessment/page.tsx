@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
 import {
   BarChart3, TrendingUp, Award, AlertTriangle, History, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Minus, Crown
+  ArrowUpRight, ArrowDownRight, Minus, Crown, Lock, LogIn
 } from 'lucide-react';
 import { useMembership } from '@/contexts/MembershipContext';
 import PaywallModal from '@/components/PaywallModal';
@@ -180,10 +181,41 @@ export default function AssessmentPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white pt-24 pb-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <AlertTriangle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">请先登录</h2>
-          <p className="text-gray-500">登录后即可查看测评详情</p>
+        <div className="max-w-4xl mx-auto px-4">
+          {/* 页面标题 */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">能力测评</h1>
+            </div>
+            <p className="text-gray-500 ml-13">全方位评估你的职业能力，发现提升空间</p>
+          </div>
+
+          {/* 登录提示卡片 */}
+          <Card className="border-purple-100 shadow-xl">
+            <CardContent className="py-16 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Lock className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录解锁完整功能</h3>
+              <p className="text-gray-500 mb-6">登录后可保存你的测评结果和职业画像，追踪能力成长曲线</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <Link href="/auth">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 shadow-lg">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    立即登录
+                  </Button>
+                </Link>
+                <Link href="/assistant">
+                  <Button variant="outline" className="w-full sm:w-auto px-6 py-6">
+                    先体验一下
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

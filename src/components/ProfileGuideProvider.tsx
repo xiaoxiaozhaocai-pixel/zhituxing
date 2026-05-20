@@ -61,7 +61,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
       {/* 全局顶部常驻引导条 */}
       <ProfileGuideBar hasProfile={hasProfile} />
       {/* 首次访问弹窗 */}
-      <FirstVisitModal hasProfile={hasProfile} />
+      <FirstVisitModal />
     </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,8 @@ import {
   GraduationCap,
   Lightbulb,
   AlertCircle,
+  Lock,
+  LogIn,
 } from 'lucide-react';
 import {
   parseSkillPortrait,
@@ -545,6 +548,48 @@ export default function SkillPortraitPage() {
       setSaving(false);
     }
   };
+
+  // 未登录提示
+  if (!user && !authLoading && !fetching) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-24 pb-16">
+        <div className="max-w-2xl mx-auto px-4">
+          {/* 页面标题 */}
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-purple-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30 mb-4">
+              <Target className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">AI技能画像</h1>
+            <p className="text-gray-500 mt-2">基于你的专业和求职方向，AI为你推荐最匹配的技能组合</p>
+          </div>
+
+          {/* 登录提示卡片 */}
+          <Card className="border-blue-200 shadow-xl">
+            <CardContent className="py-16 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Lock className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录解锁完整功能</h3>
+              <p className="text-gray-500 mb-6">登录后可保存技能画像，追踪学习进度，获取个性化推荐</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <Link href="/auth">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    立即登录
+                  </Button>
+                </Link>
+                <Link href="/jobs">
+                  <Button variant="outline" className="w-full sm:w-auto px-6 py-6">
+                    先浏览岗位
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (fetching || authLoading) {
     return (

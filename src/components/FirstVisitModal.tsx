@@ -2,101 +2,189 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Check } from 'lucide-react';
+import { Sparkles, Target, Briefcase, BookOpen, ChevronRight, ChevronLeft, X } from 'lucide-react';
 
 interface FirstVisitModalProps {
-  hasProfile: boolean;
   onComplete?: () => void;
 }
 
-export default function FirstVisitModal({ hasProfile, onComplete }: FirstVisitModalProps) {
+// 引导步骤配置
+const GUIDE_STEPS = [
+  {
+    id: 'assessment',
+    title: '职业能力测评',
+    description: '3分钟快速测评，AI分析你的职业性格、专业技能和发展潜力',
+    icon: Target,
+    color: 'from-purple-500 to-violet-600',
+    bgColor: 'bg-purple-100',
+    iconColor: 'text-purple-600',
+    link: '/assessment',
+    linkText: '开始测评',
+  },
+  {
+    id: 'match',
+    title: '智能岗位匹配',
+    description: '基于2万+真实岗位数据，AI为你匹配最适合的职业方向',
+    icon: Briefcase,
+    color: 'from-blue-500 to-cyan-600',
+    bgColor: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    link: '/match',
+    linkText: '查看匹配',
+  },
+  {
+    id: 'learning-path',
+    title: '个性化学习路径',
+    description: '根据目标岗位生成专属学习计划，追踪你的成长进度',
+    icon: BookOpen,
+    color: 'from-green-500 to-emerald-600',
+    bgColor: 'bg-green-100',
+    iconColor: 'text-green-600',
+    link: '/learning-path',
+    linkText: '查看路径',
+  },
+];
+
+export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
   const [show, setShow] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    // 如果已完善个人信息，不显示弹窗
-    if (hasProfile) {
-      return;
-    }
-
-    // 检查是否已显示过首次访问弹窗
-    const hasShown = localStorage.getItem('first_visit_modal_shown');
-    if (hasShown) {
+    // 检查是否已完成引导
+    const hasGuided = localStorage.getItem('first_visit_guided');
+    if (hasGuided) {
       return;
     }
 
     // 延迟显示，让页面先加载
     const timer = setTimeout(() => {
       setShow(true);
-    }, 1000);
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [hasProfile]);
+  }, []);
 
   const handleComplete = () => {
-    localStorage.setItem('first_visit_modal_shown', 'true');
+    localStorage.setItem('first_visit_guided', 'true');
     setShow(false);
     onComplete?.();
   };
 
   const handleSkip = () => {
-    localStorage.setItem('first_visit_modal_shown', 'true');
+    localStorage.setItem('first_visit_guided', 'true');
     setShow(false);
     onComplete?.();
+  };
+
+  const handleNext = () => {
+    if (currentStep < GUIDE_STEPS.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   if (!show) {
     return null;
   }
 
+  const step = GUIDE_STEPS[currentStep];
+  const StepIcon = step.icon;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+        {/* 关闭按钮 */}
+        <button
+          onClick={handleSkip}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-gray-100 transition-colors z-10"
+        >
+          <X className="w-5 h-5 text-gray-500" />
+        </button>
+
         {/* 顶部装饰 */}
-        <div className="bg-gradient-to-r from-purple-500 to-indigo-600 h-24 flex items-center justify-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-            <GraduationCap className="w-10 h-10 text-white" />
+        <div className={`bg-gradient-to-r ${step.color} h-32 flex items-center justify-center relative`}>
+          <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+            <StepIcon className="w-12 h-12 text-white" />
+          </div>
+          {/* 步骤指示器 */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            {GUIDE_STEPS.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentStep(index)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  index === currentStep
+                    ? 'bg-white scale-125'
+                    : index < currentStep
+                    ? 'bg-white/80'
+                    : 'bg-white/40 hover:bg-white/60'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
         {/* 内容 */}
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
-            欢迎使用职途星！
-          </h2>
-          <p className="text-gray-500 text-center mb-6">
-            30秒完善你的基本信息，获得100%精准的专属职业规划
-          </p>
-
-          {/* 优势列表 */}
-          <div className="space-y-3 mb-6">
-            {[
-              '自动匹配你的专业和年级',
-              '生成个性化的大学成长路径',
-              '推荐最适合你的岗位和薪资',
-              '无需重复输入，一次填写终身使用'
-            ].map((item, index) => (
-              <div key={index} className="flex items-center gap-3 text-sm">
-                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check className="w-3 h-3 text-green-600" />
-                </div>
-                <span className="text-gray-700">{item}</span>
-              </div>
-            ))}
+          {/* 步骤标签 */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${step.bgColor} ${step.iconColor}`}>
+              步骤 {currentStep + 1}/{GUIDE_STEPS.length}
+            </span>
           </div>
 
-          {/* 按钮 */}
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
+            {step.title}
+          </h2>
+          <p className="text-gray-500 text-center mb-8 leading-relaxed">
+            {step.description}
+          </p>
+
+          {/* 操作按钮 */}
           <div className="space-y-3">
-            <Link href="/profile/info" onClick={handleComplete}>
-              <button className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-500/30">
-                立即完善信息
+            {/* 主要 CTA */}
+            <Link href={step.link} onClick={handleComplete}>
+              <button className={`w-full py-4 bg-gradient-to-r ${step.color} text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2`}>
+                {step.linkText}
+                <ChevronRight className="w-5 h-5" />
               </button>
             </Link>
-            <button
-              onClick={handleSkip}
-              className="w-full py-2 text-gray-500 text-sm hover:text-gray-700 transition-colors"
-            >
-              先随便看看
-            </button>
+
+            {/* 导航按钮 */}
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={handlePrev}
+                disabled={currentStep === 0}
+                className={`flex items-center gap-1 text-sm ${
+                  currentStep === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                上一步
+              </button>
+
+              {currentStep < GUIDE_STEPS.length - 1 ? (
+                <button
+                  onClick={handleNext}
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  下一步
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleSkip}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  跳过引导
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

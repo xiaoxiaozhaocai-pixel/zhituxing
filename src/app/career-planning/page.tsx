@@ -21,7 +21,9 @@ import {
   BookOpen,
   Target,
   TrendingUp,
-  ListChecks
+  ListChecks,
+  Lock,
+  LogIn
 } from 'lucide-react';
 
 // 年级选项
@@ -68,10 +70,10 @@ export default function CareerPlanningPage() {
 
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const [showLoginPrompt, setShowLoginPrompt] = useState(true);
+
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth');
-    }
+    // 不再自动跳转，改为显示提示
   }, [user, authLoading, router]);
 
   // 读取用户个人信息
@@ -376,6 +378,53 @@ export default function CareerPlanningPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-[#722ED1] animate-spin" />
+      </div>
+    );
+  }
+
+  // 未登录提示
+  if (!user && !authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 pt-24 pb-16">
+        <div className="max-w-4xl mx-auto px-4">
+          {/* 页面标题 */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-6">
+              <Sparkles className="w-4 h-4" />
+              AI智能职业规划
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              生成你的专属职业规划
+            </h1>
+            <p className="text-gray-500 text-lg">
+              30秒完成，开启你的大学职业成长之路
+            </p>
+          </div>
+
+          {/* 登录提示卡片 */}
+          <Card className="border-purple-200 shadow-xl">
+            <CardContent className="py-16 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Lock className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录解锁完整功能</h3>
+              <p className="text-gray-500 mb-6">登录后可保存职业规划，追踪目标进展，获取个性化建议</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+                <Link href="/auth">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 shadow-lg">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    立即登录
+                  </Button>
+                </Link>
+                <Link href="/jobs">
+                  <Button variant="outline" className="w-full sm:w-auto px-6 py-6">
+                    先浏览岗位
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
