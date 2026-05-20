@@ -102,6 +102,12 @@ function AuthContent() {
     if (code) {
       setInviteCode(code);
     }
+    
+    // 处理 auth callback 返回的错误
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+    }
   }, [searchParams]);
 
   // 如果已登录，跳转到首页
@@ -241,6 +247,11 @@ function AuthContent() {
   };
 
   // 发送邮箱验证码
+  // 发送邮箱验证码
+  // 注意：Supabase 的 signInWithOtp 行为取决于 Dashboard 配置：
+  // 1. 如果开启了 "Confirm email"（Authentication > Settings > Email），新用户会收到确认链接而非OTP
+  // 2. 需要在 Supabase Dashboard 关闭 "Confirm email" 才能确保总是发送 OTP
+  // 3. 已验证的老用户会收到 OTP，新用户会收到确认链接（如果开启了 Confirm email）
   const handleSendOtp = async () => {
     setLoading(true);
     setError('');
@@ -248,15 +259,24 @@ function AuthContent() {
     try {
       const { error } = await getSupabase().auth.signInWithOtp({
         email: inputValue,
-        options: { shouldCreateUser: true }
+        options: { 
+          shouldCreateUser: true,
+          // 设置 emailRedirectTo 以便确认链接能正确回调
+          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
+        }
       });
       
       if (error) {
-        setError(getFriendlyError(error.message));
+        // 特殊处理：如果提示需要验证邮箱，说明用户已存在但未验证
+        if (error.message.includes('Email not confirmed') || error.message.includes('confirm')) {
+          setError('该邮箱已注册但未验证，请查收确认邮件或联系客服');
+        } else {
+          setError(getFriendlyError(error.message));
+        }
       } else {
         setStep('otp');
         setCountdown(60);
-        setSuccess('验证码已发送到您的邮箱，请查收');
+        setSuccess('验证码/确认链接已发送到您的邮箱，请查收。如果是新注册用户，请点击邮件中的链接完成验证。');
         setOtpDigits(['', '', '', '', '', '']);
       }
     } catch (err: any) {
