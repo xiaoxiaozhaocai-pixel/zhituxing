@@ -153,7 +153,6 @@ export default function ResumeOptimizePage() {
   }
 
   const isMember = quota?.is_member;
-  const remainingFree = Math.max(0, 3 - recentRecords.length);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -169,16 +168,9 @@ export default function ResumeOptimizePage() {
                 AI智能分析，量身定制简历优化建议
               </p>
             </div>
-            {isMember ? (
-              <Badge className="bg-gradient-to-r from-[#FF7D00] to-[#FF9A00] text-white px-4 py-2">
-                <Crown className="w-4 h-4 mr-1" />
-                会员专属·无限使用
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="px-4 py-2">
-                免费剩余 {remainingFree} 次
-              </Badge>
-            )}
+            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
+              完全免费使用
+            </Badge>
           </div>
         </div>
 
