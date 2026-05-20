@@ -8,19 +8,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
 import { usePathname, useRouter } from 'next/navigation';
 
+// 主导航项（精简为3项，高频使用功能）
 const mainNavItems = [
   { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
-  { name: '岗位匹配', href: '/match', icon: <Target className="w-4 h-4" /> },
-  { name: '能力测评', href: '/assessment', icon: <BarChart3 className="w-4 h-4" /> },
-  { name: '学习路径', href: '/learning-path', icon: <Route className="w-4 h-4" /> },
-  { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-4 h-4" /> },
+  { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
+  { name: 'AI助手', href: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
 ];
 
+// 更多导航项（低频使用功能，放入下拉菜单）
 const moreNavItems = [
+  { name: '岗位匹配', href: '/match', icon: <Target className="w-4 h-4" /> },
+  { name: '能力测评', href: '/assessment', icon: <BarChart3 className="w-4 h-4" /> },
   { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-4 h-4" /> },
   { name: '技能画像', href: '/skill-portrait', icon: <Target className="w-4 h-4" /> },
-  { name: '全行业岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
-  { name: 'AI职业助手', href: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
+  { name: '学习路径', href: '/learning-path', icon: <Route className="w-4 h-4" /> },
+  { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-4 h-4" /> },
   { name: '会员中心', href: '/membership', icon: <Crown className="w-4 h-4" /> },
   { name: '求职干货', href: '/resources', icon: <BookOpen className="w-4 h-4" /> },
   { name: '使用流程', href: '/guide', icon: <Compass className="w-4 h-4" /> },

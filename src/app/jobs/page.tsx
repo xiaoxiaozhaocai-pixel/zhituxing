@@ -13,7 +13,8 @@ import { Separator } from '@/components/ui/separator';
 import {
   Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
-  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle
+  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
+  MapPin, GraduationCap, Clock
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
@@ -38,6 +39,19 @@ const cities = [
 // 企业类型
 const companyTypes = ['全部', '民营企业', '国有企业', '外资企业', '上市公司', '事业单位', '创业公司'];
 
+// 学历要求选项
+const educationOptions = ['不限', '大专', '本科', '硕士', '博士'];
+
+// 工作经验选项
+const experienceOptions = ['不限', '应届生', '1-3年', '3-5年', '5年以上'];
+
+// 排序选项
+const sortOptions = [
+  { value: 'default', label: '默认排序' },
+  { value: 'salary_desc', label: '薪资最高' },
+  { value: 'created_desc', label: '最新发布' },
+];
+
 // 接口返回的岗位数据类型
 interface Job {
   id: number;
@@ -49,6 +63,9 @@ interface Job {
   salaryMin: number;
   salaryMax: number;
   skills: string[];
+  softSkills?: string[];
+  education?: string;
+  experience?: string;
   friendliness: string;
   isFreshFriendly: boolean;
   jdContent: string;
@@ -70,7 +87,10 @@ export default function JobsPage() {
     industry: '全部',
     city: '全国',
     companyType: '全部',
-    freshOnly: false
+    freshOnly: false,
+    education: '不限',
+    experience: '不限',
+    sortBy: 'default'
   });
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +135,15 @@ export default function JobsPage() {
       }
       if (filters.freshOnly) {
         params.set('freshOnly', 'true');
+      }
+      if (filters.education !== '不限') {
+        params.set('education', filters.education);
+      }
+      if (filters.experience !== '不限') {
+        params.set('experience', filters.experience);
+      }
+      if (filters.sortBy !== 'default') {
+        params.set('sortBy', filters.sortBy);
       }
       if (searchQuery) {
         params.set('keyword', searchQuery);
@@ -439,7 +468,7 @@ export default function JobsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {/* 行业筛选 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">行业</label>
@@ -468,6 +497,34 @@ export default function JobsPage() {
               </select>
             </div>
 
+            {/* 学历要求 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">学历要求</label>
+              <select
+                value={filters.education}
+                onChange={(e) => handleFilterChange('education', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+              >
+                {educationOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 工作经验 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">工作经验</label>
+              <select
+                value={filters.experience}
+                onChange={(e) => handleFilterChange('experience', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+              >
+                {experienceOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+
             {/* 企业类型 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">企业类型</label>
@@ -482,6 +539,20 @@ export default function JobsPage() {
               </select>
             </div>
 
+            {/* 排序 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">排序</label>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+              >
+                {sortOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
             {/* 应届生友好 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
@@ -492,7 +563,7 @@ export default function JobsPage() {
                   onChange={(e) => handleFilterChange('freshOnly', e.target.checked)}
                   className="w-4 h-4 text-[#165DFF] rounded border-gray-300 focus:ring-[#165DFF]"
                 />
-                <span className="ml-2 text-sm">仅显示应届友好岗位</span>
+                <span className="ml-2 text-sm whitespace-nowrap">应届友好</span>
               </label>
             </div>
           </div>
@@ -538,21 +609,34 @@ export default function JobsPage() {
                     )}
                   </div>
                   
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
-                    <p className="flex items-center gap-2">
-                      <span className="w-16 text-gray-500">薪资</span>
-                      <span className="font-bold text-[#FF7D00]">{job.salary}</span>
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <span className="w-16 text-gray-500">城市</span>
-                      <span>{job.city}</span>
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <span className="w-16 text-gray-500">企业</span>
-                      <span className="truncate">{job.companyType}</span>
-                    </p>
+                  {/* 薪资 - 突出显示 */}
+                  <div className="mb-3">
+                    <span className="text-lg font-bold text-[#FF7D00]">{job.salary}</span>
                   </div>
 
+                  {/* 信息标签行：城市 | 学历 | 经验 */}
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-4">
+                    {job.city && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                        {job.city}
+                      </span>
+                    )}
+                    {job.education && job.education !== '不限' && (
+                      <span className="flex items-center gap-1">
+                        <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
+                        {job.education}
+                      </span>
+                    )}
+                    {job.experience && job.experience !== '不限' && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        {job.experience}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 技能标签 */}
                   <div className="flex flex-wrap gap-1 mb-3">
                     {job.skills.slice(0, 3).map((tag, idx) => (
                       <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Loader2, Briefcase, FileText, MapPin, Clock, X, History, Eye } from 'lucide-react';
+import { Search, Loader2, Briefcase, FileText, MapPin, Clock, X, History, Eye, GraduationCap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface SearchResult {
@@ -16,6 +16,8 @@ interface SearchResult {
   summary?: string | null;
   category?: string;
   views?: number;
+  education?: string | null;
+  experience?: string | null;
 }
 
 interface SearchHistory {
@@ -265,22 +267,35 @@ function SearchContent() {
                       href={`/jobs/${job.id}`}
                       className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{job.jobTitle}</h3>
-                          <p className="text-gray-600 text-sm mt-1">{job.company}</p>
-                        </div>
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-gray-900">{job.jobTitle}</h3>
                         {job.salary && (
-                          <span className="text-orange-600 font-medium text-sm">
+                          <span className="text-orange-600 font-bold text-lg">
                             {job.salary}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                      {job.company && (
+                        <p className="text-gray-600 text-sm mb-2">{job.company}</p>
+                      )}
+                      {/* 信息标签行：城市 | 学历 | 经验 */}
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                         {job.location && (
                           <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
+                            <MapPin className="w-3.5 h-3.5 text-gray-400" />
                             {job.location}
+                          </span>
+                        )}
+                        {job.education && job.education !== '不限' && (
+                          <span className="flex items-center gap-1">
+                            <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
+                            {job.education}
+                          </span>
+                        )}
+                        {job.experience && job.experience !== '不限' && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                            {job.experience}
                           </span>
                         )}
                       </div>
