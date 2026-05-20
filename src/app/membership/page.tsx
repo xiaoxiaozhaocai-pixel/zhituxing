@@ -11,15 +11,25 @@ import {
 } from 'lucide-react';
 
 const BENEFITS = [
-  { icon: <Zap className="w-5 h-5" />, title: '无限AI对话', desc: '免费用户每日3次，会员不限次数', free: '3次/天', member: '无限' },
-  { icon: <BarChart3 className="w-5 h-5" />, title: '完整匹配分析', desc: '查看全量岗位匹配+薪资估算', free: '基础匹配', member: '完整分析' },
-  { icon: <Network className="w-5 h-5" />, title: '技能图谱全览', desc: '多层技能关系+深度路径探索', free: '1层关系', member: '无限层级' },
-  { icon: <Route className="w-5 h-5" />, title: '学习路径定制', desc: '个性化学习计划+进度追踪', free: '3条路径', member: '全部路径' },
-  { icon: <Download className="w-5 h-5" />, title: '测评报告下载', desc: '历史对比+成长曲线+PDF导出', free: '最近1次', member: '全部历史' },
-  { icon: <Sparkles className="w-5 h-5" />, title: '优先体验', desc: '新功能抢先使用', free: '-', member: '抢先体验' },
+  { icon: <Zap className="w-5 h-5" />, title: 'AI对话', desc: '免费用户每日3次，基础版50次，会员不限次数', free: '3次/天', basic: '50次/天', member: '无限' },
+  { icon: <BarChart3 className="w-5 h-5" />, title: '匹配分析', desc: '查看岗位匹配+薪资估算', free: '基础匹配', basic: '基础分析', member: '完整分析' },
+  { icon: <Network className="w-5 h-5" />, title: '技能图谱', desc: '技能关系+路径探索', free: '1层关系', basic: '1层关系', member: '无限层级' },
+  { icon: <Route className="w-5 h-5" />, title: '学习路径', desc: '个性化学习计划+进度追踪', free: '3条路径', basic: '5条路径', member: '全部路径' },
+  { icon: <Download className="w-5 h-5" />, title: '测评报告', desc: '历史对比+成长曲线+PDF导出', free: '最近1次', basic: '最近3次', member: '全部历史' },
+  { icon: <Sparkles className="w-5 h-5" />, title: '岗位搜索', desc: '搜索职位、查看详情', free: '无限制', basic: '无限制', member: '无限制' },
 ];
 
 const PLANS = [
+  {
+    key: 'monthly',
+    name: '基础版',
+    price: 9.9,
+    originalPrice: 19.9,
+    period: '月',
+    highlight: false,
+    tag: '入门首选',
+    features: ['30天基础体验', '每日50次AI对话', '岗位搜索无限制', '基础匹配分析', '1层技能图谱'],
+  },
   {
     key: 'semester',
     name: '学期会员',
@@ -122,6 +132,11 @@ export default function MembershipPage() {
                   <tr className="border-b border-gray-100">
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">功能</th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-gray-400">免费用户</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-blue-600">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="w-4 h-4" /> 基础版
+                      </div>
+                    </th>
                     <th className="text-center py-3 px-4 text-sm font-medium text-amber-600">
                       <div className="flex items-center justify-center gap-1">
                         <Crown className="w-4 h-4" /> 会员
@@ -143,6 +158,11 @@ export default function MembershipPage() {
                       </td>
                       <td className="py-3 px-4 text-center text-sm text-gray-400">{b.free}</td>
                       <td className="py-3 px-4 text-center">
+                        <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-600">
+                          <Check className="w-4 h-4" /> {b.basic}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
                         <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-600">
                           <Check className="w-4 h-4" /> {b.member}
                         </span>
@@ -156,7 +176,7 @@ export default function MembershipPage() {
         </Card>
 
         {/* 套餐选择 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {PLANS.map((plan) => (
             <Card
               key={plan.key}

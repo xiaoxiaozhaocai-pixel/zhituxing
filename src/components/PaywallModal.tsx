@@ -13,6 +13,14 @@ import { useMembership } from '@/contexts/MembershipContext';
 
 const PLANS = [
   {
+    key: 'monthly',
+    name: '基础版',
+    price: 9.9,
+    period: '月',
+    highlight: false,
+    features: ['30天基础体验', '每日50次AI对话', '岗位搜索无限制', '基础匹配分析'],
+  },
+  {
     key: 'semester',
     name: '学期会员',
     price: 29.9,
