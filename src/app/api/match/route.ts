@@ -1,10 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
-import { getUserInfoFromRequest } from '@/lib/coze-stream';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 import { calculateSkillMatch, estimateSalaryRange } from '@/lib/matching-algorithm';
-
-const supabase = getSupabaseAdmin();
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,13 +13,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 });
     }
 
-    // 获取用户信息
-    const userInfo = await getUserInfoFromRequest(request);
-    const userId = userInfo?.userId;
+    // 使用 Supabase Auth 验证 access token
+    const supabaseAuth = getSupabase();
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(accessToken.value);
     
-    if (!userId) {
-      return NextResponse.json({ error: '用户信息获取失败，请重新登录' }, { status: 401 });
+    if (authError || !user) {
+      console.error('[Match] Auth error:', authError?.message);
+      return NextResponse.json({ error: '登录已过期，请重新登录' }, { status: 401 });
     }
+    
+    const userId = user.id;
+    const supabase = getSupabaseAdmin();
 
     const body = await request.json();
     const { targetPosition } = body;

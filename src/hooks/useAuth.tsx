@@ -76,21 +76,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      // 从 localStorage 获取用户 ID
+      // 优先从 localStorage 获取用户 ID（快速恢复）
       const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
       const userId = storedUser ? JSON.parse(storedUser)?.id : null;
       
+      // 调用 /api/auth/me 验证登录状态
+      // 该接口会从 cookie (sb-access-token) 读取 Supabase Auth session
       const response = await fetch('/api/auth/me', {
-        headers: userId ? { 'x-user-id': userId } : {}
+        headers: userId ? { 'x-user-id': userId } : {},
+        credentials: 'include' // 确保发送 cookie
       });
       const data = await response.json();
       
       if (data.success && data.user) {
         setUser(data.user);
         setQuota(data.user.quota);
+        // 同步到 localStorage（用于下次快速恢复）
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
       } else {
         setUser(null);
         setQuota(null);
+        // 清除无效的 localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('user');
+        }
       }
     } catch (error) {
       console.error('检查登录状态失败:', error);

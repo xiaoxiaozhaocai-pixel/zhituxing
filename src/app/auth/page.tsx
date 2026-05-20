@@ -355,7 +355,8 @@ function AuthContent() {
           }
         }
         setSuccess('登录成功！');
-        setTimeout(() => router.push('/'), 500);
+        const redirect = searchParams.get('redirect');
+        setTimeout(() => router.push(redirect || '/'), 500);
       }
     } catch (err: any) {
       setError(err.message || '验证失败，请重试');
@@ -376,7 +377,8 @@ function AuthContent() {
       
       if (result.success) {
         setSuccess('登录成功！');
-        setTimeout(() => router.push('/'), 500);
+        const redirect = searchParams.get('redirect');
+        setTimeout(() => router.push(redirect || '/'), 500);
       } else {
         setError(getFriendlyError(result.message));
       }
