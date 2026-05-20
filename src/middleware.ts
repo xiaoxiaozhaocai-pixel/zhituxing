@@ -105,6 +105,21 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   }
 
   // --------------------------------------------------------
+  // 2.5 /assistant 和 /profile 路由保护：需要登录
+  // --------------------------------------------------------
+  if (pathname === '/assistant' || pathname.startsWith('/profile')) {
+    const accessToken = request.cookies.get('sb-access-token');
+    if (!accessToken) {
+      // 重定向到登录页，并带上回调 URL
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/auth';
+      loginUrl.searchParams.set('redirect', pathname);
+      const response = NextResponse.redirect(loginUrl);
+      return addSecurityHeaders(response);
+    }
+  }
+
+  // --------------------------------------------------------
   // 3. /api/chat 路由：登录检查 + 5次/分钟限流
   // --------------------------------------------------------
   if (pathname.startsWith('/api/chat')) {

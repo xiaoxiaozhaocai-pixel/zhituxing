@@ -19,7 +19,8 @@ async function checkAdmin(request: NextRequest): Promise<number | null> {
 export async function GET(request: NextRequest) {
   const adminId = await checkAdmin(request);
   if (!adminId) {
-    return NextResponse.json({ error: '无管理员权限' }, { status: 403 });
+    // 安全修复：返回 404 而非 403，避免暴露端点存在
+    return NextResponse.json({ error: '接口不存在' }, { status: 404 });
   }
 
   const { searchParams } = new URL(request.url);

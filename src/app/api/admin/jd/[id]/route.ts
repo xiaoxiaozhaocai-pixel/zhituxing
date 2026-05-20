@@ -20,8 +20,8 @@ export async function PUT(request: NextRequest) {
     const auth = await verifyAdmin(request);
     if (!auth.valid) {
       return NextResponse.json(
-        { code: 403, message: '无权限访问', data: null },
-        { status: 403 }
+        { code: 404, message: '接口不存在', data: null },
+        { status: 404 }
       );
     }
 

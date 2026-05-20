@@ -8,7 +8,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/', '/admin/', '/auth/'],
+        // 不暴露 admin 路径，只禁止 api 和内部路径
+        disallow: ['/api/', '/_next/', '/auth/'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

@@ -184,10 +184,17 @@ const MAX_PAGE_SIZE = 50;
 
 export async function GET(request: NextRequest) {
   try {
+    // ============================================================
+    // 安全检查：认证校验
+    // ============================================================
+    const accessToken = request.cookies.get('sb-access-token');
+    const isAuthenticated = !!accessToken;
+    
     const searchParams = request.nextUrl.searchParams;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    // pageSize 上限 50
-    const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
+    // 未登录用户限制每页最多10条
+    const maxPageSize = isAuthenticated ? MAX_PAGE_SIZE : 10;
+    const pageSize = Math.min(maxPageSize, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
     const industry = searchParams.get('industry') || '';
     const city = searchParams.get('city') || '';
     const freshOnly = searchParams.get('freshOnly') === 'true';
@@ -390,13 +397,32 @@ export async function GET(request: NextRequest) {
     
     const formattedData = data?.map(job => formatJob(job)) || [];
     
+    // ============================================================
+    // 安全处理：未登录用户过滤敏感字段
+    // ============================================================
+    const safeData = isAuthenticated 
+      ? formattedData 
+      : formattedData.map((job: any) => ({
+          id: job.id,
+          name: job.name,
+          industry: job.industry,
+          city: job.city,
+          salary: job.salary,
+          skills: job.skills?.slice(0, 3) || [], // 只显示前3个技能
+          education: job.education,
+          experience: job.experience,
+          isFreshFriendly: job.isFreshFriendly,
+          // 不包含 jdContent、softSkills、salaryMin、salaryMax 等详细字段
+        }));
+    
     const result = {
       success: true,
-      data: formattedData,
-      total: count || 0,
+      data: safeData,
+      // 未登录用户隐藏真实总数
+      total: isAuthenticated ? (count || 0) : Math.min(count || 0, 50),
       page,
       pageSize,
-      totalPages: Math.ceil((count || 0) / pageSize)
+      totalPages: isAuthenticated ? Math.ceil((count || 0) / pageSize) : undefined
     };
     
     setCachedResult(cacheKey, result);

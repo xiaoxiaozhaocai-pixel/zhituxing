@@ -17,7 +17,7 @@ async function checkAdmin(request: NextRequest): Promise<boolean> {
 // GET: 查询技能分类/关系/可视化数据
 export async function GET(request: NextRequest) {
   if (!(await checkAdmin(request))) {
-    return NextResponse.json({ error: '无权限' }, { status: 403 });
+    return NextResponse.json({ error: '接口不存在' }, { status: 404 });
   }
 
   const { searchParams } = new URL(request.url);
