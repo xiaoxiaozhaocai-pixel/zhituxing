@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -191,6 +191,19 @@ const bots: BotConfig[] = [
 ];
 
 export default function AssistantPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
+      </div>
+    }>
+      <AssistantContent />
+    </Suspense>
+  );
+}
+
+function AssistantContent() {
+  const searchParams = useSearchParams();
   const [activeBot, setActiveBot] = useState('jobs');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -208,6 +221,9 @@ export default function AssistantPage() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isUserNearBottomRef = useRef(true);
+  
+  // 待发送的 query 参数（从 URL 解析）
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
 
   // SSE流式解析hook
   const [streamState, streamActions] = useSSEStream();
@@ -298,6 +314,14 @@ export default function AssistantPage() {
       }]);
     }
   }, [activeBot, currentBot.welcomeMessage]);
+
+  // 解析 URL query 参数（只执行一次）
+  useEffect(() => {
+    const query = searchParams.get('query');
+    if (query && !pendingQuery) {
+      setPendingQuery(query);
+    }
+  }, [searchParams, pendingQuery]);
 
   // 解析JD链接
   const handleFetchJd = async (url: string) => {
@@ -621,6 +645,17 @@ export default function AssistantPage() {
   const handleQuickQuestion = (question: string) => {
     sendMessage(question);
   };
+
+  // 处理 pendingQuery（从 URL 解析的岗位分析请求）
+  useEffect(() => {
+    if (pendingQuery && !isLoading && messages.length > 0) {
+      const queryToSend = pendingQuery;
+      setPendingQuery(null); // 清空，只发送一次
+      setTimeout(() => {
+        sendMessage(queryToSend);
+      }, 500);
+    }
+  }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
     setActiveBot(botId);

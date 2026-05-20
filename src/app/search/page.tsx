@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Loader2, Briefcase, FileText, MapPin, Clock, X, History, Eye, GraduationCap } from 'lucide-react';
+import { Search, Loader2, Briefcase, FileText, MapPin, Clock, X, History, Eye, GraduationCap, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SkeletonCardList } from '@/components/SkeletonCard';
 
@@ -142,6 +142,35 @@ function SearchContent() {
     }
   };
 
+  // 生成岗位分析提示词（搜索页简化版）
+  const generateJobAnalysisPrompt = (job: SearchResult): string => {
+    const jobTitle = job.jobTitle || '未知岗位';
+    
+    return `请帮我深度分析以下岗位：
+
+岗位名称：${jobTitle}
+${job.location ? `工作城市：${job.location}` : ''}
+${job.salary ? `薪资范围：${job.salary}` : ''}
+${job.education ? `学历要求：${job.education}` : ''}
+${job.experience ? `经验要求：${job.experience}` : ''}
+${job.company ? `公司：${job.company}` : ''}
+
+请从以下几个方面进行深度分析：
+1. 岗位前景与发展空间
+2. 技能要求解读与学习建议
+3. 面试准备重点
+4. 薪资谈判技巧
+5. 职业发展路径建议`;
+  };
+
+  // AI深度分析跳转
+  const handleAiAnalysis = (job: SearchResult, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const prompt = generateJobAnalysisPrompt(job);
+    router.push(`/assistant?query=${encodeURIComponent(prompt)}`);
+  };
+
   const handleTabChange = (tab: 'all' | 'jobs' | 'articles') => {
     setActiveTab(tab);
     if (query) {
@@ -269,15 +298,16 @@ function SearchContent() {
                 </h2>
                 <div className="space-y-3">
                   {results.jobs.map((job) => (
-                    <Link
+                    <div
                       key={job.id}
-                      href={`/jobs/${job.id}`}
-                      className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
+                      className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold text-gray-900">{job.jobTitle}</h3>
+                        <Link href={`/jobs/${job.id}`} className="flex-1">
+                          <h3 className="font-semibold text-gray-900 hover:text-[#165DFF]">{job.jobTitle}</h3>
+                        </Link>
                         {job.salary && (
-                          <span className="text-orange-600 font-bold text-lg">
+                          <span className="text-orange-600 font-bold text-lg ml-2">
                             {job.salary}
                           </span>
                         )}
@@ -286,27 +316,38 @@ function SearchContent() {
                         <p className="text-gray-600 text-sm mb-2">{job.company}</p>
                       )}
                       {/* 信息标签行：城市 | 学历 | 经验 */}
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                            {job.location}
-                          </span>
-                        )}
-                        {job.education && job.education !== '不限' && (
-                          <span className="flex items-center gap-1">
-                            <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
-                            {job.education}
-                          </span>
-                        )}
-                        {job.experience && job.experience !== '不限' && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-gray-400" />
-                            {job.experience}
-                          </span>
-                        )}
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                          {job.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                              {job.location}
+                            </span>
+                          )}
+                          {job.education && job.education !== '不限' && (
+                            <span className="flex items-center gap-1">
+                              <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
+                              {job.education}
+                            </span>
+                          )}
+                          {job.experience && job.experience !== '不限' && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5 text-gray-400" />
+                              {job.experience}
+                            </span>
+                          )}
+                        </div>
+                        {/* AI深度分析按钮 */}
+                        <button
+                          onClick={(e) => handleAiAnalysis(job, e)}
+                          className="flex items-center gap-1 text-[#165DFF] text-sm hover:text-blue-700 transition-colors font-medium hover:underline"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          <span>AI分析</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               </div>

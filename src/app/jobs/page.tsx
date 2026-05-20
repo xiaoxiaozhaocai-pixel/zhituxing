@@ -374,9 +374,36 @@ export default function JobsPage() {
     fetchJobs();
   };
 
-  // 跳转到AI助手
-  const handleJobClick = (jobName: string) => {
-    router.push(`/assistant?query=${encodeURIComponent(jobName)}`);
+  // 生成岗位分析提示词
+  const generateJobAnalysisPrompt = (job: Job): string => {
+    const cleanJobName = job.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim();
+    const skillsText = job.skills?.length > 0 ? job.skills.join('、') : '暂无';
+    const softSkillsText = job.softSkills && job.softSkills.length > 0 ? job.softSkills.join('、') : '暂无';
+    
+    return `请帮我深度分析以下岗位：
+
+岗位名称：${cleanJobName}
+工作城市：${job.city || '不限'}
+薪资范围：${job.salary || '面议'}
+学历要求：${job.education || '不限'}
+经验要求：${job.experience || '不限'}
+行业领域：${job.industry || '综合'}
+技能要求：${skillsText}
+软技能要求：${softSkillsText}
+${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdContent.length > 500 ? '...' : ''}` : ''}
+
+请从以下几个方面进行深度分析：
+1. 岗位前景与发展空间
+2. 技能要求解读与学习建议
+3. 面试准备重点
+4. 薪资谈判技巧
+5. 职业发展路径建议`;
+  };
+
+  // 跳转到AI助手（带完整岗位信息）
+  const handleJobClick = (job: Job) => {
+    const prompt = generateJobAnalysisPrompt(job);
+    router.push(`/assistant?query=${encodeURIComponent(prompt)}`);
   };
 
   // 分页
@@ -683,7 +710,7 @@ export default function JobsPage() {
                     className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleJobClick(job.name);
+                      handleJobClick(job);
                     }}
                   >
                     <Sparkles className="w-4 h-4" />
@@ -993,9 +1020,8 @@ export default function JobsPage() {
                 <Button
                   className="bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
                   onClick={() => {
-                    const jobName = selectedJob.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim();
                     setSelectedJob(null);
-                    handleJobClick(jobName);
+                    handleJobClick(selectedJob);
                   }}
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
