@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Loader2, Gift, AlertCircle, CheckCircle } from 'lucide-react';
+import { getSupabase } from '@/lib/supabase';
+import { ArrowLeft, Loader2, Gift, AlertCircle, CheckCircle, Mail } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
 
@@ -56,6 +57,13 @@ function AuthContent() {
   const [phoneError, setPhoneError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [codeError, setCodeError] = useState('');
+  
+  // 邮箱验证码登录相关状态
+  const [authMode, setAuthMode] = useState<'password' | 'otp'>('password');
+  const [email, setEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [emailError, setEmailError] = useState('');
   
   // 实时验证手机号
   const validatePhone = (value: string) => {
@@ -151,6 +159,13 @@ function AuthContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // 验证码登录模式
+    if (mode === 'login' && authMode === 'otp') {
+      await handleVerifyOtp();
+      return;
+    }
+    
+    // 密码登录/注册模式
     // 表单验证
     const isPhoneValid = validatePhone(phone);
     const isPasswordValid = validatePassword(password);
@@ -193,6 +208,70 @@ function AuthContent() {
     }
   };
 
+  // 发送邮箱验证码
+  const handleSendOtp = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setError('请输入有效的邮箱地址');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const { error } = await getSupabase().auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true }
+      });
+      
+      if (error) {
+        setError(ERROR_MESSAGES[error.message] || error.message);
+      } else {
+        setOtpSent(true);
+        setCountdown(60);
+        setSuccess('验证码已发送到您的邮箱，请查收');
+      }
+    } catch (err: any) {
+      setError(err.message || '发送失败，请重试');
+    }
+    
+    setLoading(false);
+  };
+
+  // 验证邮箱验证码
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) {
+      setError('请输入6位验证码');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const { data, error } = await getSupabase().auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email'
+      });
+      
+      if (error) {
+        if (error.message.includes('invalid') || error.message.includes('expired')) {
+          setError('验证码无效或已过期，请重新发送');
+        } else {
+          setError(ERROR_MESSAGES[error.message] || error.message);
+        }
+      } else {
+        router.push('/');
+      }
+    } catch (err: any) {
+      setError(err.message || '验证失败，请重试');
+    }
+    
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -225,8 +304,33 @@ function AuthContent() {
               </div>
             )}
 
+            {/* 登录方式切换 - 仅在登录 Tab 显示 */}
+            {mode === 'login' && (
+              <div className="flex gap-2 mb-4">
+                <Button
+                  type="button"
+                  variant={authMode === 'password' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => { setAuthMode('password'); setError(''); setSuccess(''); }}
+                  className="flex-1"
+                >
+                  密码登录
+                </Button>
+                <Button
+                  type="button"
+                  variant={authMode === 'otp' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => { setAuthMode('otp'); setError(''); setSuccess(''); }}
+                  className="flex-1"
+                >
+                  验证码登录
+                </Button>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-              {/* 手机号 */}
+              {/* 手机号 - 注册模式或密码登录模式显示 */}
+              {(mode === 'register' || authMode === 'password') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   手机号
@@ -252,6 +356,7 @@ function AuthContent() {
                   </p>
                 )}
               </div>
+              )}
 
               {/* 注册模式需要昵称 */}
               {mode === 'register' && (
@@ -311,7 +416,8 @@ function AuthContent() {
                 </div>
               )}
 
-              {/* 密码 */}
+              {/* 密码 - 注册模式或密码登录模式显示 */}
+              {(mode === 'register' || authMode === 'password') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {mode === 'register' ? '设置密码' : '密码'}
@@ -336,6 +442,53 @@ function AuthContent() {
                   </p>
                 )}
               </div>
+              )}
+
+              {/* 验证码登录表单 */}
+              {mode === 'login' && authMode === 'otp' && (
+                <>
+                  {/* 邮箱输入 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">邮箱</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="email"
+                        placeholder="请输入邮箱"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={otpSent}
+                        required
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleSendOtp}
+                        disabled={loading || countdown > 0 || !email}
+                        className="whitespace-nowrap"
+                      >
+                        {countdown > 0 ? `${countdown}s` : otpSent ? '重新发送' : '发送验证码'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* 验证码输入 */}
+                  {otpSent && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">验证码</label>
+                      <Input
+                        type="text"
+                        placeholder="请输入6位验证码"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        maxLength={6}
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">验证码已发送到您的邮箱，请查收</p>
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* 登录模式：验证码登录选项 */}
               {mode === 'login' && (
@@ -385,16 +538,16 @@ function AuthContent() {
               {/* 提交按钮 */}
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (mode === 'login' && authMode === 'otp' && otpCode.length !== 6)}
                 className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90 text-white py-6 h-auto text-lg"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {mode === 'login' ? '登录中...' : '注册中...'}
+                    {mode === 'login' ? (authMode === 'otp' ? '验证中...' : '登录中...') : '注册中...'}
                   </>
                 ) : (
-                  mode === 'login' ? '登录' : '注册'
+                  mode === 'login' ? (authMode === 'otp' ? '验证登录' : '登录') : '注册'
                 )}
               </Button>
             </form>
