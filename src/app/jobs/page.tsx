@@ -601,7 +601,8 @@ export default function JobsPage() {
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-base font-bold text-[#165DFF] group-hover:text-[#165DFF]/80 transition-colors line-clamp-1">
-                      {job.name}
+                      {/* 去掉标题中的括号城市信息，避免与 city 字段冲突 */}
+                      {job.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim()}
                     </h3>
                     {job.isFreshFriendly && (
                       <Badge className="bg-green-100 text-green-700 text-xs whitespace-nowrap rounded-md px-2 py-0.5 border border-green-200 font-medium">

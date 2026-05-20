@@ -139,18 +139,10 @@ function AnimatedNumber({ target, duration = 2000 }: { target: number; duration?
   const [started, setStarted] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
+  // 组件挂载后立即开始动画（不再等待 IntersectionObserver）
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started) {
-          setStarted(true);
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [started]);
+    setStarted(true);
+  }, []);
 
   useEffect(() => {
     if (!started) return;

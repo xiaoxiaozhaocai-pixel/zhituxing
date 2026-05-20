@@ -225,7 +225,7 @@ function AuthContent() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {/* 手机号 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -326,7 +326,6 @@ function AuthContent() {
                     validatePassword(value);
                   }}
                   onBlur={() => password && validatePassword(password)}
-                  minLength={6}
                   required
                   className={passwordError ? 'border-red-500 focus:border-red-500' : ''}
                 />

@@ -50,9 +50,18 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
+    // 检查是否只在客户端
+    if (typeof window === 'undefined') return;
+
     // 检查是否已完成引导
     const hasGuided = localStorage.getItem('first_visit_guided');
-    if (hasGuided) {
+    if (hasGuided === 'true') {
+      return;
+    }
+
+    // 只在首页显示弹窗
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/' && currentPath !== '') {
       return;
     }
 
@@ -65,13 +74,17 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
   }, []);
 
   const handleComplete = () => {
-    localStorage.setItem('first_visit_guided', 'true');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('first_visit_guided', 'true');
+    }
     setShow(false);
     onComplete?.();
   };
 
   const handleSkip = () => {
-    localStorage.setItem('first_visit_guided', 'true');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('first_visit_guided', 'true');
+    }
     setShow(false);
     onComplete?.();
   };
@@ -185,6 +198,14 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
                 </button>
               )}
             </div>
+
+            {/* 跳过按钮 - 始终显示 */}
+            <button
+              onClick={handleSkip}
+              className="w-full mt-4 py-2 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              跳过，直接使用
+            </button>
           </div>
         </div>
       </div>

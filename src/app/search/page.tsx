@@ -99,12 +99,18 @@ function SearchContent() {
     }
   }, [isAuthenticated]);
 
+  // 使用 ref 防止重复执行
+  const initialSearchDone = useState(false);
+  
   useEffect(() => {
-    if (initialQuery) {
+    // 只在首次加载时执行搜索
+    if (initialQuery && !initialSearchDone[0]) {
+      initialSearchDone[1](true);
       performSearch(initialQuery, activeTab);
     }
     fetchHistories();
-  }, [initialQuery, activeTab, performSearch, fetchHistories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery]); // 只在 initialQuery 变化时执行
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
