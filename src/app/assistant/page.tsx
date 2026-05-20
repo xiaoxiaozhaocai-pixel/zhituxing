@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle, Link as LinkIcon, XCircle } from 'lucide-react';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv } from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -215,6 +216,17 @@ function AssistantContent() {
   const [jdText, setJdText] = useState('');
   const [jdLoading, setJdLoading] = useState(false);
   const [jdError, setJdError] = useState('');
+  
+  // 登录弹窗状态
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  // 面试模式状态
+  const [interviewMode, setInterviewMode] = useState<'text' | 'video' | null>(null);
+  
+  // 文件上传状态
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const { user, quota, refreshQuota } = useAuth();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -351,12 +363,112 @@ function AssistantContent() {
     }
   };
 
+  // 文件上传处理
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // 文件大小检查（10MB）
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('文件大小不能超过10MB');
+      return;
+    }
+    
+    // 支持的文件格式
+    const supportedFormats = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
+    const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!supportedFormats.includes(fileExt)) {
+      toast.error('支持的格式：PDF、DOC、DOCX、TXT、JPG、PNG');
+      return;
+    }
+    
+    try {
+      // 读取文件内容
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setUploadedFile({ name: file.name, content: content.slice(0, 5000) }); // 限制内容长度
+        toast.success(`已上传：${file.name}`);
+      };
+      reader.onerror = () => {
+        toast.error('文件读取失败');
+      };
+      
+      // 根据文件类型选择读取方式
+      if (['.txt'].includes(fileExt)) {
+        reader.readAsText(file);
+      } else {
+        // PDF/DOCX 等，尝试作为文本读取（可能乱码，但能提取部分内容）
+        reader.readAsText(file);
+      }
+    } catch {
+      toast.error('文件处理失败');
+    }
+    
+    // 清空 input，允许重复上传同一文件
+    e.target.value = '';
+  };
+
+  // 删除已上传文件
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+  };
+
+  // 面试模式选择处理
+  const handleInterviewModeSelect = (mode: 'text' | 'video') => {
+    if (mode === 'video') {
+      toast.info('视频面试功能即将上线，敬请期待！');
+      return;
+    }
+    setInterviewMode(mode);
+    // 添加系统提示消息
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: '✅ 已进入文字面试模式\n\n请提供以下信息开始面试：\n1. 您应聘的岗位名称\n2. 岗位JD（可直接粘贴或上传文件）\n3. 您的简历（可选）\n\n我将以专业面试官的身份，为您模拟真实面试场景。',
+      timestamp: new Date()
+    }]);
+  };
+
+  // 退出面试模式
+  const handleExitInterviewMode = () => {
+    setInterviewMode(null);
+  };
+
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
 
+    // ============================================================
+    // 问题1修复：先检查登录状态，未登录则弹出登录弹窗
+    // ============================================================
+    try {
+      const meResponse = await fetch('/api/auth/me');
+      const meData = await meResponse.json();
+      
+      if (!meData.success) {
+        // 未登录，弹出登录弹窗
+        setShowLoginModal(true);
+        return;
+      }
+    } catch {
+      // 网络错误，也弹出登录弹窗
+      setShowLoginModal(true);
+      return;
+    }
+
+    // ============================================================
+    // 问题4修复：如果有上传文件，拼接文件内容
+    // ============================================================
+    let finalMessage = messageText;
+    if (uploadedFile) {
+      finalMessage = `【上传文件：${uploadedFile.name}】\n${uploadedFile.content}\n\n【用户消息】\n${messageText}`;
+      // 发送后清空文件
+      setUploadedFile(null);
+    }
+
     const userMessage: Message = {
       role: 'user',
-      content: messageText,
+      content: finalMessage,
       timestamp: new Date()
     };
 
@@ -367,7 +479,7 @@ function AssistantContent() {
     // 埋点：发送对话消息
     AnalyticsTracker.track(AnalyticsEvent.CHAT_SEND, {
       bot_type: activeBot,
-      message_length: messageText.length,
+      message_length: finalMessage.length,
     });
 
     try {
@@ -538,10 +650,17 @@ function AssistantContent() {
             try {
               const parsed = JSON.parse(dataLine);
 
+              // ============================================================
+              // 问题3修复：过滤 [DONE] 标记
+              // ============================================================
               if (parsed.type === 'text' && parsed.content) {
+                // 过滤 [DONE] 标记
+                const cleanContent = parsed.content.replace(/\[DONE\]/gi, '');
+                if (!cleanContent) continue;
+                
                 clearTimeout(firstTokenTimer);
                 clearTimeout(timeoutTimer);
-                fullContent += parsed.content;
+                fullContent += cleanContent;
                 const displayContent = stripDataMarkers(fullContent);
                 setMessages(prev => {
                   const newMsgs = [...prev];
@@ -572,9 +691,13 @@ function AssistantContent() {
             } catch {
               // 兼容非JSON纯文本
               if (dataLine && !dataLine.startsWith('{')) {
+                // 过滤 [DONE] 标记
+                const cleanData = dataLine.replace(/\[DONE\]/gi, '');
+                if (!cleanData.trim()) continue;
+                
                 clearTimeout(firstTokenTimer);
                 clearTimeout(timeoutTimer);
-                fullContent += dataLine;
+                fullContent += cleanData;
                 const displayContent = stripDataMarkers(fullContent);
                 setMessages(prev => {
                   const newMsgs = [...prev];
@@ -759,7 +882,8 @@ function AssistantContent() {
                   <button
                     key={i}
                     onClick={() => handleQuickQuestion(q)}
-                    className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                    disabled={isLoading}
+                    className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                   >
                     {q}
                   </button>
@@ -834,6 +958,51 @@ function AssistantContent() {
             ))}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* ============================================================ */}
+          {/* 问题2修复：面试模式选择 UI */}
+          {/* ============================================================ */}
+          {activeBot === 'interview' && !interviewMode && messages.length <= 1 && (
+            <div className="p-4 border-b bg-gradient-to-r from-green-50 to-white">
+              <p className="text-sm font-medium text-gray-700 mb-3">选择面试模式：</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleInterviewModeSelect('text')}
+                  disabled={isLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-green-500 hover:text-white rounded-xl transition-all disabled:opacity-50 group"
+                >
+                  <FileText className="w-5 h-5 text-gray-500 group-hover:text-white" />
+                  <span className="font-medium">文字面试</span>
+                </button>
+                <button
+                  onClick={() => handleInterviewModeSelect('video')}
+                  disabled={isLoading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-green-500 hover:text-white rounded-xl transition-all disabled:opacity-50 group"
+                >
+                  <Video className="w-5 h-5 text-gray-500 group-hover:text-white" />
+                  <span className="font-medium">视频面试</span>
+                  <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-600 rounded-full group-hover:bg-white/20 group-hover:text-white">即将上线</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 面试模式已选中提示 */}
+          {activeBot === 'interview' && interviewMode && (
+            <div className="px-4 py-2 bg-green-50 border-b border-green-100 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-green-700">
+                <CheckCircle className="w-4 h-4" />
+                <span>当前模式：<strong>{interviewMode === 'text' ? '文字面试' : '视频面试'}</strong></span>
+              </div>
+              <button
+                onClick={handleExitInterviewMode}
+                className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+              >
+                <X className="w-3 h-3" />
+                退出
+              </button>
+            </div>
+          )}
 
           {/* 粘贴JD链接 */}
           {(activeBot === 'interview' || activeBot === 'jd_assistant') && (
@@ -925,6 +1094,24 @@ function AssistantContent() {
             )}
             
             <div className="flex gap-3">
+              {/* ============================================================ */}
+              {/* 问题4修复：文件上传按钮 */}
+              {/* ============================================================ */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                className="flex-shrink-0 w-12 h-12 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50"
+                title="上传文件（PDF/DOC/TXT/图片）"
+              >
+                <Paperclip className="w-5 h-5 text-gray-400 hover:text-blue-500" />
+              </button>
               <Input
                 ref={inputRef}
                 placeholder={`问${currentBot.name}...`}
@@ -946,6 +1133,21 @@ function AssistantContent() {
                 )}
               </Button>
             </div>
+            
+            {/* 已上传文件显示 */}
+            {uploadedFile && (
+              <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <Paperclip className="w-4 h-4 text-blue-500" />
+                <span className="text-sm text-blue-700 truncate max-w-[200px]">{uploadedFile.name}</span>
+                <button
+                  onClick={handleRemoveFile}
+                  className="ml-auto text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            
             <p className="text-xs text-gray-400 mt-2 text-center">
               AI 辅助建议，仅供参考
             </p>
@@ -1005,6 +1207,38 @@ function AssistantContent() {
                   </Link>
                 </div>
               </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================ */}
+      {/* 问题1修复：登录弹窗 */}
+      {/* ============================================================ */}
+      <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Tv className="w-6 h-6 text-[#165DFF]" />
+              登录后使用AI助手
+            </DialogTitle>
+            <DialogDescription className="space-y-4 pt-3">
+              <p className="text-gray-600">登录后可保存对话记录和获取个性化推荐</p>
+              <div className="flex flex-col gap-3">
+                <Link href="/auth?redirect=/assistant" onClick={() => setShowLoginModal(false)}>
+                  <Button className="w-full bg-gradient-to-r from-[#165DFF] to-[#0E4FD9] hover:opacity-90 text-white h-12 text-base">
+                    立即登录
+                  </Button>
+                </Link>
+                <Link href="/auth?redirect=/assistant" onClick={() => setShowLoginModal(false)}>
+                  <Button variant="outline" className="w-full h-12 text-base">
+                    注册新账号
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-xs text-gray-400 text-center mt-2">
+                登录即表示同意《用户协议》和《隐私政策》
+              </p>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
