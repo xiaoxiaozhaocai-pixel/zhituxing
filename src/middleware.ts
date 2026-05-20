@@ -107,7 +107,7 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   // --------------------------------------------------------
   // 2.5 /assistant 和 /profile 路由保护：需要登录
   // --------------------------------------------------------
-  if (pathname === '/assistant' || pathname.startsWith('/profile')) {
+  if (pathname.startsWith('/assistant') || pathname.startsWith('/profile')) {
     const accessToken = request.cookies.get('sb-access-token');
     if (!accessToken) {
       // 重定向到登录页，并带上回调 URL
