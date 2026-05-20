@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { isMember, getUserQuota } from '@/lib/quota';
 
 /**
@@ -60,15 +60,14 @@ export async function POST(request: NextRequest) {
     const isEmail = loginIdentifier.includes('@');
     const loginEmail = isEmail ? loginIdentifier : `${loginIdentifier}@phone.temp`;
     
-    // 使用 ANON_KEY 客户端进行认证操作
-    const supabaseAuth = getSupabase();
-    // 使用 SERVICE_ROLE_KEY 客户端进行管理操作
-    const supabaseAdmin = getSupabaseAdmin();
+    // 使用 SERVICE_ROLE_KEY 客户端进行所有操作（更可靠）
+    // 注意：虽然 signInWithPassword 通常用 ANON_KEY，但服务端用 SERVICE_ROLE_KEY 更稳定
+    const supabase = getSupabaseAdmin();
 
     // ==================== 密码登录 ====================
     if (password) {
-      // 使用 Supabase Auth signInWithPassword（ANON_KEY）
-      const { data: authData, error: authError } = await supabaseAuth.auth.signInWithPassword({
+      // 使用 Supabase Auth signInWithPassword
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: password,
       });
@@ -86,8 +85,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '登录失败，请重试' }, { status: 500 });
       }
 
-      // 查询 user_profiles 获取用户详细信息（SERVICE_ROLE_KEY）
-      const { data: profile, error: profileError } = await supabaseAdmin
+      // 查询 user_profiles 获取用户详细信息
+      const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', authData.user.id)
@@ -96,7 +95,7 @@ export async function POST(request: NextRequest) {
       // 如果 user_profiles 不存在，创建一个
       let userProfile = profile;
       if (!profile) {
-        const { data: newProfile, error: insertError } = await supabaseAdmin
+        const { data: newProfile, error: insertError } = await supabase
           .from('user_profiles')
           .insert({
             user_id: authData.user.id,
@@ -150,8 +149,8 @@ export async function POST(request: NextRequest) {
 
     // ==================== 验证码登录 ====================
     if (code) {
-      // 使用 Supabase Auth verifyOtp（ANON_KEY）
-      const { data: authData, error: authError } = await supabaseAuth.auth.verifyOtp({
+      // 使用 Supabase Auth verifyOtp
+      const { data: authData, error: authError } = await supabase.auth.verifyOtp({
         email: loginEmail,
         token: code,
         type: 'email',  // 或 'sms' 如果是手机验证码
@@ -169,8 +168,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '验证失败，请重试' }, { status: 500 });
       }
 
-      // 查询 user_profiles 获取用户详细信息（SERVICE_ROLE_KEY）
-      const { data: profile } = await supabaseAdmin
+      // 查询 user_profiles 获取用户详细信息
+      const { data: profile } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', authData.user.id)
@@ -179,7 +178,7 @@ export async function POST(request: NextRequest) {
       // 如果 user_profiles 不存在，创建一个
       let userProfile = profile;
       if (!profile) {
-        const { data: newProfile, error: insertError } = await supabaseAdmin
+        const { data: newProfile, error: insertError } = await supabase
           .from('user_profiles')
           .insert({
             user_id: authData.user.id,
