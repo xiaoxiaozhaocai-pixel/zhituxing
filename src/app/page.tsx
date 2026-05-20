@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { SITE_URL } from '@/lib/config';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Check, Target, TrendingUp, Gift, Users, Star, ThumbsUp, ChevronRight, Sparkles, Briefcase, MessageSquare, GraduationCap, Calendar, ArrowRight } from 'lucide-react';
+import { AnimatedNumber } from '@/components/AnimatedNumber';
 
 const hotTags = [
   'Java开发', 'Python开发', '前端开发', '产品经理', 'UI设计',
@@ -132,33 +133,6 @@ const userReviews = [
     likes: 89
   }
 ];
-
-// 动态数字滚动组件
-function AnimatedNumber({ target, duration = 2000 }: { target: number; duration?: number }) {
-  const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(false);
-  const ref = useRef<HTMLSpanElement>(null);
-
-  // 组件挂载后立即开始动画（不再等待 IntersectionObserver）
-  useEffect(() => {
-    setStarted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!started) return;
-    const startTime = Date.now();
-    const step = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [started, target, duration]);
-
-  return <span ref={ref}>{count.toLocaleString()}</span>;
-}
 
 export default function HomePage() {
   const router = useRouter();
