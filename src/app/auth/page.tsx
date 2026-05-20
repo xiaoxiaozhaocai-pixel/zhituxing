@@ -7,9 +7,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Loader2, Gift } from 'lucide-react';
+import { ArrowLeft, Loader2, Gift, AlertCircle, CheckCircle } from 'lucide-react';
 
 type AuthMode = 'login' | 'register';
+
+// 错误码映射：将技术错误转换为友好中文提示
+const ERROR_MESSAGES: Record<string, string> = {
+  'Invalid login credentials': '手机号或密码错误，请重新输入',
+  'User already registered': '该手机号已注册，请直接登录',
+  'Password should be at least 6 characters': '密码长度不能少于6位',
+  'Phone not confirmed': '请先验证手机号',
+  'Invalid phone number': '请输入正确的手机号',
+  'Invalid verification code': '验证码错误，请重新输入',
+  'Code expired': '验证码已过期，请重新获取',
+  'Too many requests': '操作过于频繁，请稍后再试',
+  'Network error': '网络错误，请检查网络连接',
+};
+
+// 将错误信息转换为友好提示
+const getFriendlyError = (error: string): string => {
+  // 直接匹配
+  if (ERROR_MESSAGES[error]) return ERROR_MESSAGES[error];
+  // 部分匹配
+  for (const [key, value] of Object.entries(ERROR_MESSAGES)) {
+    if (error.toLowerCase().includes(key.toLowerCase())) return value;
+  }
+  // 默认提示
+  return '操作失败，请稍后重试';
+};
 
 function AuthContent() {
   const router = useRouter();
@@ -26,6 +51,53 @@ function AuthContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+  // 表单验证状态
+  const [phoneError, setPhoneError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [codeError, setCodeError] = useState('');
+  
+  // 实时验证手机号
+  const validatePhone = (value: string) => {
+    if (!value) {
+      setPhoneError('');
+      return true;
+    }
+    if (!/^1[3-9]\d{9}$/.test(value)) {
+      setPhoneError('请输入正确的11位手机号');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+  
+  // 实时验证密码
+  const validatePassword = (value: string) => {
+    if (!value) {
+      setPasswordError('');
+      return true;
+    }
+    if (value.length < 6) {
+      setPasswordError('密码长度不能少于6位');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+  
+  // 实时验证验证码
+  const validateCode = (value: string) => {
+    if (!value) {
+      setCodeError('');
+      return true;
+    }
+    if (!/^\d{6}$/.test(value)) {
+      setCodeError('请输入6位数字验证码');
+      return false;
+    }
+    setCodeError('');
+    return true;
+  };
 
   // 从URL获取邀请码
   useEffect(() => {
@@ -53,8 +125,7 @@ function AuthContent() {
   }, [countdown]);
 
   const handleSendCode = async () => {
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
-      setError('请输入正确的手机号');
+    if (!validatePhone(phone)) {
       return;
     }
 
@@ -73,12 +144,31 @@ function AuthContent() {
         setCode(result.code);
       }
     } else {
-      setError(result.message);
+      setError(getFriendlyError(result.message));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 表单验证
+    const isPhoneValid = validatePhone(phone);
+    const isPasswordValid = validatePassword(password);
+    
+    if (!isPhoneValid || !isPasswordValid) {
+      return;
+    }
+    
+    if (mode === 'register') {
+      if (!code) {
+        setCodeError('请输入验证码');
+        return;
+      }
+      if (!validateCode(code)) {
+        return;
+      }
+    }
+    
     setLoading(true);
     setError('');
 
@@ -87,16 +177,6 @@ function AuthContent() {
     if (mode === 'login') {
       result = await login(phone, password, code);
     } else {
-      if (!password) {
-        setError('请设置密码');
-        setLoading(false);
-        return;
-      }
-      if (!code) {
-        setError('请输入验证码');
-        setLoading(false);
-        return;
-      }
       result = await register(phone, password, code, nickname, inviteCode);
     }
 
@@ -109,7 +189,7 @@ function AuthContent() {
         router.push('/');
       }, 1000);
     } else {
-      setError(result.message);
+      setError(getFriendlyError(result.message));
     }
   };
 
@@ -155,10 +235,22 @@ function AuthContent() {
                   type="tel"
                   placeholder="请输入手机号"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPhone(value);
+                    validatePhone(value);
+                  }}
+                  onBlur={() => validatePhone(phone)}
                   maxLength={11}
                   required
+                  className={phoneError ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {phoneError && (
+                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {phoneError}
+                  </p>
+                )}
               </div>
 
               {/* 注册模式需要昵称 */}
@@ -184,23 +276,36 @@ function AuthContent() {
                     验证码
                   </label>
                   <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="请输入验证码"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                      maxLength={6}
-                      required
-                      className="flex-1"
-                    />
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        placeholder="请输入验证码"
+                        value={code}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '');
+                          setCode(value);
+                          validateCode(value);
+                        }}
+                        onBlur={() => code && validateCode(code)}
+                        maxLength={6}
+                        required
+                        className={codeError ? 'border-red-500 focus:border-red-500' : ''}
+                      />
+                      {codeError && (
+                        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {codeError}
+                        </p>
+                      )}
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleSendCode}
-                      disabled={loading || countdown > 0}
+                      disabled={loading || countdown > 0 || !!phoneError}
                       className="whitespace-nowrap"
                     >
-                      {countdown > 0 ? `${countdown}s` : '获取验证码'}
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : countdown > 0 ? `${countdown}s` : '获取验证码'}
                     </Button>
                   </div>
                 </div>
@@ -215,10 +320,22 @@ function AuthContent() {
                   type="password"
                   placeholder={mode === 'register' ? '至少6位密码' : '请输入密码'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPassword(value);
+                    validatePassword(value);
+                  }}
+                  onBlur={() => password && validatePassword(password)}
                   minLength={6}
                   required
+                  className={passwordError ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {passwordError && (
+                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {passwordError}
+                  </p>
+                )}
               </div>
 
               {/* 登录模式：验证码登录选项 */}
@@ -252,14 +369,16 @@ function AuthContent() {
 
               {/* 错误提示 */}
               {error && (
-                <div className="text-sm text-red-600 text-center bg-red-50 p-2 rounded">
+                <div className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-lg flex items-center justify-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
                   {error}
                 </div>
               )}
 
               {/* 成功提示 */}
               {success && (
-                <div className="text-sm text-green-600 text-center bg-green-50 p-2 rounded">
+                <div className="text-sm text-green-600 text-center bg-green-50 p-3 rounded-lg flex items-center justify-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
                   {success}
                 </div>
               )}
@@ -273,7 +392,7 @@ function AuthContent() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    处理中...
+                    {mode === 'login' ? '登录中...' : '注册中...'}
                   </>
                 ) : (
                   mode === 'login' ? '登录' : '注册'
@@ -292,6 +411,9 @@ function AuthContent() {
                       setMode('register');
                       setError('');
                       setSuccess('');
+                      setPhoneError('');
+                      setPasswordError('');
+                      setCodeError('');
                     }}
                     className="text-[#165DFF] hover:underline font-medium"
                   >
@@ -308,6 +430,9 @@ function AuthContent() {
                       setError('');
                       setSuccess('');
                       setCode('');
+                      setPhoneError('');
+                      setPasswordError('');
+                      setCodeError('');
                     }}
                     className="text-[#165DFF] hover:underline font-medium"
                   >

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Loader2, Briefcase, FileText, MapPin, Clock, X, History, Eye, GraduationCap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { SkeletonCardList } from '@/components/SkeletonCard';
 
 interface SearchResult {
   id: string;
@@ -240,8 +241,8 @@ function SearchContent() {
       {/* Results */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <div className="space-y-6">
+            <SkeletonCardList count={6} />
           </div>
         ) : searched ? (
           <>

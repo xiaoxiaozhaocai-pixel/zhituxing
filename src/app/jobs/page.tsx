@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
+import { SkeletonCardList } from '@/components/SkeletonCard';
 
 // 行业列表（与数据库值对应）
 const industries = [
@@ -581,8 +582,8 @@ export default function JobsPage() {
 
         {/* Jobs Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <SkeletonCardList count={8} />
           </div>
         ) : jobs.length === 0 ? (
           <div className="text-center py-20 text-gray-500">

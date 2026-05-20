@@ -192,3 +192,36 @@ select:focus {
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400;
 }
+
+/* Section 间距工具类 */
+.section-padding {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+
+.section-padding-sm {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .section-padding {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .section-padding-sm {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* 按钮最小触摸区域 */
+@media (max-width: 768px) {
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+  }
+}

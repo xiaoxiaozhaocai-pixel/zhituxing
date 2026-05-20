@@ -216,7 +216,7 @@ export default function HomePage() {
       {/* ================================================
            HERO — 白底 + 大标题
       ================================================ */}
-      <section className="relative pt-32 pb-20 bg-gradient-to-b from-blue-50/80 via-white to-white overflow-hidden">
+      <section className="relative pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20 bg-gradient-to-b from-blue-50/80 via-white to-white overflow-hidden">
         {/* 装饰圆 */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-violet-100/30 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4" />
@@ -228,7 +228,7 @@ export default function HomePage() {
               全行业全岗位 AI 模拟甄选与职业能力发展平台
             </span>
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.2] tracking-tight anim-up-d2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-[1.2] tracking-tight anim-up-d2">
             <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">3分钟，用AI找到你的职业方向</span>
           </h1>
           <p className="text-xl md:text-2xl text-[#64748B] max-w-3xl mx-auto mb-6 anim-up-d2">
@@ -258,9 +258,9 @@ export default function HomePage() {
       {/* ================================================
            CORE FEATURES — 3 白色卡片
       ================================================ */}
-      <section className="py-20 bg-white">
+      <section className="section-padding-sm bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((f, i) => (
               <div
                 key={i}
@@ -293,7 +293,7 @@ export default function HomePage() {
       {/* ================================================
            HOT TAGS — 热门岗位
       ================================================ */}
-      <section className="py-16 bg-[#F8FAFC]">
+      <section className="section-padding-sm bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-[#1E293B] flex items-center gap-2">
@@ -324,7 +324,7 @@ export default function HomePage() {
       {/* ================================================
            AI ASSISTANT — 免费体验
       ================================================ */}
-      <section className="py-20 bg-white">
+      <section className="section-padding-sm bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl md:text-3xl font-bold text-[#1E293B] mb-3 flex items-center justify-center gap-2">
@@ -407,7 +407,7 @@ export default function HomePage() {
       {/* ================================================
            CAREER PLANNING ADVANTAGES
       ================================================ */}
-      <section className="py-20 bg-white">
+      <section className="section-padding-sm bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl md:text-3xl font-bold text-[#1E293B] mb-14 text-center flex items-center justify-center gap-2">
             <Sparkles className="w-6 h-6 text-violet-500" />
@@ -483,7 +483,7 @@ export default function HomePage() {
       {/* ================================================
            REFERRAL BANNER
       ================================================ */}
-      <section className="py-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 relative overflow-hidden">
+      <section className="py-10 sm:py-12 md:py-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-20 -left-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
