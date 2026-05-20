@@ -1,15 +1,15 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { getUserQuota } from '@/lib/quota';
 
 /**
  * 注册接口 - 使用 Supabase Auth
  * 
  * 1. 验证验证码
  * 2. 使用 supabase.auth.signUp 创建用户
- * 3. 创建 user_profiles 记录
- * 4. 设置认证 cookie
+ * 3. 设置认证 cookie
+ * 
+ * 不查询/创建 user_profiles 表
  */
 
 // 设置认证 Cookie（使用 Set-Cookie header 确保生效）
@@ -40,7 +40,7 @@ function setAuthCookies(
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, password, code, nickname, invite_code } = await request.json();
+    const { phone, password, code, nickname } = await request.json();
 
     // 验证必填项
     if (!phone || !password || !code) {
@@ -99,20 +99,6 @@ export async function POST(request: NextRequest) {
       .update({ used: true })
       .eq('id', verification.id);
 
-    // 检查用户是否已存在（user_profiles）
-    const { data: existingProfile } = await supabase
-      .from('user_profiles')
-      .select('user_id')
-      .eq('phone', phone)
-      .maybeSingle();
-
-    if (existingProfile) {
-      return NextResponse.json(
-        { error: '该手机号已注册，请直接登录' },
-        { status: 400 }
-      );
-    }
-
     // 使用 Supabase Auth 注册
     const userEmail = `${phone}@phone.temp`; // 虚拟邮箱
     const userNickname = nickname || `用户${phone.slice(-4)}`;
@@ -140,49 +126,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '注册失败，请重试' }, { status: 500 });
     }
 
-    // 创建 user_profiles 记录
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .insert({
-        user_id: authData.user.id,
-        phone: phone,
-        email: null,
-        nickname: userNickname,
-        user_type: 'free',
-        invite_code: `U${phone.slice(-6)}`,
-      });
-
-    if (profileError) {
-      console.error('创建用户档案失败:', profileError);
-      // 不回滚 auth 用户，让用户可以登录后重试
-    }
-
-    // 处理邀请码（如果有）
-    if (invite_code) {
-      const { data: inviter } = await supabase
-        .from('user_profiles')
-        .select('user_id')
-        .eq('invite_code', invite_code)
-        .maybeSingle();
-      
-      if (inviter) {
-        // 创建邀请记录
-        await supabase
-          .from('invites')
-          .insert({
-            inviter_id: inviter.user_id,
-            invitee_id: authData.user.id,
-            invite_code: invite_code,
-            reward_quota: 3,
-            reward_days: 7,
-            reward_status: 'claimed',
-            claimed_at: new Date().toISOString()
-          });
-      }
-    }
-
-    const quota = await getUserQuota(authData.user.id);
-
     // 创建响应并设置 cookie
     const response = NextResponse.json({
       success: true,
@@ -191,8 +134,7 @@ export async function POST(request: NextRequest) {
         id: authData.user.id,
         phone: phone,
         nickname: userNickname,
-        is_member: false,
-        quota
+        is_member: false
       },
       session: {
         access_token: authData.session.access_token,
