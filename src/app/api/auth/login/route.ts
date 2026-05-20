@@ -25,12 +25,13 @@ export async function POST(request: NextRequest) {
         .eq('phone', loginPhone)
         .single();
 
+      // 安全：统一错误信息，不暴露用户是否存在
       if (error || !user) {
-        return NextResponse.json({ error: '用户不存在，请先注册' }, { status: 401 });
+        return NextResponse.json({ error: '邮箱或密码错误' }, { status: 401 });
       }
 
       if (user.password !== password) {
-        return NextResponse.json({ error: '密码错误' }, { status: 401 });
+        return NextResponse.json({ error: '邮箱或密码错误' }, { status: 401 });
       }
 
       const isVip = await isMember(user.id);

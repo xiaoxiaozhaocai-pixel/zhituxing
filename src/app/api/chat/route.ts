@@ -166,11 +166,33 @@ const SSE_HEADERS = {
 
 export async function POST(request: NextRequest) {
   try {
+    // ============================================================
+    // 安全检查：必须登录
+    // ============================================================
+    const accessToken = request.cookies.get('sb-access-token');
+    if (!accessToken) {
+      return new Response(
+        JSON.stringify({ error: '请先登录' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { message, botType, conversationId } = await request.json();
 
     if (!message || typeof message !== 'string') {
       return new Response(
         JSON.stringify({ error: '消息内容不能为空' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============================================================
+    // 安全检查：消息长度限制 2000 字
+    // ============================================================
+    const MAX_MESSAGE_LENGTH = 2000;
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `消息长度不能超过${MAX_MESSAGE_LENGTH}字` }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }

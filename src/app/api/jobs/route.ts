@@ -121,15 +121,47 @@ function formatJob(job: any, relevance?: number) {
   return base;
 }
 
+// 关键词白名单：允许中英文、数字、空格、常用符号
+const KEYWORD_REGEX = /^[\w\s\u4e00-\u9fa5\-+,.]+$/;
+const MAX_KEYWORD_LENGTH = 50;
+const MAX_PAGE_SIZE = 50;
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '20');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    // pageSize 上限 50
+    const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
     const industry = searchParams.get('industry') || '';
     const city = searchParams.get('city') || '';
     const freshOnly = searchParams.get('freshOnly') === 'true';
     const keyword = searchParams.get('keyword') || '';
+    
+    // ============================================================
+    // 安全校验：关键词白名单
+    // ============================================================
+    if (keyword) {
+      if (keyword.length > MAX_KEYWORD_LENGTH) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 0
+        });
+      }
+      if (!KEYWORD_REGEX.test(keyword)) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 0
+        });
+      }
+    }
     
     const offset = (page - 1) * pageSize;
 
@@ -311,14 +343,15 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
     });
   } catch (error: any) {
-    console.error('API错误:', JSON.stringify({
-      message: error?.message,
-      stack: error?.stack?.substring(0, 500),
-      name: error?.name
-    }));
-    return NextResponse.json({ 
-      error: '服务器错误',
-      details: error?.message 
-    }, { status: 500 });
+    // 安全处理：不暴露错误详情，返回空结果
+    console.error('[jobs] 内部错误:', error?.message);
+    return NextResponse.json({
+      success: true,
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      totalPages: 0
+    });
   }
 }
