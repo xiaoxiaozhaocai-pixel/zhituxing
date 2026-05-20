@@ -14,7 +14,7 @@ import {
   Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
   User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
-  MapPin, GraduationCap, Clock
+  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
@@ -93,6 +93,7 @@ export default function JobsPage() {
     experience: '不限',
     sortBy: 'default'
   });
+  const [filterOpen, setFilterOpen] = useState(false); // 移动端筛选区折叠状态
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -468,7 +469,36 @@ export default function JobsPage() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        {/* 移动端折叠按钮 */}
+        <div className="md:hidden mb-4">
+          <button
+            onClick={() => setFilterOpen(!filterOpen)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+              <span className="font-medium">筛选条件</span>
+              {/* 已选筛选条件数量 badge */}
+              {(() => {
+                const count = [
+                  filters.industry !== '全部',
+                  filters.city !== '全国',
+                  filters.education !== '不限',
+                  filters.experience !== '不限',
+                  filters.companyType !== '全部',
+                  filters.freshOnly,
+                ].filter(Boolean).length;
+                return count > 0 ? (
+                  <span className="bg-[#165DFF] text-white text-xs px-2 py-0.5 rounded-full">{count}</span>
+                ) : null;
+              })()}
+            </div>
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${filterOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        {/* 筛选区域 - 桌面端始终显示，移动端根据状态显示 */}
+        <div className={`${filterOpen ? 'block' : 'hidden'} md:block bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {/* 行业筛选 */}
             <div>

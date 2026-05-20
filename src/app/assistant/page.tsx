@@ -874,6 +874,21 @@ export default function AssistantPage() {
               </div>
             ) : null}
             
+            {/* 未登录提示条 */}
+            {!user && (
+              <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-3">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm">登录后可保存对话记录和获取个性化推荐</span>
+                </div>
+                <Link href="/auth">
+                  <Button size="sm" variant="outline" className="text-amber-700 border-amber-300 hover:bg-amber-100">
+                    立即登录
+                  </Button>
+                </Link>
+              </div>
+            )}
+            
             <div className="flex gap-3">
               <Input
                 ref={inputRef}

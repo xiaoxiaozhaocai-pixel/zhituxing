@@ -357,10 +357,23 @@ function SearchContent() {
             {totalResults === 0 && (
               <div className="text-center py-20">
                 <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500 mb-4">未找到相关结果</p>
-                <p className="text-gray-400 text-sm">
-                  试试其他关键词，或浏览我们的分类
-                </p>
+                <p className="text-gray-700 text-lg font-medium mb-2">没有找到相关结果</p>
+                <p className="text-gray-500 mb-6">试试其他关键词，或者看看大家都在搜什么</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {['前端开发', '产品经理', '数据分析', 'Java', 'Python', '实习', '校招', '运营'].map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('q', tag);
+                        window.location.href = url.toString();
+                      }}
+                      className="px-4 py-2 bg-gray-100 hover:bg-blue-50 hover:text-blue-600 rounded-full text-sm text-gray-600 transition-colors border border-gray-200 hover:border-blue-200"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </>

@@ -112,25 +112,36 @@ const whyChooseUs = [
 
 const userReviews = [
   {
-    name: '张三',
-    school: '某985大学',
-    content: '计算机专业大三，生成的职业规划报告非常详细，帮我明确了前端开发的学习路径，免费次数完全够用！',
+    name: '陈思远',
+    school: '华中科技大学',
+    major: '计算机科学与技术',
+    content: '职途星的AI简历优化功能太实用了！它不仅能指出我简历里的逻辑漏洞，还能根据目标岗位自动调整关键词。投了十几家，面试邀请率明显提升。',
     rating: 5,
     likes: 128
   },
   {
-    name: '李四',
-    school: '某211大学',
-    content: '之前不知道自己适合什么岗位，用职途星测了一下，推荐的HR岗位真的很适合我，已经拿到offer了！',
+    name: '林晓',
+    school: '南京大学',
+    major: '新闻传播学',
+    content: '作为一个文科生，对技术岗位一直很模糊。通过职业测评和AI模拟面试，我清晰了解了自己的优势和适合的方向。现在已成功转行产品运营。',
     rating: 5,
     likes: 256
   },
   {
-    name: '王五',
-    school: '某普通本科',
-    content: '学期会员才29.9元，6个月无限用AI服务，比线下求职咨询便宜太多了！',
+    name: '赵一凡',
+    school: '西安电子科技大学',
+    major: '电子信息工程',
+    content: '考研还是就业？这个问题困扰了我整个大三。职途星的AI顾问帮我分析了行业趋势和个人能力模型，最终选择直接就业，现在回头看决策非常正确。',
     rating: 5,
     likes: 89
+  },
+  {
+    name: '周雅文',
+    school: '上海外国语大学',
+    major: '英语',
+    content: '最让我惊喜的是岗位匹配功能。我原本只敢投基础岗位，但系统根据我的语言能力和项目经历，推荐了几个海外市场岗位，居然拿到了面试！',
+    rating: 5,
+    likes: 167
   }
 ];
 
@@ -425,7 +436,7 @@ export default function HomePage() {
                     </div>
                     <div>
                       <p className="font-semibold text-[#1E293B] text-sm">{review.name}</p>
-                      <p className="text-xs text-[#64748B]">{review.school}</p>
+                      <p className="text-xs text-[#64748B]">{review.school}{review.major ? ` · ${review.major}` : ''}</p>
                     </div>
                   </div>
                   <button
