@@ -5,7 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { getSupabase } from '@/lib/supabase';
 import {
   Bell,
   Crown,
@@ -28,6 +31,8 @@ import {
   X,
   AlertCircle,
   Pencil,
+  Smartphone,
+  Mail,
   Check,
   Bookmark,
   Target,
@@ -764,10 +769,53 @@ function SettingsPanel({ user, onLogout }: { user: any; onLogout: () => void }) 
     nickname: user?.nickname || '',
     phone: user?.phone || ''
   });
+  
+  // 账号绑定状态
+  const [showBindEmail, setShowBindEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [bindLoading, setBindLoading] = useState(false);
+  const [bindMessage, setBindMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleSave = async () => {
     // 保存设置逻辑
     alert('设置保存成功！');
+  };
+  
+  // 绑定邮箱
+  const handleBindEmail = async () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!newEmail || !emailRegex.test(newEmail)) {
+      setBindMessage({ type: 'error', text: '请输入有效的邮箱地址' });
+      return;
+    }
+    
+    setBindLoading(true);
+    setBindMessage(null);
+    
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      
+      if (error) {
+        setBindMessage({ type: 'error', text: error.message });
+      } else {
+        setBindMessage({ type: 'success', text: '确认邮件已发送到您的邮箱，请点击邮件中的链接完成绑定' });
+        setShowBindEmail(false);
+        setNewEmail('');
+      }
+    } catch (err: any) {
+      setBindMessage({ type: 'error', text: err.message || '绑定失败' });
+    } finally {
+      setBindLoading(false);
+    }
+  };
+  
+  // 脱敏显示
+  const maskPhone = (phone: string) => phone?.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') || '';
+  const maskEmail = (email: string) => {
+    if (!email) return '';
+    const [name, domain] = email.split('@');
+    return `${name.slice(0, 2)}***@${domain}`;
   };
 
   return (
@@ -792,7 +840,7 @@ function SettingsPanel({ user, onLogout }: { user: any; onLogout: () => void }) 
             <label className="block text-sm font-medium text-gray-700 mb-1">手机号</label>
             <input
               type="text"
-              value={formData.phone?.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}
+              value={maskPhone(formData.phone)}
               disabled
               className="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-500"
             />
@@ -800,6 +848,79 @@ function SettingsPanel({ user, onLogout }: { user: any; onLogout: () => void }) 
           <Button onClick={handleSave} className="bg-[#165DFF] hover:bg-[#0d4acc]">
             保存修改
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* 账号绑定区域 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>账号绑定</CardTitle>
+          <p className="text-sm text-gray-500">绑定邮箱后可使用验证码登录</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* 手机号绑定状态 */}
+          <div className="flex items-center justify-between py-2 border-b">
+            <div className="flex items-center gap-3">
+              <Smartphone className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="font-medium text-gray-900">手机号</p>
+                <p className="text-sm text-gray-500">
+                  {user?.phone ? maskPhone(user.phone) : '未绑定'}
+                </p>
+              </div>
+            </div>
+            {user?.phone ? (
+              <Badge className="bg-green-100 text-green-700">已绑定</Badge>
+            ) : (
+              <span className="text-xs text-gray-400">即将开放</span>
+            )}
+          </div>
+          
+          {/* 邮箱绑定状态 */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-3">
+              <Mail className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="font-medium text-gray-900">邮箱</p>
+                <p className="text-sm text-gray-500">
+                  {user?.email ? maskEmail(user.email) : '未绑定'}
+                </p>
+              </div>
+            </div>
+            {user?.email ? (
+              <Badge className="bg-green-100 text-green-700">已绑定</Badge>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => setShowBindEmail(true)}>
+                绑定邮箱
+              </Button>
+            )}
+          </div>
+          
+          {/* 绑定邮箱弹窗 */}
+          {showBindEmail && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
+              <h4 className="font-medium">绑定邮箱</h4>
+              <Input
+                type="email"
+                placeholder="请输入邮箱地址"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+              {bindMessage && (
+                <p className={`text-sm ${bindMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                  {bindMessage.text}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <Button onClick={handleBindEmail} disabled={bindLoading}>
+                  {bindLoading ? '发送中...' : '发送确认邮件'}
+                </Button>
+                <Button variant="outline" onClick={() => { setShowBindEmail(false); setNewEmail(''); setBindMessage(null); }}>
+                  取消
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

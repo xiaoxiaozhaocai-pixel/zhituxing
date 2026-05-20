@@ -263,6 +263,18 @@ function AuthContent() {
           setError(ERROR_MESSAGES[error.message] || error.message);
         }
       } else {
+        // 检查用户绑定状态，设置提示
+        const { data: { user } } = await getSupabase().auth.getUser();
+        if (user) {
+          // 如果用户没有手机号但有邮箱，提示绑定手机号
+          if (!user.phone && user.email) {
+            localStorage.setItem('bind_prompt', 'phone');
+          }
+          // 如果用户没有邮箱但有手机号，提示绑定邮箱
+          else if (!user.email && user.phone) {
+            localStorage.setItem('bind_prompt', 'email');
+          }
+        }
         router.push('/');
       }
     } catch (err: any) {
