@@ -218,7 +218,7 @@ export default function JdSubmitPage() {
           </h1>
           <p className="text-gray-500 mt-2">
             上传1条真实校招JD，审核通过即可获得
-            <span className="text-[#FF7D00] font-semibold mx-1">3次免费AI次数+7天会员</span>
+            <span className="text-[#FF7D00] font-semibold mx-1">完全免费使用所有AI功能</span>
           </p>
         </div>
 
