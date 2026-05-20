@@ -11,7 +11,41 @@ import { isMember, getUserQuota } from '@/lib/quota';
  * 2. 验证码登录：使用 supabase.auth.verifyOtp
  * 
  * 用户信息从 user_profiles 表获取
+ * 登录成功后设置 httpOnly cookie
  */
+
+// ============================================================
+// 设置认证 Cookie
+// ============================================================
+function setAuthCookies(
+  response: NextResponse,
+  accessToken: string,
+  refreshToken: string,
+  expiresAt: number
+): void {
+  const expiresIn = expiresAt - Math.floor(Date.now() / 1000);
+  
+  // 计算过期时间（30天，与 refresh token 一致）
+  const maxAge = 30 * 24 * 60 * 60;
+  
+  // 设置 access token cookie
+  response.cookies.set('sb-access-token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: expiresIn, // access token 过期时间
+  });
+  
+  // 设置 refresh token cookie
+  response.cookies.set('sb-refresh-token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: maxAge, // refresh token 30天
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,7 +118,8 @@ export async function POST(request: NextRequest) {
       const isVip = await isMember(authData.user.id);
       const quota = await getUserQuota(authData.user.id);
 
-      return NextResponse.json({
+      // 创建响应并设置 cookie
+      const response = NextResponse.json({
         success: true,
         message: '登录成功',
         user: {
@@ -101,6 +136,16 @@ export async function POST(request: NextRequest) {
           expires_at: authData.session.expires_at,
         }
       });
+      
+      // 设置认证 cookie
+      setAuthCookies(
+        response,
+        authData.session.access_token,
+        authData.session.refresh_token,
+        authData.session.expires_at ?? 0
+      );
+      
+      return response;
     }
 
     // ==================== 验证码登录 ====================
@@ -156,7 +201,8 @@ export async function POST(request: NextRequest) {
       const isVip = await isMember(authData.user.id);
       const quota = await getUserQuota(authData.user.id);
 
-      return NextResponse.json({
+      // 创建响应并设置 cookie
+      const response = NextResponse.json({
         success: true,
         message: '登录成功',
         user: {
@@ -173,6 +219,16 @@ export async function POST(request: NextRequest) {
           expires_at: authData.session.expires_at,
         }
       });
+      
+      // 设置认证 cookie
+      setAuthCookies(
+        response,
+        authData.session.access_token,
+        authData.session.refresh_token,
+        authData.session.expires_at ?? 0
+      );
+      
+      return response;
     }
 
     return NextResponse.json({ error: '请提供密码或验证码' }, { status: 400 });

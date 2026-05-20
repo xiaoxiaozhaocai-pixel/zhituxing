@@ -142,34 +142,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (phone: string, password?: string, code?: string): Promise<{ success: boolean; message: string }> => {
     try {
-      // 自动拼接 @test.com 形成邮箱
-      const email = `${phone}@test.com`;
+      // 调用登录 API（API 会自动处理手机号/邮箱并设置 cookie）
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, code }),
+        body: JSON.stringify({ phone, password, code }),
       });
       
       const data = await response.json();
       
       if (data.success && data.user) {
-        // 存储用户信息到 localStorage
+        // 存储用户信息到 localStorage（作为缓存）
         localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
         
-        // 登录后获取完整用户信息（包含配额）
-        const meResponse = await fetch('/api/auth/me', {
-          headers: { 'x-user-id': data.user.id }
+        // 设置配额
+        const isMemberUser = data.user.is_member || data.user.user_type === 'member';
+        setQuota({
+          career_planning: { remaining: -1, unlimited: isMemberUser },
+          interview: { remaining: isMemberUser ? -1 : 3, unlimited: isMemberUser },
+          assessment: { remaining: isMemberUser ? -1 : 1, unlimited: isMemberUser },
+          competency: { is_member_only: true, requires_report: true },
+          decision: { remaining: isMemberUser ? -1 : 3, unlimited: isMemberUser },
+          remaining: isMemberUser ? -1 : 3,
+          reset_time: '',
+          is_member: isMemberUser,
+          member_type: isMemberUser ? 'member' : 'free',
+          member_expire_time: data.user.membership_expires_at || null
         });
-        const meData = await meResponse.json();
-        
-        if (meData.success && meData.user) {
-          setUser(meData.user);
-          setQuota(meData.user.quota);
-          // 更新 localStorage 中的用户信息
-          localStorage.setItem('user', JSON.stringify(meData.user));
-        } else {
-          setUser(data.user);
-        }
         
         return { success: true, message: '登录成功' };
       } else {
@@ -183,33 +183,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (phone: string, password: string, code: string, nickname?: string, inviteCode?: string): Promise<{ success: boolean; message: string }> => {
     try {
-      // 自动拼接 @test.com 形成邮箱
-      const email = `${phone}@test.com`;
+      // 调用注册 API（API 会自动处理手机号/邮箱并设置 cookie）
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, code, nickname, invite_code: inviteCode }),
+        body: JSON.stringify({ phone, password, code, nickname, invite_code: inviteCode }),
       });
       
       const data = await response.json();
       
       if (data.success && data.user) {
-        // 存储用户信息到 localStorage
+        // 存储用户信息到 localStorage（作为缓存）
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
         
         // 根据用户类型设置配额
-        const isMember = data.user.user_type === 'member' || data.user.membership_type === 'member';
+        const isMemberUser = data.user.user_type === 'member' || data.user.membership_type === 'member';
         setQuota({
-          career_planning: { remaining: -1, unlimited: isMember },
-          interview: { remaining: isMember ? -1 : 3, unlimited: isMember },
-          assessment: { remaining: isMember ? -1 : 1, unlimited: isMember },
+          career_planning: { remaining: -1, unlimited: isMemberUser },
+          interview: { remaining: isMemberUser ? -1 : 3, unlimited: isMemberUser },
+          assessment: { remaining: isMemberUser ? -1 : 1, unlimited: isMemberUser },
           competency: { is_member_only: true, requires_report: true },
-          decision: { remaining: isMember ? -1 : 3, unlimited: isMember },
-          remaining: isMember ? -1 : 3,
+          decision: { remaining: isMemberUser ? -1 : 3, unlimited: isMemberUser },
+          remaining: isMemberUser ? -1 : 3,
           reset_time: '',
-          is_member: isMember,
-          member_type: isMember ? 'member' : 'free',
+          is_member: isMemberUser,
+          member_type: isMemberUser ? 'member' : 'free',
           member_expire_time: data.user.membership_expires_at || null
         });
         return { success: true, message: '注册成功' };

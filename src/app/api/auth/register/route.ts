@@ -1,28 +1,60 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getUserQuota } from '@/lib/quota';
 
-// 注册
+/**
+ * 注册接口 - 使用 Supabase Auth
+ * 
+ * 1. 验证验证码
+ * 2. 使用 supabase.auth.signUp 创建用户
+ * 3. 创建 user_profiles 记录
+ * 4. 设置认证 cookie
+ */
+
+// 设置认证 Cookie
+function setAuthCookies(
+  response: NextResponse,
+  accessToken: string,
+  refreshToken: string,
+  expiresAt: number
+): void {
+  const expiresIn = expiresAt - Math.floor(Date.now() / 1000);
+  const maxAge = 30 * 24 * 60 * 60; // 30天
+  
+  response.cookies.set('sb-access-token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: expiresIn,
+  });
+  
+  response.cookies.set('sb-refresh-token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: maxAge,
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, code, nickname, invite_code } = await request.json();
-
-    // 从邮箱提取手机号（去掉 @test.com）
-    const phone = email ? email.replace(/@test\.com$/i, '') : '';
+    const { phone, password, code, nickname, invite_code } = await request.json();
 
     // 验证必填项
-    if (!email || !password || !code) {
+    if (!phone || !password || !code) {
       return NextResponse.json(
         { error: '请填写完整信息' },
         { status: 400 }
       );
     }
 
-    // 验证邮箱格式（手机号@test.com）
-    if (!/^1[3-9]\d{9}@test\.com$/i.test(email)) {
+    // 验证手机号格式
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
       return NextResponse.json(
-        { error: '请输入正确的邮箱格式（手机号@test.com）' },
+        { error: '请输入正确的手机号' },
         { status: 400 }
       );
     }
@@ -68,152 +100,119 @@ export async function POST(request: NextRequest) {
       .update({ used: true })
       .eq('id', verification.id);
 
-    // 检查用户是否已存在
-    const { data: userCheck } = await supabase
-      .from('users')
-      .select('id')
+    // 检查用户是否已存在（user_profiles）
+    const { data: existingProfile } = await supabase
+      .from('user_profiles')
+      .select('user_id')
       .eq('phone', phone)
       .maybeSingle();
 
-    if (userCheck) {
+    if (existingProfile) {
       return NextResponse.json(
         { error: '该手机号已注册，请直接登录' },
         { status: 400 }
       );
     }
 
-    // 查找邀请人（如果有邀请码）
-    let inviterId: string | null = null;
-    if (invite_code) {
-      const { data: inviterResult } = await supabase
-        .from('users')
-        .select('id')
-        .eq('invite_code', invite_code)
-        .maybeSingle();
-      
-      if (inviterResult) {
-        inviterId = inviterResult.id;
-      }
-    }
-
-    // 加密密码
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 使用 Supabase Auth 注册
+    const userEmail = `${phone}@phone.temp`; // 虚拟邮箱
     const userNickname = nickname || `用户${phone.slice(-4)}`;
     
-    // 生成用户的邀请码
-    const userInviteCode = `U${phone.slice(-6)}`;
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: userEmail,
+      password: password,
+      options: {
+        data: {
+          phone: phone,
+          nickname: userNickname,
+        },
+      },
+    });
 
-    // 计算配额重置时间（月底）
-    const now = new Date();
-    const quotaResetTime = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-    // 创建用户
-    const { data: insertResult, error: insertError } = await supabase
-      .from('users')
-      .insert({
-        phone,
-        password: hashedPassword,
-        nickname: userNickname,
-        invite_code: userInviteCode,
-        monthly_quota: 5,
-        quota_reset_time: quotaResetTime.toISOString()
-      })
-      .select('id, phone, nickname, created_at')
-      .single();
-
-    if (insertError || !insertResult) {
-      console.error('创建用户失败:', insertError);
+    if (authError) {
+      console.error('Supabase 注册失败:', authError);
       return NextResponse.json(
-        { error: '注册失败' },
+        { error: authError.message || '注册失败' },
         { status: 500 }
       );
     }
 
-    const newUser = insertResult as {
-      id: string;
-      phone: string;
-      nickname: string;
-      created_at: string;
-    };
-
-    // 如果有邀请人，创建邀请记录并自动发放奖励
-    if (inviterId) {
-      // 创建邀请记录
-      await supabase
-        .from('invites')
-        .insert({
-          inviter_id: inviterId,
-          invitee_id: newUser.id,
-          invite_code: invite_code,
-          reward_quota: 3,
-          reward_days: 7,
-          reward_status: 'claimed',
-          claimed_at: now.toISOString()
-        });
-
-      // 自动发放奖励给邀请人
-      const { data: inviterData } = await supabase
-        .from('users')
-        .select('monthly_quota, member_expire_time')
-        .eq('id', inviterId)
-        .single();
-
-      if (inviterData) {
-        await supabase
-          .from('users')
-          .update({ 
-            monthly_quota: (inviterData.monthly_quota || 0) + 3 
-          })
-          .eq('id', inviterId);
-
-        // 检查并延长邀请人的会员时间
-        let newExpireTime: Date;
-
-        if (inviterData.member_expire_time) {
-          const currentExpire = new Date(inviterData.member_expire_time);
-          newExpireTime = new Date(currentExpire.getTime() + 7 * 24 * 60 * 60 * 1000);
-        } else {
-          newExpireTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-        }
-
-        await supabase
-          .from('users')
-          .update({
-            member_type: 'monthly',
-            member_expire_time: newExpireTime.toISOString()
-          })
-          .eq('id', inviterId);
-      }
-
-      // 自动给被邀请人发放奖励（注册即可获得3次免费次数）
-      await supabase
-        .from('users')
-        .update({ 
-          monthly_quota: 5 + 3 
-        })
-        .eq('id', newUser.id);
+    if (!authData.user || !authData.session) {
+      return NextResponse.json({ error: '注册失败，请重试' }, { status: 500 });
     }
 
-    // 返回用户信息
-    const userInfo = {
-      id: newUser.id,
-      phone: newUser.phone,
-      nickname: newUser.nickname,
-      created_at: newUser.created_at,
-      invite_reward: inviterId ? { quota: 3, message: '注册奖励：+3次AI次数' } : null
-    };
+    // 创建 user_profiles 记录
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .insert({
+        user_id: authData.user.id,
+        phone: phone,
+        email: null,
+        nickname: userNickname,
+        user_type: 'free',
+        invite_code: `U${phone.slice(-6)}`,
+      });
 
-    return NextResponse.json({
+    if (profileError) {
+      console.error('创建用户档案失败:', profileError);
+      // 不回滚 auth 用户，让用户可以登录后重试
+    }
+
+    // 处理邀请码（如果有）
+    if (invite_code) {
+      const { data: inviter } = await supabase
+        .from('user_profiles')
+        .select('user_id')
+        .eq('invite_code', invite_code)
+        .maybeSingle();
+      
+      if (inviter) {
+        // 创建邀请记录
+        await supabase
+          .from('invites')
+          .insert({
+            inviter_id: inviter.user_id,
+            invitee_id: authData.user.id,
+            invite_code: invite_code,
+            reward_quota: 3,
+            reward_days: 7,
+            reward_status: 'claimed',
+            claimed_at: new Date().toISOString()
+          });
+      }
+    }
+
+    const quota = await getUserQuota(authData.user.id);
+
+    // 创建响应并设置 cookie
+    const response = NextResponse.json({
       success: true,
-      message: inviterId ? '注册成功，获得3次免费AI次数！' : '注册成功',
-      user: userInfo
+      message: '注册成功',
+      user: {
+        id: authData.user.id,
+        phone: phone,
+        nickname: userNickname,
+        is_member: false,
+        quota
+      },
+      session: {
+        access_token: authData.session.access_token,
+        refresh_token: authData.session.refresh_token,
+        expires_at: authData.session.expires_at,
+      }
     });
-
+    
+    // 设置认证 cookie
+    setAuthCookies(
+      response,
+      authData.session.access_token,
+      authData.session.refresh_token,
+      authData.session.expires_at ?? 0
+    );
+    
+    return response;
   } catch (error) {
     console.error('注册失败:', error);
-    return NextResponse.json(
-      { error: '服务器错误' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '注册失败，请稍后重试' }, { status: 500 });
   }
 }
