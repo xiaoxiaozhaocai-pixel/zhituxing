@@ -14,37 +14,37 @@ import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: {
-    default: '职途星 - AI职业规划与模拟面试平台 | 大学生一站式求职服务',
+    default: '职途星 - 智能职业规划与岗位匹配平台',
     template: '%s | 职途星',
   },
   description:
-    '职途星是基于全行业20,000+真实招聘JD的AI职业规划平台，为大学生提供AI模拟面试、岗位匹配、6维能力测评、胜任力评估等一站式求职服务。月度会员仅需9.9元。',
+    '基于AI的智能职业规划平台，提供岗位搜索、技能匹配、面试模拟等服务，帮助大学生精准规划职业路径。覆盖全行业20000+真实岗位，AI智能匹配，精准推荐。',
   keywords: [
-    '职途星',
-    'AI职业规划',
-    '大学生求职',
+    '职业规划',
+    '岗位搜索',
+    '求职',
+    'AI匹配',
+    '技能分析',
+    '大学生就业',
     '模拟面试',
     '能力测评',
-    '岗位匹配',
-    '职业规划',
-    '应届生求职',
-    '全行业岗位',
-    '求职助手',
+    '职途星',
   ],
   authors: [{ name: '职途星团队' }],
   generator: '职途星',
   openGraph: {
-    title: '职途星 - AI职业规划与模拟面试平台',
+    title: '职途星 - 智能职业规划与岗位匹配平台',
     description:
-      '专注于大学生求职的AI智能平台，提供职业规划、模拟面试、能力测评、岗位匹配等一站式服务，助你科学规划职业方向。',
+      '基于AI的智能职业规划平台，提供岗位搜索、技能匹配、面试模拟等服务，帮助大学生精准规划职业路径。',
     locale: 'zh_CN',
     type: 'website',
-    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - AI职业规划与模拟面试平台' }],
+    siteName: '职途星',
+    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - 智能职业规划与岗位匹配平台' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '职途星 - AI职业规划与模拟面试平台',
-    description: '专注于大学生求职的AI智能平台，提供职业规划、模拟面试、能力测评、岗位匹配等一站式服务。',
+    title: '职途星 - 智能职业规划与岗位匹配平台',
+    description: '基于AI的智能职业规划平台，提供岗位搜索、技能匹配、面试模拟等服务，帮助大学生精准规划职业路径。',
     images: ['https://s.coze.cn/image/9JW8vCo1HrY/'],
   },
   alternates: {

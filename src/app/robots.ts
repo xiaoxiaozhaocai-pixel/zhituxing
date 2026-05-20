@@ -1,15 +1,16 @@
 import { MetadataRoute } from 'next';
-import { SITE_URL } from '@/lib/config';
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = process.env.COZE_PROJECT_DOMAIN_DEFAULT || 'https://t498zk3cs9.coze.site';
+  
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/auth', '/profile/'],
+        disallow: ['/api/', '/_next/', '/admin/', '/auth/'],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

@@ -1,30 +1,72 @@
-import { MetadataRoute } from 'next'
-import { SITE_URL } from '@/lib/config'
+import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = SITE_URL
-  const routes = [
-    '',
-    '/career-planning',
-    '/assistant',
-    '/assessment',
-    '/match',
-    '/skill-portrait',
-    '/skills-graph',
-    '/auth',
-    '/profile',
-    '/jobs',
-    '/guide',
-    '/faq',
-    '/learning-path',
-    '/membership',
-    '/resources',
-    '/contact',
-  ]
-  return routes.map((route) => ({
-    url: baseUrl + route,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1.0 : 0.8,
-  }))
+  const siteUrl = process.env.COZE_PROJECT_DOMAIN_DEFAULT || 'https://t498zk3cs9.coze.site';
+  const now = new Date();
+
+  // 静态页面
+  const staticPages: MetadataRoute.Sitemap = [
+    {
+      url: siteUrl,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: `${siteUrl}/match`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/assessment`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/learning-path`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/skills-graph`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/assistant`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/career-planning`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/jobs-encyclopedia`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.5,
+    },
+    {
+      url: `${siteUrl}/membership`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${siteUrl}/faq`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.4,
+    },
+  ];
+
+  return staticPages;
 }
