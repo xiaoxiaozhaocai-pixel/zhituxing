@@ -74,7 +74,7 @@ function AuthContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   // 验证码相关
-  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   // 注册相关
@@ -277,7 +277,7 @@ function AuthContent() {
         setStep('otp');
         setCountdown(60);
         setSuccess('验证码/确认链接已发送到您的邮箱，请查收。如果是新注册用户，请点击邮件中的链接完成验证。');
-        setOtpDigits(['', '', '', '', '', '']);
+        setOtpDigits(['', '', '', '', '', '', '', '']);
       }
     } catch (err: any) {
       setError(err.message || '发送失败，请重试');
@@ -295,12 +295,12 @@ function AuthContent() {
     setOtpDigits(newDigits);
     
     // 自动聚焦下一个
-    if (digit && index < 5) {
+    if (digit && index < 7) {
       otpRefs.current[index + 1]?.focus();
     }
     
-    // 6位输满后自动验证
-    if (newDigits.every(d => d) && newDigits.join('').length === 6) {
+    // 8位输满后自动验证
+    if (newDigits.every(d => d) && newDigits.join('').length === 8) {
       handleVerifyOtp(newDigits.join(''));
     }
   };
@@ -308,12 +308,12 @@ function AuthContent() {
   // 验证码粘贴处理
   const handleOtpPaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    const newDigits = pastedData.split('').concat(['', '', '', '', '', '']).slice(0, 6);
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
+    const newDigits = pastedData.split('').concat(['', '', '', '', '', '', '', '']).slice(0, 8);
     setOtpDigits(newDigits);
     
-    // 如果粘贴了6位，自动验证
-    if (pastedData.length === 6) {
+    // 如果粘贴了8位，自动验证
+    if (pastedData.length === 8) {
       handleVerifyOtp(pastedData);
     }
   };
@@ -340,7 +340,7 @@ function AuthContent() {
       if (error) {
         if (error.message.includes('invalid') || error.message.includes('expired')) {
           setError('验证码无效或已过期，请重新发送');
-          setOtpDigits(['', '', '', '', '', '']);
+          setOtpDigits(['', '', '', '', '', '', '', '']);
         } else {
           setError(getFriendlyError(error.message));
         }
@@ -427,7 +427,7 @@ function AuthContent() {
     setStep('input');
     setPassword('');
     setConfirmPassword('');
-    setOtpDigits(['', '', '', '', '', '']);
+    setOtpDigits(['', '', '', '', '', '', '', '']);
     setError('');
     setSuccess('');
     setInputError('');
@@ -697,7 +697,8 @@ function AuthContent() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">验证码</label>
-                  <div className="flex gap-2 justify-center">
+                  {/* 桌面端：一行8格；移动端：两行4+4 */}
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {otpDigits.map((digit, index) => (
                       <Input
                         key={index}
@@ -709,13 +710,13 @@ function AuthContent() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-12 h-14 text-center text-2xl font-bold border-2 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20"
+                        className="w-10 h-12 md:w-11 md:h-13 text-center text-xl md:text-2xl font-bold border-2 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20"
                         autoFocus={index === 0}
                       />
                     ))}
                   </div>
                   <p className="text-xs text-gray-500 mt-2 text-center">
-                    输入邮箱收到的6位验证码
+                    输入邮箱收到的8位验证码
                   </p>
                 </div>
 
