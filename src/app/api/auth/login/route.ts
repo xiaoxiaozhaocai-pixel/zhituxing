@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
 import { isMember, getUserQuota } from '@/lib/quota';
 
 /**
@@ -12,10 +12,12 @@ import { isMember, getUserQuota } from '@/lib/quota';
  * 
  * 用户信息从 user_profiles 表获取
  * 登录成功后设置 httpOnly cookie
+ * 
+ * 注意：认证操作使用 ANON_KEY，管理操作使用 SERVICE_ROLE_KEY
  */
 
 // ============================================================
-// 设置认证 Cookie
+// 设置认证 Cookie（使用 Set-Cookie header 确保生效）
 // ============================================================
 function setAuthCookies(
   response: NextResponse,
@@ -23,28 +25,23 @@ function setAuthCookies(
   refreshToken: string,
   expiresAt: number
 ): void {
-  const expiresIn = expiresAt - Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000);
+  const expiresIn = Math.max(expiresAt - now, 3600); // 至少1小时
+  const maxAge = 30 * 24 * 60 * 60; // 30天
   
-  // 计算过期时间（30天，与 refresh token 一致）
-  const maxAge = 30 * 24 * 60 * 60;
+  const isProd = process.env.NODE_ENV === 'production';
   
-  // 设置 access token cookie
-  response.cookies.set('sb-access-token', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: expiresIn, // access token 过期时间
-  });
+  // 构建 Set-Cookie header
+  const accessCookie = `sb-access-token=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${expiresIn}${isProd ? '; Secure' : ''}`;
+  const refreshCookie = `sb-refresh-token=${refreshToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${isProd ? '; Secure' : ''}`;
   
-  // 设置 refresh token cookie
-  response.cookies.set('sb-refresh-token', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: maxAge, // refresh token 30天
-  });
+  // 使用 headers.set 确保生效
+  const existingCookies = response.headers.get('Set-Cookie') || '';
+  const newCookies = existingCookies 
+    ? `${existingCookies}, ${accessCookie}, ${refreshCookie}`
+    : `${accessCookie}, ${refreshCookie}`;
+  
+  response.headers.set('Set-Cookie', newCookies);
 }
 
 export async function POST(request: NextRequest) {
@@ -63,18 +60,21 @@ export async function POST(request: NextRequest) {
     const isEmail = loginIdentifier.includes('@');
     const loginEmail = isEmail ? loginIdentifier : `${loginIdentifier}@phone.temp`;
     
-    const supabase = getSupabaseAdmin();
+    // 使用 ANON_KEY 客户端进行认证操作
+    const supabaseAuth = getSupabase();
+    // 使用 SERVICE_ROLE_KEY 客户端进行管理操作
+    const supabaseAdmin = getSupabaseAdmin();
 
     // ==================== 密码登录 ====================
     if (password) {
-      // 使用 Supabase Auth signInWithPassword
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      // 使用 Supabase Auth signInWithPassword（ANON_KEY）
+      const { data: authData, error: authError } = await supabaseAuth.auth.signInWithPassword({
         email: loginEmail,
         password: password,
       });
 
       if (authError) {
-        console.error('密码登录失败:', authError);
+        console.error('密码登录失败:', authError.message, authError.status);
         // 统一错误信息，不暴露用户是否存在
         return NextResponse.json({ 
           error: '手机号/邮箱或密码错误',
@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '登录失败，请重试' }, { status: 500 });
       }
 
-      // 查询 user_profiles 获取用户详细信息
-      const { data: profile, error: profileError } = await supabase
+      // 查询 user_profiles 获取用户详细信息（SERVICE_ROLE_KEY）
+      const { data: profile, error: profileError } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
         .eq('user_id', authData.user.id)
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       // 如果 user_profiles 不存在，创建一个
       let userProfile = profile;
       if (!profile) {
-        const { data: newProfile, error: insertError } = await supabase
+        const { data: newProfile, error: insertError } = await supabaseAdmin
           .from('user_profiles')
           .insert({
             user_id: authData.user.id,
@@ -150,8 +150,8 @@ export async function POST(request: NextRequest) {
 
     // ==================== 验证码登录 ====================
     if (code) {
-      // 使用 Supabase Auth verifyOtp
-      const { data: authData, error: authError } = await supabase.auth.verifyOtp({
+      // 使用 Supabase Auth verifyOtp（ANON_KEY）
+      const { data: authData, error: authError } = await supabaseAuth.auth.verifyOtp({
         email: loginEmail,
         token: code,
         type: 'email',  // 或 'sms' 如果是手机验证码
@@ -169,8 +169,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '验证失败，请重试' }, { status: 500 });
       }
 
-      // 查询 user_profiles 获取用户详细信息
-      const { data: profile } = await supabase
+      // 查询 user_profiles 获取用户详细信息（SERVICE_ROLE_KEY）
+      const { data: profile } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
         .eq('user_id', authData.user.id)
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       // 如果 user_profiles 不存在，创建一个
       let userProfile = profile;
       if (!profile) {
-        const { data: newProfile, error: insertError } = await supabase
+        const { data: newProfile, error: insertError } = await supabaseAdmin
           .from('user_profiles')
           .insert({
             user_id: authData.user.id,

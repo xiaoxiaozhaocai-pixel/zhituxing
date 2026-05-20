@@ -12,31 +12,30 @@ import { getUserQuota } from '@/lib/quota';
  * 4. 设置认证 cookie
  */
 
-// 设置认证 Cookie
+// 设置认证 Cookie（使用 Set-Cookie header 确保生效）
 function setAuthCookies(
   response: NextResponse,
   accessToken: string,
   refreshToken: string,
   expiresAt: number
 ): void {
-  const expiresIn = expiresAt - Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000);
+  const expiresIn = Math.max(expiresAt - now, 3600); // 至少1小时
   const maxAge = 30 * 24 * 60 * 60; // 30天
   
-  response.cookies.set('sb-access-token', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: expiresIn,
-  });
+  const isProd = process.env.NODE_ENV === 'production';
   
-  response.cookies.set('sb-refresh-token', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: maxAge,
-  });
+  // 构建 Set-Cookie header
+  const accessCookie = `sb-access-token=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${expiresIn}${isProd ? '; Secure' : ''}`;
+  const refreshCookie = `sb-refresh-token=${refreshToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${isProd ? '; Secure' : ''}`;
+  
+  // 使用 headers.set 确保生效
+  const existingCookies = response.headers.get('Set-Cookie') || '';
+  const newCookies = existingCookies 
+    ? `${existingCookies}, ${accessCookie}, ${refreshCookie}`
+    : `${accessCookie}, ${refreshCookie}`;
+  
+  response.headers.set('Set-Cookie', newCookies);
 }
 
 export async function POST(request: NextRequest) {
