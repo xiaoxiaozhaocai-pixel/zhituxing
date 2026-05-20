@@ -16,7 +16,7 @@ import {
   User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
   MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { SkeletonCardList } from '@/components/SkeletonCard';
 
@@ -94,6 +94,7 @@ export default function JobsPage() {
     sortBy: 'default'
   });
   const [filterOpen, setFilterOpen] = useState(false); // 移动端筛选区折叠状态
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null); // 选中的岗位，用于弹窗展示
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -626,7 +627,7 @@ export default function JobsPage() {
               <Card
                 key={job.id}
                 className="cursor-pointer border-2 border-blue-100 hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
-                onClick={() => handleJobClick(job.name)}
+                onClick={() => setSelectedJob(job)}
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-3">
@@ -677,11 +678,18 @@ export default function JobsPage() {
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium">
+                  {/* AI深度分析按钮 - 使用 stopPropagation 阻止事件冒泡 */}
+                  <button
+                    className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleJobClick(job.name);
+                    }}
+                  >
                     <Sparkles className="w-4 h-4" />
-                    <span className="group-hover:underline">AI深度分析</span>
+                    <span>AI深度分析</span>
                     <ArrowRight className="w-3 h-3 ml-1" />
-                  </div>
+                  </button>
                 </CardContent>
               </Card>
             ))}
@@ -882,6 +890,120 @@ export default function JobsPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 岗位详情弹窗 */}
+      <Dialog open={!!selectedJob} onOpenChange={(open) => !open && setSelectedJob(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedJob && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-[#165DFF]">
+                  {selectedJob.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim()}
+                </DialogTitle>
+                <DialogDescription className="flex flex-wrap items-center gap-3 mt-2">
+                  {selectedJob.industry && (
+                    <span className="text-gray-600">{selectedJob.industry}</span>
+                  )}
+                  {selectedJob.city && (
+                    <span className="flex items-center gap-1 text-gray-600">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {selectedJob.city}
+                    </span>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-4">
+                {/* 薪资 */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">薪资范围</h4>
+                  <p className="text-lg font-bold text-[#FF7D00]">{selectedJob.salary}</p>
+                </div>
+
+                {/* 基本信息 */}
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedJob.education && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">学历要求</h4>
+                      <p className="text-gray-900">{selectedJob.education}</p>
+                    </div>
+                  )}
+                  {selectedJob.experience && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">经验要求</h4>
+                      <p className="text-gray-900">{selectedJob.experience}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* 技能要求 */}
+                {selectedJob.skills && selectedJob.skills.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">技能要求</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.skills.map((skill, idx) => (
+                        <Badge key={idx} variant="secondary" className="bg-blue-50 text-blue-700">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 软技能 */}
+                {selectedJob.softSkills && selectedJob.softSkills.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">软技能</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.softSkills.map((skill, idx) => (
+                        <Badge key={idx} variant="secondary" className="bg-purple-50 text-purple-700">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* JD 内容 */}
+                {selectedJob.jdContent && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-2">岗位描述</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                      {selectedJob.jdContent}
+                    </div>
+                  </div>
+                )}
+
+                {/* 标签 */}
+                <div className="flex items-center gap-2">
+                  {selectedJob.isFreshFriendly && (
+                    <Badge className="bg-green-100 text-green-700 border border-green-200">
+                      应届友好
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              <DialogFooter className="mt-6">
+                <Button variant="outline" onClick={() => setSelectedJob(null)}>
+                  关闭
+                </Button>
+                <Button
+                  className="bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
+                  onClick={() => {
+                    const jobName = selectedJob.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim();
+                    setSelectedJob(null);
+                    handleJobClick(jobName);
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  AI深度分析
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
