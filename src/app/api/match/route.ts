@@ -1,21 +1,22 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { calculateSkillMatch, estimateSalaryRange } from '@/lib/matching-algorithm';
 
 export async function POST(request: NextRequest) {
   try {
     // ============================================================
     // 安全检查：必须登录（从 cookie 读取 sb-access-token）
+    // 与 /api/chat 完全相同的认证逻辑
     // ============================================================
     const accessToken = request.cookies.get('sb-access-token');
     if (!accessToken) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 });
     }
 
-    // 使用 Supabase Auth 验证 access token
-    const supabaseAuth = getSupabase();
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(accessToken.value);
+    // 使用 Supabase Admin 验证 access token（更可靠）
+    const supabase = getSupabaseAdmin();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken.value);
     
     if (authError || !user) {
       console.error('[Match] Auth error:', authError?.message);
@@ -23,7 +24,6 @@ export async function POST(request: NextRequest) {
     }
     
     const userId = user.id;
-    const supabase = getSupabaseAdmin();
 
     const body = await request.json();
     const { targetPosition } = body;
