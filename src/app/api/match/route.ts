@@ -167,9 +167,6 @@ export async function POST(request: NextRequest) {
         )
       );
       
-      // 计算匹配分数
-      const totalMatchScore = skillMatchScore;
-
       return {
         id: jd.id,
         job_title: jd.job_title,
