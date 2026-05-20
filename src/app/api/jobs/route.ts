@@ -1,9 +1,10 @@
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // ============================================================
-// 内存缓存 - 5分钟TTL
+// 内存缓存 - Edge Runtime 下为 best-effort（同实例命中时更快）
 // ============================================================
 const searchCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5分钟
@@ -69,7 +70,6 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '20');
     const industry = searchParams.get('industry') || '';
     const city = searchParams.get('city') || '';
-    const companyType = searchParams.get('companyType') || '';
     const freshOnly = searchParams.get('freshOnly') === 'true';
     const keyword = searchParams.get('keyword') || '';
     
@@ -83,19 +83,19 @@ export async function GET(request: NextRequest) {
     if (cached) {
       console.log('[jobs] 缓存命中:', cacheKey);
       return NextResponse.json(cached, {
-        headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
+        headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
       });
     }
 
     const supabaseAdmin = getSupabaseAdmin();
 
-    // ===== 关键词搜索：多个查询合并（更可靠） =====
+    // ===== 关键词搜索：核心查询合并 =====
     if (keyword) {
       const buildBaseQuery = () => {
         let q = supabaseAdmin
           .from('job_descriptions')
           .select(LIGHT_SELECT_FIELDS)
-          .limit(50); // 减少limit，5个查询合并后已足够
+          .limit(50);
         if (industry) q = q.eq('industry', industry);
         if (city) q = q.eq('city', city);
         if (freshOnly) q = q.eq('fresh_graduate_friendly', true);
@@ -105,13 +105,13 @@ export async function GET(request: NextRequest) {
       // 获取同义词对应的行业名
       const synonymIndustries = INDUSTRY_SYNONYMS[keyword] || [];
       
-      // 并行查询3个字符串字段 + JSONB contains + 同义词行业
+      // 并行查询：job_title + industry + skills（去掉最慢的 responsibilities ilike）
       const queries = [
         buildBaseQuery().ilike('job_title', `%${keyword}%`),
-        buildBaseQuery().ilike('responsibilities', `%${keyword}%`),
         buildBaseQuery().ilike('industry', `%${keyword}%`),
         buildBaseQuery().contains('hard_skills', [keyword]),
         buildBaseQuery().contains('soft_skills', [keyword]),
+        // 同义词行业精确匹配
         ...synonymIndustries.map(syn => 
           buildBaseQuery().eq('industry', syn)
         ),
@@ -150,25 +150,26 @@ export async function GET(request: NextRequest) {
           totalPages: 0
         };
         setCachedResult(cacheKey, emptyResult);
-        return NextResponse.json(emptyResult);
+        return NextResponse.json(emptyResult, {
+          headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
+        });
       }
       
-      // 计算相关性评分
+      // 计算相关性评分（简化版，去掉 responsibilities 匹配）
       const keywordLower = keyword.toLowerCase();
       const scoredData = uniqueResults.map(job => {
-        let relevance = 5;
+        let relevance = 5; // 默认：同义词行业匹配
         const titleLower = (job.job_title || '').toLowerCase();
         const industryLower = (job.industry || '').toLowerCase();
-        const respLower = (job.responsibilities || '').toLowerCase();
         const hardSkillsLower = safeToArray(job.hard_skills).join(',').toLowerCase();
         const softSkillsLower = safeToArray(job.soft_skills).join(',').toLowerCase();
         
-        if (titleLower === keywordLower) relevance = 0;
-        else if (titleLower.startsWith(keywordLower)) relevance = 1;
-        else if (titleLower.includes(keywordLower)) relevance = 2;
-        else if (respLower.includes(keywordLower)) relevance = 3;
-        else if (hardSkillsLower.includes(keywordLower) || softSkillsLower.includes(keywordLower)) relevance = 4;
-        else if (industryLower.includes(keywordLower)) relevance = 5;
+        if (titleLower === keywordLower) relevance = 0;           // 精确匹配
+        else if (titleLower.startsWith(keywordLower)) relevance = 1; // 前缀匹配
+        else if (titleLower.includes(keywordLower)) relevance = 2;   // 包含匹配
+        else if (hardSkillsLower.includes(keywordLower) || softSkillsLower.includes(keywordLower)) relevance = 3; // 技能匹配
+        else if (industryLower.includes(keywordLower)) relevance = 4; // 行业匹配
+        // relevance = 5 表示同义词行业匹配
         
         return { ...job, _relevance: relevance };
       });
@@ -231,7 +232,7 @@ export async function GET(request: NextRequest) {
       
       setCachedResult(cacheKey, result);
       return NextResponse.json(result, {
-        headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
+        headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
       });
     }
 
@@ -282,7 +283,7 @@ export async function GET(request: NextRequest) {
     
     setCachedResult(cacheKey, result);
     return NextResponse.json(result, {
-      headers: { 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' }
+      headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
     });
   } catch (error: any) {
     console.error('API错误:', JSON.stringify({
