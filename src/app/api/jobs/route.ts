@@ -53,11 +53,67 @@ const INDUSTRY_SYNONYMS: Record<string, string[]> = {
 // ============================================================
 // 模块级工具函数
 // ============================================================
+/**
+ * 安全转换为字符串数组
+ * 支持多种格式：
+ * - 真数组：["Python", "SQL"]
+ * - JSON字符串：'["Python", "SQL"]'
+ * - 逗号分隔字符串：'Python, SQL'
+ * - 双重转义JSON：'"[\"Python\"]"'
+ * - null/undefined
+ */
 function safeToArray(val: any): string[] {
-  if (Array.isArray(val)) return val.map(String);
-  if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+  // null/undefined
   if (val == null) return [];
+  
+  // 真数组
+  if (Array.isArray(val)) {
+    return val.map(item => {
+      // 处理数组元素仍为 JSON 字符串的情况
+      if (typeof item === 'string') {
+        const parsed = tryParseJson(item);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      return String(item);
+    }).flat();
+  }
+  
+  // 字符串：可能是 JSON 或逗号分隔
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    
+    // 尝试 JSON 解析
+    const parsed = tryParseJson(trimmed);
+    if (Array.isArray(parsed)) {
+      return parsed.map(String);
+    }
+    
+    // 逗号分隔
+    return trimmed.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  
+  // 其他类型
   return [String(val)];
+}
+
+/**
+ * 尝试解析 JSON 字符串（支持多层转义）
+ */
+function tryParseJson(str: string): any {
+  try {
+    let result = JSON.parse(str);
+    // 处理双重转义：解析结果仍是字符串
+    if (typeof result === 'string') {
+      try {
+        result = JSON.parse(result);
+      } catch {
+        // 不是 JSON，保持原值
+      }
+    }
+    return result;
+  } catch {
+    return null;
+  }
 }
 
 // 搜索阶段只查轻量字段（不含responsibilities）
@@ -195,12 +251,17 @@ export async function GET(request: NextRequest) {
       // 获取同义词对应的行业名
       const synonymIndustries = INDUSTRY_SYNONYMS[keyword] || [];
       
-      // 并行查询：job_title + industry + skills（去掉最慢的 responsibilities ilike）
+      // 并行查询：job_title + industry + skills
+      // skills 查询：contains 用于 JSONB 数组，ilike 用于 JSON 字符串格式
       const queries = [
         buildBaseQuery().ilike('job_title', `%${keyword}%`),
         buildBaseQuery().ilike('industry', `%${keyword}%`),
+        // JSONB 数组 contains 查询
         buildBaseQuery().contains('hard_skills', [keyword]),
         buildBaseQuery().contains('soft_skills', [keyword]),
+        // JSON 字符串 ilike fallback（匹配 "keyword" 或 ,keyword, 格式）
+        buildBaseQuery().ilike('hard_skills', `%"${keyword}"%`),
+        buildBaseQuery().ilike('soft_skills', `%"${keyword}"%`),
         // 同义词行业精确匹配
         ...synonymIndustries.map(syn => 
           buildBaseQuery().eq('industry', syn)
