@@ -63,6 +63,64 @@ function safeToArray(val: any): string[] {
 // 搜索阶段只查轻量字段（不含responsibilities）
 const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly';
 
+// 格式化单条职位数据
+function formatJob(job: any, relevance?: number) {
+  const hardSkills = safeToArray(job.hard_skills);
+  const softSkills = safeToArray(job.soft_skills);
+  
+  // skills 逻辑：优先 hard_skills，为空则用 soft_skills
+  const skills = hardSkills.length > 0 ? hardSkills : softSkills;
+  
+  // 解析薪资范围
+  const salaryRange = job.salary_range || '';
+  let salaryMin: number | null = null;
+  let salaryMax: number | null = null;
+  
+  if (salaryRange && salaryRange !== '面议') {
+    // 尝试解析 "8-15K" "8000-15000" "8K-15K" 等格式
+    const match = salaryRange.match(/(\d+(?:\.\d+)?)\s*[Kk千]?\s*[-~到]\s*(\d+(?:\.\d+)?)\s*[Kk千]?/);
+    if (match) {
+      let min = parseFloat(match[1]);
+      let max = parseFloat(match[2]);
+      // 如果数字较小且单位是K，则乘以1000
+      if (salaryRange.toLowerCase().includes('k') || (min < 100 && max < 100)) {
+        min *= 1000;
+        max *= 1000;
+      }
+      salaryMin = Math.round(min);
+      salaryMax = Math.round(max);
+    }
+  }
+  
+  const base = {
+    id: job.id,
+    name: job.job_title,
+    industry: job.industry,
+    city: job.city,
+    companyType: '',
+    salary: salaryRange || '面议',
+    skills,
+    softSkills,
+    education: job.education || '',
+    experience: job.experience || '',
+    friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
+    isFreshFriendly: job.fresh_graduate_friendly === true,
+    jdContent: job.responsibilities
+  };
+  
+  // 只有解析到薪资时才添加 salaryMin/salaryMax
+  if (salaryMin !== null && salaryMax !== null) {
+    return { ...base, salaryMin, salaryMax };
+  }
+  
+  // 添加相关性评分（如果有）
+  if (relevance !== undefined) {
+    return { ...base, _relevance: relevance };
+  }
+  
+  return base;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -202,24 +260,7 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      const formattedData = paginatedData.map(job => ({
-        id: job.id,
-        name: job.job_title,
-        industry: job.industry,
-        city: job.city,
-        companyType: '',
-        salary: job.salary_range || '面议',
-        salaryMin: 0,
-        salaryMax: 0,
-        skills: safeToArray(job.hard_skills),
-        softSkills: safeToArray(job.soft_skills),
-        education: job.education || '',
-        experience: job.experience || '',
-        friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
-        isFreshFriendly: job.fresh_graduate_friendly === true,
-        jdContent: job.responsibilities,
-        _relevance: job._relevance
-      }));
+      const formattedData = paginatedData.map(job => formatJob(job, job._relevance));
       
       const result = {
         success: true,
@@ -254,23 +295,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '查询失败' }, { status: 500 });
     }
     
-    const formattedData = data?.map(job => ({
-      id: job.id,
-      name: job.job_title,
-      industry: job.industry,
-      city: job.city,
-      companyType: '',
-      salary: job.salary_range || '面议',
-      salaryMin: 0,
-      salaryMax: 0,
-      skills: safeToArray(job.hard_skills),
-      softSkills: safeToArray(job.soft_skills),
-      education: job.education || '',
-      experience: job.experience || '',
-      friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
-      isFreshFriendly: job.fresh_graduate_friendly === true,
-      jdContent: job.responsibilities
-    })) || [];
+    const formattedData = data?.map(job => formatJob(job)) || [];
     
     const result = {
       success: true,
