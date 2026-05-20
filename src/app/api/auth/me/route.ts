@@ -1,66 +1,56 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { isMember, getUserQuota } from '@/lib/quota';
-import { authenticateUser } from '@/lib/auth';
+import { isMember } from '@/lib/quota';
 
-// 获取当前用户
+/**
+ * 获取当前用户信息
+ * 认证方式：与 /api/chat 完全相同
+ * - 从 cookie 读取 sb-access-token
+ * - 使用 Supabase Auth 验证 token
+ * - 直接返回 auth.users 中的用户信息，不查询 user_profiles 表
+ */
 export async function GET(request: NextRequest) {
   try {
-    // JWT双认证
-    const authResult = await authenticateUser(request);
-    if (!authResult) {
+    // ============================================================
+    // 认证检查（与 /api/chat 完全相同）
+    // ============================================================
+    const accessToken = request.cookies.get('sb-access-token');
+    if (!accessToken) {
       return NextResponse.json(
-        { error: '未登录' },
+        { success: false, error: '未登录' },
         { status: 401 }
       );
     }
-    const userId = authResult.userId;
 
-    // 查询用户信息（user_profiles表实际字段）
+    // 使用 Supabase Auth 验证 token
     const supabase = getSupabaseAdmin();
-    const { data: result, error: queryError } = await supabase
-      .from('user_profiles')
-      .select('user_id, phone, nickname, user_type, membership_type, membership_expires_at, created_at')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    // 详细错误处理
-    if (queryError) {
-      console.error('[auth/me] Supabase query error:', queryError);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken.value);
+    
+    if (authError || !user) {
+      console.error('[auth/me] Token verification failed:', authError?.message);
       return NextResponse.json(
-        { error: '查询失败', details: queryError.message },
-        { status: 500 }
+        { success: false, error: '登录已过期，请重新登录' },
+        { status: 401 }
       );
     }
 
-    if (!result) {
-      console.warn('[auth/me] User not found:', userId);
-      return NextResponse.json(
-        { error: '用户不存在' },
-        { status: 404 }
-      );
-    }
-
-    const user = result as {
-      user_id: string;
-      phone: string | null;
-      nickname: string | null;
-      user_type: string | null;
-      membership_type: string | null;
-      membership_expires_at: string | null;
-      created_at: string;
-    };
-
+    // ============================================================
+    // 直接使用 auth.users 中的用户信息，不查询 user_profiles 表
+    // ============================================================
+    const userId = user.id;
+    const userEmail = user.email || '';
+    const userPhone = userPhoneFromEmail(userEmail);
+    
     // 计算是否为会员
     const isVip = await isMember(userId);
     
-    // 格式化响应 - 新配额结构
-    const memberType = user.membership_type || user.user_type || 'free';
+    // 格式化响应 - 使用 auth.users 的信息
     const userInfo = {
-      id: user.user_id,
-      phone: user.phone,
-      nickname: user.nickname,
+      id: userId,
+      phone: userPhone,
+      email: userEmail,
+      nickname: user.user_metadata?.nickname || userPhone?.slice(-4) || '用户',
       created_at: user.created_at,
       quota: {
         // 职业规划始终免费
@@ -85,16 +75,11 @@ export async function GET(request: NextRequest) {
         },
         // 考研就业决策
         decision: {
-          remaining: isVip ? -1 : 3,
+          remaining: isVip ? -1 : 5,
           unlimited: isVip
-        },
-        // 会员状态
-        member_type: memberType,
-        member_expire_time: user.membership_expires_at,
-        // 兼容旧字段
-        remaining: isVip ? -1 : 3,
-        is_member: isVip
-      }
+        }
+      },
+      is_member: isVip
     };
 
     return NextResponse.json({
@@ -103,10 +88,22 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('获取用户信息失败:', error);
+    console.error('[auth/me] Error:', error);
     return NextResponse.json(
-      { error: '服务器错误' },
+      { success: false, error: '服务器错误' },
       { status: 500 }
     );
   }
+}
+
+/**
+ * 从邮箱中提取手机号
+ * 邮箱格式：phone@phone.temp 或正常邮箱
+ */
+function userPhoneFromEmail(email: string): string | null {
+  if (!email) return null;
+  if (email.endsWith('@phone.temp')) {
+    return email.split('@')[0];
+  }
+  return null;
 }
