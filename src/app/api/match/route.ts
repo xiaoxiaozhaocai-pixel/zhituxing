@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
     const { data: jdData, error: jdError } = await supabase
       .from('job_descriptions')
       .select('id, job_title, company, city, salary_range, education, experience, industry, hard_skills, soft_skills, tags, fresh_graduate_friendly')
-      .eq('status', 'active')
       .limit(100);
 
     if (jdError) {
@@ -218,7 +217,6 @@ export async function GET(request: NextRequest) {
     const { data: hotJobs, error } = await supabase
       .from('job_descriptions')
       .select('id, job_title, company, city, salary_range, education, experience, industry, fresh_graduate_friendly')
-      .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(20);
 
