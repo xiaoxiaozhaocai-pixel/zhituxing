@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { globalRateLimiter, authRateLimiter, chatRateLimiter, jobsRateLimiter } from '@/lib/rate-limit';
+import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 
 // ============================================================
 // 安全响应头配置
@@ -18,14 +19,14 @@ const SECURITY_HEADERS = {
   'X-XSS-Protection': '1; mode=block',
   // HSTS（生产环境启用）
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  // CSP - 内容安全策略
+  // CSP - 内容安全策略（已收紧：移除 unsafe-eval）
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.cn",
+    "script-src 'self' 'unsafe-inline' https://fonts.googleapis.cn",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.cn https://fonts.gstatic.cn",
     "font-src 'self' https://fonts.gstatic.cn data:",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https:",
+    "connect-src 'self' https://api.coze.cn https://api.deepseek.com",
     "frame-ancestors 'none'",
   ].join('; '),
 };
@@ -95,7 +96,7 @@ export function middleware(request: NextRequest): NextResponse | undefined {
       return undefined;
     }
     
-    const accessToken = request.cookies.get('sb-access-token');
+    const accessToken = parseAccessTokenFromCookie(request.headers);
     if (!accessToken) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/admin/login';
@@ -108,7 +109,7 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   // 2.5 /assistant 和 /profile 路由保护：需要登录
   // --------------------------------------------------------
   if (pathname.startsWith('/assistant') || pathname.startsWith('/profile')) {
-    const accessToken = request.cookies.get('sb-access-token');
+    const accessToken = parseAccessTokenFromCookie(request.headers);
     if (!accessToken) {
       // 重定向到登录页，并带上回调 URL
       const loginUrl = request.nextUrl.clone();
@@ -123,7 +124,7 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   // 3. /api/chat 路由：登录检查 + 5次/分钟限流
   // --------------------------------------------------------
   if (pathname.startsWith('/api/chat')) {
-    const accessToken = request.cookies.get('sb-access-token');
+    const accessToken = parseAccessTokenFromCookie(request.headers);
     if (!accessToken) {
       const response = NextResponse.json(
         { error: '请先登录' },
@@ -139,9 +140,9 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   }
 
   // --------------------------------------------------------
-  // 4. /api/auth/login 路由：5次/分钟限流
+  // 4. /api/auth/login 和 /api/auth/register 路由：5次/分钟限流
   // --------------------------------------------------------
-  if (pathname === '/api/auth/login') {
+  if (pathname === '/api/auth/login' || pathname === '/api/auth/register') {
     const authCheck = authRateLimiter.check(ip);
     if (!authCheck.allowed) {
       return createRateLimitResponse(authCheck.resetAt);
