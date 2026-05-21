@@ -248,7 +248,7 @@ export async function GET(request: NextRequest) {
         let q = supabaseAdmin
           .from('job_descriptions')
           .select(LIGHT_SELECT_FIELDS)
-          .limit(50);
+          .limit(500);
         if (industry) q = q.eq('industry', industry);
         if (city) q = q.eq('city', city);
         if (freshOnly) q = q.eq('fresh_graduate_friendly', true);
@@ -419,7 +419,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: safeData,
       // 未登录用户隐藏真实总数
-      total: isAuthenticated ? (count || 0) : Math.min(count || 0, 50),
+      total: isAuthenticated ? (count || 0) : Math.min(count || 0, 200),
       page,
       pageSize,
       totalPages: isAuthenticated ? Math.ceil((count || 0) / pageSize) : undefined
