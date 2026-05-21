@@ -27,34 +27,36 @@ function setAuthCookies(
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, password } = body;
-    
-    if (!email || !password) {
-      return NextResponse.json({ error: '请输入邮箱和密码' }, { status: 400 });
+    const { email, token, type = 'signup' } = await request.json();
+
+    if (!email || !token) {
+      return NextResponse.json({ error: '请提供邮箱和验证码' }, { status: 400 });
     }
-    
+
     const supabase = getSupabaseAdmin();
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    // 验证OTP
+    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email,
-      password,
+      token,
+      type,
     });
 
     if (authError) {
-      console.error('登录失败:', authError.message);
-      return NextResponse.json({ 
-        error: '邮箱或密码错误'
-      }, { status: 401 });
+      console.error('OTP验证失败:', authError.message);
+      if (authError.message.includes('expired')) {
+        return NextResponse.json({ error: '验证码已过期，请重新获取' }, { status: 400 });
+      }
+      return NextResponse.json({ error: '验证码错误，请重新输入' }, { status: 400 });
     }
 
     if (!authData.user || !authData.session) {
-      return NextResponse.json({ error: '登录失败，请重试' }, { status: 500 });
+      return NextResponse.json({ error: '验证失败，请重试' }, { status: 500 });
     }
 
     const response = NextResponse.json({
       success: true,
-      message: '登录成功',
+      message: '验证成功',
       user: {
         id: authData.user.id,
         email: authData.user.email,
@@ -77,7 +79,7 @@ export async function POST(request: NextRequest) {
     
     return response;
   } catch (error) {
-    console.error('登录失败:', error);
-    return NextResponse.json({ error: '登录失败，请稍后重试' }, { status: 500 });
+    console.error('OTP验证失败:', error);
+    return NextResponse.json({ error: '验证失败，请稍后重试' }, { status: 500 });
   }
 }

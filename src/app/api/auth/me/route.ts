@@ -27,19 +27,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: '认证失败' }, { status: 401 });
     }
 
-    // 从 @phone.temp 邮箱提取手机号
-    const phoneFromEmail = user.email?.includes('@phone.temp') 
-      ? user.email.split('@')[0] 
-      : null;
-
     // 返回用户信息
     return NextResponse.json({
       success: true,
       user: {
         id: user.id,
-        phone: user.phone || phoneFromEmail,
         email: user.email,
-        nickname: user.user_metadata?.nickname || '用户' + (user.phone?.slice(-4) || phoneFromEmail?.slice(-4) || '')
+        phone: user.user_metadata?.phone || user.phone || null,
+        nickname: user.user_metadata?.nickname || '用户' + (user.email?.split('@')[0]?.slice(-4) || '')
       }
     });
   } catch (err) {
