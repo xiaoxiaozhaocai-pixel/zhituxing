@@ -230,6 +230,19 @@ export async function POST(request: NextRequest) {
     const fallbackText = getFallbackResponse(botType, message);
 
     // ===========================
+    // Fix7: 按 botType 使用不同的 systemPrompt
+    // ===========================
+    const SYSTEM_PROMPTS: Record<string, string> = {
+      jobs: '你是职途星平台的职搭子JD助手，精通27个行业的岗位信息。帮用户查询岗位JD、薪资、技能要求。基于检索到的真实岗位数据回答，给出具体可执行建议。',
+      interview: '你是职途星AI面试官面面，资深HR面试官。按照标准面试流程：简历初筛→HR初面→业务二面→高管终面→复盘反馈，对用户进行模拟面试。',
+      decision: '你是职途星考研就业决策助手，帮助大学生权衡考研vs就业。基于用户专业、成绩、职业目标，给出数据驱动的决策分析和时间线规划。',
+      career: '你是职途星AI职业规划师职伴，精通27个行业的职业发展路径。帮大学生制定4年职业规划，包含核心目标、技能提升、证书考取、实习建议。',
+      assessment: '你是职途星专业能力测评师，根据用户专业和方向评估其核心能力水平，给出20道精准测评题和短板分析。',
+      competency: '你是职途星胜任力评估师，帮用户分析目标岗位的胜任力模型，生成能力差距分析和提升建议。',
+      skill_portrait: '你是职途星技能画像师，基于用户信息生成技能标签、能力雷达图和学习路径推荐。',
+    };
+
+    // ===========================
     // DeepSeek + RAG 分支（当 DEEPSEEK_ENABLED=true 时优先使用）
     // ===========================
     if (USE_DEEPSEEK) {
@@ -271,22 +284,8 @@ export async function POST(request: NextRequest) {
           { tableName: 'learning_resources', displayName: '学习资源', data: resources },
         ]);
         
-        // 构建系统提示词（AI职业规划师"职伴"）
-        const systemPrompt = `你是"职伴"——职途星平台的AI职业规划师。你精通27个行业的职业发展路径，能帮大学生制定清晰的4年职业规划。
-
-你的能力：
-1. 根据用户的兴趣、专业、年级，推荐适合的职业方向
-2. 制定大一到大四的分阶段成长计划（每年核心目标、技能提升、证书考取）
-3. 推荐相关的实习岗位和项目经验
-4. 预估各阶段的薪资范围
-
-回答规范：
-- 基于检索到的真实岗位和职业路径数据回答
-- 给出具体、可执行的建议，不要泛泛而谈
-- 规划要符合大学四年的时间节奏
-- 适当引用数据支撑你的建议
-
-${ragContext}`;
+        // Fix7: 按 botType 选择对应的 systemPrompt
+        const systemPrompt = (SYSTEM_PROMPTS[botType || 'career'] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext;
 
         const history: { role: 'user' | 'assistant'; content: string }[] = [];
         const stream = createDeepSeekRAGStream(systemPrompt, message, history);

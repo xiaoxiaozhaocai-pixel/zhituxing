@@ -599,7 +599,11 @@ function AssistantContent() {
       try {
         while (true) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            clearTimeout(firstTokenTimer);
+            clearTimeout(timeoutTimer);
+            break;
+          }
 
           sseBuffer += decoder.decode(value, { stream: true });
 
