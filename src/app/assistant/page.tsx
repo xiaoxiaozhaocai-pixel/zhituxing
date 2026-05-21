@@ -647,11 +647,37 @@ function AssistantContent() {
               continue;
             }
 
+            // 检查 [DONE] 标记
+            if (dataLine === '[DONE]') {
+              clearTimeout(firstTokenTimer);
+              clearTimeout(timeoutTimer);
+              break;
+            }
+
             try {
               const parsed = JSON.parse(dataLine);
 
               // ============================================================
-              // 问题3修复：过滤 [DONE] 标记
+              // 优先解析 OpenAI 流式格式 {choices:[{delta:{content:'xxx'}}]}
+              // ============================================================
+              if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+                const content = parsed.choices[0].delta.content;
+                clearTimeout(firstTokenTimer);
+                clearTimeout(timeoutTimer);
+                fullContent += content;
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  const last = newMsgs[newMsgs.length - 1];
+                  if (last && last.role === 'assistant') {
+                    newMsgs[newMsgs.length - 1] = { ...last, content: fullContent };
+                  }
+                  return newMsgs;
+                });
+                continue;
+              }
+
+              // ============================================================
+              // 兼容旧格式：{type:'text', content:'xxx'}
               // ============================================================
               if (parsed.type === 'text' && parsed.content) {
                 // 过滤 [DONE] 标记
