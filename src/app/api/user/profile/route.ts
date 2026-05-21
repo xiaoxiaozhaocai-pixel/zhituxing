@@ -35,11 +35,8 @@ async function authenticateUser(request: NextRequest): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest) {
-  // DEBUG: 检查 cookie 是否被收到
-  console.log('[profile] cookies:', request.headers.get('cookie')?.substring(0, 200));
   try {
     const userId = await authenticateUser(request);
-    console.log('[profile] userId:', userId);
     if (!userId) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
