@@ -21,8 +21,7 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: false, // 不自动创建用户，仅发送OTP给已注册用户
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
+        shouldCreateUser: false,
       }
     });
 

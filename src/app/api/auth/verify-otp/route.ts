@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
-    // 验证OTP
     const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email,
       token,
