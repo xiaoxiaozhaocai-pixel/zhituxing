@@ -22,9 +22,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
+    // 密码强度校验
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
       return NextResponse.json(
-        { error: '密码至少6位' },
+        { error: '密码至少8位，需包含大写字母、小写字母和数字' },
         { status: 400 }
       );
     }

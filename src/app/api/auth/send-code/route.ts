@@ -2,6 +2,33 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
+// 简单内存限流器：60秒内最多3次
+const sendCodeLimiter = new Map<string, { count: number; lastTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 60秒
+const RATE_LIMIT_MAX = 3;
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const record = sendCodeLimiter.get(key);
+  
+  if (!record) {
+    sendCodeLimiter.set(key, { count: 1, lastTime: now });
+    return true;
+  }
+  
+  if (now - record.lastTime > RATE_LIMIT_WINDOW) {
+    sendCodeLimiter.set(key, { count: 1, lastTime: now });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  
+  sendCodeLimiter.set(key, { count: record.count + 1, lastTime: record.lastTime });
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { email, type = 'signup' } = await request.json();
@@ -13,6 +40,18 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: '请输入正确的邮箱地址' }, { status: 400 });
+    }
+
+    // 频率限制检查
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
+      || request.headers.get('x-real-ip') 
+      || 'unknown';
+    const rateLimitKey = `${clientIp}:${email}`;
+    
+    if (!checkRateLimit(rateLimitKey)) {
+      return NextResponse.json({ 
+        error: '发送过于频繁，请60秒后再试' 
+      }, { status: 429 });
     }
 
     const supabase = getSupabaseAdmin();

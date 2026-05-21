@@ -16,7 +16,7 @@ type Step = 'input' | 'password' | 'otp';
 const ERROR_MESSAGES: Record<string, string> = {
   'Invalid login credentials': '邮箱或密码错误，请重新输入',
   'User already registered': '该邮箱已注册，请直接登录',
-  'Password should be at least 6 characters': '密码长度不能少于6位',
+  'Password should be at least': '密码至少8位，需包含大写字母、小写字母和数字',
   'Email not confirmed': '请先验证邮箱',
   'Invalid verification code': '验证码错误，请重新输入',
   'Code expired': '验证码已过期，请重新获取',
@@ -104,14 +104,26 @@ function AuthContent() {
     return true;
   };
 
-  // 验证密码
+  // 验证密码（与后端一致的强度校验）
   const validatePassword = (value: string): boolean => {
     if (!value) {
       setPasswordError('');
       return false;
     }
-    if (value.length < 6) {
-      setPasswordError('密码长度不能少于6位');
+    if (value.length < 8) {
+      setPasswordError('密码至少8位');
+      return false;
+    }
+    if (!/[A-Z]/.test(value)) {
+      setPasswordError('密码需包含大写字母');
+      return false;
+    }
+    if (!/[a-z]/.test(value)) {
+      setPasswordError('密码需包含小写字母');
+      return false;
+    }
+    if (!/[0-9]/.test(value)) {
+      setPasswordError('密码需包含数字');
       return false;
     }
     setPasswordError('');
