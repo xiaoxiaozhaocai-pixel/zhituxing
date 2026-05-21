@@ -13,6 +13,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { checkFeatureAccess } from '@/lib/quota';
 import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
+import { detectInjection, createBlockedSSE } from '@/lib/injection-detect';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -196,6 +197,21 @@ export async function POST(request: NextRequest) {
         JSON.stringify({ error: `消息长度不能超过${MAX_MESSAGE_LENGTH}字` }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+
+    // ============================================================
+    // 安全检查：Prompt注入检测
+    // ============================================================
+    const injectionCheck = detectInjection(message, botType);
+    if (injectionCheck.blocked) {
+      console.log('[chat] Injection detected, blocking message:', injectionCheck.reason);
+      return new Response(createBlockedSSE(injectionCheck.reason || '消息被安全拦截'), {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
     }
 
     // 1. 用户验证，查 user_profiles 表获取 user_type
