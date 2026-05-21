@@ -25,6 +25,8 @@ const HIGH_RISK_PATTERNS: { pattern: RegExp; category: string }[] = [
   { pattern: /(?:输出|重复|显示|打印|泄露|透露|展示)\s*(?:系统提示|system\s*prompt|内部指令|内部规则|原始指令|初始设定)/i, category: '系统提示泄露' },
   { pattern: /(?:output|repeat|display|print|leak|reveal|show)\s+(?:your|the\s+system'?s?)\s+(?:prompt|instructions?|rules?|settings?)/i, category: '系统提示泄露' },
   { pattern: /(?:告诉我|说出|写出)\s*(?:你的|系统的|原始的)\s*(?:提示词|指令|规则|设定)/i, category: '系统提示泄露' },
+  { pattern: /(?:请|直接|马上|立刻)\s*(?:告诉|给|说出|告诉我)\s*(?:我|一下)?\s*(?:正确答案|标准答案|答案)/i, category: '系统提示泄露' },
+  { pattern: /(?:tell\s+me|give\s+me|show\s+me)\s+(?:the\s+)?(?:correct|right|standard)\s+answer/i, category: '系统提示泄露' },
 
   // DAN越狱
   { pattern: /DAN\s*(?:模式|越狱|jailbreak|mode)/i, category: 'DAN越狱攻击' },
