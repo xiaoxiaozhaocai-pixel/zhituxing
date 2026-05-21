@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { globalRateLimiter, authRateLimiter, chatRateLimiter, jobsRateLimiter } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 
 // ============================================================
@@ -66,28 +66,28 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 // ============================================================
 // 创建限流响应
 // ============================================================
-function createRateLimitResponse(resetAt: number): NextResponse {
+function createRateLimitResponse(): NextResponse {
   const response = NextResponse.json(
     { error: '请求过于频繁，请稍后再试' },
     { status: 429 }
   );
-  response.headers.set('Retry-After', String(Math.ceil((resetAt - Date.now()) / 1000)));
+  response.headers.set('Retry-After', '60');
   return addSecurityHeaders(response);
 }
 
 // ============================================================
-// 中间件主函数
+// 中间件主函数（异步，支持分布式限流）
 // ============================================================
-export function middleware(request: NextRequest): NextResponse | undefined {
+export async function middleware(request: NextRequest): Promise<NextResponse | undefined> {
   const { pathname } = request.nextUrl;
   const ip = getClientIP(request);
 
   // --------------------------------------------------------
   // 1. 全局 IP 速率限制（100次/分钟）
   // --------------------------------------------------------
-  const globalCheck = globalRateLimiter.check(ip);
+  const globalCheck = await checkRateLimit(`global:${ip}`, 100, 60000);
   if (!globalCheck.allowed) {
-    return createRateLimitResponse(globalCheck.resetAt);
+    return createRateLimitResponse();
   }
 
   // --------------------------------------------------------
@@ -136,9 +136,9 @@ export function middleware(request: NextRequest): NextResponse | undefined {
       return addSecurityHeaders(response);
     }
     
-    const chatCheck = chatRateLimiter.check(ip);
+    const chatCheck = await checkRateLimit(`chat:${ip}`, 5, 60000);
     if (!chatCheck.allowed) {
-      return createRateLimitResponse(chatCheck.resetAt);
+      return createRateLimitResponse();
     }
   }
 
@@ -146,9 +146,9 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   // 4. /api/auth/login 和 /api/auth/register 路由：5次/分钟限流
   // --------------------------------------------------------
   if (pathname === '/api/auth/login' || pathname === '/api/auth/register') {
-    const authCheck = authRateLimiter.check(ip);
+    const authCheck = await checkRateLimit(`auth:${ip}`, 5, 60000);
     if (!authCheck.allowed) {
-      return createRateLimitResponse(authCheck.resetAt);
+      return createRateLimitResponse();
     }
   }
 
@@ -156,9 +156,9 @@ export function middleware(request: NextRequest): NextResponse | undefined {
   // 5. /api/jobs 路由：30次/分钟限流
   // --------------------------------------------------------
   if (pathname.startsWith('/api/jobs')) {
-    const jobsCheck = jobsRateLimiter.check(ip);
+    const jobsCheck = await checkRateLimit(`jobs:${ip}`, 30, 60000);
     if (!jobsCheck.allowed) {
-      return createRateLimitResponse(jobsCheck.resetAt);
+      return createRateLimitResponse();
     }
   }
 
