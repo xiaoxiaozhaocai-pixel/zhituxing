@@ -20,22 +20,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { SkeletonCardList } from '@/components/SkeletonCard';
 
-// 行业列表（与数据库值对应）
-const industries = [
-  '全部', 
-  '互联网 / IT', '金融', '制造', '教育 / 培训', '医疗健康 / 生物', '医疗健康 / 生物制药',
-  '快消', '人力资源服务 / 咨询', '企业服务/咨询', '文化传媒 / 广告',
-  '房地产 / 建筑', '化工 / 能源 / 环保', '金融/经济/投资/财会',
-  '餐饮/酒店/旅游/娱乐', '国企 / 事业单位', '其他'
-];
+// 动态筛选选项类型
+interface FilterOption {
+  label: string;
+  value: string;
+  count: number;
+}
 
-// 城市列表
-const cities = [
-  '全国', '北京', '上海', '广州', '深圳', '成都', '杭州', '重庆', '武汉', 
-  '西安', '苏州', '天津', '南京', '长沙', '郑州', '东莞', '青岛', '沈阳', 
-  '合肥', '佛山', '宁波', '昆明', '福州', '无锡', '厦门', '济南', '大连', 
-  '哈尔滨', '温州', '石家庄', '南宁'
-];
+// 默认筛选选项（加载前显示）
+const defaultIndustries: FilterOption[] = [{ label: '全部', value: '全部', count: 0 }];
+const defaultCities: FilterOption[] = [{ label: '全国', value: '全国', count: 0 }];
 
 // 企业类型
 const companyTypes = ['全部', '民营企业', '国有企业', '外资企业', '上市公司', '事业单位', '创业公司'];
@@ -95,6 +89,9 @@ export default function JobsPage() {
   });
   const [filterOpen, setFilterOpen] = useState(false); // 移动端筛选区折叠状态
   const [selectedJob, setSelectedJob] = useState<Job | null>(null); // 选中的岗位，用于弹窗展示
+  const [industries, setIndustries] = useState<FilterOption[]>(defaultIndustries);
+  const [cities, setCities] = useState<FilterOption[]>(defaultCities);
+  const [filtersLoading, setFiltersLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -173,6 +170,26 @@ export default function JobsPage() {
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
+
+  // 获取动态筛选选项
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setFiltersLoading(true);
+        const res = await fetch('/api/filters');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.industries) setIndustries(data.industries);
+          if (data.cities) setCities(data.cities);
+        }
+      } catch (error) {
+        console.error('获取筛选选项失败:', error);
+      } finally {
+        setFiltersLoading(false);
+      }
+    };
+    fetchFilters();
+  }, []);
 
   // 初始化职搭子欢迎消息
   useEffect(() => {
@@ -535,9 +552,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={filters.industry}
                 onChange={(e) => handleFilterChange('industry', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                disabled={filtersLoading}
               >
-                {industries.map(ind => (
-                  <option key={ind} value={ind}>{ind}</option>
+                {industries.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
                 ))}
               </select>
             </div>
@@ -549,9 +567,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={filters.city}
                 onChange={(e) => handleFilterChange('city', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                disabled={filtersLoading}
               >
-                {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
+                {cities.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
                 ))}
               </select>
             </div>
