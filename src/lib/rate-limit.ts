@@ -1,4 +1,3 @@
-// lib/rate-limit.ts
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -19,7 +18,6 @@ export async function checkRateLimit(
     const client = getAdminClient()
     const windowStart = new Date(Date.now() - windowMs).toISOString()
 
-    // 查询当前窗口内请求数
     const { count, error: queryError } = await client
       .from('rate_limits')
       .select('*', { count: 'exact', head: true })
@@ -28,14 +26,13 @@ export async function checkRateLimit(
 
     if (queryError) {
       console.error('Rate limit query error:', queryError)
-      return { allowed: true } // 降级放行
+      return { allowed: true }
     }
 
     if (count! >= maxRequests) {
       return { allowed: false, remaining: 0 }
     }
 
-    // 插入新记录
     const { error: insertError } = await client
       .from('rate_limits')
       .insert({ key, created_at: new Date().toISOString() })
