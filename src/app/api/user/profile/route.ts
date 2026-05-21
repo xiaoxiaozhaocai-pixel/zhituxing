@@ -21,18 +21,6 @@ export async function GET(request: NextRequest) {
     const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
     const token = tokenMatch ? tokenMatch[1] : null;
 
-    // 调试模式：?debug=1 返回 cookie 信息
-    const url = new URL(request.url);
-    if (url.searchParams.get('debug') === '1') {
-      return NextResponse.json({
-        debug: true,
-        cookieHeader: cookieHeader.substring(0, 500),
-        cookieHeaderLength: cookieHeader.length,
-        tokenFound: !!token,
-        tokenPreview: token ? token.substring(0, 50) + '...' : null,
-      });
-    }
-
     if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
