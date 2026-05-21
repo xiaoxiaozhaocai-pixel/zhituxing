@@ -7,20 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { getSupabase } from '@/lib/supabase';
-import { ArrowLeft, Loader2, Gift, AlertCircle, CheckCircle, Eye, EyeOff, Smartphone, Mail, Pencil } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail, Eye, EyeOff, Pencil, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 
 // 步骤状态
-type Step = 'input' | 'password' | 'otp' | 'register';
-type InputType = 'phone' | 'email' | 'unknown';
+type Step = 'input' | 'password' | 'otp';
 
-// 错误码映射：将技术错误转换为友好中文提示
+// 错误码映射
 const ERROR_MESSAGES: Record<string, string> = {
-  'Invalid login credentials': '手机号或密码错误，请重新输入',
-  'User already registered': '该手机号已注册，请直接登录',
+  'Invalid login credentials': '邮箱或密码错误，请重新输入',
+  'User already registered': '该邮箱已注册，请直接登录',
   'Password should be at least 6 characters': '密码长度不能少于6位',
-  'Phone not confirmed': '请先验证手机号',
-  'Invalid phone number': '请输入正确的手机号',
+  'Email not confirmed': '请先验证邮箱',
   'Invalid verification code': '验证码错误，请重新输入',
   'Code expired': '验证码已过期，请重新获取',
   'Too many requests': '操作过于频繁，请稍后再试',
@@ -28,7 +25,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   'User not found': '该账号未注册，请先注册',
 };
 
-// 将错误信息转换为友好提示
 const getFriendlyError = (error: string): string => {
   if (ERROR_MESSAGES[error]) return ERROR_MESSAGES[error];
   for (const [key, value] of Object.entries(ERROR_MESSAGES)) {
@@ -37,35 +33,16 @@ const getFriendlyError = (error: string): string => {
   return '操作失败，请稍后重试';
 };
 
-// 判断输入类型
-const detectInputType = (value: string): InputType => {
-  const phoneRegex = /^1[3-9]\d{0,10}$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  // 如果是纯数字且以1开头，判断为手机号输入中
-  if (/^\d*$/.test(value) && value.length <= 11) {
-    if (value.length === 11 && phoneRegex.test(value)) return 'phone';
-    if (value.length < 11 && value.length > 0) return 'phone'; // 输入中的手机号
-  }
-  // 如果包含@，判断为邮箱
-  if (value.includes('@')) {
-    if (emailRegex.test(value)) return 'email';
-    return 'email'; // 输入中的邮箱
-  }
-  return 'unknown';
-};
-
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, login, register, sendCode } = useAuth();
+  const { user, login, register, verifyOtp } = useAuth();
   
   // 步骤状态
   const [step, setStep] = useState<Step>('input');
   
   // 输入值
-  const [inputValue, setInputValue] = useState('');
-  const [inputType, setInputType] = useState<InputType>('unknown');
+  const [email, setEmail] = useState('');
   
   // 密码相关
   const [password, setPassword] = useState('');
@@ -73,28 +50,24 @@ function AuthContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // 验证码相关
-  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  
   // 注册相关
   const [nickname, setNickname] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   
+  // OTP相关
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
   // 状态
-  const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isRegistered, setIsRegistered] = useState<boolean | null>(null); // null=未知, true=已注册, false=未注册
+  const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   
   // 表单验证
-  const [inputError, setInputError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  
-  // 其他方式登录折叠
-  const [showOtherMethods, setShowOtherMethods] = useState(false);
 
   // 从URL获取邀请码
   useEffect(() => {
@@ -103,7 +76,6 @@ function AuthContent() {
       setInviteCode(code);
     }
     
-    // 处理 auth callback 返回的错误
     const errorParam = searchParams.get('error');
     if (errorParam) {
       setError(decodeURIComponent(errorParam));
@@ -117,40 +89,18 @@ function AuthContent() {
     }
   }, [user, router]);
 
-  // 倒计时
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  // 验证手机号格式
-  const validatePhone = (value: string): boolean => {
-    if (!value) {
-      setInputError('');
-      return false;
-    }
-    if (!/^1[3-9]\d{9}$/.test(value)) {
-      setInputError('请输入正确的11位手机号');
-      return false;
-    }
-    setInputError('');
-    return true;
-  };
-
   // 验证邮箱格式
   const validateEmail = (value: string): boolean => {
     if (!value) {
-      setInputError('');
+      setEmailError('');
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      setInputError('请输入正确的邮箱地址');
+      setEmailError('请输入正确的邮箱地址');
       return false;
     }
-    setInputError('');
+    setEmailError('');
     return true;
   };
 
@@ -182,433 +132,315 @@ function AuthContent() {
     return true;
   };
 
-  // 处理输入变化
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // 处理邮箱输入变化
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setInputValue(value);
-    const type = detectInputType(value);
-    setInputType(type);
-    
-    // 实时验证
-    if (type === 'phone' && value.length === 11) {
-      validatePhone(value);
-    } else if (type === 'email') {
-      validateEmail(value);
-    } else {
-      setInputError('');
-    }
+    setEmail(value);
+    if (value) validateEmail(value);
   };
 
-  // 点击继续
+  // 点击继续（邮箱输入后）
   const handleContinue = async () => {
-    const type = detectInputType(inputValue);
+    if (!validateEmail(email)) return;
     
-    if (type === 'phone') {
-      if (!validatePhone(inputValue)) return;
-      
-      // 检查手机号是否已注册
-      setLoading(true);
-      setError('');
-      
-      try {
-        const supabase = getSupabase();
-        // 尝试用空密码登录来检测用户是否存在（会返回错误但不创建用户）
-        const { error: checkError } = await supabase.auth.signInWithPassword({
-          phone: inputValue,
-          password: '___check___'
-        });
-        
-        // 如果返回 Invalid login credentials，说明用户存在
-        if (checkError?.message.includes('Invalid login credentials')) {
-          setIsRegistered(true);
-          setStep('password');
-        } else if (checkError?.message.includes('User not found') || checkError?.message.includes('Unable to validate')) {
-          setIsRegistered(false);
-          setStep('register');
-        } else {
-          // 默认假设已注册（更安全）
-          setIsRegistered(true);
-          setStep('password');
-        }
-      } catch {
-        // 出错时默认显示登录
-        setIsRegistered(true);
-        setStep('password');
-      }
-      
-      setLoading(false);
-      
-    } else if (type === 'email') {
-      if (!validateEmail(inputValue)) return;
-      
-      // 发送验证码
-      await handleSendOtp();
-    }
-  };
-
-  // 发送邮箱验证码
-  // 发送邮箱验证码
-  // 注意：Supabase 的 signInWithOtp 行为取决于 Dashboard 配置：
-  // 1. 如果开启了 "Confirm email"（Authentication > Settings > Email），新用户会收到确认链接而非OTP
-  // 2. 需要在 Supabase Dashboard 关闭 "Confirm email" 才能确保总是发送 OTP
-  // 3. 已验证的老用户会收到 OTP，新用户会收到确认链接（如果开启了 Confirm email）
-  const handleSendOtp = async () => {
     setLoading(true);
     setError('');
     
     try {
-      const { error } = await getSupabase().auth.signInWithOtp({
-        email: inputValue,
-        options: { 
-          shouldCreateUser: true,
-          // 设置 emailRedirectTo 以便确认链接能正确回调
-          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
-        }
+      // 尝试检测邮箱是否已注册
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: '___check___' }),
       });
       
-      if (error) {
-        // 特殊处理：如果提示需要验证邮箱，说明用户已存在但未验证
-        if (error.message.includes('Email not confirmed') || error.message.includes('confirm')) {
-          setError('该邮箱已注册但未验证，请查收确认邮件或联系客服');
-        } else {
-          setError(getFriendlyError(error.message));
-        }
+      const data = await response.json();
+      
+      if (data.error?.includes('邮箱或密码错误') || data.error?.includes('Invalid')) {
+        // 用户存在但密码错误 → 已注册
+        setIsRegistered(true);
+        setStep('password');
+      } else if (data.error?.includes('未注册') || data.error?.includes('not found') || response.status === 404) {
+        setIsRegistered(false);
+        setStep('password');
       } else {
-        setStep('otp');
-        setCountdown(60);
-        setSuccess('验证码/确认链接已发送到您的邮箱，请查收。如果是新注册用户，请点击邮件中的链接完成验证。');
-        setOtpDigits(['', '', '', '', '', '', '', '']);
+        // 默认假设已注册
+        setIsRegistered(true);
+        setStep('password');
       }
-    } catch (err: any) {
-      setError(err.message || '发送失败，请重试');
+    } catch {
+      setIsRegistered(true);
+      setStep('password');
     }
     
     setLoading(false);
   };
 
-  // 验证码输入处理
+  // 登录
+  const handleLogin = async () => {
+    if (!validateEmail(email) || !validatePassword(password)) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        setSuccess('登录成功，正在跳转...');
+      } else {
+        setError(getFriendlyError(result.message));
+      }
+    } catch (err) {
+      setError('登录失败，请稍后重试');
+    }
+    
+    setLoading(false);
+  };
+
+  // 注册
+  const handleRegister = async () => {
+    if (!validateEmail(email) || !validatePassword(password) || !validateConfirmPassword(confirmPassword)) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const result = await register(email, password, nickname || undefined);
+      if (result.success) {
+        if (result.needsVerification) {
+          setSuccess('注册成功！验证码已发送到您的邮箱，请查收');
+          setStep('otp');
+        } else {
+          setSuccess('注册成功，正在跳转...');
+        }
+      } else {
+        setError(getFriendlyError(result.message));
+      }
+    } catch (err) {
+      setError('注册失败，请稍后重试');
+    }
+    
+    setLoading(false);
+  };
+
+  // OTP验证
+  const handleOtpVerify = async () => {
+    const otpValue = otpDigits.join('');
+    if (otpValue.length !== 8) {
+      setError('请输入完整的8位验证码');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const result = await verifyOtp(email, otpValue);
+      if (result.success) {
+        setSuccess('验证成功，正在跳转...');
+      } else {
+        setError(getFriendlyError(result.message));
+      }
+    } catch (err) {
+      setError('验证失败，请稍后重试');
+    }
+    
+    setLoading(false);
+  };
+
+  // 重发验证码
+  const handleResendOtp = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setSuccess('验证码已重新发送到您的邮箱');
+      } else {
+        setError(data.error || '发送失败');
+      }
+    } catch (err) {
+      setError('发送失败，请稍后重试');
+    }
+    
+    setLoading(false);
+  };
+
+  // OTP输入处理
   const handleOtpChange = (index: number, value: string) => {
-    // 只允许数字
-    const digit = value.replace(/\D/g, '').slice(-1);
+    if (!/^\d*$/.test(value)) return;
+    
     const newDigits = [...otpDigits];
-    newDigits[index] = digit;
+    newDigits[index] = value.slice(-1);
     setOtpDigits(newDigits);
     
-    // 自动聚焦下一个
-    if (digit && index < 7) {
+    // 自动跳转到下一个输入框
+    if (value && index < 7) {
       otpRefs.current[index + 1]?.focus();
     }
     
-    // 8位输满后自动验证
-    if (newDigits.every(d => d) && newDigits.join('').length === 8) {
-      handleVerifyOtp(newDigits.join(''));
+    // 如果8位都填完了，自动验证
+    if (newDigits.every(d => d !== '') && newDigits.join('').length === 8) {
+      // 延迟执行验证
+      setTimeout(() => {
+        const otpValue = newDigits.join('');
+        // 直接调用验证
+        (async () => {
+          setLoading(true);
+          setError('');
+          try {
+            const result = await verifyOtp(email, otpValue);
+            if (result.success) {
+              setSuccess('验证成功，正在跳转...');
+            } else {
+              setError(getFriendlyError(result.message));
+            }
+          } catch (err) {
+            setError('验证失败，请稍后重试');
+          }
+          setLoading(false);
+        })();
+      }, 300);
     }
   };
 
-  // 验证码粘贴处理
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
-    const newDigits = pastedData.split('').concat(['', '', '', '', '', '', '', '']).slice(0, 8);
-    setOtpDigits(newDigits);
-    
-    // 如果粘贴了8位，自动验证
-    if (pastedData.length === 8) {
-      handleVerifyOtp(pastedData);
-    }
-  };
-
-  // 验证码退格处理
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
 
-  // 验证邮箱验证码
-  const handleVerifyOtp = async (code: string) => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      const { data, error } = await getSupabase().auth.verifyOtp({
-        email: inputValue,
-        token: code,
-        type: 'email'
-      });
-      
-      if (error) {
-        if (error.message.includes('invalid') || error.message.includes('expired')) {
-          setError('验证码无效或已过期，请重新发送');
-          setOtpDigits(['', '', '', '', '', '', '', '']);
-        } else {
-          setError(getFriendlyError(error.message));
-        }
-      } else {
-        // 检查用户绑定状态
-        const { data: { user } } = await getSupabase().auth.getUser();
-        if (user) {
-          if (!user.phone && user.email) {
-            localStorage.setItem('bind_prompt', 'phone');
-          } else if (!user.email && user.phone) {
-            localStorage.setItem('bind_prompt', 'email');
-          }
-        }
-        setSuccess('登录成功！');
-        const redirect = searchParams.get('redirect');
-        setTimeout(() => router.push(redirect || '/'), 500);
-      }
-    } catch (err: any) {
-      setError(err.message || '验证失败，请重试');
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
+    const newDigits = [...otpDigits];
+    for (let i = 0; i < pastedData.length; i++) {
+      newDigits[i] = pastedData[i];
     }
+    setOtpDigits(newDigits);
     
-    setLoading(false);
+    if (pastedData.length > 0) {
+      const focusIndex = Math.min(pastedData.length, 7);
+      otpRefs.current[focusIndex]?.focus();
+    }
   };
 
-  // 密码登录
-  const handlePasswordLogin = async () => {
-    if (!validatePassword(password)) return;
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const result = await login(inputValue, password);
-      
-      if (result.success) {
-        setSuccess('登录成功！');
-        const redirect = searchParams.get('redirect');
-        setTimeout(() => router.push(redirect || '/'), 500);
-      } else {
-        setError(getFriendlyError(result.message));
-      }
-    } catch (err: any) {
-      setError(err.message || '登录失败，请重试');
-    }
-    
-    setLoading(false);
-  };
-
-  // 手机号注册
-  const handlePhoneRegister = async () => {
-    if (!validatePassword(password)) return;
-    if (!validateConfirmPassword(confirmPassword)) return;
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      // 先发送验证码
-      const codeResult = await sendCode(inputValue, 'register');
-      if (!codeResult.success) {
-        setError(getFriendlyError(codeResult.message));
-        setLoading(false);
-        return;
-      }
-      
-      // 开发环境直接使用返回的验证码
-      const verifyCode = codeResult.code || '';
-      
-      const result = await register(inputValue, password, verifyCode, nickname, inviteCode);
-      
-      if (result.success) {
-        setSuccess('注册成功！');
-        setTimeout(() => router.push('/'), 500);
-      } else {
-        setError(getFriendlyError(result.message));
-      }
-    } catch (err: any) {
-      setError(err.message || '注册失败，请重试');
-    }
-    
-    setLoading(false);
-  };
-
-  // 返回输入步骤
+  // 返回上一步
   const handleBack = () => {
-    setStep('input');
-    setPassword('');
-    setConfirmPassword('');
-    setOtpDigits(['', '', '', '', '', '', '', '']);
+    if (step === 'password') {
+      setStep('input');
+      setPassword('');
+      setConfirmPassword('');
+      setNickname('');
+      setIsRegistered(null);
+    } else if (step === 'otp') {
+      setStep('password');
+      setOtpDigits(['', '', '', '', '', '', '', '']);
+    }
     setError('');
     setSuccess('');
-    setInputError('');
-    setPasswordError('');
-    setConfirmPasswordError('');
-    setIsRegistered(null);
-  };
-
-  // 切换到验证码登录
-  const handleSwitchToOtp = async () => {
-    // 使用邮箱验证码登录
-    setError('');
-    setSuccess('');
-    setInputValue('');
-    setInputType('email');
-    setStep('input');
-  };
-
-  // 获取标题
-  const getTitle = () => {
-    if (step === 'input') return '登录 / 注册';
-    if (step === 'password') return '登录';
-    if (step === 'otp') return '验证邮箱';
-    if (step === 'register') return '创建账号';
-    return '登录 / 注册';
-  };
-
-  // 获取描述
-  const getDescription = () => {
-    if (step === 'input') return 'AI驱动，规划你的职业未来';
-    if (step === 'password') return '请输入密码登录';
-    if (step === 'otp') return '验证码已发送到您的邮箱';
-    if (step === 'register') return '设置密码完成注册';
-    return '';
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* 返回链接 */}
-        <Link href="/" className="inline-flex items-center text-gray-600 hover:text-[#165DFF] mb-6 transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" />
+        {/* 顶部返回链接 */}
+        <Link 
+          href="/" 
+          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
           返回首页
         </Link>
 
-        <Card className="border-2 border-gray-100 shadow-xl">
+        <Card className="shadow-lg border-0">
           <CardHeader className="text-center pb-2">
-            {/* Logo */}
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#165DFF] to-[#0d4acc] flex items-center justify-center">
-                <span className="text-white font-bold text-sm">职</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">职途星</span>
+            <div className="mx-auto mb-3 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <Mail className="w-6 h-6 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              {getTitle()}
+            <CardTitle className="text-2xl font-bold">
+              {step === 'otp' ? '验证邮箱' : '职途星'}
             </CardTitle>
             <CardDescription>
-              {getDescription()}
+              {step === 'input' && '请输入您的邮箱地址'}
+              {step === 'password' && isRegistered && '请输入密码登录'}
+              {step === 'password' && !isRegistered && '设置密码完成注册'}
+              {step === 'otp' && `验证码已发送到 ${email}`}
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
-            {/* 邀请码提示 */}
-            {inviteCode && step === 'input' && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                <Gift className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-sm text-green-700">
-                  邀请码 <strong>{inviteCode}</strong>，注册成功双方得奖励
-                </span>
+          <CardContent className="pt-4">
+            {/* 错误提示 */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+            
+            {/* 成功提示 */}
+            {success && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-green-600">{success}</p>
               </div>
             )}
 
-            {/* 步骤1：输入手机号或邮箱 */}
+            {/* 步骤1：邮箱输入 */}
             {step === 'input' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    手机号或邮箱
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      {inputType === 'email' ? <Mail className="w-5 h-5" /> : <Smartphone className="w-5 h-5" />}
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="请输入手机号或邮箱"
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      className={`pl-10 h-12 text-lg ${inputError ? 'border-red-500 focus:border-red-500' : ''}`}
-                      autoFocus
-                    />
-                  </div>
-                  {inputError && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {inputError}
-                    </p>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">邮箱地址</label>
+                  <Input
+                    type="email"
+                    placeholder="请输入邮箱地址"
+                    value={email}
+                    onChange={handleEmailChange}
+                    onKeyDown={(e) => e.key === 'Enter' && handleContinue()}
+                    className={`h-12 ${emailError ? 'border-red-300 focus:border-red-500' : ''}`}
+                    autoFocus
+                  />
+                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
                 </div>
-
-                <Button
+                
+                <Button 
                   onClick={handleContinue}
-                  disabled={loading || !inputValue || !!inputError}
-                  className="w-full bg-[#165DFF] hover:bg-[#0d4acc] text-white h-12 text-lg"
+                  disabled={loading || !email || !!emailError}
+                  className="w-full h-12 text-base"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      处理中...
-                    </>
-                  ) : (
-                    '继续'
-                  )}
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '继续'}
                 </Button>
-
-                {/* 其他方式登录 */}
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowOtherMethods(!showOtherMethods)}
-                    className="text-sm text-gray-500 hover:text-gray-700 w-full text-center flex items-center justify-center gap-1"
-                  >
-                    其他方式登录
-                    <span className={`transition-transform ${showOtherMethods ? 'rotate-180' : ''}`}>▼</span>
-                  </button>
-                  {showOtherMethods && (
-                    <div className="mt-3 space-y-2 p-3 bg-gray-50 rounded-lg">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInputValue('');
-                          setInputType('email');
-                          setInputError('');
-                        }}
-                        className="w-full text-left text-sm text-gray-600 hover:text-[#165DFF] p-2 rounded hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <Mail className="w-4 h-4" />
-                        邮箱验证码登录
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInputValue('');
-                          setInputType('phone');
-                          setInputError('');
-                        }}
-                        className="w-full text-left text-sm text-gray-600 hover:text-[#165DFF] p-2 rounded hover:bg-gray-100 flex items-center gap-2"
-                      >
-                        <Smartphone className="w-4 h-4" />
-                        手机号 + 密码登录
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
 
-            {/* 步骤2a：密码输入（登录） */}
+            {/* 步骤2：密码输入（登录/注册） */}
             {step === 'password' && (
               <div className="space-y-4">
-                {/* 当前账号 + 修改 */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Smartphone className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-700">{inputValue}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="text-sm text-[#165DFF] hover:underline flex items-center gap-1"
-                  >
-                    <Pencil className="w-3 h-3" />
-                    修改
-                  </button>
+                {/* 返回按钮 */}
+                <button 
+                  onClick={handleBack}
+                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  返回
+                </button>
+
+                {/* 邮箱显示 */}
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-500">邮箱</p>
+                  <p className="font-medium">{email}</p>
                 </div>
 
+                {/* 密码输入 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">密码</label>
                   <div className="relative">
                     <Input
                       type={showPassword ? 'text' : 'password'}
@@ -618,7 +450,7 @@ function AuthContent() {
                         setPassword(e.target.value);
                         validatePassword(e.target.value);
                       }}
-                      className={`h-12 pr-10 ${passwordError ? 'border-red-500 focus:border-red-500' : ''}`}
+                      className={`h-12 pr-10 ${passwordError ? 'border-red-300 focus:border-red-500' : ''}`}
                       autoFocus
                     />
                     <button
@@ -629,78 +461,119 @@ function AuthContent() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {passwordError && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {passwordError}
-                    </p>
-                  )}
+                  {passwordError && <p className="text-xs text-red-500 mt-1">{passwordError}</p>}
                 </div>
 
-                {/* 忘记密码 */}
-                <div className="text-right">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setError('请联系客服重置密码，或使用邮箱验证码登录');
-                    }}
-                    className="text-sm text-gray-500 hover:text-[#165DFF]"
+                {/* 注册时需要确认密码和昵称 */}
+                {!isRegistered && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder="请再次输入密码"
+                          value={confirmPassword}
+                          onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                            validateConfirmPassword(e.target.value);
+                          }}
+                          className={`h-12 pr-10 ${confirmPasswordError ? 'border-red-300 focus:border-red-500' : ''}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      {confirmPasswordError && <p className="text-xs text-red-500 mt-1">{confirmPasswordError}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        昵称 <span className="text-gray-400 text-xs">（选填）</span>
+                      </label>
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          placeholder="给自己取个名字吧"
+                          value={nickname}
+                          onChange={(e) => setNickname(e.target.value)}
+                          className="h-12 pl-10"
+                        />
+                        <Pencil className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* 操作按钮 */}
+                {isRegistered ? (
+                  <Button 
+                    onClick={handleLogin}
+                    disabled={loading || !password || !!passwordError}
+                    className="w-full h-12 text-base"
                   >
-                    忘记密码？
-                  </button>
-                </div>
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '登录'}
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleRegister}
+                    disabled={loading || !password || !confirmPassword || !!passwordError || !!confirmPasswordError}
+                    className="w-full h-12 text-base"
+                  >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '注册'}
+                  </Button>
+                )}
 
-                <Button
-                  onClick={handlePasswordLogin}
-                  disabled={loading || !password || !!passwordError}
-                  className="w-full bg-[#165DFF] hover:bg-[#0d4acc] text-white h-12 text-lg"
-                >
-                  {loading ? (
+                {/* 切换登录/注册 */}
+                <div className="text-center text-sm text-gray-500">
+                  {isRegistered ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      登录中...
+                      还没有账号？
+                      <button 
+                        onClick={() => { setIsRegistered(false); setConfirmPassword(''); setConfirmPasswordError(''); }}
+                        className="text-blue-600 hover:text-blue-700 font-medium ml-1"
+                      >
+                        立即注册
+                      </button>
                     </>
                   ) : (
-                    '登录'
+                    <>
+                      已有账号？
+                      <button 
+                        onClick={() => { setIsRegistered(true); setConfirmPassword(''); setConfirmPasswordError(''); }}
+                        className="text-blue-600 hover:text-blue-700 font-medium ml-1"
+                      >
+                        立即登录
+                      </button>
+                    </>
                   )}
-                </Button>
-
-                {/* 使用验证码登录 */}
-                <div className="text-center pt-2">
-                  <button
-                    type="button"
-                    onClick={handleSwitchToOtp}
-                    className="text-sm text-[#165DFF] hover:underline"
-                  >
-                    使用邮箱验证码登录
-                  </button>
                 </div>
               </div>
             )}
 
-            {/* 步骤2b：验证码输入 */}
+            {/* 步骤3：OTP验证 */}
             {step === 'otp' && (
               <div className="space-y-4">
-                {/* 当前邮箱 + 修改 */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-700">{inputValue}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="text-sm text-[#165DFF] hover:underline flex items-center gap-1"
-                  >
-                    <Pencil className="w-3 h-3" />
-                    修改
-                  </button>
-                </div>
+                {/* 返回按钮 */}
+                <button 
+                  onClick={handleBack}
+                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  返回
+                </button>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">验证码</label>
-                  {/* 桌面端：一行8格；移动端：两行4+4 */}
-                  <div className="flex flex-wrap gap-2 justify-center">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-4">
+                    我们已向 <span className="font-medium text-gray-900">{email}</span> 发送了8位数字验证码
+                  </p>
+                  
+                  {/* OTP输入框 */}
+                  <div className="flex justify-center gap-2 mb-4" onPaste={handleOtpPaste}>
                     {otpDigits.map((digit, index) => (
                       <Input
                         key={index}
@@ -711,170 +584,42 @@ function AuthContent() {
                         value={digit}
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-10 h-12 md:w-11 md:h-13 text-center text-xl md:text-2xl font-bold border-2 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20"
-                        autoFocus={index === 0}
+                        className="w-10 h-12 text-center text-lg font-semibold p-0"
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 text-center">
-                    输入邮箱收到的8位验证码
-                  </p>
+                  
+                  <p className="text-xs text-gray-400 mb-4">验证码为8位数字，请查看您的邮箱</p>
                 </div>
 
-                {/* 重新发送 */}
+                <Button 
+                  onClick={handleOtpVerify}
+                  disabled={loading || otpDigits.join('').length !== 8}
+                  className="w-full h-12 text-base"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '验证'}
+                </Button>
+
+                {/* 重发验证码 */}
                 <div className="text-center">
                   <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={loading || countdown > 0}
-                    className="text-sm text-gray-500 hover:text-[#165DFF] disabled:text-gray-400"
+                    onClick={handleResendOtp}
+                    disabled={loading}
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center gap-1 mx-auto"
                   >
-                    {countdown > 0 ? `${countdown}秒后可重新发送` : '重新发送验证码'}
+                    <RefreshCw className="w-3 h-3" />
+                    重新发送验证码
                   </button>
                 </div>
               </div>
-            )}
-
-            {/* 步骤2c：注册（设置密码） */}
-            {step === 'register' && (
-              <div className="space-y-4">
-                {/* 当前手机号 + 修改 */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Smartphone className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-700">{inputValue}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    className="text-sm text-[#165DFF] hover:underline flex items-center gap-1"
-                  >
-                    <Pencil className="w-3 h-3" />
-                    修改
-                  </button>
-                </div>
-
-                {/* 昵称 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    昵称（选填）
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="请输入昵称"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    maxLength={20}
-                    className="h-12"
-                  />
-                </div>
-
-                {/* 设置密码 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">设置密码</label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="至少6位密码"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        validatePassword(e.target.value);
-                        if (confirmPassword) validateConfirmPassword(confirmPassword);
-                      }}
-                      className={`h-12 pr-10 ${passwordError ? 'border-red-500 focus:border-red-500' : ''}`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {passwordError && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {passwordError}
-                    </p>
-                  )}
-                </div>
-
-                {/* 确认密码 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">确认密码</label>
-                  <div className="relative">
-                    <Input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="再次输入密码"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        validateConfirmPassword(e.target.value);
-                      }}
-                      className={`h-12 pr-10 ${confirmPasswordError ? 'border-red-500 focus:border-red-500' : ''}`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {confirmPasswordError && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {confirmPasswordError}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  onClick={handlePhoneRegister}
-                  disabled={loading || !password || !confirmPassword || !!passwordError || !!confirmPasswordError}
-                  className="w-full bg-[#165DFF] hover:bg-[#0d4acc] text-white h-12 text-lg"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      注册中...
-                    </>
-                  ) : (
-                    '注册'
-                  )}
-                </Button>
-              </div>
-            )}
-
-            {/* 错误提示 */}
-            {error && (
-              <div className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-lg flex items-center justify-center gap-2 mt-4">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* 成功提示 */}
-            {success && (
-              <div className="text-sm text-green-600 text-center bg-green-50 p-3 rounded-lg flex items-center justify-center gap-2 mt-4">
-                <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{success}</span>
-              </div>
-            )}
-
-            {/* 注册提示 */}
-            {step === 'register' && (
-              <p className="mt-4 text-xs text-gray-500 text-center">
-                注册即表示同意
-                <Link href="/terms" className="text-[#165DFF] hover:underline mx-1">《用户协议》</Link>
-                和
-                <Link href="/privacy" className="text-[#165DFF] hover:underline mx-1">《隐私政策》</Link>
-              </p>
             )}
           </CardContent>
         </Card>
+
+        {/* 底部提示 */}
+        <p className="text-center text-xs text-gray-400 mt-6">
+          登录即表示您同意我们的服务条款和隐私政策
+        </p>
       </div>
     </div>
   );
@@ -883,8 +628,8 @@ function AuthContent() {
 export default function AuthPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     }>
       <AuthContent />
