@@ -1,29 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-
-// 设置认证 Cookie
-function setAuthCookies(
-  response: NextResponse,
-  accessToken: string,
-  refreshToken: string,
-  expiresAt: number
-): void {
-  const now = Math.floor(Date.now() / 1000);
-  const expiresIn = Math.max(expiresAt - now, 3600);
-  const maxAge = 30 * 24 * 60 * 60;
-  const isProd = process.env.NODE_ENV === 'production';
-  
-  const accessCookie = `sb-access-token=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${expiresIn}${isProd ? '; Secure' : ''}`;
-  const refreshCookie = `sb-refresh-token=${refreshToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${isProd ? '; Secure' : ''}`;
-  
-  const existingCookies = response.headers.get('Set-Cookie') || '';
-  const newCookies = existingCookies 
-    ? `${existingCookies}, ${accessCookie}, ${refreshCookie}`
-    : `${accessCookie}, ${refreshCookie}`;
-  
-  response.headers.set('Set-Cookie', newCookies);
-}
+import { setAuthCookies } from '@/lib/auth-cookies';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,11 +39,6 @@ export async function POST(request: NextRequest) {
         email: authData.user.email,
         nickname: authData.user.user_metadata?.nickname || `用户${authData.user.email?.split('@')[0]?.slice(-4) || ''}`,
         is_member: false
-      },
-      session: {
-        access_token: authData.session.access_token,
-        refresh_token: authData.session.refresh_token,
-        expires_at: authData.session.expires_at,
       }
     });
     
