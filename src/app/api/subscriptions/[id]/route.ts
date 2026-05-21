@@ -1,24 +1,26 @@
 export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('sb-access-token')?.value;
+    // 从 cookie 读取 sb-access-token（与 /api/auth/me 一致）
+    const cookieHeader = request.headers.get('cookie') || '';
+    const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
+    const token = tokenMatch ? tokenMatch[1] : null;
 
     if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
+
+    // 动态导入 Supabase（与 /api/auth/me 一致）
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
@@ -42,16 +44,25 @@ export async function GET(
 }
 
 export async function PUT(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('sb-access-token')?.value;
+    // 从 cookie 读取 sb-access-token（与 /api/auth/me 一致）
+    const cookieHeader = request.headers.get('cookie') || '';
+    const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
+    const token = tokenMatch ? tokenMatch[1] : null;
 
     if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
+
+    // 动态导入 Supabase（与 /api/auth/me 一致）
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
@@ -73,16 +84,25 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('sb-access-token')?.value;
+    // 从 cookie 读取 sb-access-token（与 /api/auth/me 一致）
+    const cookieHeader = request.headers.get('cookie') || '';
+    const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
+    const token = tokenMatch ? tokenMatch[1] : null;
 
     if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
+
+    // 动态导入 Supabase（与 /api/auth/me 一致）
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
