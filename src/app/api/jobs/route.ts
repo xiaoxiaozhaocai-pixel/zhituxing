@@ -198,6 +198,9 @@ export async function GET(request: NextRequest) {
     const industry = searchParams.get('industry') || '';
     const city = searchParams.get('city') || '';
     const freshOnly = searchParams.get('freshOnly') === 'true';
+    const education = searchParams.get('education') || '';
+    const experience = searchParams.get('experience') || '';
+    const companyType = searchParams.get('companyType') || '';
     const keyword = searchParams.get('keyword') || '';
     
     // ============================================================
@@ -231,7 +234,7 @@ export async function GET(request: NextRequest) {
     // ============================================================
     // 缓存检查
     // ============================================================
-    const cacheKey = `jobs:${keyword}:${industry}:${city}:${freshOnly}:${page}:${pageSize}`;
+    const cacheKey = `jobs:${keyword}:${industry}:${city}:${freshOnly}:${education}:${experience}:${companyType}:${page}:${pageSize}`;
     const cached = getCachedResult(cacheKey);
     if (cached) {
       console.log('[jobs] 缓存命中:', cacheKey);
@@ -252,6 +255,22 @@ export async function GET(request: NextRequest) {
         if (industry) q = q.eq('industry', industry);
         if (city) q = q.eq('city', city);
         if (freshOnly) q = q.eq('fresh_graduate_friendly', true);
+        if (education && education !== '不限') q = q.eq('education', education);
+        if (companyType && companyType !== '全部') q = q.eq('company_type', companyType);
+        if (experience && experience !== '不限') {
+          // Map front-end categories to DB value patterns using ilike
+          const expMap: Record<string, string[]> = {
+            '应届生': ['应届%', '%应届%'],
+            '1-3年': ['1-3年%', '%1年%', '%1-2%'],
+            '3-5年': ['3-5年%', '%3年%'],
+            '5年以上': ['5-%', '%5年以上%', '%6年%', '%7年%', '%8年%', '%10年%'],
+          };
+          const patterns = expMap[experience];
+          if (patterns && patterns.length > 0) {
+            const orFilter = patterns.map((p: string) => 'experience.ilike.' + p).join(',');
+            q = q.or(orFilter);
+          }
+        }
         return q;
       };
       
@@ -385,6 +404,22 @@ export async function GET(request: NextRequest) {
     if (industry) query = query.eq('industry', industry);
     if (city) query = query.eq('city', city);
     if (freshOnly) query = query.eq('fresh_graduate_friendly', true);
+    if (education && education !== '不限') query = query.eq('education', education);
+    if (companyType && companyType !== '全部') query = query.eq('company_type', companyType);
+    if (experience && experience !== '不限') {
+      // Map front-end categories to DB value patterns using ilike
+      const expMap: Record<string, string[]> = {
+        '应届生': ['应届%', '%应届%'],
+        '1-3年': ['1-3年%', '%1年%', '%1-2%'],
+        '3-5年': ['3-5年%', '%3年%'],
+        '5年以上': ['5-%', '%5年以上%', '%6年%', '%7年%', '%8年%', '%10年%'],
+      };
+      const patterns = expMap[experience];
+      if (patterns && patterns.length > 0) {
+        const orFilter = patterns.map((p: string) => 'experience.ilike.' + p).join(',');
+        query = query.or(orFilter);
+      }
+    }
     
     const { data, error, count } = await query
       .range(offset, offset + pageSize - 1)
