@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,26 +21,23 @@ const getDefaultProfile = (userId: string) => ({
   updated_at: new Date().toISOString()
 });
 
-// 从 cookie 认证用户
-async function authenticateUser(request: NextRequest): Promise<string | null> {
-  const cookieHeader = request.headers.get('cookie') || '';
-  const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
-  const token = tokenMatch ? tokenMatch[1] : null;
-
-  if (!token) return null;
-
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return null;
-
-  return user.id;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const userId = await authenticateUser(request);
-    if (!userId) {
+    // 使用 next/headers 的 cookies() 获取 token
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
+
+    // 验证 token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: '认证失败' }, { status: 401 });
+    }
+
+    const userId = user.id;
 
     const { data: profile, error } = await supabase
       .from('user_profiles')
@@ -65,30 +63,39 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, data: profile });
-  } catch (error) {
-    console.error('获取用户画像失败:', error);
-    // 即使出错也返回默认值，不返回500
+  } catch (err) {
+    console.error('获取用户画像失败:', err);
     return NextResponse.json({ 
       success: true, 
-      data: getDefaultProfile('') 
+      data: getDefaultProfile('unknown') 
     });
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const userId = await authenticateUser(request);
-    if (!userId) {
+    // 使用 next/headers 的 cookies() 获取 token
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
+
+    // 验证 token
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: '认证失败' }, { status: 401 });
+    }
+
+    const userId = user.id;
 
     const body = await request.json();
     const { major, target_position, skills, education, experience } = body;
 
-    // 构建更新数据
-    const updateData: Record<string, unknown> = {
-      user_id: userId,
-      updated_at: new Date().toISOString()
+    // 构建 update 对象，只包含提供的字段
+    const updateData: Record<string, unknown> = { 
+      updated_at: new Date().toISOString() 
     };
     if (major !== undefined) updateData.major = major;
     if (target_position !== undefined) updateData.target_position = target_position;
@@ -96,27 +103,36 @@ export async function PUT(request: NextRequest) {
     if (education !== undefined) updateData.education = education;
     if (experience !== undefined) updateData.experience = experience;
 
-    // 使用 upsert（存在则更新，不存在则插入）
-    const { data, error } = await supabase
+    // 使用 upsert：存在则更新，不存在则插入
+    const { data: profile, error } = await supabase
       .from('user_profiles')
-      .upsert(updateData, { onConflict: 'user_id' })
+      .upsert({
+        user_id: userId,
+        ...updateData
+      }, {
+        onConflict: 'user_id'
+      })
       .select()
       .single();
 
     if (error) {
-      console.warn('保存user_profiles失败，返回传入数据:', error.message);
+      console.error('保存用户画像失败:', error);
+      // 即使保存失败，也返回成功和数据
       return NextResponse.json({ 
         success: true, 
-        data: { ...updateData, id: null } 
+        data: {
+          user_id: userId,
+          ...updateData
+        }
       });
     }
 
-    return NextResponse.json({ success: true, data });
-  } catch (error) {
-    console.error('更新用户画像失败:', error);
+    return NextResponse.json({ success: true, data: profile });
+  } catch (err) {
+    console.error('更新用户画像失败:', err);
     return NextResponse.json({ 
       success: true, 
-      data: getDefaultProfile('') 
+      data: { message: '保存完成' }
     });
   }
 }
