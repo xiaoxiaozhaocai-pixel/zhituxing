@@ -18,12 +18,24 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseAdmin();
 
     // 重发邮箱OTP验证码
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-      }
-    });
+    // 对于注册验证（signup类型），使用 resend 方法
+    // 对于其他类型，使用 signInWithOtp
+    let error;
+    if (type === 'signup') {
+      const result = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      error = result.error;
+    } else {
+      const result = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+        }
+      });
+      error = result.error;
+    }
 
     if (error) {
       console.error('重发验证码失败:', error.message);
