@@ -23,6 +23,23 @@ const getDefaultProfile = (userId: string) => ({
 
 export async function GET(request: NextRequest) {
   try {
+    // 调试模式：?debug=1 返回 cookie 信息
+    const url = new URL(request.url);
+    if (url.searchParams.get('debug') === '1') {
+      const cookieStore = await cookies();
+      const allCookies = await cookieStore.getAll();
+      const cookieHeader = request.headers.get('cookie') || '';
+      
+      return NextResponse.json({
+        debug: true,
+        cookieHeader: cookieHeader.substring(0, 500),
+        cookieHeaderLength: cookieHeader.length,
+        cookieStoreKeys: allCookies.map(c => c.name),
+        sbAccessToken: cookieStore.get('sb-access-token')?.value?.substring(0, 50) + '...' || null,
+        sbRefreshToken: cookieStore.get('sb-refresh-token')?.value?.substring(0, 50) + '...' || null,
+      });
+    }
+
     // 使用 next/headers 的 cookies() 获取 token
     const cookieStore = await cookies();
     const token = cookieStore.get('sb-access-token')?.value;
