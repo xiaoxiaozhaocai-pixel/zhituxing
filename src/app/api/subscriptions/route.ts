@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -7,25 +8,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// 从 cookie 认证用户
-async function authenticateUser(request: NextRequest): Promise<string | null> {
-  const cookieHeader = request.headers.get('cookie') || '';
-  const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
-  const token = tokenMatch ? tokenMatch[1] : null;
-
-  if (!token) return null;
-
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return null;
-
-  return user.id;
-}
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const userId = await authenticateUser(request);
-    if (!userId) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return NextResponse.json({ error: '认证失败' }, { status: 401 });
     }
 
     // 所有功能已免费开放，返回空订阅
@@ -44,11 +38,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const userId = await authenticateUser(request);
-    if (!userId) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('sb-access-token')?.value;
+
+    if (!token) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) {
+      return NextResponse.json({ error: '认证失败' }, { status: 401 });
     }
 
     // 所有功能已免费开放，无需订阅
