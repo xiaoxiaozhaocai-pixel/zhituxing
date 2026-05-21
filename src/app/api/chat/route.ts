@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest } from 'next/server';
 import { checkFeatureAccess } from '@/lib/quota';
+import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
     // ============================================================
     // 安全检查：必须登录
     // ============================================================
-    const accessToken = request.cookies.get('sb-access-token');
+    const accessToken = parseAccessTokenFromCookie(request.headers) || request.cookies.get('sb-access-token')?.value || null;
     if (!accessToken) {
       return new Response(
         JSON.stringify({ error: '请先登录' }),
@@ -199,8 +200,13 @@ export async function POST(request: NextRequest) {
 
     // 1. 用户验证，查 user_profiles 表获取 user_type
     const userInfo = await getUserInfoFromRequest(request);
+    // Fix6: 如果 userInfo 为 null 但有 accessToken，说明用户已登录但查不到信息，允许继续
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
+    
+    if (!userInfo && accessToken) {
+      console.log('[chat] User info not found but token exists, treating as free user');
+    }
 
     // 获取用户个人信息上下文
     let userContext = '';
@@ -208,7 +214,7 @@ export async function POST(request: NextRequest) {
       userContext = await getUserProfileContext(userId);
     }
 
-    // 检查配额（非会员需要扣减）
+    // 检查配额（仅当 userId 存在时）
     if (userId) {
       const feature = botType === 'interview' ? 'interview' :
                       botType === 'assessment' ? 'assessment' : 'career_planning';

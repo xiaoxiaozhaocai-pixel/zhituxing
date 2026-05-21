@@ -4,7 +4,6 @@
  */
 
 import { NextRequest } from 'next/server';
-import { execSql } from '@/lib/exec-sql';
 
 // 用户信息类型
 export interface UserInfo {
@@ -14,27 +13,16 @@ export interface UserInfo {
 
 /**
  * 1. 用户验证 — 查 user_profiles 表，返回 { userId, userType }
+ * Fix5: 使用 REST API 避免 SQL 注入
  */
 export async function getUserInfoFromRequest(request: NextRequest): Promise<UserInfo | null> {
   const userId = request.headers.get('x-user-id');
   if (!userId) return null;
 
   try {
-    // 优先使用 execSql 查询（兼容 Edge Runtime）
-    const result = await execSql(
-      `SELECT user_id, user_type FROM user_profiles WHERE user_id = '${userId}' LIMIT 1`
-    );
-
-    if (result && result.length > 0) {
-      return {
-        userId,
-        userType: (result[0] as { user_type: string }).user_type || 'free',
-      };
-    }
-
-    // execSql 失败时，fallback 到 Supabase REST API
+    // 使用 Supabase REST API 查询，避免 SQL 注入
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${userId}&select=user_id,user_type&limit=1`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${encodeURIComponent(userId)}&select=user_id,user_type&limit=1`,
       {
         headers: {
           'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
@@ -61,23 +49,31 @@ export async function getUserInfoFromRequest(request: NextRequest): Promise<User
 
 /**
  * 2. 获取用户个人信息并构建上下文
+ * Fix5: 使用 REST API 避免 SQL 注入
  */
 export async function getUserProfileContext(userId: string): Promise<string> {
   try {
-    const result = await execSql(
-      `SELECT personality_type, major, grade, graduation_year, city, 
-              job_intention, skills, internship_experience, project_experience, awards,
-              ability_background
-       FROM user_profiles 
-       WHERE user_id = '${userId}' 
-       LIMIT 1`
+    // 使用 Supabase REST API 查询，避免 SQL 注入
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${encodeURIComponent(userId)}&select=personality_type,major,grade,graduation_year,city,job_intention,skills,internship_experience,project_experience,awards,ability_background&limit=1`,
+      {
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+        },
+      }
     );
 
-    if (!result || result.length === 0) {
+    if (!res.ok) {
       return '';
     }
 
-    const profile = result[0] as {
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      return '';
+    }
+
+    const profile = data[0] as {
       personality_type: string | null;
       major: string | null;
       grade: string | null;
@@ -156,6 +152,7 @@ export async function getUserProfileContext(userId: string): Promise<string> {
 /**
  * 3. 保存结构化数据到 Supabase
  * 根据 dataType 映射到对应表
+ * Fix5: 使用 REST API 避免 SQL 注入
  */
 export async function saveStructuredData(
   botType: string | undefined,
@@ -165,31 +162,48 @@ export async function saveStructuredData(
 ): Promise<void> {
   try {
     const now = new Date().toISOString();
-    const jsonStr = JSON.stringify(jsonData).replace(/'/g, "''");
-
-    // 优先按 dataType 判断表，其次按 botType
+    
+    // 确定目标表
+    let table = '';
+    let dataField = 'result_data';
     if (dataType === 'interview_result' || botType === 'interview') {
-      await execSql(
-        `INSERT INTO interview_results (user_id, result_data, created_at) 
-         VALUES ('${userId}', '${jsonStr}', '${now}')`
-      );
+      table = 'interview_results';
     } else if (dataType === 'career_plan' || botType === 'career') {
-      await execSql(
-        `INSERT INTO career_plans (user_id, plan_data, created_at) 
-         VALUES ('${userId}', '${jsonStr}', '${now}')`
-      );
+      table = 'career_plans';
+      dataField = 'plan_data';
     } else if (dataType === 'jd_match' || dataType === 'skill_job_match' || botType === 'jobs') {
-      await execSql(
-        `INSERT INTO skill_job_match (user_id, match_data, created_at) 
-         VALUES ('${userId}', '${jsonStr}', '${now}')`
-      );
+      table = 'skill_job_match';
+      dataField = 'match_data';
     } else if (dataType === 'skill_assessment' || botType === 'assessment') {
-      await execSql(
-        `INSERT INTO assessment_results (user_id, result_data, created_at) 
-         VALUES ('${userId}', '${jsonStr}', '${now}')`
-      );
+      table = 'assessment_results';
     }
-    console.log(`结构化数据已保存: botType=${botType}, type=${dataType}`);
+    
+    if (!table) return;
+
+    // 使用 Supabase REST API 插入数据
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${table}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          [dataField]: jsonData,
+          created_at: now,
+        }),
+      }
+    );
+
+    if (res.ok) {
+      console.log(`结构化数据已保存: botType=${botType}, type=${dataType}`);
+    } else {
+      console.error('保存结构化数据失败:', res.status, await res.text());
+    }
   } catch (error) {
     console.error('保存结构化数据失败:', error);
   }
