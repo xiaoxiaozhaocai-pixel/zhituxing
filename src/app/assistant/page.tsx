@@ -13,6 +13,29 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { toast } from 'sonner';
+import DOMPurify from 'dompurify';
+
+// 初始化 DOMPurify（组件挂载时调用）
+function initDOMPurify() {
+  DOMPurify.addHook('uponSanitizeElement', (node) => {
+    // 移除所有 on* 事件属性
+    if (node instanceof Element) {
+      for (const attr of Array.from(node.attributes)) {
+        if (attr.name.toLowerCase().startsWith('on')) {
+          node.removeAttribute(attr.name);
+        }
+      }
+    }
+  });
+}
+
+/** XSS 防护：清洗 HTML 内容 */
+function sanitizeContent(content: string): string {
+  return DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'span', 'div'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+  });
+}
 
 interface Message {
   role: 'user' | 'assistant';
@@ -375,11 +398,26 @@ function AssistantContent() {
       return;
     }
     
-    // 支持的文件格式
-    const supportedFormats = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png'];
+    // 支持的文件格式（白名单）
+    const supportedFormats = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif'];
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!supportedFormats.includes(fileExt)) {
-      toast.error('支持的格式：PDF、DOC、DOCX、TXT、JPG、PNG');
+      toast.error('支持的格式：PDF、DOC、DOCX、TXT、JPG、PNG、GIF');
+      return;
+    }
+    
+    // MIME 类型白名单校验（额外安全层）
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+    ];
+    if (file.type && !allowedMimeTypes.includes(file.type)) {
+      toast.error('文件类型不支持');
       return;
     }
     

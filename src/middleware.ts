@@ -32,18 +32,21 @@ const SECURITY_HEADERS = {
 };
 
 // ============================================================
-// 获取客户端 IP
+// 获取客户端 IP（优先级：Cloudflare > x-real-ip > x-forwarded-for）
 // ============================================================
 function getClientIP(request: NextRequest): string {
-  // 优先检查代理头
+  // 1. 优先 Cloudflare 真实 IP
+  const cfIP = request.headers.get('cf-connecting-ip');
+  if (cfIP) return cfIP;
+  
+  // 2. 其次 x-real-ip
+  const realIP = request.headers.get('x-real-ip');
+  if (realIP) return realIP;
+  
+  // 3. 最后 x-forwarded-for（取第一个）
   const forwardedFor = request.headers.get('x-forwarded-for');
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
-  }
-  
-  const realIP = request.headers.get('x-real-ip');
-  if (realIP) {
-    return realIP;
   }
   
   // 兜底
