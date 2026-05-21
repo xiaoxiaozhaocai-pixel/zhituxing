@@ -180,7 +180,7 @@ function formatJob(job: any, relevance?: number) {
 // 关键词白名单：允许中英文、数字、空格、常用符号
 const KEYWORD_REGEX = /^[\w\s\u4e00-\u9fa5\-+,.]+$/;
 const MAX_KEYWORD_LENGTH = 50;
-const MAX_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 100;
 
 export async function GET(request: NextRequest) {
   try {
@@ -192,8 +192,8 @@ export async function GET(request: NextRequest) {
     
     const searchParams = request.nextUrl.searchParams;
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    // 未登录用户限制每页最多10条
-    const maxPageSize = isAuthenticated ? MAX_PAGE_SIZE : 10;
+    // 未登录用户限制每页最多50条，登录用户最多100条
+    const maxPageSize = isAuthenticated ? MAX_PAGE_SIZE : 50;
     const pageSize = Math.min(maxPageSize, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
     const industry = searchParams.get('industry') || '';
     const city = searchParams.get('city') || '';
@@ -418,11 +418,10 @@ export async function GET(request: NextRequest) {
     const result = {
       success: true,
       data: safeData,
-      // 未登录用户隐藏真实总数
-      total: isAuthenticated ? (count || 0) : Math.min(count || 0, 200),
+      total: count || 0,
       page,
       pageSize,
-      totalPages: isAuthenticated ? Math.ceil((count || 0) / pageSize) : undefined
+      totalPages: Math.ceil((count || 0) / pageSize)
     };
     
     setCachedResult(cacheKey, result);
