@@ -30,15 +30,9 @@ interface FilterOption {
 // 默认筛选选项（加载前显示）
 const defaultIndustries: FilterOption[] = [{ label: '全部', value: '全部', count: 0 }];
 const defaultCities: FilterOption[] = [{ label: '全国', value: '全国', count: 0 }];
-
-// 企业类型
-const companyTypes = ['全部', '民营企业', '国有企业', '外资企业', '上市公司', '事业单位', '创业公司'];
-
-// 学历要求选项
-const educationOptions = ['不限', '大专', '本科', '硕士', '博士'];
-
-// 工作经验选项
-const experienceOptions = ['不限', '应届生', '1-3年', '3-5年', '5年以上'];
+const defaultEducation: FilterOption[] = [{ label: '不限', value: '不限', count: 0 }];
+const defaultExperience: FilterOption[] = [{ label: '不限', value: '不限', count: 0 }];
+const defaultCompanyTypes: FilterOption[] = [{ label: '全部', value: '全部', count: 0 }];
 
 // 排序选项
 const sortOptions = [
@@ -91,6 +85,9 @@ export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null); // 选中的岗位，用于弹窗展示
   const [industries, setIndustries] = useState<FilterOption[]>(defaultIndustries);
   const [cities, setCities] = useState<FilterOption[]>(defaultCities);
+  const [educationOpts, setEducationOpts] = useState<FilterOption[]>(defaultEducation);
+  const [experienceOpts, setExperienceOpts] = useState<FilterOption[]>(defaultExperience);
+  const [companyTypeOpts, setCompanyTypeOpts] = useState<FilterOption[]>(defaultCompanyTypes);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -181,6 +178,9 @@ export default function JobsPage() {
           const data = await res.json();
           if (data.industries) setIndustries(data.industries);
           if (data.cities) setCities(data.cities);
+          if (data.education) setEducationOpts(data.education);
+          if (data.experience) setExperienceOpts(data.experience);
+          if (data.companyTypes) setCompanyTypeOpts(data.companyTypes);
         }
       } catch (error) {
         console.error('获取筛选选项失败:', error);
@@ -582,9 +582,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={filters.education}
                 onChange={(e) => handleFilterChange('education', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                disabled={filtersLoading}
               >
-                {educationOptions.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
+                {educationOpts.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
                 ))}
               </select>
             </div>
@@ -596,9 +597,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={filters.experience}
                 onChange={(e) => handleFilterChange('experience', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                disabled={filtersLoading}
               >
-                {experienceOptions.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
+                {experienceOpts.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
                 ))}
               </select>
             </div>
@@ -610,9 +612,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={filters.companyType}
                 onChange={(e) => handleFilterChange('companyType', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                disabled={filtersLoading}
               >
-                {companyTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                {companyTypeOpts.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
                 ))}
               </select>
             </div>
