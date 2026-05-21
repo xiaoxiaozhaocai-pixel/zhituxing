@@ -25,9 +25,9 @@ const steps = [
     step: 1,
     icon: <User className="w-10 h-10" />,
     title: '注册登录',
-    description: '手机号一键注册，所有AI服务完全免费使用',
+    description: '邮箱一键注册，所有AI服务完全免费使用',
     details: [
-      '输入手机号，60秒完成注册',
+      '输入邮箱，60秒完成注册',
       '注册即送5次免费AI服务次数',
       '完善个人信息，获得更精准的推荐'
     ],
