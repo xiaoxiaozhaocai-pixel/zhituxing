@@ -12,7 +12,7 @@ import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/t
 import Link from 'next/link';
 import {
   Target, Search, SlidersHorizontal, ChevronDown, ChevronUp,
-  MapPin, DollarSign, TrendingUp, Briefcase, AlertTriangle, Lock, LogIn
+  MapPin, DollarSign, TrendingUp, Briefcase, AlertTriangle, Lock, LogIn, Sparkles, EyeOff
 } from 'lucide-react';
 
 interface MatchJobResult {
@@ -35,6 +35,14 @@ interface MatchJobResult {
   salary: { estimatedMin: number; estimatedMax: number; estimatedMedian: number };
 }
 
+interface UnderratedJob {
+  jobName: string;
+  matchScore: number;
+  reason: string;
+  city?: string;
+  industry?: string;
+}
+
 type SortKey = 'matchScore' | 'salary' | 'city';
 
 export default function MatchPage() {
@@ -47,6 +55,8 @@ export default function MatchPage() {
   const [cityFilter, setCityFilter] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [fetched, setFetched] = useState(false);
+  const [underratedJobs, setUnderratedJobs] = useState<UnderratedJob[]>([]);
+  const [underratedLoading, setUnderratedLoading] = useState(false);
 
   // 埋点：页面浏览
   usePageView('match');
@@ -76,12 +86,41 @@ export default function MatchPage() {
       if (data.success) {
         setResults(data.data || []);
         setUserSkills(data.userSkills || []);
+        
+        // 获取反向匹配数据
+        if (data.userSkills && data.userSkills.length > 0) {
+          fetchUnderratedJobs(data.userSkills);
+        }
       }
     } catch (err) {
       console.error('匹配失败:', err);
     } finally {
       setLoading(false);
       setFetched(true);
+    }
+  };
+
+  // 获取反向匹配（被低估的好机会）
+  const fetchUnderratedJobs = async (skills: string[]) => {
+    if (!user?.id || skills.length === 0) return;
+    setUnderratedLoading(true);
+    try {
+      const res = await fetch('/api/match/underrated', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': user.id 
+        },
+        body: JSON.stringify({ skills }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUnderratedJobs(data.data || []);
+      }
+    } catch (err) {
+      console.error('获取反向匹配失败:', err);
+    } finally {
+      setUnderratedLoading(false);
     }
   };
 
@@ -398,6 +437,89 @@ export default function MatchPage() {
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* 反向匹配区域：被你忽略的好机会 */}
+        {!loading && fetched && userSkills.length > 0 && (
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">被你忽略的好机会</h2>
+                <p className="text-sm text-gray-500">根据你的能力，你可能低估了这些岗位</p>
+              </div>
+            </div>
+
+            {underratedLoading ? (
+              <Card className="border-violet-100">
+                <CardContent className="py-10 text-center">
+                  <Spinner className="w-8 h-8 text-violet-500 mx-auto" />
+                  <p className="mt-3 text-gray-500 text-sm">正在分析你的隐藏优势...</p>
+                </CardContent>
+              </Card>
+            ) : underratedJobs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {underratedJobs.map((job, i) => (
+                  <Card key={i} className="border-violet-100 hover:shadow-lg transition-shadow overflow-hidden group cursor-pointer">
+                    <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
+                    <CardContent className="py-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-bold text-gray-900 group-hover:text-violet-600 transition-colors">
+                          {job.jobName}
+                        </h3>
+                        <div className="flex items-center gap-1 text-violet-600 bg-violet-50 px-2 py-1 rounded-full text-xs font-medium">
+                          <EyeOff className="w-3 h-3" />
+                          被低估
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
+                        {job.city && <span><MapPin className="w-3 h-3 inline mr-1" />{job.city}</span>}
+                        {job.industry && <span><Briefcase className="w-3 h-3 inline mr-1" />{job.industry}</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="text-2xl font-bold text-violet-600">{job.matchScore}%</div>
+                        <div className="text-xs text-gray-500">匹配度</div>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        <span className="text-violet-600 font-medium">为什么被低估：</span>
+                        {job.reason}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="border-violet-100">
+                <CardContent className="py-10 text-center">
+                  <Sparkles className="w-10 h-10 text-violet-300 mx-auto mb-3" />
+                  <p className="text-gray-500">暂无被低估的岗位推荐</p>
+                  <p className="text-gray-400 text-sm mt-1">完善更多技能信息，解锁隐藏机会</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* 未登录/无技能时显示解锁提示 */}
+        {!loading && fetched && userSkills.length === 0 && filtered.length > 0 && (
+          <div className="mt-10">
+            <Card className="border-violet-100 bg-gradient-to-br from-violet-50 to-purple-50">
+              <CardContent className="py-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">解锁反向匹配</h3>
+                <p className="text-gray-500 text-sm mb-4">完成技能画像后，发现你被低估的好机会</p>
+                <Link href="/assessment">
+                  <Button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700">
+                    去完善技能画像
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
