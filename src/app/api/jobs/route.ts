@@ -117,7 +117,7 @@ function tryParseJson(str: string): any {
 }
 
 // 搜索阶段只查轻量字段（不含responsibilities）
-const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly';
+const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly,source_platform,graduate_friendly_level';
 
 // 格式化单条职位数据
 function formatJob(job: any, relevance?: number) {
@@ -161,7 +161,17 @@ function formatJob(job: any, relevance?: number) {
     experience: job.experience || '',
     friendliness: job.fresh_graduate_friendly === true ? '极度友好' : '社招为主',
     isFreshFriendly: job.fresh_graduate_friendly === true,
-    jdContent: job.responsibilities
+    jdContent: job.responsibilities,
+    // 结构化字段
+    coreDutyModule: job.core_duty_module || '',
+    hardSkills,
+    majorRequire: job.major_require || '',
+    bonusSkillCert: job.bonus_skill_cert || '',
+    sourceUrl: job.source_url || '',
+    sourcePlatform: job.source_platform || '',
+    postCategory: job.post_category || '',
+    graduateFriendlyLevel: job.graduate_friendly_level || '',
+    competencyWeights: job.competency_weights || null,
   };
   
   // 只有解析到薪资时才添加 salaryMin/salaryMax

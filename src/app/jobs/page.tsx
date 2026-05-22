@@ -58,6 +58,22 @@ interface Job {
   friendliness: string;
   isFreshFriendly: boolean;
   jdContent: string;
+  // 结构化字段
+  coreDutyModule?: string;
+  hardSkills?: string[];
+  majorRequire?: string;
+  bonusSkillCert?: string;
+  sourceUrl?: string;
+  sourcePlatform?: string;
+  postCategory?: string;
+  graduateFriendlyLevel?: string;
+  competencyWeights?: {
+    learning?: number;
+    teamwork?: number;
+    communicate?: number;
+    professional?: number;
+    problem_solve?: number;
+  } | null;
 }
 
 // 聊天消息类型
@@ -83,6 +99,7 @@ export default function JobsPage() {
   });
   const [filterOpen, setFilterOpen] = useState(false); // 移动端筛选区折叠状态
   const [selectedJob, setSelectedJob] = useState<Job | null>(null); // 选中的岗位，用于弹窗展示
+  const [jdExpanded, setJdExpanded] = useState(false); // 原始JD展开状态
   const [industries, setIndustries] = useState<FilterOption[]>(defaultIndustries);
   const [cities, setCities] = useState<FilterOption[]>(defaultCities);
   const [educationOpts, setEducationOpts] = useState<FilterOption[]>(defaultEducation);
@@ -720,7 +737,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
                   {/* 技能标签 */}
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {job.skills.slice(0, 3).map((tag, idx) => (
+                    {((job.hardSkills && job.hardSkills.length > 0 ? job.hardSkills : job.skills) || []).slice(0, 3).map((tag, idx) => (
                       <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">
                         {tag}
                       </span>
@@ -943,7 +960,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
       </Dialog>
 
       {/* 岗位详情弹窗 */}
-      <Dialog open={!!selectedJob} onOpenChange={(open) => !open && setSelectedJob(null)}>
+      <Dialog open={!!selectedJob} onOpenChange={(open) => { if (!open) { setSelectedJob(null); setJdExpanded(false); }}}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedJob && (
             <>
@@ -964,63 +981,169 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 mt-4">
-                {/* 薪资 */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-1">薪资范围</h4>
-                  <p className="text-lg font-bold text-[#FF7D00]">{selectedJob.salary}</p>
-                </div>
-
-                {/* 基本信息 */}
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-5 mt-4">
+                {/* 薪资 + 基本信息 */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <div>
+                    <span className="text-sm text-gray-500">薪资</span>
+                    <p className="text-lg font-bold text-[#FF7D00]">{selectedJob.salary}</p>
+                  </div>
                   {selectedJob.education && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-1">学历要求</h4>
+                      <span className="text-sm text-gray-500">学历</span>
                       <p className="text-gray-900">{selectedJob.education}</p>
                     </div>
                   )}
                   {selectedJob.experience && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-1">经验要求</h4>
+                      <span className="text-sm text-gray-500">经验</span>
                       <p className="text-gray-900">{selectedJob.experience}</p>
                     </div>
                   )}
                 </div>
 
+                <Separator />
+
+                {/* 核心职责 */}
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <span className="text-base">🎯</span> 核心职责
+                  </h4>
+                  {selectedJob.coreDutyModule ? (
+                    <ul className="space-y-1.5 text-sm text-gray-700">
+                      {selectedJob.coreDutyModule.split(/[、，,]/).filter(Boolean).map((duty, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-blue-500 mt-0.5">•</span>
+                          <span>{duty.trim()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : selectedJob.jdContent ? (
+                    <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto">
+                      {selectedJob.jdContent}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">暂无职责描述</p>
+                  )}
+                </div>
+
                 {/* 技能要求 */}
-                {selectedJob.skills && selectedJob.skills.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <span className="text-base">💡</span> 技能要求
+                  </h4>
+                  <div className="space-y-2">
+                    {/* 硬技能 */}
+                    {(selectedJob.hardSkills && selectedJob.hardSkills.length > 0) ? (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedJob.hardSkills.map((skill, idx) => (
+                          <Badge key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-3 py-1">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (selectedJob.skills && selectedJob.skills.length > 0) && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedJob.skills.map((skill, idx) => (
+                          <Badge key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-3 py-1">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    {/* 软技能 */}
+                    {selectedJob.softSkills && selectedJob.softSkills.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedJob.softSkills.map((skill, idx) => (
+                          <Badge key={idx} className="bg-green-50 text-green-700 border border-green-100 rounded-full px-3 py-1">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    {/* 无技能 */}
+                    {(!selectedJob.hardSkills?.length && !selectedJob.skills?.length && !selectedJob.softSkills?.length) && (
+                      <p className="text-sm text-gray-400">暂无技能要求</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 任职要求 */}
+                {(selectedJob.majorRequire || (selectedJob.bonusSkillCert && selectedJob.bonusSkillCert !== '无明确标注') || selectedJob.graduateFriendlyLevel) && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">技能要求</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedJob.skills.map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="bg-blue-50 text-blue-700">
-                          {skill}
-                        </Badge>
-                      ))}
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <span className="text-base">📋</span> 任职要求
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedJob.majorRequire && (
+                        <div className="flex items-start gap-2 text-sm">
+                          <span className="text-gray-500 min-w-[60px]">专业要求</span>
+                          <span className="text-gray-700">{selectedJob.majorRequire}</span>
+                        </div>
+                      )}
+                      {selectedJob.bonusSkillCert && selectedJob.bonusSkillCert !== '无明确标注' && (
+                        <div className="flex items-start gap-2 text-sm">
+                          <span className="text-gray-500 min-w-[60px]">加分项</span>
+                          <span className="text-gray-700">{selectedJob.bonusSkillCert}</span>
+                        </div>
+                      )}
+                      {selectedJob.graduateFriendlyLevel && (
+                        <div className="flex items-start gap-2 text-sm">
+                          <span className="text-gray-500 min-w-[60px]">应届友好</span>
+                          <Badge className={
+                            selectedJob.graduateFriendlyLevel === '极度友好' ? 'bg-green-100 text-green-700' :
+                            selectedJob.graduateFriendlyLevel === '友好' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-600'
+                          }>
+                            {selectedJob.graduateFriendlyLevel}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* 软技能 */}
-                {selectedJob.softSkills && selectedJob.softSkills.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">软技能</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedJob.softSkills.map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="bg-purple-50 text-purple-700">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* JD 内容 */}
+                {/* 原始JD（折叠展示） */}
                 {selectedJob.jdContent && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-2">岗位描述</h4>
-                    <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto">
-                      {selectedJob.jdContent}
+                    <button
+                      className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                      onClick={() => setJdExpanded(!jdExpanded)}
+                    >
+                      <span className="text-base">📄</span>
+                      <span>查看原始JD</span>
+                      {jdExpanded ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </button>
+                    {jdExpanded && (
+                      <div className="mt-2 bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto border border-gray-100">
+                        {selectedJob.jdContent}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 来源信息 */}
+                {selectedJob.sourcePlatform && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <span>来源：{selectedJob.sourcePlatform}</span>
+                      {selectedJob.sourceUrl && (
+                        <>
+                          <span className="text-gray-300">|</span>
+                          <a
+                            href={selectedJob.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#165DFF] hover:underline flex items-center gap-1"
+                          >
+                            查看原帖 <ArrowRight className="w-3 h-3" />
+                          </a>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1036,13 +1159,14 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
               </div>
 
               <DialogFooter className="mt-6">
-                <Button variant="outline" onClick={() => setSelectedJob(null)}>
+                <Button variant="outline" onClick={() => { setSelectedJob(null); setJdExpanded(false); }}>
                   关闭
                 </Button>
                 <Button
                   className="bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
                   onClick={() => {
                     setSelectedJob(null);
+                    setJdExpanded(false);
                     handleJobClick(selectedJob);
                   }}
                 >
