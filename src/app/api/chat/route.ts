@@ -181,22 +181,53 @@ export async function POST(request: NextRequest) {
 
     const { message, botType, conversationId } = await request.json();
 
-    if (!message || typeof message !== 'string') {
-      return new Response(
-        JSON.stringify({ error: '消息内容不能为空' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+    // ============================================================
+    // 安全检查：空消息校验 - 返回 SSE 格式友好提示
+    // ============================================================
+    if (!message || !message.trim()) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          const emptyMsg = JSON.stringify({
+            id: 'empty-check',
+            object: 'chat.completion.chunk',
+            created: Math.floor(Date.now() / 1000),
+            model: 'safety-filter',
+            choices: [{ index: 0, delta: { content: '请输入您的问题，我会为您解答。' }, finish_reason: 'stop' }],
+          });
+          controller.enqueue(encoder.encode('data: ' + emptyMsg + '\n\n'));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        },
+      });
+      return new Response(stream, {
+        headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+      });
     }
 
     // ============================================================
-    // 安全检查：消息长度限制 2000 字
+    // 安全检查：消息长度限制 2000 字 - 返回 SSE 格式
     // ============================================================
     const MAX_MESSAGE_LENGTH = 2000;
     if (message.length > MAX_MESSAGE_LENGTH) {
-      return new Response(
-        JSON.stringify({ error: `消息长度不能超过${MAX_MESSAGE_LENGTH}字` }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          const lengthMsg = JSON.stringify({
+            id: 'length-check',
+            object: 'chat.completion.chunk',
+            created: Math.floor(Date.now() / 1000),
+            model: 'safety-filter',
+            choices: [{ index: 0, delta: { content: `消息长度不能超过${MAX_MESSAGE_LENGTH}字，当前${message.length}字。请精简后重试。` }, finish_reason: 'stop' }],
+          });
+          controller.enqueue(encoder.encode('data: ' + lengthMsg + '\n\n'));
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        },
+      });
+      return new Response(stream, {
+        headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+      });
     }
 
     // ============================================================
