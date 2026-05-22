@@ -1,40 +1,34 @@
--- ============================================================
--- Migration: Create chat_history table
--- Description: Store conversation history for DeepSeek chat
--- Execute: Run this in Supabase Dashboard > SQL Editor
--- ============================================================
+-- Chat history table for conversation context persistence
+-- Stores user and assistant messages for multi-turn conversations
 
--- 创建表
 CREATE TABLE IF NOT EXISTS chat_history (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id BIGSERIAL PRIMARY KEY,
   conversation_id TEXT NOT NULL,
-  user_id UUID NOT NULL,
-  role VARCHAR(10) NOT NULL CHECK (role IN ('user', 'assistant')),
+  user_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
   content TEXT NOT NULL,
-  bot_type VARCHAR(20) NOT NULL,
+  bot_type TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 索引：按 conversation_id 查询（最常用）
+-- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_chat_history_conversation ON chat_history(conversation_id);
-
--- 索引：按 user_id 查询
 CREATE INDEX IF NOT EXISTS idx_chat_history_user ON chat_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_history_created ON chat_history(created_at);
 
--- 索引：按 created_at 排序
-CREATE INDEX IF NOT EXISTS idx_chat_history_created_at ON chat_history(created_at);
-
--- RLS：启用行级安全
+-- Enable RLS but allow service_role full access
 ALTER TABLE chat_history ENABLE ROW LEVEL SECURITY;
 
--- RLS 策略：用户只能访问自己的记录
-CREATE POLICY chat_history_user_policy ON chat_history
-  FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "service_role_full_access" ON chat_history
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
 
--- 注释
-COMMENT ON TABLE chat_history IS '对话历史记录，用于 DeepSeek 多轮对话上下文';
-COMMENT ON COLUMN chat_history.conversation_id IS '会话ID，关联一轮完整对话';
-COMMENT ON COLUMN chat_history.user_id IS '用户ID，关联 user_profiles 表';
-COMMENT ON COLUMN chat_history.role IS '消息角色：user 或 assistant';
-COMMENT ON COLUMN chat_history.content IS '消息内容';
-COMMENT ON COLUMN chat_history.bot_type IS '智能体类型：jobs/interview/decision/career/assessment/competency';
+-- Comment
+COMMENT ON TABLE chat_history IS 'Conversation history for multi-turn chat with AI agents';
+COMMENT ON COLUMN chat_history.conversation_id IS 'Unique identifier for a conversation session';
+COMMENT ON COLUMN chat_history.user_id IS 'User identifier from authentication';
+COMMENT ON COLUMN chat_history.role IS 'Message role: user or assistant';
+COMMENT ON COLUMN chat_history.content IS 'Message content';
+COMMENT ON COLUMN chat_history.bot_type IS 'AI agent type: jobs, career, interview, etc.';
