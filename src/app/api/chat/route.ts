@@ -509,27 +509,38 @@ export async function POST(request: NextRequest) {
               // 发送 [DONE]
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
               
-              // 异步保存对话历史（不阻塞响应）
-              if (fullResponse) {
-                getSupabaseAdmin().from('chat_history').insert([
-                  {
-                    conversation_id: effectiveConversationId,
-                    user_id: userId,
-                    role: 'user',
-                    content: message,
-                    bot_type: effectiveBotType
-                  },
-                  {
-                    conversation_id: effectiveConversationId,
-                    user_id: userId,
-                    role: 'assistant',
-                    content: fullResponse,
-                    bot_type: effectiveBotType
+              // 等待保存对话历史完成后再关闭流
+              if (fullResponse && userId) {
+                try {
+                  const { error: insertError } = await getSupabaseAdmin()
+                    .from('chat_history')
+                    .insert([
+                      {
+                        conversation_id: effectiveConversationId,
+                        user_id: userId,
+                        role: 'user',
+                        content: message,
+                        bot_type: effectiveBotType
+                      },
+                      {
+                        conversation_id: effectiveConversationId,
+                        user_id: userId,
+                        role: 'assistant',
+                        content: fullResponse,
+                        bot_type: effectiveBotType
+                      }
+                    ]);
+                  
+                  if (insertError) {
+                    console.error('[chat] Failed to save history:', insertError);
+                  } else {
+                    console.log(`[chat] Saved history for conv=${effectiveConversationId?.substring(0, 8)}, user=${userId?.substring(0, 8)}, bot=${effectiveBotType}`);
                   }
-                ]).then(({ error }: { error: any }) => {
-                  if (error) console.error('[chat] Failed to save history:', error);
-                  else console.log(`[chat] Saved history for conv=${effectiveConversationId?.substring(0, 8)}`);
-                });
+                } catch (saveErr) {
+                  console.error('[chat] Exception saving history:', saveErr);
+                }
+              } else {
+                console.log('[chat] Skip saving history: fullResponse=', !!fullResponse, 'userId=', !!userId);
               }
             } catch (err) {
               console.error('[chat] Stream wrapper error:', err);
