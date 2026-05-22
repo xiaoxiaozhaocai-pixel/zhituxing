@@ -173,12 +173,23 @@ export async function POST(request: NextRequest) {
     // 安全检查：必须登录
     // ============================================================
     const accessToken = parseAccessTokenFromCookie(request.headers) || request.cookies.get('sb-access-token')?.value || null;
-    if (!accessToken) {
+    const devUserId = request.headers.get('x-user-id');
+    
+    // 开发环境允许 x-user-id header 绕过登录检查（仅用于测试）
+    const isDevBypass = !accessToken && process.env.NODE_ENV !== 'production' && devUserId;
+    
+    if (!accessToken && !isDevBypass) {
       return new Response(
         JSON.stringify({ error: '请先登录' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
+    
+    console.log('[chat] Auth check passed:', {
+      hasAccessToken: !!accessToken,
+      isDevBypass,
+      devUserId: isDevBypass ? devUserId : undefined
+    });
 
     const { message, botType, conversationId } = await request.json();
 
@@ -261,7 +272,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. 用户验证，查 user_profiles 表获取 user_type
-    const userInfo = await getUserInfoFromRequest(request);
+    let userInfo = await getUserInfoFromRequest(request);
+    
+    // 开发环境绕过：使用 x-user-id header
+    if (!userInfo && isDevBypass && devUserId) {
+      userInfo = { userId: devUserId, userType: 'free' };
+      console.log('[chat] Dev bypass: using x-user-id header:', devUserId);
+    }
+    
     // Fix6: 如果 userInfo 为 null 但有 accessToken，说明用户已登录但查不到信息，允许继续
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
