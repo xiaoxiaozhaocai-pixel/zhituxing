@@ -457,7 +457,14 @@ export async function GET(request: NextRequest) {
           education: job.education,
           experience: job.experience,
           isFreshFriendly: job.isFreshFriendly,
-          // 不包含 jdContent、softSkills、salaryMin、salaryMax 等详细字段
+          // 结构化字段（可公开）
+          hardSkills: job.hardSkills?.slice(0, 5) || [],
+          softSkills: job.softSkills?.slice(0, 3) || [],
+          coreDutyModule: job.coreDutyModule || '',
+          majorRequire: job.majorRequire || '',
+          sourcePlatform: job.sourcePlatform || '',
+          graduateFriendlyLevel: job.graduateFriendlyLevel || '',
+          // 不包含 jdContent、sourceUrl、competencyWeights 等详细/敏感字段
         }));
     
     const result = {
