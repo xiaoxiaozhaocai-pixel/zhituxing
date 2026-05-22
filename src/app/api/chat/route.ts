@@ -477,10 +477,18 @@ export async function POST(request: NextRequest) {
                 
                 const chunk = decoder.decode(value, { stream: true });
                 
-                // 收集助手响应内容（从 SSE 数据中提取）
+                // 过滤掉 DeepSeek 流中的 [DONE]，我们在最后统一发送
                 const lines = chunk.split('\n');
+                let filteredChunk = '';
                 for (const line of lines) {
-                  if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                  if (line.includes('[DONE]')) {
+                    // 跳过 DeepSeek 的 [DONE]，我们会在流结束后统一发送
+                    continue;
+                  }
+                  filteredChunk += line + '\n';
+                  
+                  // 收集助手响应内容
+                  if (line.startsWith('data: ')) {
                     try {
                       const data = JSON.parse(line.slice(6));
                       const content = data?.choices?.[0]?.delta?.content;
@@ -489,7 +497,9 @@ export async function POST(request: NextRequest) {
                   }
                 }
                 
-                controller.enqueue(value);
+                if (filteredChunk.trim()) {
+                  controller.enqueue(encoder.encode(filteredChunk));
+                }
               }
               
               // 发送 conversationId 事件（在 [DONE] 之前）
