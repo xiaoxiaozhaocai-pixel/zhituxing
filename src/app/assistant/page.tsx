@@ -538,10 +538,12 @@ function AssistantContent() {
       const isPartner = activeBot === 'partner';
       
       let apiUrl = '/api/chat';
+      // 使用 null 替代 undefined，避免 JSON.stringify 丢失字段
+      const storedConvId = localStorage.getItem(`conversationId_${activeBot}`);
       let requestBody: object = {
         message: messageText,
         botType: activeBot,
-        conversationId: localStorage.getItem(`conversationId_${activeBot}`) || undefined
+        conversationId: storedConvId || null
       };
       
       if (isInterview) {
@@ -863,10 +865,10 @@ function AssistantContent() {
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
+    // 先清除当前 activeBot 的 conversationId，再切换到新的 botId
+    localStorage.removeItem(`conversationId_${activeBot}`);
     setActiveBot(botId);
     setMessages([]);
-    // 清除旧的 conversationId，开始新对话
-    localStorage.removeItem(`conversationId_${botId}`);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
