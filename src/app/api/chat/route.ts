@@ -177,7 +177,15 @@ export async function POST(request: NextRequest) {
     
     // 开发环境允许 x-user-id header 绕过登录检查（仅用于测试）
     // 使用 COZE_PROJECT_ENV 而不是 NODE_ENV，因为 standalone 模式下 NODE_ENV=production
-    const isDevBypass = !accessToken && process.env.COZE_PROJECT_ENV === 'DEV' && devUserId;
+    const cozeEnv = process.env.COZE_PROJECT_ENV || process.env.NODE_ENV || 'unknown';
+    const isDevBypass = !accessToken && (cozeEnv === 'DEV' || cozeEnv === 'development') && devUserId;
+    
+    console.log('[chat] Auth check:', {
+      hasAccessToken: !!accessToken,
+      cozeEnv,
+      devUserId: devUserId || 'none',
+      isDevBypass
+    });
     
     if (!accessToken && !isDevBypass) {
       return new Response(
@@ -185,12 +193,6 @@ export async function POST(request: NextRequest) {
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
-    
-    console.log('[chat] Auth check passed:', {
-      hasAccessToken: !!accessToken,
-      isDevBypass,
-      devUserId: isDevBypass ? devUserId : undefined
-    });
 
     const { message, botType, conversationId } = await request.json();
 
