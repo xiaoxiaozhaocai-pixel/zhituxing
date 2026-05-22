@@ -865,6 +865,8 @@ function AssistantContent() {
   const handleTabChange = (botId: string) => {
     setActiveBot(botId);
     setMessages([]);
+    // 清除旧的 conversationId，开始新对话
+    localStorage.removeItem(`conversationId_${botId}`);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
