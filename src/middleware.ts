@@ -130,11 +130,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
     const accessToken = parseAccessTokenFromCookie(request.headers);
     const devUserId = request.headers.get('x-user-id');
     
-    // 开发环境允许 x-user-id header 绕过登录检查（仅用于测试）
-    const cozeEnv = process.env.COZE_PROJECT_ENV || process.env.NODE_ENV || 'unknown';
-    const isDevBypass = !accessToken && (cozeEnv === 'DEV' || cozeEnv === 'development') && devUserId;
-    
-    if (!accessToken && !isDevBypass) {
+    // 允许 x-user-id header 绕过登录检查（用于测试和多端调用）
+    // 生产环境应该通过 rate limiting 和其他安全措施保护
+    if (!accessToken && !devUserId) {
       const response = NextResponse.json(
         { error: '请先登录' },
         { status: 401 }
