@@ -39,11 +39,18 @@ export async function getUserInfoFromRequest(request: NextRequest): Promise<User
           userType: data[0].user_type || 'free',
         };
       }
+      // Fix: user_profiles 无记录时，用户已通过 x-user-id 验证，返回默认 free 用户
+      // 这允许新用户（未完善资料）也能保存对话历史
+      return {
+        userId,
+        userType: 'free',
+      };
     }
   } catch (e) {
     console.error('User validation error:', e);
   }
 
+  // 仅当请求失败或异常时返回 null
   return null;
 }
 
