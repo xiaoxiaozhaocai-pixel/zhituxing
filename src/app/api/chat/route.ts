@@ -30,6 +30,7 @@ import {
   buildRAGContext,
   createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'edge';
 
@@ -419,9 +420,117 @@ export async function POST(request: NextRequest) {
         const roleReinforcement = ROLE_REINFORCEMENTS[effectiveBotType] || '';
         const systemPrompt = (SYSTEM_PROMPTS[effectiveBotType] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext + roleReinforcement;
 
-        const history: { role: 'user' | 'assistant'; content: string }[] = [];
-        const stream = createDeepSeekRAGStream(systemPrompt, message, history);
-        return new Response(stream, { headers: SSE_HEADERS });
+        // ============================================================
+        // 对话历史：从 chat_history 表获取
+        // ============================================================
+        let history: { role: 'user' | 'assistant'; content: string }[] = [];
+        let effectiveConversationId = conversationId;
+        
+        // 生成新的 conversationId（如果没有）
+        if (!effectiveConversationId) {
+          effectiveConversationId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+        }
+        
+        // 从数据库获取历史消息
+        if (conversationId) {
+          try {
+            const { data: historyRecords } = await getSupabaseAdmin()
+              .from('chat_history')
+              .select('role, content')
+              .eq('conversation_id', conversationId)
+              .order('created_at', { ascending: true })
+              .limit(20);  // 最近 10 轮（20 条消息）
+            
+            if (historyRecords && historyRecords.length > 0) {
+              history = historyRecords.map((r: { role: string; content: string }) => ({
+                role: r.role as 'user' | 'assistant',
+                content: r.content
+              }));
+              
+              // Token 限制：估算历史长度，超过 32K 字符时截断
+              const MAX_HISTORY_CHARS = 32000;
+              let totalChars = history.reduce((sum, h) => sum + h.content.length, 0);
+              while (totalChars > MAX_HISTORY_CHARS && history.length > 2) {
+                const removed = history.shift();
+                totalChars -= removed?.content.length || 0;
+              }
+            }
+          } catch (histErr) {
+            console.error('[chat] Failed to fetch history:', histErr);
+          }
+        }
+
+        // 创建带历史保存的流包装器
+        const baseStream = createDeepSeekRAGStream(systemPrompt, message, history);
+        const encoder = new TextEncoder();
+        
+        const wrappedStream = new ReadableStream({
+          async start(controller) {
+            const reader = baseStream.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = '';
+            
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value, { stream: true });
+                
+                // 收集助手响应内容（从 SSE 数据中提取）
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                  if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                    try {
+                      const data = JSON.parse(line.slice(6));
+                      const content = data?.choices?.[0]?.delta?.content;
+                      if (content) fullResponse += content;
+                    } catch { /* ignore */ }
+                  }
+                }
+                
+                controller.enqueue(value);
+              }
+              
+              // 发送 conversationId 事件（在 [DONE] 之前）
+              const convEvent = `event: conversation_id\ndata: ${JSON.stringify({ conversation_id: effectiveConversationId })}\n\n`;
+              controller.enqueue(encoder.encode(convEvent));
+              
+              // 发送 [DONE]
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              
+              // 异步保存对话历史（不阻塞响应）
+              if (fullResponse) {
+                getSupabaseAdmin().from('chat_history').insert([
+                  {
+                    conversation_id: effectiveConversationId,
+                    user_id: userId,
+                    role: 'user',
+                    content: message,
+                    bot_type: effectiveBotType
+                  },
+                  {
+                    conversation_id: effectiveConversationId,
+                    user_id: userId,
+                    role: 'assistant',
+                    content: fullResponse,
+                    bot_type: effectiveBotType
+                  }
+                ]).then(({ error }: { error: any }) => {
+                  if (error) console.error('[chat] Failed to save history:', error);
+                  else console.log(`[chat] Saved history for conv=${effectiveConversationId?.substring(0, 8)}`);
+                });
+              }
+            } catch (err) {
+              console.error('[chat] Stream wrapper error:', err);
+            } finally {
+              controller.close();
+              reader.releaseLock();
+            }
+          }
+        });
+        
+        return new Response(wrappedStream, { headers: SSE_HEADERS });
       } catch (error) {
         console.error('[chat] DeepSeek RAG error, falling back to Coze:', error);
         // 出错时回退到 Coze
