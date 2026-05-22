@@ -276,6 +276,42 @@ export async function POST(request: NextRequest) {
     };
 
     // ===========================
+    // RAG 表查询配置（按 botType 分表）
+    // ===========================
+    const RAG_TABLE_CONFIG: Record<string, string[]> = {
+      jobs: ['job_descriptions'],
+      interview: ['job_descriptions', 'skill_taxonomy'],
+      decision: ['job_descriptions', 'career_paths'],
+      career: ['job_descriptions', 'career_paths', 'skill_taxonomy', 'learning_resources'],
+      assessment: ['skill_taxonomy'],
+      competency: ['job_descriptions', 'skill_taxonomy'],
+    };
+
+    // ===========================
+    // 角色重申配置（三明治结构底部）
+    // ===========================
+    const ROLE_REINFORCEMENTS: Record<string, string> = {
+      jobs: '\n【角色重申】你只负责解读岗位信息，不做职业规划。职业规划请咨询职业规划师。',
+      interview: '\n【角色重申】你只负责模拟面试，不做职业规划或能力测评。职业规划请咨询职业规划师。',
+      decision: '\n【角色重申】你只提供考研vs就业的客观对比，不做职业规划。',
+      career: '\n【角色重申】你是唯一授权提供职业规划建议的智能体，请基于参考数据给出专业建议。',
+      assessment: '\n【角色重申】你只负责技能测评和出题评分，不做职业规划。职业规划请咨询职业规划师。',
+      competency: '\n【角色重申】你只负责胜任力评估和差距分析，不做职业规划。职业规划请咨询职业规划师。',
+    };
+
+    // ===========================
+    // RAG 数据标签配置（按 botType 定制）
+    // ===========================
+    const RAG_DISPLAY_NAMES: Record<string, Record<string, string>> = {
+      jobs: { job_descriptions: '岗位信息' },
+      interview: { job_descriptions: '面试参考岗位', skill_taxonomy: '面试技能参考' },
+      decision: { job_descriptions: '就业参考岗位', career_paths: '职业路径参考' },
+      career: { job_descriptions: '目标岗位', career_paths: '职业发展路径', skill_taxonomy: '技能要求', learning_resources: '学习资源' },
+      assessment: { skill_taxonomy: '技能测评题库' },
+      competency: { job_descriptions: '目标岗位要求', skill_taxonomy: '技能差距参考' },
+    };
+
+    // ===========================
     // DeepSeek + RAG 分支（当 DEEPSEEK_ENABLED=true 时优先使用）
     // ===========================
     if (USE_DEEPSEEK) {
@@ -285,40 +321,59 @@ export async function POST(request: NextRequest) {
         // 提取关键词
         const keywords = extractKeywords(message);
         
-        // 并行查询多个数据源
+        // 获取当前 botType 允许查询的表
+        const effectiveBotType = botType || 'career';
+        const allowedTables = RAG_TABLE_CONFIG[effectiveBotType] || RAG_TABLE_CONFIG.career;
+        const displayNames = RAG_DISPLAY_NAMES[effectiveBotType] || RAG_DISPLAY_NAMES.career;
+        
+        // 按配置查询数据（只查询允许的表）
         const [jds, careerPaths, skills, resources] = await Promise.all([
-          // 查询 JD
-          querySupabase('job_descriptions', [
-            keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
-            keywords.jobTitle ? { field: 'job_title', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
-          ].filter(Boolean) as any, 10, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city'),
+          allowedTables.includes('job_descriptions')
+            ? querySupabase('job_descriptions', [
+                keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+                keywords.jobTitle ? { field: 'job_title', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
+              ].filter(Boolean) as any, 10, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city')
+            : [],
           
-          // 查询职业路径
-          querySupabase('career_paths', [
-            keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
-          ].filter(Boolean) as any, 5, '*'),
+          allowedTables.includes('career_paths')
+            ? querySupabase('career_paths', [
+                keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+              ].filter(Boolean) as any, 5, '*')
+            : [],
           
-          // 查询技能分类
-          querySupabase('skill_taxonomy', [
-            keywords.industry ? { field: 'domain', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
-          ].filter(Boolean) as any, 10, 'skill_name,category,domain'),
+          allowedTables.includes('skill_taxonomy')
+            ? querySupabase('skill_taxonomy', [
+                keywords.industry ? { field: 'domain', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+              ].filter(Boolean) as any, 10, 'skill_name,category,domain')
+            : [],
           
-          // 查询学习资源
-          querySupabase('learning_resources', [
-            keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
-          ].filter(Boolean) as any, 5, 'title,url,type'),
+          allowedTables.includes('learning_resources')
+            ? querySupabase('learning_resources', [
+                keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+              ].filter(Boolean) as any, 5, 'title,url,type')
+            : [],
         ]);
         
-        // 构建 RAG 上下文
-        const ragContext = buildRAGContext([
-          { tableName: 'job_descriptions', displayName: '岗位信息', data: jds },
-          { tableName: 'career_paths', displayName: '职业路径', data: careerPaths },
-          { tableName: 'skill_taxonomy', displayName: '技能分类', data: skills },
-          { tableName: 'learning_resources', displayName: '学习资源', data: resources },
-        ]);
+        // 构建 RAG 上下文（只包含有数据的表，使用 botType 定制的标签）
+        const ragSources: { tableName: string; displayName: string; data: any[] }[] = [];
+        if (allowedTables.includes('job_descriptions') && jds.length > 0) {
+          ragSources.push({ tableName: 'job_descriptions', displayName: displayNames['job_descriptions'] || '岗位信息', data: jds });
+        }
+        if (allowedTables.includes('career_paths') && careerPaths.length > 0) {
+          ragSources.push({ tableName: 'career_paths', displayName: displayNames['career_paths'] || '职业路径', data: careerPaths });
+        }
+        if (allowedTables.includes('skill_taxonomy') && skills.length > 0) {
+          ragSources.push({ tableName: 'skill_taxonomy', displayName: displayNames['skill_taxonomy'] || '技能分类', data: skills });
+        }
+        if (allowedTables.includes('learning_resources') && resources.length > 0) {
+          ragSources.push({ tableName: 'learning_resources', displayName: displayNames['learning_resources'] || '学习资源', data: resources });
+        }
         
-        // Fix7: 按 botType 选择对应的 systemPrompt
-        const systemPrompt = (SYSTEM_PROMPTS[botType || 'career'] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext;
+        const ragContext = buildRAGContext(ragSources);
+        
+        // 三明治结构：systemPrompt = 顶部(SYSTEM_PROMPTS) + 中间(RAG数据) + 底部(角色重申)
+        const roleReinforcement = ROLE_REINFORCEMENTS[effectiveBotType] || '';
+        const systemPrompt = (SYSTEM_PROMPTS[effectiveBotType] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext + roleReinforcement;
 
         const history: { role: 'user' | 'assistant'; content: string }[] = [];
         const stream = createDeepSeekRAGStream(systemPrompt, message, history);
