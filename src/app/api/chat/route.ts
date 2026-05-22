@@ -176,7 +176,8 @@ export async function POST(request: NextRequest) {
     const devUserId = request.headers.get('x-user-id');
     
     // 开发环境允许 x-user-id header 绕过登录检查（仅用于测试）
-    const isDevBypass = !accessToken && process.env.NODE_ENV !== 'production' && devUserId;
+    // 使用 COZE_PROJECT_ENV 而不是 NODE_ENV，因为 standalone 模式下 NODE_ENV=production
+    const isDevBypass = !accessToken && process.env.COZE_PROJECT_ENV === 'DEV' && devUserId;
     
     if (!accessToken && !isDevBypass) {
       return new Response(
