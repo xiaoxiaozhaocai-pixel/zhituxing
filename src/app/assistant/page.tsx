@@ -689,6 +689,20 @@ function AssistantContent() {
               continue;
             }
 
+            // conversation_id 事件 — 保存到 localStorage 供后续请求使用
+            if (eventType === 'conversation_id') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                if (parsed.conversation_id) {
+                  localStorage.setItem(`conversationId_${activeBot}`, parsed.conversation_id);
+                  console.log('[chat] Saved conversationId:', parsed.conversation_id, 'for bot:', activeBot);
+                }
+              } catch {
+                // 忽略解析错误
+              }
+              continue;
+            }
+
             // 检查 [DONE] 标记
             if (dataLine === '[DONE]') {
               clearTimeout(firstTokenTimer);
