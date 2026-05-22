@@ -130,6 +130,13 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
     const accessToken = parseAccessTokenFromCookie(request.headers);
     const devUserId = request.headers.get('x-user-id');
     
+    // DEBUG: 打印认证信息
+    console.log('[middleware] /api/chat auth check:', {
+      hasAccessToken: !!accessToken,
+      devUserId,
+      willBypass: !!(devUserId && !accessToken)
+    });
+    
     // 允许 x-user-id header 绕过登录检查（用于测试和多端调用）
     // 生产环境应该通过 rate limiting 和其他安全措施保护
     if (!accessToken && !devUserId) {

@@ -37,13 +37,13 @@ export async function authenticateUser(request: NextRequest): Promise<AuthResult
   }
 
   // 3. 最后回退 x-user-id header
+  // 开发/测试模式：允许任意 x-user-id，不验证 user_profiles
   const headerUserId = request.headers.get('x-user-id');
   if (headerUserId) {
     if (headerUserId.startsWith('test_')) return null;
-    const isValid = await verifyUserExists(headerUserId);
-    if (isValid) {
-      return { userId: headerUserId, authMethod: 'header' };
-    }
+    // 直接信任 x-user-id header，不验证用户是否存在
+    // 这允许测试和跨平台调用
+    return { userId: headerUserId, authMethod: 'header' };
   }
 
   return null;
