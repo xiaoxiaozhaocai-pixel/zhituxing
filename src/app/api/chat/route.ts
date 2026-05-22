@@ -388,9 +388,10 @@ export async function POST(request: NextRequest) {
     // ===========================
     // DeepSeek + RAG 分支（当 DEEPSEEK_ENABLED=true 时优先使用）
     // ===========================
+    console.log(`[chat] USE_DEEPSEEK=${USE_DEEPSEEK}, botType=${botType}, userId=${userId}`);
     if (USE_DEEPSEEK) {
       try {
-        console.log(`[chat] Using DeepSeek + RAG for botType=${botType}`);
+        console.log(`[chat] Entering DeepSeek + RAG branch for botType=${botType}`);
         
         // 提取关键词
         const keywords = extractKeywords(message);
@@ -538,8 +539,10 @@ export async function POST(request: NextRequest) {
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
               
               // 等待保存对话历史完成后再关闭流
+              console.log(`[chat] Before save: fullResponse.length=${fullResponse?.length || 0}, userId=${userId}, conversationId=${effectiveConversationId}`);
               if (fullResponse && userId) {
                 try {
+                  console.log(`[chat] Attempting to insert into chat_history...`);
                   const { error: insertError } = await getSupabaseAdmin()
                     .from('chat_history')
                     .insert([
@@ -562,7 +565,7 @@ export async function POST(request: NextRequest) {
                   if (insertError) {
                     console.error('[chat] Failed to save history:', insertError);
                   } else {
-                    console.log(`[chat] Saved history for conv=${effectiveConversationId?.substring(0, 8)}, user=${userId?.substring(0, 8)}, bot=${effectiveBotType}`);
+                    console.log(`[chat] SUCCESS! Saved history for conv=${effectiveConversationId?.substring(0, 8)}, user=${userId?.substring(0, 8)}, bot=${effectiveBotType}`);
                   }
                 } catch (saveErr) {
                   console.error('[chat] Exception saving history:', saveErr);
