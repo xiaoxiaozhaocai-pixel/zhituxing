@@ -41,6 +41,9 @@ import {
   AlertCircle,
   Lock,
   LogIn,
+  Calendar,
+  TrendingUp,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   parseSkillPortrait,
@@ -98,6 +101,279 @@ const STEPS = [
   { id: 3, title: '选择技能', icon: Target },
   { id: 4, title: '完成', icon: Check },
 ];
+
+// 秋招备战进度条组件
+function AutumnRecruitProgressBar() {
+  const [progress, setProgress] = useState(0);
+  const [checkedItems, setCheckedItems] = useState({
+    skillPortrait: false,
+    careerPlan: false,
+    jobMatch: false,
+    interview: false,
+  });
+
+  useEffect(() => {
+    // 从 localStorage 读取完成状态
+    const skillPortrait = localStorage.getItem('skill-portrait-done') === 'true';
+    const careerPlan = localStorage.getItem('career-plan-done') === 'true';
+    const jobMatch = localStorage.getItem('job-match-done') === 'true';
+    const interview = localStorage.getItem('interview-done') === 'true';
+    
+    setCheckedItems({ skillPortrait, careerPlan, jobMatch, interview });
+    
+    // 计算完成度
+    const completed = [skillPortrait, careerPlan, jobMatch, interview].filter(Boolean).length;
+    setProgress((completed / 4) * 100);
+  }, []);
+
+  const getProgressColor = () => {
+    if (progress <= 30) return 'bg-red-500';
+    if (progress <= 70) return 'bg-orange-500';
+    return 'bg-green-500';
+  };
+
+  const getTextColor = () => {
+    if (progress <= 30) return 'text-red-500';
+    if (progress <= 70) return 'text-orange-500';
+    return 'text-green-500';
+  };
+
+  return (
+    <div className="bg-white border-b border-gray-100 py-3 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">秋招备战进度</span>
+          </div>
+          <span className={`text-sm font-bold ${getTextColor()}`}>{Math.round(progress)}%</span>
+        </div>
+        <div className="w-full bg-gray-100 rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full transition-all duration-500 ${getProgressColor()}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+          <span className={checkedItems.skillPortrait ? 'text-green-600' : ''}>
+            {checkedItems.skillPortrait ? '✓' : '○'} 技能画像
+          </span>
+          <span className={checkedItems.careerPlan ? 'text-green-600' : ''}>
+            {checkedItems.careerPlan ? '✓' : '○'} 职业规划
+          </span>
+          <span className={checkedItems.jobMatch ? 'text-green-600' : ''}>
+            {checkedItems.jobMatch ? '✓' : '○'} 岗位匹配
+          </span>
+          <span className={checkedItems.interview ? 'text-green-600' : ''}>
+            {checkedItems.interview ? '✓' : '○'} 面试练习
+          </span>
+        </div>
+        {progress < 100 && (
+          <p className="text-xs text-gray-400 mt-1.5">完成所有步骤，秋招胜率提升50%</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// 技能等级转数字（用于计算差距）
+const levelToNumber: Record<ProficiencyLevel, number> = { '了解': 1, '熟悉': 2, '熟练': 3, '精通': 4 };
+const numberToLevel = ['-', '了解', '熟悉', '熟练', '精通'];
+
+// 目标岗位差距分析组件
+function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { name: string; level: ProficiencyLevel }[]; hasSkillPortrait: boolean }) {
+  const [jobs, setJobs] = useState<{ job_title: string; hard_skills: string[]; city?: string; industry?: string }[]>([]);
+  const [selectedJob, setSelectedJob] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<{
+    matchScore: number;
+    gaps: { skill: string; current: number; required: number; gap: number; weeks: number }[];
+    totalWeeks: number;
+  } | null>(null);
+
+  // 获取热门岗位
+  useEffect(() => {
+    fetch('/api/jobs?limit=20')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.jobs) {
+          setJobs(data.data.jobs.map((j: any) => ({
+            job_title: j.job_title || j.jobName,
+            hard_skills: j.hard_skills || j.requiredSkills || [],
+            city: j.city,
+            industry: j.industry,
+          })));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // 分析差距
+  const analyzeGap = (jobTitle: string) => {
+    setSelectedJob(jobTitle);
+    
+    const job = jobs.find(j => j.job_title === jobTitle);
+    if (!job || userSkills.length === 0) {
+      setAnalysis(null);
+      return;
+    }
+
+    setLoading(true);
+
+    // 计算匹配度和差距
+    const requiredSkills = job.hard_skills || [];
+    const gaps: { skill: string; current: number; required: number; gap: number; weeks: number }[] = [];
+
+    requiredSkills.forEach((reqSkill: string) => {
+      const matched = userSkills.find(s => 
+        s.name.toLowerCase().includes(reqSkill.toLowerCase()) || 
+        reqSkill.toLowerCase().includes(s.name.toLowerCase())
+      );
+
+      const current = matched ? levelToNumber[matched.level] : 0;
+      const required = 3; // 假设岗位要求"熟练"级别
+      const gap = Math.max(0, required - current);
+
+      if (gap > 0) {
+        gaps.push({
+          skill: reqSkill,
+          current,
+          required,
+          gap,
+          weeks: gap * 2, // 每级差距约2周
+        });
+      }
+    });
+
+    const matchScore = requiredSkills.length > 0 
+      ? Math.round(((requiredSkills.length - gaps.length) / requiredSkills.length) * 100)
+      : 0;
+
+    const totalWeeks = gaps.reduce((sum, g) => sum + g.weeks, 0);
+
+    setAnalysis({ matchScore, gaps, totalWeeks });
+    setLoading(false);
+  };
+
+  if (!hasSkillPortrait) {
+    return (
+      <Card className="border-violet-100 bg-gradient-to-br from-violet-50 to-purple-50">
+        <CardContent className="py-8 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center">
+            <Target className="w-7 h-7 text-white" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">目标岗位差距分析</h3>
+          <p className="text-gray-500 text-sm mb-4">完成技能画像后，解锁与目标岗位的差距分析</p>
+          <p className="text-gray-400 text-xs">先完成当前技能画像，再进行差距分析</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-violet-100">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Target className="w-5 h-5 text-violet-600" />
+          目标岗位差距分析
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* 岗位选择 */}
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-1.5 block">选择目标岗位</label>
+          <select
+            value={selectedJob}
+            onChange={(e) => analyzeGap(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 outline-none"
+          >
+            <option value="">请选择目标岗位...</option>
+            {jobs.map((job, i) => (
+              <option key={i} value={job.job_title}>{job.job_title} {job.city ? `(${job.city})` : ''}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 分析结果 */}
+        {loading && (
+          <div className="py-6 text-center">
+            <Loader2 className="w-6 h-6 text-violet-500 animate-spin mx-auto" />
+            <p className="text-sm text-gray-500 mt-2">正在分析差距...</p>
+          </div>
+        )}
+
+        {!loading && analysis && (
+          <div className="space-y-4">
+            {/* 匹配度环形进度 */}
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20 shrink-0">
+                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="#F3E8FF" strokeWidth="6" />
+                  <circle
+                    cx="40" cy="40" r="34" fill="none"
+                    className={analysis.matchScore >= 70 ? 'stroke-green-500' : analysis.matchScore >= 40 ? 'stroke-orange-500' : 'stroke-red-500'}
+                    strokeWidth="6"
+                    strokeDasharray={2 * Math.PI * 34}
+                    strokeDashoffset={2 * Math.PI * 34 - (analysis.matchScore / 100) * 2 * Math.PI * 34}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className={`text-lg font-bold ${analysis.matchScore >= 70 ? 'text-green-500' : analysis.matchScore >= 40 ? 'text-orange-500' : 'text-red-500'}`}>
+                    {analysis.matchScore}%
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">当前匹配度</p>
+                <p className="text-xs text-gray-500">与「{selectedJob}」岗位对比</p>
+              </div>
+            </div>
+
+            {/* 技能差距清单 */}
+            {analysis.gaps.length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-1">
+                  <AlertTriangle className="w-4 h-4 text-orange-500" />
+                  技能差距清单
+                </h4>
+                <div className="space-y-2">
+                  {analysis.gaps.map((gap, i) => (
+                    <div key={i} className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-900">{gap.skill}</span>
+                        <span className="text-xs text-violet-600 font-medium">预计需 {gap.weeks} 周</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>当前：{'★'.repeat(gap.current)}{'☆'.repeat(4 - gap.current)}</span>
+                        <span className="text-gray-300">|</span>
+                        <span>需要：{'★'.repeat(gap.required)}{'☆'.repeat(4 - gap.required)}</span>
+                        <span className="text-gray-300">|</span>
+                        <span className="text-orange-600 font-medium">差距 {gap.gap} 级</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 总结 */}
+            <div className="bg-violet-50 rounded-lg p-4 border border-violet-100">
+              <p className="text-sm text-violet-800">
+                <strong>学习建议：</strong>
+                如果每周投入 <strong>5 小时</strong>，约 <strong>{Math.ceil(analysis.totalWeeks)} 周</strong> 可达到目标岗位要求。
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!loading && selectedJob && !analysis && (
+          <p className="text-sm text-gray-500 text-center py-4">暂无差距数据</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function StepProgressBar({ currentStep }: { currentStep: number }) {
   return (
@@ -536,6 +812,8 @@ export default function SkillPortraitPage() {
       });
       const data = await response.json();
       if (data.code === 200) {
+        // 标记技能画像已完成
+        localStorage.setItem('skill-portrait-done', 'true');
         showToast('技能画像保存成功', 'success', 2000);
         setTimeout(() => router.push('/profile'), 800);
       } else {
@@ -601,6 +879,37 @@ export default function SkillPortraitPage() {
 
   const selectedSkillCount = Object.values(skillSelections).filter(s => s.selected).length;
 
+  // 获取选中的技能列表（用于差距分析）
+  const getSelectedSkillsList = () => {
+    const skills: { name: string; level: ProficiencyLevel }[] = [];
+    
+    if (aiResult) {
+      // 专业技能
+      aiResult.professionalSkills.forEach(skill => {
+        const key = `professional_${skill.name}`;
+        if (skillSelections[key]?.selected) {
+          skills.push({ name: skill.name, level: skillSelections[key].level });
+        }
+      });
+      // 办公技能
+      aiResult.officeSkills.forEach(skill => {
+        const key = `office_${skill.name}`;
+        if (skillSelections[key]?.selected) {
+          skills.push({ name: skill.name, level: skillSelections[key].level });
+        }
+      });
+      // 软技能
+      aiResult.softSkills.forEach(skill => {
+        const key = `soft_${skill.name}`;
+        if (skillSelections[key]?.selected) {
+          skills.push({ name: skill.name, level: skillSelections[key].level });
+        }
+      });
+    }
+    
+    return skills;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航栏 */}
@@ -615,6 +924,9 @@ export default function SkillPortraitPage() {
           </div>
         </div>
       </div>
+
+      {/* 秋招备战进度条 */}
+      <AutumnRecruitProgressBar />
 
       {/* 进度条 */}
       <div className="max-w-2xl mx-auto px-4">
@@ -974,6 +1286,12 @@ export default function SkillPortraitPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* 目标岗位差距分析 */}
+            <TargetJobGapAnalysis 
+              userSkills={getSelectedSkillsList()} 
+              hasSkillPortrait={selectedSkillCount > 0}
+            />
           </div>
         )}
       </div>

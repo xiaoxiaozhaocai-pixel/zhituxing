@@ -21,8 +21,39 @@ import {
   MapPin,
   Scale,
   FileSearch,
-  Mic
+  Mic,
+  Calendar
 } from 'lucide-react';
+
+// 计算距离秋招的天数（目标日期：9月1日）
+function getDaysToAutumnRecruit(): { days: number; color: string; text: string } {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  
+  // 秋招目标日期：每年9月1日
+  let targetDate = new Date(currentYear, 8, 1); // 月份从0开始，8表示9月
+  
+  // 如果已经过了今年的9月1日，则计算明年的
+  if (now > targetDate) {
+    targetDate = new Date(currentYear + 1, 8, 1);
+  }
+  
+  const diffTime = targetDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  let color = 'text-gray-500';
+  let text = '准备时间充裕';
+  
+  if (diffDays <= 60) {
+    color = 'text-red-500';
+    text = '时间紧迫，立即行动';
+  } else if (diffDays <= 90) {
+    color = 'text-orange-500';
+    text = '进入冲刺阶段';
+  }
+  
+  return { days: diffDays, color, text };
+}
 
 // 痛点共鸣数据
 const painPoints = [
@@ -223,6 +254,17 @@ export default function HomePage() {
               </button>
             </Link>
           </div>
+          
+          {/* 秋招倒计时 */}
+          {(() => {
+            const { days, color, text } = getDaysToAutumnRecruit();
+            return (
+              <p className={`mt-6 text-sm ${color} anim-up-d4 flex items-center justify-center gap-1.5`}>
+                <Calendar className="w-4 h-4" />
+                距离{new Date().getMonth() >= 8 ? '明年' : ''}秋招还有 <strong className="font-bold">{days}</strong> 天，你的准备进度如何？
+              </p>
+            );
+          })()}
         </div>
       </section>
 
