@@ -75,36 +75,25 @@ export async function POST(request: NextRequest) {
     });
 
     // 重发邮箱OTP验证码
-    // 对于注册验证（signup类型），使用 resend 方法
-    // 对于其他类型，使用 signInWithOtp
+    // 统一使用 signInWithOtp 方法，更可靠
+    // - 对于已注册用户：发送 Magic Link / OTP
+    // - 对于新用户：如果 shouldCreateUser=false，会返回错误
     let error;
-    if (type === 'signup') {
-      console.log('[send-code] 使用 resend 方法');
-      const result = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
-      error = result.error;
-      console.log('[send-code] resend 结果:', {
-        hasError: !!error,
-        errorMessage: error?.message,
-        errorCode: error?.status
-      });
-    } else {
-      console.log('[send-code] 使用 signInWithOtp 方法');
-      const result = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        }
-      });
-      error = result.error;
-      console.log('[send-code] signInWithOtp 结果:', {
-        hasError: !!error,
-        errorMessage: error?.message,
-        errorCode: error?.status
-      });
-    }
+    console.log('[send-code] 使用 signInWithOtp 方法，type:', type);
+    const result = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: type === 'signup', // 注册时允许创建用户
+        data: type === 'signup' ? { action: 'resend_signup' } : undefined,
+      }
+    });
+    error = result.error;
+    console.log('[send-code] signInWithOtp 结果:', {
+      hasError: !!error,
+      errorMessage: error?.message,
+      errorCode: error?.status,
+      hasSession: !!result.data?.session
+    });
 
     if (error) {
       console.error('[send-code] 发送验证码失败:', {

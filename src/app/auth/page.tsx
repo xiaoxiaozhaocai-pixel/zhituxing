@@ -282,7 +282,7 @@ function AuthContent() {
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, type: isRegistered ? 'magiclink' : 'signup' }),
       });
       
       const data = await response.json();
