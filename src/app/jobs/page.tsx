@@ -14,7 +14,7 @@ import {
   Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
   User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
-  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp
+  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp, ExternalLink
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
@@ -99,7 +99,6 @@ export default function JobsPage() {
   });
   const [filterOpen, setFilterOpen] = useState(false); // 移动端筛选区折叠状态
   const [selectedJob, setSelectedJob] = useState<Job | null>(null); // 选中的岗位，用于弹窗展示
-  const [jdExpanded, setJdExpanded] = useState(false); // 原始JD展开状态
   const [industries, setIndustries] = useState<FilterOption[]>(defaultIndustries);
   const [cities, setCities] = useState<FilterOption[]>(defaultCities);
   const [educationOpts, setEducationOpts] = useState<FilterOption[]>(defaultEducation);
@@ -744,6 +743,23 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     ))}
                   </div>
 
+                  {/* 来源平台 */}
+                  <div className="text-xs text-gray-400 mb-3">
+                    {job.sourceUrl ? (
+                      <a
+                        href={job.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#165DFF] hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {job.sourcePlatform || '招聘平台'}
+                      </a>
+                    ) : (
+                      <span>{job.sourcePlatform || '综合招聘平台'}</span>
+                    )}
+                  </div>
+
                   {/* AI深度分析按钮 - 使用 stopPropagation 阻止事件冒泡 */}
                   <button
                     className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium hover:underline"
@@ -959,8 +975,8 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
         </DialogContent>
       </Dialog>
 
-      {/* 岗位详情弹窗 */}
-      <Dialog open={!!selectedJob} onOpenChange={(open) => { if (!open) { setSelectedJob(null); setJdExpanded(false); }}}>
+      {/* 岗位详情弹窗 - 合规版：只展示结构化摘要 */}
+      <Dialog open={!!selectedJob} onOpenChange={(open) => { if (!open) { setSelectedJob(null); }}}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedJob && (
             <>
@@ -1004,149 +1020,49 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
                 <Separator />
 
-                {/* 核心职责 */}
+                {/* 核心职责 - 只展示前3条 */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <span className="text-base">🎯</span> 核心职责
                   </h4>
                   {selectedJob.coreDutyModule ? (
                     <ul className="space-y-1.5 text-sm text-gray-700">
-                      {selectedJob.coreDutyModule.split(/[、，,]/).filter(Boolean).map((duty, idx) => (
+                      {selectedJob.coreDutyModule.split(/[、，,]/).filter(Boolean).slice(0, 3).map((duty, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <span className="text-blue-500 mt-0.5">•</span>
                           <span>{duty.trim()}</span>
                         </li>
                       ))}
                     </ul>
-                  ) : selectedJob.jdContent ? (
-                    <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto">
-                      {selectedJob.jdContent}
-                    </div>
                   ) : (
                     <p className="text-sm text-gray-400">暂无职责描述</p>
                   )}
                 </div>
 
-                {/* 技能要求 */}
+                {/* 技能要求 - 只展示前3个 */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <span className="text-base">💡</span> 技能要求
                   </h4>
-                  <div className="space-y-2">
-                    {/* 硬技能 */}
-                    {(selectedJob.hardSkills && selectedJob.hardSkills.length > 0) ? (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedJob.hardSkills.map((skill, idx) => (
-                          <Badge key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-3 py-1">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (selectedJob.skills && selectedJob.skills.length > 0) && (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedJob.skills.map((skill, idx) => (
-                          <Badge key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-3 py-1">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                    {/* 软技能 */}
-                    {selectedJob.softSkills && selectedJob.softSkills.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {selectedJob.softSkills.map((skill, idx) => (
-                          <Badge key={idx} className="bg-green-50 text-green-700 border border-green-100 rounded-full px-3 py-1">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                  <div className="flex flex-wrap gap-2">
+                    {/* 硬技能 - 前3个 */}
+                    {((selectedJob.hardSkills && selectedJob.hardSkills.length > 0 ? selectedJob.hardSkills : selectedJob.skills) || []).slice(0, 3).map((skill, idx) => (
+                      <Badge key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 rounded-full px-3 py-1">
+                        {skill}
+                      </Badge>
+                    ))}
+                    {/* 软技能 - 前3个 */}
+                    {(selectedJob.softSkills || []).slice(0, 3).map((skill, idx) => (
+                      <Badge key={`soft-${idx}`} className="bg-green-50 text-green-700 border border-green-100 rounded-full px-3 py-1">
+                        {skill}
+                      </Badge>
+                    ))}
                     {/* 无技能 */}
                     {(!selectedJob.hardSkills?.length && !selectedJob.skills?.length && !selectedJob.softSkills?.length) && (
                       <p className="text-sm text-gray-400">暂无技能要求</p>
                     )}
                   </div>
                 </div>
-
-                {/* 任职要求 */}
-                {(selectedJob.majorRequire || (selectedJob.bonusSkillCert && selectedJob.bonusSkillCert !== '无明确标注') || selectedJob.graduateFriendlyLevel) && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <span className="text-base">📋</span> 任职要求
-                    </h4>
-                    <div className="space-y-2">
-                      {selectedJob.majorRequire && (
-                        <div className="flex items-start gap-2 text-sm">
-                          <span className="text-gray-500 min-w-[60px]">专业要求</span>
-                          <span className="text-gray-700">{selectedJob.majorRequire}</span>
-                        </div>
-                      )}
-                      {selectedJob.bonusSkillCert && selectedJob.bonusSkillCert !== '无明确标注' && (
-                        <div className="flex items-start gap-2 text-sm">
-                          <span className="text-gray-500 min-w-[60px]">加分项</span>
-                          <span className="text-gray-700">{selectedJob.bonusSkillCert}</span>
-                        </div>
-                      )}
-                      {selectedJob.graduateFriendlyLevel && (
-                        <div className="flex items-start gap-2 text-sm">
-                          <span className="text-gray-500 min-w-[60px]">应届友好</span>
-                          <Badge className={
-                            selectedJob.graduateFriendlyLevel === '极度友好' ? 'bg-green-100 text-green-700' :
-                            selectedJob.graduateFriendlyLevel === '友好' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-600'
-                          }>
-                            {selectedJob.graduateFriendlyLevel}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* 原始JD（折叠展示） */}
-                {selectedJob.jdContent && (
-                  <div>
-                    <button
-                      className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                      onClick={() => setJdExpanded(!jdExpanded)}
-                    >
-                      <span className="text-base">📄</span>
-                      <span>查看原始JD</span>
-                      {jdExpanded ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
-                    {jdExpanded && (
-                      <div className="mt-2 bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap max-h-60 overflow-y-auto border border-gray-100">
-                        {selectedJob.jdContent}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* 来源信息 */}
-                {selectedJob.sourcePlatform && (
-                  <div className="pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>来源：{selectedJob.sourcePlatform}</span>
-                      {selectedJob.sourceUrl && (
-                        <>
-                          <span className="text-gray-300">|</span>
-                          <a
-                            href={selectedJob.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#165DFF] hover:underline flex items-center gap-1"
-                          >
-                            查看原帖 <ArrowRight className="w-3 h-3" />
-                          </a>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* 标签 */}
                 <div className="flex items-center gap-2">
@@ -1156,23 +1072,59 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     </Badge>
                   )}
                 </div>
+
+                {/* 来源信息 - 合规展示 */}
+                <div className="pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span>来源：</span>
+                    {selectedJob.sourceUrl ? (
+                      <a
+                        href={selectedJob.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#165DFF] hover:underline"
+                      >
+                        {selectedJob.sourcePlatform || '招聘平台'}
+                      </a>
+                    ) : (
+                      <span>{selectedJob.sourcePlatform || '综合招聘平台'}</span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <DialogFooter className="mt-6">
-                <Button variant="outline" onClick={() => { setSelectedJob(null); setJdExpanded(false); }}>
-                  关闭
-                </Button>
-                <Button
-                  className="bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
-                  onClick={() => {
-                    setSelectedJob(null);
-                    setJdExpanded(false);
-                    handleJobClick(selectedJob);
-                  }}
-                >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  AI深度分析
-                </Button>
+              <DialogFooter className="mt-6 flex-col gap-3">
+                {/* 查看完整岗位信息按钮 */}
+                {selectedJob.sourceUrl && (
+                  <Button
+                    className="w-full bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
+                    onClick={() => {
+                      window.open(selectedJob.sourceUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    查看完整岗位信息
+                  </Button>
+                )}
+                <div className="flex gap-3 w-full">
+                  <Button variant="outline" className="flex-1" onClick={() => { setSelectedJob(null); }}>
+                    关闭
+                  </Button>
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
+                    onClick={() => {
+                      setSelectedJob(null);
+                      handleJobClick(selectedJob);
+                    }}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    AI深度分析
+                  </Button>
+                </div>
+                {/* 版权声明 */}
+                <p className="text-xs text-gray-400 text-center w-full mt-2">
+                  岗位信息来源于公开招聘平台，职途星仅提供搜索和AI分析服务
+                </p>
               </DialogFooter>
             </>
           )}

@@ -99,6 +99,12 @@ export default function Footer() {
             <Link href="/contact" className="hover:text-blue-200 transition-colors">联系我们</Link>
           </div>
         </div>
+        {/* 免责声明 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 text-center">
+          <p className="text-blue-300/40 text-xs">
+            本平台岗位信息来源于公开招聘平台，仅供参考。职途星不对岗位信息的准确性和时效性承担责任。
+          </p>
+        </div>
       </div>
     </footer>
   );
