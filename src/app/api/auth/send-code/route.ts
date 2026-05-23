@@ -50,23 +50,48 @@ export async function POST(request: NextRequest) {
     
     if (!checkRateLimit(rateLimitKey)) {
       return NextResponse.json({ 
-        error: '发送过于频繁，请60秒后再试' 
+        error: '发送过于频繁，请60秒后再试',
+        hint: 'Supabase SMTP 有 60 秒最小发送间隔限制'
       }, { status: 429 });
     }
 
     const supabase = getSupabaseAdmin();
+    
+    // 检查 Supabase 配置
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+      console.error('[send-code] Supabase URL 未配置');
+      return NextResponse.json({ 
+        error: '服务配置错误',
+        hint: '请联系管理员检查 Supabase 配置'
+      }, { status: 500 });
+    }
+
+    console.log('[send-code] 准备发送验证码:', {
+      email,
+      type,
+      supabaseUrl: supabaseUrl?.substring(0, 30) + '...',
+      timestamp: new Date().toISOString()
+    });
 
     // 重发邮箱OTP验证码
     // 对于注册验证（signup类型），使用 resend 方法
     // 对于其他类型，使用 signInWithOtp
     let error;
     if (type === 'signup') {
+      console.log('[send-code] 使用 resend 方法');
       const result = await supabase.auth.resend({
         type: 'signup',
         email,
       });
       error = result.error;
+      console.log('[send-code] resend 结果:', {
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorCode: error?.status
+      });
     } else {
+      console.log('[send-code] 使用 signInWithOtp 方法');
       const result = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -74,19 +99,57 @@ export async function POST(request: NextRequest) {
         }
       });
       error = result.error;
+      console.log('[send-code] signInWithOtp 结果:', {
+        hasError: !!error,
+        errorMessage: error?.message,
+        errorCode: error?.status
+      });
     }
 
     if (error) {
-      console.error('重发验证码失败:', error.message);
-      return NextResponse.json({ error: '发送失败，请稍后重试' }, { status: 500 });
+      console.error('[send-code] 发送验证码失败:', {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        email
+      });
+      
+      // 提供更具体的错误提示
+      let userMessage = '发送失败，请稍后重试';
+      let hint = '';
+      
+      if (error.message?.includes('rate limit') || error.status === 429) {
+        userMessage = '发送过于频繁，请60秒后再试';
+        hint = 'Supabase SMTP 有发送频率限制';
+      } else if (error.message?.includes('not found') || error.status === 404) {
+        userMessage = '邮箱未注册';
+        hint = '请先注册账号';
+      } else if (error.message?.includes('invalid email')) {
+        userMessage = '邮箱格式无效';
+      } else if (error.message?.includes('SMTP') || error.message?.includes('mail')) {
+        userMessage = '邮件服务暂时不可用';
+        hint = '请联系管理员检查 SMTP 配置';
+      }
+      
+      return NextResponse.json({ 
+        error: userMessage,
+        hint,
+        debugId: Date.now().toString(36) // 用于问题排查
+      }, { status: error.status || 500 });
     }
 
+    console.log('[send-code] 验证码发送成功:', { email, type });
+    
     return NextResponse.json({
       success: true,
-      message: '验证码已发送到您的邮箱'
+      message: '验证码已发送到您的邮箱',
+      hint: '如果未收到，请检查垃圾邮件文件夹'
     });
   } catch (error) {
-    console.error('发送验证码失败:', error);
-    return NextResponse.json({ error: '发送失败，请稍后重试' }, { status: 500 });
+    console.error('[send-code] 发送验证码异常:', error);
+    return NextResponse.json({ 
+      error: '发送失败，请稍后重试',
+      hint: '服务异常，请联系管理员'
+    }, { status: 500 });
   }
 }

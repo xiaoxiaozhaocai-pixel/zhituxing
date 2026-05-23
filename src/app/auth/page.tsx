@@ -57,6 +57,7 @@ function AuthContent() {
   // OTP相关
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [resendCountdown, setResendCountdown] = useState(0);
   
   // 状态
   const [loading, setLoading] = useState(false);
@@ -260,8 +261,20 @@ function AuthContent() {
     setLoading(false);
   };
 
+  // 倒计时effect
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setResendCountdown(resendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
+
   // 重发验证码
   const handleResendOtp = async () => {
+    if (resendCountdown > 0) return; // 倒计时中不允许重发
+    
     setLoading(true);
     setError('');
     
@@ -275,6 +288,7 @@ function AuthContent() {
       const data = await response.json();
       if (data.success) {
         setSuccess('验证码已重新发送到您的邮箱');
+        setResendCountdown(60); // 启动60秒倒计时
       } else {
         setError(data.error || '发送失败');
       }
@@ -616,11 +630,18 @@ function AuthContent() {
                 <div className="text-center">
                   <button
                     onClick={handleResendOtp}
-                    disabled={loading}
-                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center gap-1 mx-auto"
+                    disabled={loading || resendCountdown > 0}
+                    className={`text-sm flex items-center justify-center gap-1 mx-auto ${
+                      resendCountdown > 0 
+                        ? 'text-gray-400 cursor-not-allowed' 
+                        : 'text-blue-600 hover:text-blue-700'
+                    }`}
                   >
-                    <RefreshCw className="w-3 h-3" />
-                    重新发送验证码
+                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                    {resendCountdown > 0 
+                      ? `重新发送(${resendCountdown}s)` 
+                      : '重新发送验证码'
+                    }
                   </button>
                 </div>
               </div>
