@@ -31,6 +31,19 @@ function groupExperience(raw: Record<string, number>): { label: string; value: s
   return Object.entries(categories).filter(([_, cat]) => cat.count > 0).map(([key, cat]) => ({ label: cat.label, value: key, count: cat.count })).sort((a, b) => b.count - a.count)
 }
 
+function dedupeAndPrependDefault(
+  items: { label: string; value: string; count: number }[],
+  defaultLabel: string,
+  defaultValue: string
+): { label: string; value: string; count: number }[] {
+  const filtered = items.filter(item => item.value !== defaultValue)
+  const totalCount = filtered.reduce((sum, item) => sum + item.count, 0)
+  return [
+    { label: defaultLabel, value: defaultValue, count: totalCount },
+    ...filtered,
+  ]
+}
+
 export async function GET() {
   try {
     if (cache && Date.now() - cache.timestamp < CACHE_DURATION) {
@@ -60,19 +73,25 @@ export async function GET() {
     const rawExpCounts: Record<string, number> = {}
     for (const item of expData) { const val = item['experience']; if (val && val.trim()) { rawExpCounts[val] = (rawExpCounts[val] || 0) + 1 } }
 
-    const result = {
-      industries: [{ label: '\u5168\u90e8', value: '\u5168\u90e8', count: 0 }, ...countAndSort(indData, 'industry')],
-      cities: [{ label: '\u5168\u56fd', value: '\u5168\u56fd', count: 0 }, ...countAndSort(cityData, 'city')],
-      education: [{ label: '\u4e0d\u9650', value: '\u4e0d\u9650', count: 0 }, ...countAndSort(eduData, 'education')],
-      experience: [{ label: '\u4e0d\u9650', value: '\u4e0d\u9650', count: 0 }, ...groupExperience(rawExpCounts)],
-      companyTypes: [{ label: '\u5168\u90e8', value: '\u5168\u90e8', count: 0 }, ...countAndSort(compData, 'company_type')],
-    }
+    const rawIndustries = countAndSort(indData, 'industry')
+    const rawCities = countAndSort(cityData, 'city')
+    const rawEducation = countAndSort(eduData, 'education')
+    const rawExperience = groupExperience(rawExpCounts)
+    const rawCompanyTypes = countAndSort(compData, 'company_type')
 
-    result.industries[0].count = result.industries.reduce((s: number, i: any) => s + i.count, 0)
-    result.cities[0].count = result.cities.reduce((s: number, c: any) => s + c.count, 0)
-    result.education[0].count = result.education.reduce((s: number, e: any) => s + e.count, 0)
-    result.experience[0].count = result.experience.reduce((s: number, e: any) => s + e.count, 0)
-    result.companyTypes[0].count = result.companyTypes.reduce((s: number, c: any) => s + c.count, 0)
+    const industries = dedupeAndPrependDefault(rawIndustries, "全部", "全部")
+    const cities = dedupeAndPrependDefault(rawCities, "全国", "全国")
+    const education = dedupeAndPrependDefault(rawEducation, "不限", "不限")
+    const experience = dedupeAndPrependDefault(rawExperience, "不限", "不限")
+    const companyTypes = dedupeAndPrependDefault(rawCompanyTypes, "全部", "全部")
+
+    const result = {
+      industries,
+      cities,
+      education,
+      experience,
+      companyTypes,
+    }
 
     cache = { data: result, timestamp: Date.now() }
     return NextResponse.json(result, { headers: { 'Cache-Control': 'public, max-age=3600' } })
