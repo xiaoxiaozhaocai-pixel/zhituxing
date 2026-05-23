@@ -82,14 +82,20 @@ export default function AssessmentPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setRecords(data.data?.assessments || []);
-        setPercentile(data.data?.percentile || null);
+        const historyRecords = data.data?.history || data.data?.assessments || [];
+        const percentileInfo = data.data?.percentile || null;
+        setRecords(historyRecords);
+        setPercentile(percentileInfo ? {
+          percentileRank: percentileInfo.percentileRank,
+          totalUsers: percentileInfo.totalPeers || percentileInfo.totalUsers,
+          userRank: percentileInfo.rank || percentileInfo.userRank,
+        } : null);
         setGrowthData(data.data?.growthCurve || []);
-        if (data.data?.assessments?.length > 0) {
+        if (historyRecords.length > 0) {
           setSelectedIdx(0);
           // 埋点：完成测评（加载到历史数据）
           AnalyticsTracker.track(AnalyticsEvent.ASSESSMENT_COMPLETE, {
-            total_records: data.data.assessments.length,
+            total_records: historyRecords.length,
           });
         }
       }
