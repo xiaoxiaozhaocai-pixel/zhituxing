@@ -210,7 +210,8 @@ function AuthContent() {
     setLoading(false);
   };
 
-  // 注册
+  // 注册 - 改用OTP验证码流程
+  // 流程：输入邮箱密码 → 发送OTP → 验证OTP → 验证成功后自动设置密码
   const handleRegister = async () => {
     if (!validateEmail(email) || !validatePassword(password) || !validateConfirmPassword(confirmPassword)) return;
     
@@ -218,25 +219,33 @@ function AuthContent() {
     setError('');
     
     try {
-      const result = await register(email, password, nickname || undefined);
-      if (result.success) {
-        if (result.needsVerification) {
-          setSuccess('注册成功！验证码已发送到您的邮箱，请查收');
-          setStep('otp');
-        } else {
-          setSuccess('注册成功，正在跳转...');
-        }
+      // 直接调用 send-code API 发送 OTP 验证码
+      // 不再调用 signUp（会发确认链接而非验证码）
+      const response = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, type: 'signup' }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccess('验证码已发送到您的邮箱，请查收');
+        setStep('otp'); // 进入OTP验证步骤
+        setResendCountdown(60); // 启动60秒倒计时
       } else {
-        setError(getFriendlyError(result.message));
+        setError(data.error || '发送验证码失败');
       }
     } catch (err) {
-      setError('注册失败，请稍后重试');
+      setError('发送验证码失败，请稍后重试');
     }
     
     setLoading(false);
   };
 
   // OTP验证
+  // 注册流程：验证成功后设置密码和昵称
+  // 登录流程：验证成功直接跳转
   const handleOtpVerify = async () => {
     const otpValue = otpDigits.join('');
     if (otpValue.length !== 8) {
@@ -248,11 +257,31 @@ function AuthContent() {
     setError('');
     
     try {
-      const result = await verifyOtp(email, otpValue);
-      if (result.success) {
+      // 调用 verify-otp API，传入密码和昵称（如果是注册流程）
+      const body: Record<string, string | undefined> = { 
+        email, 
+        token: otpValue, 
+        type: isRegistered ? 'magiclink' : 'signup' 
+      };
+      
+      // 如果是注册流程，额外传入密码和昵称
+      if (!isRegistered) {
+        body.password = password;
+        body.nickname = nickname || undefined;
+      }
+      
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
         setSuccess('验证成功，正在跳转...');
       } else {
-        setError(getFriendlyError(result.message));
+        setError(getFriendlyError(data.error || data.message));
       }
     } catch (err) {
       setError('验证失败，请稍后重试');

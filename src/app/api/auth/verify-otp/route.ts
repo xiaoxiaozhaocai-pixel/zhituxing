@@ -5,7 +5,7 @@ import { setAuthCookies } from '@/lib/auth-cookies';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, token, type = 'signup' } = await request.json();
+    const { email, token, type = 'signup', password, nickname } = await request.json();
 
     if (!email || !token) {
       return NextResponse.json({ error: '请提供邮箱和验证码' }, { status: 400 });
@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
+    // 1. 验证 OTP
     const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email,
       token,
@@ -31,22 +32,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '验证失败，请重试' }, { status: 500 });
     }
 
+    // 2. 如果是注册流程且传入了密码，设置密码和昵称
+    let finalSession = authData.session;
+    let finalUser = authData.user;
+    
+    if (password && type === 'signup') {
+      console.log('[verify-otp] 注册流程，设置密码和昵称:', { 
+        userId: authData.user.id, 
+        hasNickname: !!nickname 
+      });
+      
+      // 使用 session 更新用户信息
+      const { data: updateData, error: updateError } = await supabase.auth.updateUser(
+        {
+          password,
+          data: { nickname: nickname || `用户${email.split('@')[0].slice(-4)}` }
+        },
+        {
+          // 使用刚验证通过的 session
+        }
+      );
+      
+      if (updateError) {
+        console.error('[verify-otp] 设置密码失败:', updateError);
+        // 不阻止流程，继续登录
+      } else if (updateData.user) {
+        finalUser = updateData.user;
+        console.log('[verify-otp] 密码设置成功');
+      }
+    }
+
+    // 3. 返回成功响应
     const response = NextResponse.json({
       success: true,
       message: '验证成功',
       user: {
-        id: authData.user.id,
-        email: authData.user.email,
-        nickname: authData.user.user_metadata?.nickname || `用户${authData.user.email?.split('@')[0]?.slice(-4) || ''}`,
+        id: finalUser.id,
+        email: finalUser.email,
+        nickname: finalUser.user_metadata?.nickname || nickname || `用户${finalUser.email?.split('@')[0]?.slice(-4) || ''}`,
         is_member: false
       }
     });
     
     setAuthCookies(
       response,
-      authData.session.access_token,
-      authData.session.refresh_token,
-      authData.session.expires_at ?? 0
+      finalSession.access_token,
+      finalSession.refresh_token,
+      finalSession.expires_at ?? 0
     );
     
     return response;
