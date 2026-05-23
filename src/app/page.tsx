@@ -123,7 +123,7 @@ const trustData = [
     icon: <Building2 className="w-6 h-6" />,
     value: '2万+',
     label: '真实岗位数据',
-    description: '覆盖全行业主流岗位',
+    description: '覆盖27大行业主流岗位',
   },
   {
     icon: <CheckCircle2 className="w-6 h-6" />,

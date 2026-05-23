@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('skill_relations')
       .select('*')
-      .or(`skill_a.eq.${skillName},skill_b.eq.${skillName}`);
+      .or(`source_skill.eq.${skillName},target_skill.eq.${skillName}`);
 
     if (relationType) {
       query = query.eq('relation_type', relationType);
