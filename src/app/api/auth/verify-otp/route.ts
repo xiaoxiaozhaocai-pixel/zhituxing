@@ -43,14 +43,14 @@ export async function POST(request: NextRequest) {
         hasNickname: !!nickname 
       });
       
-      // 使用 session 更新用户信息
-      const { data: updateData, error: updateError } = await supabase.auth.updateUser(
+      // 使用 admin API 更新用户密码和元数据（service_role 客户端没有用户session上下文）
+      const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
+        authData.user.id,
         {
           password,
-          data: { nickname: nickname || `用户${email.split('@')[0].slice(-4)}` }
-        },
-        {
-          // 使用刚验证通过的 session
+          user_metadata: { 
+            nickname: nickname || `用户${email.split('@')[0].slice(-4)}` 
+          }
         }
       );
       
