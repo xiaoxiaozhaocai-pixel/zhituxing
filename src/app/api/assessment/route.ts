@@ -25,6 +25,244 @@ export const runtime = 'edge';
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
 // ============================================================
+// 辅助函数：保存结构化测评数据到 Supabase
+// ============================================================
+
+async function saveStructuredDataAssessment(
+  userId: string,
+  dataType: string,
+  jsonData: Record<string, unknown>
+): Promise<void> {
+  try {
+    const now = new Date().toISOString();
+
+    // 根据 dataType 选择目标表
+    let table = 'assessment_results';
+    let dataField = 'result_data';
+
+    if (dataType === 'career_plan') {
+      table = 'career_plans';
+      dataField = 'plan_data';
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${table}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          [dataField]: jsonData,
+          created_at: now,
+        }),
+      }
+    );
+
+    if (res.ok) {
+      console.log(`[assessment] 结构化数据已保存: type=${dataType}, table=${table}`);
+    } else {
+      console.error('[assessment] 保存结构化数据失败:', res.status, await res.text());
+    }
+  } catch (error) {
+    console.error('[assessment] 保存结构化数据异常:', error);
+  }
+}
+
+// ============================================================
+// 辅助函数：创建带 <<DATA>> 解析的 DeepSeek SSE 流
+// ============================================================
+
+function createDeepSeekAssessmentStream(
+  systemPrompt: string,
+  userMessage: string,
+  history: Array<{ role: string; content: string }>,
+  userId: string | null
+): ReadableStream {
+  const encoder = new TextEncoder();
+
+  // SSE 辅助函数
+  function sendText(controller: { enqueue: (d: Uint8Array) => void }, text: string) {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`));
+  }
+
+  function sendStructuredData(
+    controller: { enqueue: (d: Uint8Array) => void },
+    dataType: string,
+    jsonData: Record<string, unknown>
+  ) {
+    controller.enqueue(
+      encoder.encode(`event: structured_data\ndata: ${JSON.stringify({ type: dataType, data: jsonData })}\n\n`)
+    );
+  }
+
+  function sendDone(controller: { enqueue: (d: Uint8Array) => void }) {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+  }
+
+  function sendError(controller: { enqueue: (d: Uint8Array) => void }, message: string) {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', message })}\n\n`));
+  }
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const messages = [
+          { role: 'system' as const, content: systemPrompt },
+          ...(history || []).filter((m: { role: string }) => m.role !== 'system'),
+          { role: 'user' as const, content: userMessage },
+        ];
+
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+            messages,
+            temperature: 0.7,
+            max_tokens: 4000,
+            stream: true,
+          }),
+        });
+
+        if (!response.ok) {
+          sendText(controller, 'AI服务暂时不可用，请稍后再试');
+          sendDone(controller);
+          controller.close();
+          return;
+        }
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) {
+          sendError(controller, '无法读取AI响应');
+          controller.close();
+          return;
+        }
+
+        let buffer = '';
+        let pendingText = '';
+        const dataStartRegex = /<<\s*DATA\s*:\s*type\s*=\s*(\w+)\s*>>/i;
+        const dataEndRegex = /<<\s*END\s*>>/i;
+
+        // 刷新 pendingText，检测 <<DATA>> 标记
+        function flushPendingText(): string {
+          let searchStart = 0;
+
+          while (searchStart < pendingText.length) {
+            const startMatch = pendingText.substring(searchStart).match(dataStartRegex);
+
+            if (!startMatch) {
+              // 检查尾部是否有未完成的 <<DATA>> 前缀
+              const lastLt = pendingText.lastIndexOf('<<', searchStart);
+              if (lastLt > searchStart && lastLt > pendingText.length - 30) {
+                const safeText = pendingText.substring(searchStart, lastLt);
+                if (safeText) sendText(controller, safeText);
+                return pendingText.substring(lastLt);
+              }
+              const safeText = pendingText.substring(searchStart);
+              if (safeText) sendText(controller, safeText);
+              return '';
+            }
+
+            const dataType = startMatch[1];
+            const dataStartPos = searchStart + startMatch.index! + startMatch[0].length;
+
+            // 转发标记前的普通文本
+            if (startMatch.index! > 0) {
+              const textBefore = pendingText.substring(searchStart, searchStart + startMatch.index!);
+              if (textBefore) sendText(controller, textBefore);
+            }
+
+            // 查找 <<END>>
+            const endMatch = pendingText.substring(dataStartPos).match(dataEndRegex);
+
+            if (!endMatch) {
+              // <<END>> 还没到，保留从 <<DATA>> 开始的部分
+              return pendingText.substring(searchStart + startMatch.index!);
+            }
+
+            // 提取结构化数据
+            const jsonStr = pendingText.substring(dataStartPos, dataStartPos + endMatch.index!);
+            const afterEndPos = dataStartPos + endMatch.index! + endMatch[0].length;
+
+            try {
+              const jsonData = JSON.parse(jsonStr);
+              sendStructuredData(controller, dataType, jsonData);
+
+              // 异步保存到 Supabase
+              if (userId) {
+                saveStructuredDataAssessment(userId, dataType, jsonData).catch((err) =>
+                  console.error('[assessment] Background save error:', err)
+                );
+              }
+            } catch (parseErr) {
+              console.error('[assessment] 结构化数据JSON解析失败:', parseErr);
+              sendText(controller, `<<DATA:type=${dataType}>>${jsonStr}<<END>>`);
+            }
+
+            searchStart = afterEndPos;
+          }
+
+          return '';
+        }
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // 解析 SSE 事件
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const data = line.slice(5).trim();
+              if (data === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.choices?.[0]?.delta?.content) {
+                  pendingText += parsed.choices[0].delta.content;
+                  pendingText = flushPendingText();
+                }
+              } catch {
+                // 非 JSON，忽略
+              }
+            }
+          }
+        }
+
+        // 流结束，刷新剩余内容
+        pendingText = flushPendingText();
+        if (pendingText) sendText(controller, pendingText);
+        sendDone(controller);
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.error('[assessment] Stream error:', errMsg);
+        sendError(controller, errMsg);
+      } finally {
+        try {
+          controller.close();
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+  });
+}
+
+// ============================================================
 // GET - 获取测评历史 + 竞争力百分位
 // ============================================================
 
@@ -243,8 +481,8 @@ ${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ""}
           { role: 'user' as const, content: userMessage },
         ];
 
-        // 6. 返回 DeepSeek SSE 流
-        const stream = createDeepSeekRAGStream(systemPrompt, userMessage, history || []);
+        // 6. 返回 DeepSeek SSE 流（带 <<DATA>> 解析）
+        const stream = createDeepSeekAssessmentStream(systemPrompt, userMessage, history || [], userId);
         return new Response(stream, {
           headers: {
             'Content-Type': 'text/event-stream',
