@@ -262,8 +262,8 @@ export async function GET(request: NextRequest) {
           .from('job_descriptions')
           .select(LIGHT_SELECT_FIELDS)
           .limit(500);
-        if (industry) q = q.eq('industry', industry);
-        if (city) q = q.eq('city', city);
+        if (industry && industry !== '全部') q = q.eq('industry', industry);
+        if (city && city !== '全国') q = q.eq('city', city);
         if (freshOnly) q = q.eq('fresh_graduate_friendly', true);
         if (education && education !== '不限') q = q.eq('education', education);
         if (companyType && companyType !== '全部') q = q.eq('company_type', companyType);
@@ -411,8 +411,8 @@ export async function GET(request: NextRequest) {
       .from('job_descriptions')
       .select('*', { count: 'exact' });
     
-    if (industry) query = query.eq('industry', industry);
-    if (city) query = query.eq('city', city);
+    if (industry && industry !== '全部') query = query.eq('industry', industry);
+    if (city && city !== '全国') query = query.eq('city', city);
     if (freshOnly) query = query.eq('fresh_graduate_friendly', true);
     if (education && education !== '不限') query = query.eq('education', education);
     if (companyType && companyType !== '全部') query = query.eq('company_type', companyType);
