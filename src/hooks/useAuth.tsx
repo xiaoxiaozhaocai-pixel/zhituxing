@@ -187,7 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token, type: 'signup' }),
+        body: JSON.stringify({ email, token, type: 'magiclink', flowType: 'signup' }),
       });
       
       const data = await response.json();

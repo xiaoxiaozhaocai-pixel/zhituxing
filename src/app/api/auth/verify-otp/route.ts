@@ -5,7 +5,7 @@ import { setAuthCookies } from '@/lib/auth-cookies';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, token, type = 'signup', password, nickname } = await request.json();
+    const { email, token, type = 'magiclink', flowType = 'signup', password, nickname } = await request.json();
 
     if (!email || !token) {
       return NextResponse.json({ error: '请提供邮箱和验证码' }, { status: 400 });
@@ -14,10 +14,11 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseAdmin();
 
     // 1. 验证 OTP
+    // signInWithOtp 发送的 OTP 类型始终是 magiclink，必须匹配
     const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email,
       token,
-      type,
+      type: 'magiclink',
     });
 
     if (authError) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     let finalSession = authData.session;
     let finalUser = authData.user;
     
-    if (password && type === 'signup') {
+    if (password && flowType === 'signup') {
       console.log('[verify-otp] 注册流程，设置密码和昵称:', { 
         userId: authData.user.id, 
         hasNickname: !!nickname 
@@ -62,7 +63,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. 返回成功响应
+    // 3. 验证成功后，如果是注册流程，插入 user_profiles 记录
+    if (flowType === 'signup' && finalUser) {
+      const adminClient = getSupabaseAdmin();
+      const { error: profileError } = await adminClient
+        .from('user_profiles')
+        .upsert({
+          id: finalUser.id,
+          user_id: finalUser.id,
+          nickname: finalUser.user_metadata?.nickname || nickname || `用户${(finalUser.email?.split('@')[0]?.slice(-4) || '')}`,
+          user_type: 'free',
+        }, { onConflict: 'id' });
+      
+      if (profileError) {
+        console.error('[verify-otp] 创建用户档案失败:', profileError);
+        // 不阻止登录流程
+      } else {
+        console.log('[verify-otp] 用户档案创建成功:', finalUser.id);
+      }
+    }
+
+    // 4. 返回成功响应
     const response = NextResponse.json({
       success: true,
       message: '验证成功',

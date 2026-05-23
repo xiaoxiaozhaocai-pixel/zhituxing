@@ -258,10 +258,12 @@ function AuthContent() {
     
     try {
       // 调用 verify-otp API，传入密码和昵称（如果是注册流程）
+      // signInWithOtp 发送的 OTP 类型始终是 magiclink，必须匹配
       const body: Record<string, string | undefined> = { 
         email, 
         token: otpValue, 
-        type: isRegistered ? 'magiclink' : 'signup' 
+        type: 'magiclink',
+        flowType: isRegistered ? 'login' : 'signup'  // 业务逻辑区分
       };
       
       // 如果是注册流程，额外传入密码和昵称
