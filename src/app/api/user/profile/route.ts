@@ -106,23 +106,26 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     // 前端字段名映射到数据库字段名
-    // 前端: target_position → 数据库: job_intention
-    // 前端: education → 数据库: grade
-    // 前端: experience → 数据库: internship_experience
-    // 前端: target_cities → 数据库: target_city (取第一个)
+    // direction/target_job/target_position → 数据库: job_intention
+    // city/target_cities → 数据库: target_city
+    // hard_skills/soft_skills → 数据库: skills (jsonb)
+    // personality/personality_type → 数据库: personality_type
     const { 
       major, 
+      direction,  // 新增：方向 → target_job
       target_position, 
-      target_job,  // 兼容新字段名
+      target_job,  // 兼容字段名
       skills, 
       education, 
-      grade,  // 兼容新字段名
+      grade,  // 兼容字段名
       experience, 
-      internship_experience,  // 兼容新字段名
-      target_cities,  // 新增：目标城市
-      personality_type,  // 新增：人格类型
-      hard_skills,  // 新增：专业技能
-      soft_skills   // 新增：软技能
+      internship_experience,  // 兼容字段名
+      city,  // 新增：单个城市
+      target_cities,  // 目标城市数组
+      personality,  // 新增：人格类型
+      personality_type,  // 兼容字段名
+      hard_skills,  // 专业技能
+      soft_skills   // 软技能
     } = body;
 
     // 构建 update 对象，只包含提供的字段，映射到数据库字段名
@@ -130,29 +133,33 @@ export async function PUT(request: NextRequest) {
       updated_at: new Date().toISOString() 
     };
     if (major !== undefined) updateData.major = major;
-    // target_position 或 target_job → job_intention
+    // direction/target_job/target_position → job_intention
+    if (direction !== undefined) updateData.job_intention = direction;
     if (target_position !== undefined) updateData.job_intention = target_position;
     if (target_job !== undefined) updateData.job_intention = target_job;
-    // education 或 grade → grade
+    // education/grade → grade
     if (education !== undefined) updateData.grade = education;
     if (grade !== undefined) updateData.grade = grade;
-    // experience 或 internship_experience → internship_experience
+    // experience/internship_experience → internship_experience
     if (experience !== undefined) updateData.internship_experience = experience;
     if (internship_experience !== undefined) updateData.internship_experience = internship_experience;
     // skills → skills (jsonb)
     if (skills !== undefined) updateData.skills = skills;
-    // 新增字段映射
+    // city/target_cities → target_city
+    if (city !== undefined) updateData.target_city = city;
     if (target_cities !== undefined) {
       // target_cities 可能是数组，取第一个存入 target_city
       updateData.target_city = Array.isArray(target_cities) 
         ? target_cities[0] 
         : target_cities;
     }
+    // personality/personality_type → personality_type
+    if (personality !== undefined) updateData.personality_type = personality;
     if (personality_type !== undefined) updateData.personality_type = personality_type;
     // hard_skills 和 soft_skills 合并存入 skills (jsonb)
     if (hard_skills !== undefined || soft_skills !== undefined) {
       updateData.skills = {
-        ...(skills || {}),
+        ...(typeof skills === 'object' ? skills : {}),
         hard_skills: hard_skills || [],
         soft_skills: soft_skills || []
       };

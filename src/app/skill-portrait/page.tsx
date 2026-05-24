@@ -807,18 +807,24 @@ export default function SkillPortraitPage() {
         .filter(s => s.category === 'soft')
         .map(s => s.name);
       
+      // 字段名映射对齐 user_profiles 表：
+      // direction → target_job → 数据库 job_intention
+      // city → target_cities → 数据库 target_city
+      // skills → hard_skills/soft_skills → 数据库 skills jsonb
+      // personality → personality_type
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // 确保带上 cookie
+        credentials: 'include',
         body: JSON.stringify({
           major: form.major || undefined,
-          target_position: form.job_intention || undefined, // 后端映射到 job_intention
+          target_job: form.job_intention || undefined, // direction → target_job → job_intention
           grade: form.grade || undefined,
-          target_cities: form.city ? [form.city] : undefined, // 后端映射到 target_city
+          target_cities: form.city ? [form.city] : undefined, // city → target_cities → target_city
           hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
           soft_skills: softSkills.length > 0 ? softSkills : undefined,
-          skills: skillsData.length > 0 ? skillsData : undefined, // 完整技能数据存入 skills jsonb
+          skills: skillsData.length > 0 ? skillsData : undefined,
+          // personality_type: form.personality || undefined, // 如有 personality 字段可启用
         }),
       });
       const data = await response.json();
