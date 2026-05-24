@@ -800,18 +800,18 @@ export default function SkillPortraitPage() {
       const skillsData: SkillForSave[] = aiResult ? convertToSaveFormat(aiResult, skillSelections) : [];
       const response = await fetch('/api/user/profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-user-id': user.id.toString() },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 确保带上 cookie
         body: JSON.stringify({
-          major: form.major || null,
-          grade: form.grade || null,
-          graduation_year: form.graduation_year ? parseInt(form.graduation_year) : null,
-          target_city: form.city || null,
-          job_intention: form.job_intention || null,
+          major: form.major || undefined,
+          target_position: form.job_intention || undefined,
           skills: skillsData,
+          education: form.grade || undefined,
+          experience: undefined,
         }),
       });
       const data = await response.json();
-      if (data.code === 200) {
+      if (data.success) {
         // 标记技能画像已完成
         localStorage.setItem('skill-portrait-done', 'true');
         showToast('技能画像保存成功', 'success', 2000);
