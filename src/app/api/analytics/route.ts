@@ -77,7 +77,22 @@ export async function GET(request: NextRequest) {
       .select('event_type, user_id')
       .gte('created_at', sinceDate);
 
-    if (error) throw error;
+    // 表不存在时返回空数据
+    if (error) {
+      console.error('[analytics] Query error:', error);
+      return NextResponse.json({
+        success: true,
+        data: {
+          daily: [],
+          summary: {
+            totalEvents: 0,
+            totalUsers: 0,
+            totalEventTypes: 0,
+            period: `${days} days`,
+          },
+        },
+      });
+    }
 
     // JS 聚合计算
     const eventCounts: Record<string, { count: number; users: Set<string> }> = {};
@@ -135,7 +150,25 @@ async function handleDashboardQuery(days: number) {
     .select('event_type, user_id, event_data, created_at')
     .gte('created_at', sinceDate);
 
-  if (error) throw error;
+  // 表不存在时返回空数据
+  if (error) {
+    console.error('[analytics] Dashboard query error:', error);
+    return NextResponse.json({
+      success: true,
+      data: {
+        dau: 0,
+        chatCount: 0,
+        assessmentStart: 0,
+        assessmentComplete: 0,
+        paywallShow: 0,
+        paywallConvert: 0,
+        distribution: [],
+        funnel: { pageView: 0, chat: 0, assessment: 0, convert: 0 },
+        trend: [],
+        topPages: [],
+      },
+    });
+  }
 
   // JS 聚合计算
   const dauUsers = new Set<string>();
