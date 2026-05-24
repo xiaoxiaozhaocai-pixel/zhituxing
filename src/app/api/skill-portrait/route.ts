@@ -16,11 +16,45 @@ import {
 export const runtime = 'edge';
 
 function getSkillPortraitFallback(major?: string, targetCity?: string): string {
+  const majorName = major || '您的专业';
+  const cityName = targetCity || '意向城市';
+  
   return `您好！我是职途星技能画像助手。
 
-基于您的专业「${major || '未填写'}」和意向城市「${targetCity || '未填写'}」，我来为您推荐合适的技能组合。
+基于您的专业「${majorName}」和意向城市「${cityName}」，我来为您推荐合适的技能组合。
 
-请稍后，正在为您生成专业能力画像...`;
+PROFESSIONAL_SKILLS_START
+Python编程|hot|数据分析和自动化脚本的核心语言
+数据分析|hot|互联网和金融行业必备能力
+SQL数据库|hot|数据处理和查询的基础技能
+Excel高级应用|normal|数据处理和报表制作必备
+项目管理|normal|跨部门协作和进度把控
+统计学基础|normal|数据分析的理论基础
+PROFESSIONAL_SKILLS_END
+
+OFFICE_SKILLS_START
+Excel数据处理|hot|数据透视表、函数公式必备
+PPT演示制作|normal|方案汇报和成果展示
+Word文档排版|normal|报告撰写和文档整理
+思维导图|optional|思路整理和方案规划
+OFFICE_SKILLS_END
+
+SOFT_SKILLS_START
+沟通表达|hot|团队协作和项目推进的关键
+问题分析|hot|发现问题和提出解决方案
+时间管理|normal|多任务并行和优先级把控
+主动学习|normal|快速适应新领域和新技术
+SOFT_SKILLS_END
+
+SKILL_SUMMARY_START
+根据您的${majorName}背景，建议优先掌握Python编程和数据分析技能，这是当前市场需求最旺盛的方向。同时培养沟通表达和问题分析能力，帮助您在职场中脱颖而出。
+
+建议学习路径：
+1. 先掌握Python基础语法（2-4周）
+2. 学习Pandas/NumPy数据分析库（4-6周）
+3. 完成实际数据分析项目练手
+4. 持续提升软技能，多参与团队协作
+SKILL_SUMMARY_END`;
 }
 
 export async function POST(request: NextRequest) {

@@ -73,6 +73,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST 方法 - 更新用户画像（与 PUT 相同，兼容前端调用）
+export async function POST(request: NextRequest) {
+  return PUT(request);
+}
+
 export async function PUT(request: NextRequest) {
   try {
     // 从 cookie 读取 sb-access-token（与 /api/auth/me 一致）
