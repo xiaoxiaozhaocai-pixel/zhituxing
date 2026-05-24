@@ -129,10 +129,11 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch('/api/user/profile', { headers: { 'x-user-id': userId } });
+      const res = await fetch('/api/user/profile', { credentials: 'include' });
       const data = await res.json();
       if (data.data?.profile) setProfile(data.data.profile);
       else if (data.profile) setProfile(data.profile);
+      else if (data.data) setProfile(data.data);
     } catch (e) {
       console.error('获取个人信息失败:', e);
     } finally {

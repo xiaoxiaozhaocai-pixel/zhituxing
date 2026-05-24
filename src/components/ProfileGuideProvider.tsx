@@ -33,11 +33,11 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
       if (userData.code === 200 && userData.data?.id) {
         // 获取用户个人信息
         const profileResponse = await fetch('/api/user/profile', {
-          headers: { 'x-user-id': userData.data.id.toString() }
+          credentials: 'include'
         });
         const profileData = await profileResponse.json();
         
-        const has = profileData.code === 200 && (profileData.data?.major || profileData.data?.grade);
+        const has = profileData.success && (profileData.data?.major || profileData.data?.grade);
         setHasProfile(has);
       } else {
         // 未登录，不显示引导

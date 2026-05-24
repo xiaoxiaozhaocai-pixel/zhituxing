@@ -97,10 +97,10 @@ export default function LearningPathPage() {
 
       // 获取用户画像（含技能进度）
       const profileRes = await fetch('/api/user/profile', {
-        headers: { 'x-user-id': user!.id },
+        credentials: 'include',
       });
       const profileData = await profileRes.json();
-      if (profileData.code === 200) {
+      if (profileData.success) {
         const progressList: SkillProgress[] = profileData.data?.skillProgress || [];
         const progressMap: Record<string, SkillProgress> = {};
         progressList.forEach((p: SkillProgress) => {

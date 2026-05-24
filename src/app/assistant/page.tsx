@@ -308,14 +308,12 @@ function AssistantContent() {
       
       try {
         const response = await fetch('/api/user/profile', {
-          headers: {
-            'x-user-id': user.id.toString()
-          }
+          credentials: 'include'
         });
         
         if (response.ok) {
           const data = await response.json();
-          setHasProfile(data.data?.hasProfile === true);
+          setHasProfile(!!(data.data?.major || data.data?.grade));
         }
       } catch (error) {
         console.error('检查个人信息失败:', error);

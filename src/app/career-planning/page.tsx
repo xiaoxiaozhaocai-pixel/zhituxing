@@ -95,22 +95,20 @@ export default function CareerPlanningPage() {
     
     try {
       const response = await fetch('/api/user/profile', {
-        headers: {
-          'x-user-id': user.id.toString()
-        }
+        credentials: 'include'
       });
       
       const data = await response.json();
       
-      if (data.code === 200 && data.data) {
+      if (data.success && data.data) {
         setUserProfile(data.data);
         // 自动填充表单 - 从已保存的个人资料预填
         setForm(prev => ({
           ...prev,
           major: data.data.major || '',
           grade: data.data.grade || '',
-          target_city: data.data.target_city || data.data.city || '',
-          job_intention: data.data.job_intention || '',
+          target_city: data.data.target_cities?.[0] || data.data.city || '',
+          job_intention: data.data.target_job || data.data.job_intention || '',
           personality_type: data.data.personality_type || '',
           skills: Array.isArray(data.data.skills) ? data.data.skills : (data.data.skills ? String(data.data.skills).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
         }));
