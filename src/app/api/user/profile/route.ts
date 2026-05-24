@@ -129,8 +129,9 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     // 构建 update 对象，只包含提供的字段，映射到数据库字段名
+    // 注意：数据库字段是 update_time 不是 updated_at
     const updateData: Record<string, unknown> = { 
-      updated_at: new Date().toISOString() 
+      update_time: new Date().toISOString() 
     };
     if (major !== undefined) updateData.major = major;
     // direction/target_job/target_position → job_intention
@@ -143,8 +144,6 @@ export async function PUT(request: NextRequest) {
     // experience/internship_experience → internship_experience
     if (experience !== undefined) updateData.internship_experience = experience;
     if (internship_experience !== undefined) updateData.internship_experience = internship_experience;
-    // skills → skills (jsonb)
-    if (skills !== undefined) updateData.skills = skills;
     // city/target_cities → target_city
     if (city !== undefined) updateData.target_city = city;
     if (target_cities !== undefined) {
@@ -156,16 +155,24 @@ export async function PUT(request: NextRequest) {
     // personality/personality_type → personality_type
     if (personality !== undefined) updateData.personality_type = personality;
     if (personality_type !== undefined) updateData.personality_type = personality_type;
-    // hard_skills 和 soft_skills 合并存入 skills (jsonb)
+    
+    // skills 字段处理：
+    // 1. 如果前端传了 skills 数组，直接存数组
+    // 2. 如果前端传了 hard_skills/soft_skills，合并成 {hard_skills:[], soft_skills:[]} 对象
+    // 3. 不要把数组展开成对象
     if (hard_skills !== undefined || soft_skills !== undefined) {
+      // 有 hard_skills 或 soft_skills 时，存对象格式
       updateData.skills = {
-        ...(typeof skills === 'object' ? skills : {}),
         hard_skills: hard_skills || [],
         soft_skills: soft_skills || []
       };
+    } else if (skills !== undefined) {
+      // 只有 skills 时，直接存（可能是数组或对象）
+      updateData.skills = skills;
     }
 
     // 使用 upsert：存在则更新，不存在则插入
+    // onConflict 用 user_id（数据库有 uk_user_profiles_user_id 唯一约束）
     const { data: profile, error } = await supabase
       .from('user_profiles')
       .upsert({
@@ -179,22 +186,21 @@ export async function PUT(request: NextRequest) {
 
     if (error) {
       console.error('保存用户画像失败:', error);
-      // 即使保存失败，也返回成功和数据
+      // 返回真实错误，不再掩盖
       return NextResponse.json({ 
-        success: true, 
-        data: {
-          user_id: userId,
-          ...updateData
-        }
-      });
+        success: false, 
+        error: error.message || '保存失败',
+        details: error
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data: profile });
   } catch (err) {
     console.error('更新用户画像失败:', err);
+    const errorMessage = err instanceof Error ? err.message : '未知错误';
     return NextResponse.json({ 
-      success: true, 
-      data: { message: '保存完成' }
-    });
+      success: false, 
+      error: errorMessage 
+    }, { status: 500 });
   }
 }
