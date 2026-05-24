@@ -794,7 +794,10 @@ export default function SkillPortraitPage() {
 
   // 保存
   const handleSave = async () => {
-    if (!user) return;
+    if (!user) {
+      showToast('请先登录', 'error', 3000);
+      return;
+    }
     setSaving(true);
     try {
       const skillsData: SkillForSave[] = aiResult ? convertToSaveFormat(aiResult, skillSelections) : [];
@@ -808,20 +811,36 @@ export default function SkillPortraitPage() {
         .map(s => s.name);
       
       // 直接发送数据库字段名，不做映射转换
+      const requestBody = {
+        major: form.major || undefined,
+        target_job: form.job_intention || undefined,
+        grade: form.grade || undefined,
+        target_cities: form.city ? [form.city] : undefined,
+        hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
+        soft_skills: softSkills.length > 0 ? softSkills : undefined,
+      };
+      
+      console.log('[skill-portrait] 保存请求:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          major: form.major || undefined,
-          target_job: form.job_intention || undefined,
-          grade: form.grade || undefined,
-          target_cities: form.city ? [form.city] : undefined,
-          hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
-          soft_skills: softSkills.length > 0 ? softSkills : undefined,
-        }),
+        body: JSON.stringify(requestBody),
       });
+      
+      console.log('[skill-portrait] 响应状态:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[skill-portrait] HTTP错误:', response.status, errorText);
+        showToast(`保存失败 (${response.status}): ${errorText}`, 'error', 5000);
+        return;
+      }
+      
       const data = await response.json();
+      console.log('[skill-portrait] 响应数据:', data);
+      
       if (data.success) {
         localStorage.setItem('skill-portrait-done', 'true');
         showToast('技能画像保存成功', 'success', 2000);
@@ -830,8 +849,8 @@ export default function SkillPortraitPage() {
         showToast(data.error || data.message || '保存失败，请稍后重试', 'error', 5000);
       }
     } catch (error) {
-      console.error('保存失败:', error);
-      showToast('网络错误，请稍后重试', 'error', 5000);
+      console.error('[skill-portrait] 保存异常:', error);
+      showToast(`网络错误: ${error instanceof Error ? error.message : '请稍后重试'}`, 'error', 5000);
     } finally {
       setSaving(false);
     }
