@@ -131,7 +131,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (data.success && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
         setUser(data.user);
         
         const isMemberUser = data.user.is_member || data.user.user_type === 'member';
@@ -171,7 +173,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       if (data.success && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
         setUser(data.user);
       }
       
@@ -193,7 +197,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (data.success && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
         setUser(data.user);
       }
       
@@ -206,16 +212,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      localStorage.removeItem('user');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+      }
       setUser(null);
       setQuota(null);
       
       // Clear cookies by setting them to expired
-      document.cookie = 'sb-access-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
-      document.cookie = 'sb-refresh-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
+      if (typeof document !== 'undefined') {
+        document.cookie = 'sb-access-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
+        document.cookie = 'sb-refresh-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
+      }
       
       // Also call the server to clear cookies
-      await fetch('/api/auth/me', { method: 'GET' }).catch(() => {});
+      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     } catch (error) {
       console.error('退出登录失败:', error);
     }
