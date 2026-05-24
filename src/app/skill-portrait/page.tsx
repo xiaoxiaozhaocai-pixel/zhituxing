@@ -612,17 +612,18 @@ export default function SkillPortraitPage() {
   const fetchExistingProfile = async () => {
     try {
       const response = await fetch('/api/user/profile', {
-        headers: { 'x-user-id': user!.id.toString() },
+        credentials: 'include',
       });
       const data = await response.json();
+      console.log('[skill-portrait] 加载已有数据:', data);
       if (data.code === 200 && data.data?.profile) {
         const profile = data.data.profile;
         setForm({
           major: profile.major || '',
           grade: profile.grade || '',
-          graduation_year: profile.graduationYear ? String(profile.graduationYear) : '',
-          city: profile.targetCity || profile.city || '',
-          job_intention: profile.jobIntention || '',
+          graduation_year: profile.graduation_year ? String(profile.graduation_year) : '',
+          city: profile.target_cities?.[0] || profile.city || '',
+          job_intention: profile.target_job || '',
           target_industry: '',
         });
         // 恢复已有技能选择

@@ -51,17 +51,18 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.warn('查询user_profiles失败，返回默认值:', error.message);
-      return NextResponse.json({ success: true, data: getDefaultProfile(userId) });
+      return NextResponse.json({ code: 200, data: { profile: getDefaultProfile(userId) } });
     }
 
     if (!profile) {
-      return NextResponse.json({ success: true, data: getDefaultProfile(userId) });
+      return NextResponse.json({ code: 200, data: { profile: getDefaultProfile(userId) } });
     }
 
-    return NextResponse.json({ success: true, data: profile });
+    // 统一返回格式：code: 200, data: { profile: ... }
+    return NextResponse.json({ code: 200, data: { profile } });
   } catch (err) {
     console.error('获取用户画像失败:', err);
-    return NextResponse.json({ success: true, data: getDefaultProfile('unknown') });
+    return NextResponse.json({ code: 200, data: { profile: getDefaultProfile('unknown') } });
   }
 }
 
@@ -138,18 +139,19 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error('[user/profile] 保存失败:', error);
       return NextResponse.json({ 
-        success: false, 
+        code: 500, 
         error: error.message || '保存失败',
         details: error
       }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data: profile });
+    // 统一返回格式：code: 200, data: { profile: ... }
+    return NextResponse.json({ code: 200, data: { profile } });
   } catch (err) {
     console.error('[user/profile] 更新异常:', err);
     const errorMessage = err instanceof Error ? err.message : '未知错误';
     return NextResponse.json({ 
-      success: false, 
+      code: 500, 
       error: errorMessage 
     }, { status: 500 });
   }

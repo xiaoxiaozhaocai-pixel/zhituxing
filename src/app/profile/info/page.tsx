@@ -436,24 +436,25 @@ function ProfileInfoContent() {
   const fetchProfile = async () => {
     try {
       const response = await fetch('/api/user/profile', {
-        headers: { 'x-user-id': user?.id?.toString() || '' },
+        credentials: 'include',
       });
       const data = await response.json();
+      console.log('[profile/info] 加载数据:', data);
 
         if (data.code === 200 && data.data?.profile) {
           const profile = data.data.profile;
           // 预填基本字段
           const newForm = {
-            personality_type: profile.personalityType || '',
+            personality_type: profile.personality_type || '',
             major: profile.major || '',
             grade: profile.grade || '',
-            graduation_year: profile.graduationYear ? String(profile.graduationYear) : '',
-            city: profile.targetCity || profile.city || '',
-            job_intention: profile.jobIntention || '',
+            graduation_year: profile.graduation_year ? String(profile.graduation_year) : '',
+            city: profile.target_cities?.[0] || profile.city || '',
+            job_intention: profile.target_job || '',
             target_industry: '',
             skills: [],
-            internship_experience: profile.internshipExperience || '',
-            project_experience: profile.projectExperience || '',
+            internship_experience: profile.internship_experience || '',
+            project_experience: profile.project_experience || '',
             awards: profile.awards || '',
           };
           setForm(newForm);
