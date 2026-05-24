@@ -692,31 +692,32 @@ function ProfileInfoContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': user.id.toString(),
         },
+        credentials: 'include',
         body: JSON.stringify({
-          personality_type: form.personality_type || null,
-          major: form.major || null,
-          grade: form.grade || null,
-          graduation_year: form.graduation_year ? parseInt(form.graduation_year) : null,
-          target_city: form.city || null,
-          job_intention: form.job_intention || null,
-          skills: skillsData,
-          internship_experience: form.internship_experience || null,
-          project_experience: form.project_experience || null,
-          awards: form.awards || null,
+          personality_type: form.personality_type || undefined,
+          major: form.major || undefined,
+          grade: form.grade || undefined,
+          graduation_year: form.graduation_year ? parseInt(form.graduation_year) : undefined,
+          target_cities: form.city ? [form.city] : undefined,
+          target_job: form.job_intention || undefined,
+          hard_skills: skillsData.filter(s => s.category === 'professional' || s.category === 'office').map(s => s.name),
+          soft_skills: skillsData.filter(s => s.category === 'soft').map(s => s.name),
+          internship_experience: form.internship_experience || undefined,
+          project_experience: form.project_experience || undefined,
+          awards: form.awards || undefined,
         }),
       });
 
       const data = await response.json();
 
-      if (data.code === 200) {
+      if (data.success) {
         showToast('信息保存成功', 'success', 2000);
         setTimeout(() => {
           router.push(fromPage || '/profile');
         }, 800);
       } else {
-        showToast(data.message || '保存失败，请稍后重试', 'error', 5000);
+        showToast(data.error || '保存失败，请稍后重试', 'error', 5000);
       }
     } catch (error) {
       console.error('保存失败:', error);
