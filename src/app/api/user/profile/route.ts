@@ -17,10 +17,14 @@ export async function GET(request: NextRequest) {
   try {
     // 从 cookie 读取 sb-access-token
     const cookieHeader = request.headers.get('cookie') || '';
+    console.log('[user/profile GET] Cookie header:', cookieHeader ? '有cookie' : '无cookie');
     const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
     const token = tokenMatch ? tokenMatch[1] : null;
 
+    console.log('[user/profile GET] Token存在:', !!token, '长度:', token?.length || 0);
+
     if (!token) {
+      console.log('[user/profile GET] 未登录 - 无token');
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
@@ -70,10 +74,14 @@ export async function PUT(request: NextRequest) {
   try {
     // 从 cookie 读取 sb-access-token
     const cookieHeader = request.headers.get('cookie') || '';
+    console.log('[user/profile PUT] Cookie header:', cookieHeader ? '有cookie' : '无cookie');
     const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
     const token = tokenMatch ? tokenMatch[1] : null;
 
+    console.log('[user/profile PUT] Token存在:', !!token, '长度:', token?.length || 0);
+
     if (!token) {
+      console.log('[user/profile PUT] 未登录 - 无token');
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
@@ -86,8 +94,11 @@ export async function PUT(request: NextRequest) {
 
     // 验证 token
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    console.log('[user/profile PUT] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
+    
     if (authError || !user) {
-      return NextResponse.json({ error: '认证失败' }, { status: 401 });
+      console.log('[user/profile PUT] 认证失败:', authError?.message);
+      return NextResponse.json({ error: '认证失败: ' + (authError?.message || 'token无效') }, { status: 401 });
     }
 
     const userId = user.id;
