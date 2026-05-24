@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         console.error('[analytics] Batch insert error:', error);
-        return NextResponse.json({ success: false, error: '批量上报失败' }, { status: 500 });
+        // 不阻塞前端，直接返回成功
       }
 
       return NextResponse.json({ success: true, inserted: eventsToInsert.length });
@@ -45,13 +45,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('[analytics] Insert error:', error);
-      return NextResponse.json({ success: false, error: '上报失败' }, { status: 500 });
+      // 不阻塞前端，直接返回成功
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[analytics] POST error:', error);
-    return NextResponse.json({ success: false, error: '上报失败' }, { status: 500 });
+    // 即使出错也返回成功，避免前端重试
+    return NextResponse.json({ success: true });
   }
 }
 
