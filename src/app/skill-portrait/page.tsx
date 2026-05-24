@@ -807,34 +807,27 @@ export default function SkillPortraitPage() {
         .filter(s => s.category === 'soft')
         .map(s => s.name);
       
-      // 字段名映射对齐 user_profiles 表：
-      // direction → target_job → 数据库 job_intention
-      // city → target_cities → 数据库 target_city
-      // skills → hard_skills/soft_skills → 数据库 skills jsonb
-      // personality → personality_type
+      // 直接发送数据库字段名，不做映射转换
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           major: form.major || undefined,
-          target_job: form.job_intention || undefined, // direction → target_job → job_intention
+          target_job: form.job_intention || undefined,
           grade: form.grade || undefined,
-          target_cities: form.city ? [form.city] : undefined, // city → target_cities → target_city
+          target_cities: form.city ? [form.city] : undefined,
           hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
           soft_skills: softSkills.length > 0 ? softSkills : undefined,
-          skills: skillsData.length > 0 ? skillsData : undefined,
-          // personality_type: form.personality || undefined, // 如有 personality 字段可启用
         }),
       });
       const data = await response.json();
       if (data.success) {
-        // 标记技能画像已完成
         localStorage.setItem('skill-portrait-done', 'true');
         showToast('技能画像保存成功', 'success', 2000);
         setTimeout(() => router.push('/profile'), 800);
       } else {
-        showToast(data.message || '保存失败，请稍后重试', 'error', 5000);
+        showToast(data.error || data.message || '保存失败，请稍后重试', 'error', 5000);
       }
     } catch (error) {
       console.error('保存失败:', error);
