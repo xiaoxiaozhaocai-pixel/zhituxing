@@ -6,17 +6,16 @@ const getDefaultProfile = (userId: string) => ({
   id: null,
   user_id: userId,
   major: '',
-  target_position: '',
-  skills: [],
-  education: '',
-  experience: '',
+  target_job: '',
+  hard_skills: [],
+  soft_skills: [],
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
 });
 
 export async function GET(request: NextRequest) {
   try {
-    // 从 cookie 读取 sb-access-token（与 /api/auth/me 一致）
+    // 从 cookie 读取 sb-access-token
     const cookieHeader = request.headers.get('cookie') || '';
     const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
     const token = tokenMatch ? tokenMatch[1] : null;
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 动态导入 Supabase（与 /api/auth/me 一致）
+    // 动态导入 Supabase
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,30 +45,19 @@ export async function GET(request: NextRequest) {
       .eq('user_id', userId)
       .maybeSingle();
 
-    // 查询出错不报错，返回默认值
     if (error) {
       console.warn('查询user_profiles失败，返回默认值:', error.message);
-      return NextResponse.json({ 
-        success: true, 
-        data: getDefaultProfile(userId) 
-      });
+      return NextResponse.json({ success: true, data: getDefaultProfile(userId) });
     }
 
-    // 没有数据则返回默认值
     if (!profile) {
-      return NextResponse.json({ 
-        success: true, 
-        data: getDefaultProfile(userId) 
-      });
+      return NextResponse.json({ success: true, data: getDefaultProfile(userId) });
     }
 
     return NextResponse.json({ success: true, data: profile });
   } catch (err) {
     console.error('获取用户画像失败:', err);
-    return NextResponse.json({ 
-      success: true, 
-      data: getDefaultProfile('unknown') 
-    });
+    return NextResponse.json({ success: true, data: getDefaultProfile('unknown') });
   }
 }
 
@@ -107,17 +95,16 @@ export async function PUT(request: NextRequest) {
 
     // 直接透传前端字段，不做任何映射转换
     // 前端字段名和数据库列名完全一致
-    // 过滤掉 undefined 的字段
     const updateData: Record<string, unknown> = {
       user_id: userId,
       updated_at: new Date().toISOString(),
     };
 
-    // 允许直接透传的字段列表
+    // 允许直接透传的字段列表（只包含数据库真实存在的列）
     const allowedFields = [
       'major', 'grade', 'target_job', 'target_cities',
       'hard_skills', 'soft_skills', 'personality_type',
-      'graduation_year', 'city', 'job_intention', 'skills',
+      'graduation_year', 'city',
       'internship_experience', 'project_experience', 'awards',
       'ability_background', 'user_type'
     ];
