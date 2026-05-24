@@ -798,16 +798,27 @@ export default function SkillPortraitPage() {
     setSaving(true);
     try {
       const skillsData: SkillForSave[] = aiResult ? convertToSaveFormat(aiResult, skillSelections) : [];
+      
+      // 按类别分组技能
+      const hardSkills = skillsData
+        .filter(s => s.category === 'professional' || s.category === 'office')
+        .map(s => s.name);
+      const softSkills = skillsData
+        .filter(s => s.category === 'soft')
+        .map(s => s.name);
+      
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // 确保带上 cookie
         body: JSON.stringify({
           major: form.major || undefined,
-          target_position: form.job_intention || undefined,
-          skills: skillsData,
-          education: form.grade || undefined,
-          experience: undefined,
+          target_position: form.job_intention || undefined, // 后端映射到 job_intention
+          grade: form.grade || undefined,
+          target_cities: form.city ? [form.city] : undefined, // 后端映射到 target_city
+          hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
+          soft_skills: softSkills.length > 0 ? softSkills : undefined,
+          skills: skillsData.length > 0 ? skillsData : undefined, // 完整技能数据存入 skills jsonb
         }),
       });
       const data = await response.json();
