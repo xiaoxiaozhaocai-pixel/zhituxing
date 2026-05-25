@@ -162,15 +162,8 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" /></div>;
   }
 
-  // 判断硬技能属于哪个类别：Excel/PPT/Word/项目管理归office，其余归professional
-  const getHardSkillCategory = (skillName: string): 'professional' | 'office' => {
-    const officeKeywords = ['excel', 'ppt', 'word', '项目管理', 'project', 'office', '办公'];
-    const lowerName = skillName.toLowerCase();
-    if (officeKeywords.some(k => lowerName.includes(k.toLowerCase()))) {
-      return 'office';
-    }
-    return 'professional';
-  };
+  // 办公技能关键词
+  const OFFICE_SKILLS = ['Excel', 'PPT', 'Word', '项目管理'];
 
   // 解析技能数据：将 hard_skills 和 soft_skills 字符串数组转换为 SkillForSave[] 对象数组
   const convertToSkillForSave = (names: string[], category: 'professional' | 'office' | 'soft'): SkillForSave[] => {
@@ -202,14 +195,17 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     skillsData = profile.skills;
   } else {
     // hard_skills 根据技能名智能分类：Excel/PPT/Word/项目管理→office，其余→professional
-    const hardSkills = (Array.isArray(profile.hard_skills) ? profile.hard_skills : []).map(name => ({
-      name,
-      category: getHardSkillCategory(name),
-      level: '熟悉' as const,
-      is_hot: false,
-      hotness: 'normal' as const,
-      description: '',
-    }));
+    const hardSkills = (Array.isArray(profile.hard_skills) ? profile.hard_skills : []).map(name => {
+      const category: 'professional' | 'office' = OFFICE_SKILLS.some(k => name.includes(k)) ? 'office' : 'professional';
+      return {
+        name,
+        category,
+        level: '熟悉' as const,
+        is_hot: false,
+        hotness: 'normal' as const,
+        description: '',
+      };
+    });
     const softSkills = convertToSkillForSave(profile.soft_skills, 'soft');
     console.log('[profile] 从 hard_skills/soft_skills 转换:', { hardSkills, softSkills });
     skillsData = [...hardSkills, ...softSkills];
