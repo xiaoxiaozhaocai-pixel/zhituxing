@@ -570,6 +570,9 @@ interface ProfileForm {
   city: string;
   job_intention: string;
   target_industry: string;
+  awards: string[];
+  internship_experience: string[];
+  project_experience: string[];
 }
 
 export default function SkillPortraitPage() {
@@ -587,6 +590,9 @@ export default function SkillPortraitPage() {
     city: '',
     job_intention: '',
     target_industry: '',
+    awards: [],
+    internship_experience: [],
+    project_experience: [],
   });
 
   const [aiLoading, setAiLoading] = useState(false);
@@ -624,7 +630,10 @@ export default function SkillPortraitPage() {
           graduation_year: profile.graduation_year ? String(profile.graduation_year) : '',
           city: profile.target_cities?.[0] || profile.city || '',
           job_intention: profile.target_job || '',
-          target_industry: '',
+          target_industry: profile.target_industry || '',
+          awards: Array.isArray(profile.awards) ? profile.awards : [],
+          internship_experience: Array.isArray(profile.internship_experience) ? profile.internship_experience : [],
+          project_experience: Array.isArray(profile.project_experience) ? profile.project_experience : [],
         });
         // 恢复已有技能选择
         const skills = data.data.skills;
@@ -649,7 +658,7 @@ export default function SkillPortraitPage() {
     }
   };
 
-  const updateForm = (field: keyof ProfileForm, value: string) => {
+  const updateForm = (field: keyof ProfileForm, value: string | string[]) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
@@ -823,9 +832,13 @@ export default function SkillPortraitPage() {
         target_job: form.job_intention || undefined,
         target_industry: form.target_industry || undefined,
         grade: form.grade || undefined,
+        graduation_year: form.graduation_year || undefined,
         target_cities: form.city ? [form.city] : undefined,
         hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
         soft_skills: softSkills.length > 0 ? softSkills : undefined,
+        awards: form.awards.length > 0 ? form.awards : undefined,
+        internship_experience: form.internship_experience.length > 0 ? form.internship_experience : undefined,
+        project_experience: form.project_experience.length > 0 ? form.project_experience : undefined,
         // 技能熟练度暂不保存（数据库无对应列）
       };
       

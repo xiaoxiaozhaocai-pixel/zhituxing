@@ -39,6 +39,7 @@ import {
   Briefcase,
   Brain,
   ArrowRight,
+  FolderOpen,
 } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 
@@ -219,10 +220,18 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
   const fields = [
     { key: 'major', label: '专业', icon: Bookmark },
     { key: 'grade', label: '年级', icon: Calendar },
+    { key: 'graduation_year', label: '毕业年份', icon: Calendar },
     { key: 'target_city', label: '意向城市', icon: MapPin, format: (v: string | string[]) => Array.isArray(v) ? v.join('、') : v },
     { key: 'job_intention', label: '求职意向', icon: Sparkles },
     { key: 'target_industry', label: '意向行业', icon: Bookmark },
     { key: 'personality_type', label: '人格类型', icon: User },
+  ];
+
+  // 数组类字段（奖项、实习、项目）
+  const arrayFields = [
+    { key: 'awards', label: '奖项荣誉', icon: Bookmark },
+    { key: 'internship_experience', label: '实习经历', icon: Briefcase },
+    { key: 'project_experience', label: '项目经历', icon: FolderOpen },
   ];
 
   // 兼容新字段名（API可能返回 target_cities 或 target_job）
@@ -292,6 +301,44 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
           )}
         </CardContent>
       </Card>
+
+      {/* 奖项/实习/项目卡片 */}
+      {arrayFields.some(f => {
+        const val = profile[f.key];
+        return Array.isArray(val) && val.length > 0;
+      }) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FolderOpen className="w-5 h-5 text-green-600" />
+              经历与成就
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {arrayFields.map(({ key, label, icon: Icon }) => {
+                const value = profile[key];
+                if (!Array.isArray(value) || value.length === 0) return null;
+                return (
+                  <div key={key} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-700">{label}</span>
+                    </div>
+                    <div className="pl-6 space-y-1">
+                      {value.map((item, idx) => (
+                        <div key={idx} className="text-sm text-gray-600">
+                          {typeof item === 'string' ? item : item.name || item.title || JSON.stringify(item)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 技能画像卡片 */}
       <Card>

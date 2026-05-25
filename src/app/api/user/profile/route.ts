@@ -9,6 +9,10 @@ const getDefaultProfile = (userId: string) => ({
   target_job: '',
   hard_skills: [],
   soft_skills: [],
+  awards: [],
+  internship_experience: [],
+  project_experience: [],
+  graduation_year: '',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
 });
@@ -156,7 +160,13 @@ export async function PUT(request: NextRequest) {
     if (body.hard_skills !== undefined) updateData.hard_skills = body.hard_skills;
     if (body.soft_skills !== undefined) updateData.soft_skills = body.soft_skills;
 
-    // 注意：ability_background 列不存在，不处理
+    // 新增字段：awards, internship_experience, project_experience (jsonb)
+    if (body.awards !== undefined) updateData.awards = body.awards;
+    if (body.internship_experience !== undefined) updateData.internship_experience = body.internship_experience;
+    if (body.project_experience !== undefined) updateData.project_experience = body.project_experience;
+
+    // 新增字段：graduation_year (varchar)
+    if (body.graduation_year !== undefined) updateData.graduation_year = body.graduation_year;
 
     // 字段映射：internship_experience → has_internship (boolean)
     if (body.internship_experience !== undefined) {
@@ -169,8 +179,6 @@ export async function PUT(request: NextRequest) {
       updateData.has_project = !!body.project_experience && body.project_experience.length > 0;
     }
     if (body.has_project !== undefined) updateData.has_project = body.has_project;
-
-    // 丢弃的字段（数据库列不存在）：graduation_year, awards, skills(已拆分)
 
     console.log('[user/profile] 保存数据:', JSON.stringify(updateData, null, 2));
 
