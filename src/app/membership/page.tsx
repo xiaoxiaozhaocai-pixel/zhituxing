@@ -9,6 +9,20 @@ import {
 
 const MEMBERSHIP_PLANS = [
   {
+    name: '月度会员',
+    price: 9.9,
+    period: '月',
+    description: '轻松体验会员权益',
+    features: [
+      '无限AI对话次数',
+      '完整岗位匹配分析',
+      '技能图谱全功能',
+      '学习路径规划',
+      '1个月有效期'
+    ],
+    popular: false
+  },
+  {
     name: '学期会员',
     price: 29.9,
     period: '学期',
@@ -25,7 +39,7 @@ const MEMBERSHIP_PLANS = [
   },
   {
     name: '年度会员',
-    price: 99,
+    price: 79,
     period: '年',
     description: '最受欢迎的选择',
     features: [
