@@ -188,22 +188,29 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
   const hasSkills = grouped.professional.length + grouped.office.length + grouped.soft.length > 0;
 
   // 字段名映射（数据库列名 → 显示名）
+  // 数据库字段：target_city, job_intention；前端展示名：意向城市、求职意向
   const fields = [
     { key: 'major', label: '专业', icon: Bookmark },
     { key: 'grade', label: '年级', icon: Calendar },
-    { key: 'target_cities', label: '意向城市', icon: MapPin, format: (v: string[]) => Array.isArray(v) ? v.join('、') : v },
-    { key: 'target_job', label: '求职意向', icon: Sparkles },
+    { key: 'target_city', label: '意向城市', icon: MapPin, format: (v: string | string[]) => Array.isArray(v) ? v.join('、') : v },
+    { key: 'job_intention', label: '求职意向', icon: Sparkles },
     { key: 'target_industry', label: '意向行业', icon: Bookmark },
     { key: 'personality_type', label: '人格类型', icon: User },
   ];
 
-  // 兼容旧字段名
+  // 兼容新字段名（API可能返回 target_cities 或 target_job）
   const getFieldValue = (key: string) => {
-    if (key === 'target_cities' && !profile.target_cities && profile.target_city) {
-      return profile.target_city;
+    // target_city 兼容 target_cities
+    if (key === 'target_city') {
+      if (profile.target_city) return profile.target_city;
+      if (profile.target_cities) return profile.target_cities;
+      return null;
     }
-    if (key === 'target_job' && !profile.target_job && profile.job_intention) {
-      return profile.job_intention;
+    // job_intention 兼容 target_job
+    if (key === 'job_intention') {
+      if (profile.job_intention) return profile.job_intention;
+      if (profile.target_job) return profile.target_job;
+      return null;
     }
     return profile[key];
   };
