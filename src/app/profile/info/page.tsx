@@ -711,8 +711,9 @@ function ProfileInfoContent() {
       });
 
       const data = await response.json();
+      console.log('[profile/info] 保存响应:', data);
 
-      if (data.success) {
+      if (data.code === 200) {
         showToast('信息保存成功', 'success', 2000);
         setTimeout(() => {
           router.push(fromPage || '/profile');

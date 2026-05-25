@@ -842,7 +842,7 @@ export default function SkillPortraitPage() {
       const data = await response.json();
       console.log('[skill-portrait] 响应数据:', data);
       
-      if (data.success) {
+      if (data.code === 200) {
         localStorage.setItem('skill-portrait-done', 'true');
         showToast('技能画像保存成功', 'success', 2000);
         setTimeout(() => router.push('/profile'), 800);
