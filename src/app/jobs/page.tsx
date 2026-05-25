@@ -1074,7 +1074,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 </div>
                 {/* 版权声明 */}
                 <p className="text-xs text-gray-400 text-center w-full mt-2">
-                  岗位信息来源于公开招聘平台，职途星仅提供搜索和AI分析服务
+                  岗位信息来源于国聘网、国家24365大学生就业服务平台、中国公共招聘网、广西人才网等合规招聘平台，职途星仅提供搜索和AI分析服务
                 </p>
               </DialogFooter>
             </>
