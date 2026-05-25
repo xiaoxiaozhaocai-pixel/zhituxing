@@ -77,6 +77,7 @@ export default function Footer() {
               {[
                 { name: '联系我们', href: '/contact' },
                 { name: '会员中心', href: '/membership' },
+                { name: '数据来源', href: '/data-source' },
                 { name: '隐私政策', href: '/privacy' },
                 { name: '用户协议', href: '/terms' },
               ].map((link) => (
@@ -94,6 +95,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-blue-300/50 text-xs">Made with <Heart className="w-3 h-3 inline text-red-400/60" /> for 大学生求职</p>
           <div className="flex items-center gap-4 text-blue-300/50 text-xs">
+            <Link href="/data-source" className="hover:text-blue-200 transition-colors">数据来源</Link>
             <Link href="/privacy" className="hover:text-blue-200 transition-colors">隐私政策</Link>
             <Link href="/terms" className="hover:text-blue-200 transition-colors">用户协议</Link>
             <Link href="/contact" className="hover:text-blue-200 transition-colors">联系我们</Link>
