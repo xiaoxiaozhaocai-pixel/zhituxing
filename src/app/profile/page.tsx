@@ -150,15 +150,28 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
   const grouped = groupSkillsByCategory(skillsData);
   const hasSkills = grouped.professional.length + grouped.office.length + grouped.soft.length > 0;
 
+  // 字段名映射（数据库列名 → 显示名）
   const fields = [
     { key: 'major', label: '专业', icon: Bookmark },
     { key: 'grade', label: '年级', icon: Calendar },
-    { key: 'target_city', label: '意向城市', icon: MapPin },
-    { key: 'job_intention', label: '求职意向', icon: Sparkles },
+    { key: 'target_cities', label: '意向城市', icon: MapPin, format: (v: string[]) => Array.isArray(v) ? v.join('、') : v },
+    { key: 'target_job', label: '求职意向', icon: Sparkles },
+    { key: 'target_industry', label: '意向行业', icon: Bookmark },
     { key: 'personality_type', label: '人格类型', icon: User },
   ];
 
-  const hasBasicInfo = fields.some(f => profile[f.key]);
+  // 兼容旧字段名
+  const getFieldValue = (key: string) => {
+    if (key === 'target_cities' && !profile.target_cities && profile.target_city) {
+      return profile.target_city;
+    }
+    if (key === 'target_job' && !profile.target_job && profile.job_intention) {
+      return profile.job_intention;
+    }
+    return profile[key];
+  };
+
+  const hasBasicInfo = fields.some(f => getFieldValue(f.key));
 
   return (
     <div className="space-y-6">
@@ -183,9 +196,10 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
         <CardContent>
           {hasBasicInfo ? (
             <div className="space-y-3">
-              {fields.map(({ key, label, icon: Icon }) => {
-                const value = profile[key];
-                if (!value) return null;
+              {fields.map(({ key, label, icon: Icon, format }) => {
+                const rawValue = getFieldValue(key);
+                if (!rawValue) return null;
+                const value = format ? format(rawValue) : rawValue;
                 return (
                   <div key={key} className="flex items-center gap-3 py-1.5">
                     <Icon className="w-4 h-4 text-gray-400 shrink-0" />

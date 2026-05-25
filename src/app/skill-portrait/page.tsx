@@ -811,14 +811,24 @@ export default function SkillPortraitPage() {
         .filter(s => s.category === 'soft')
         .map(s => s.name);
       
+      // 构建技能熟练度对象 { "Python": "熟练", "Excel": "熟悉" }
+      const skillProficiency: Record<string, string> = {};
+      skillsData.forEach(s => {
+        skillProficiency[s.name] = s.level;
+      });
+      
       // 直接发送数据库字段名，不做映射转换
       const requestBody = {
         major: form.major || undefined,
         target_job: form.job_intention || undefined,
+        target_industry: form.target_industry || undefined,
         grade: form.grade || undefined,
         target_cities: form.city ? [form.city] : undefined,
         hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
         soft_skills: softSkills.length > 0 ? softSkills : undefined,
+        ability_background: Object.keys(skillProficiency).length > 0 
+          ? { skill_proficiency: skillProficiency } 
+          : undefined,
       };
       
       console.log('[skill-portrait] 保存请求:', JSON.stringify(requestBody, null, 2));
