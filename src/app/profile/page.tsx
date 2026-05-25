@@ -135,23 +135,11 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       const data = await res.json();
       console.log('[profile] 响应数据:', JSON.stringify(data, null, 2).slice(0, 500));
       
-      // 兼容多种响应格式
-      // 格式1: { code: 200, data: { profile: {...} } }
-      // 格式2: { success: true, data: {...} } - data 直接就是 profile
-      // 格式3: { success: true, profile: {...} }
+      // API返回格式: { success: true, data: {...profile直接} }
       let profileData = null;
-      if (data.code === 200 && data.data?.profile) {
-        console.log('[profile] 使用 data.data.profile');
-        profileData = data.data.profile;
-      } else if (data.success && data.data) {
+      if (data.success && data.data) {
         console.log('[profile] 使用 data.data (success格式)');
         profileData = data.data;
-      } else if (data.data?.profile) {
-        console.log('[profile] 使用 data.data.profile');
-        profileData = data.data.profile;
-      } else if (data.profile) {
-        console.log('[profile] 使用 data.profile');
-        profileData = data.profile;
       } else if (data.data) {
         console.log('[profile] 使用 data.data');
         profileData = data.data;
@@ -174,8 +162,28 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" /></div>;
   }
 
-  // 解析技能数据
-  const skillsData = Array.isArray(profile.skills) ? profile.skills : [];
+  // 解析技能数据：将 hard_skills 和 soft_skills 字符串数组转换为 SkillForSave[] 对象数组
+  const convertToSkillForSave = (names: string[], category: 'professional' | 'office' | 'soft'): SkillForSave[] => {
+    if (!Array.isArray(names)) return [];
+    return names.map(name => ({
+      name,
+      category,
+      level: '熟悉' as const,
+      is_hot: false,
+      hotness: 'normal' as const,
+      description: '',
+    }));
+  };
+
+  // 优先使用 skills 字段，否则从 hard_skills + soft_skills 转换
+  let skillsData: SkillForSave[] = [];
+  if (Array.isArray(profile.skills) && profile.skills.length > 0) {
+    skillsData = profile.skills;
+  } else {
+    const hardSkills = convertToSkillForSave(profile.hard_skills, 'professional');
+    const softSkills = convertToSkillForSave(profile.soft_skills, 'soft');
+    skillsData = [...hardSkills, ...softSkills];
+  }
   const grouped = groupSkillsByCategory(skillsData);
   const hasSkills = grouped.professional.length + grouped.office.length + grouped.soft.length > 0;
 

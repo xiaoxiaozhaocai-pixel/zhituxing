@@ -58,18 +58,18 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.warn('查询user_profiles失败，返回默认值:', error.message);
-      return NextResponse.json({ code: 200, data: { profile: getDefaultProfile(userId) } });
+      return NextResponse.json({ success: true, data: getDefaultProfile(userId) });
     }
 
     if (!profile) {
-      return NextResponse.json({ code: 200, data: { profile: getDefaultProfile(userId) } });
+      return NextResponse.json({ success: true, data: getDefaultProfile(userId) });
     }
 
-    // 统一返回格式：code: 200, data: { profile: ... }
-    return NextResponse.json({ code: 200, data: { profile } });
+    // 统一返回格式：success: true, data: {...profile直接}
+    return NextResponse.json({ success: true, data: profile });
   } catch (err) {
     console.error('获取用户画像失败:', err);
-    return NextResponse.json({ code: 200, data: { profile: getDefaultProfile('unknown') } });
+    return NextResponse.json({ success: true, data: getDefaultProfile('unknown') });
   }
 }
 
