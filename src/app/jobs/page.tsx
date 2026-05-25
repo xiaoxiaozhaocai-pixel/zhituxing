@@ -905,7 +905,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
             <div className="px-4 pb-3 border-b border-gray-100 flex-shrink-0">
               <div className="flex gap-2">
                 <Input
-                  placeholder="粘贴招聘链接自动解析（支持Boss直聘/拉勾/猎聘）"
+                  placeholder="粘贴招聘链接自动解析"
                   value={jdUrlInput}
                   onChange={(e) => setJdUrlInput(e.target.value)}
                   disabled={isTyping || jdUrlLoading}

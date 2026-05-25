@@ -1097,7 +1097,7 @@ function AssistantContent() {
                   value={jdUrl}
                   onChange={e => setJdUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleFetchJd(jdUrl)}
-                  placeholder="粘贴Boss直聘/拉勾/猎聘等招聘链接，自动解析岗位JD"
+                  placeholder="粘贴招聘链接，自动解析岗位JD"
                   className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                   disabled={isLoading}
                 />
