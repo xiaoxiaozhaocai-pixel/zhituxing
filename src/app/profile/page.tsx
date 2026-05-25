@@ -177,15 +177,28 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
   // 优先使用 skills 字段，否则从 hard_skills + soft_skills 转换
   let skillsData: SkillForSave[] = [];
+  console.log('[profile] 技能数据检查:', {
+    hasSkillsField: !!profile.skills,
+    hasHardSkills: !!profile.hard_skills,
+    hasSoftSkills: !!profile.soft_skills,
+    hardSkillsType: typeof profile.hard_skills,
+    softSkillsType: typeof profile.soft_skills,
+    hardSkillsValue: profile.hard_skills,
+    softSkillsValue: profile.soft_skills,
+  });
+  
   if (Array.isArray(profile.skills) && profile.skills.length > 0) {
+    console.log('[profile] 使用 profile.skills');
     skillsData = profile.skills;
   } else {
     const hardSkills = convertToSkillForSave(profile.hard_skills, 'professional');
     const softSkills = convertToSkillForSave(profile.soft_skills, 'soft');
+    console.log('[profile] 从 hard_skills/soft_skills 转换:', { hardSkills, softSkills });
     skillsData = [...hardSkills, ...softSkills];
   }
   const grouped = groupSkillsByCategory(skillsData);
   const hasSkills = grouped.professional.length + grouped.office.length + grouped.soft.length > 0;
+  console.log('[profile] 技能分组结果:', { grouped, hasSkills });
 
   // 字段名映射（数据库列名 → 显示名）
   // 数据库字段：target_city, job_intention；前端展示名：意向城市、求职意向
