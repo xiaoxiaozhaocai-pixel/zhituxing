@@ -326,11 +326,45 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                       <span className="text-sm font-medium text-gray-700">{label}</span>
                     </div>
                     <div className="pl-6 space-y-1">
-                      {value.map((item, idx) => (
-                        <div key={idx} className="text-sm text-gray-600">
-                          {typeof item === 'string' ? item : item.name || item.title || JSON.stringify(item)}
-                        </div>
-                      ))}
+                      {value.map((item, idx) => {
+                        // 实习经历格式化：company | role | duration，然后 description
+                        if (key === 'internship_experience' && typeof item === 'object') {
+                          return (
+                            <div key={idx} className="text-sm text-gray-600 space-y-1">
+                              <div className="font-medium">
+                                {[item.company, item.role, item.duration].filter(Boolean).join(' | ')}
+                              </div>
+                              {item.description && (
+                                <div className="text-gray-500 pl-2 border-l-2 border-gray-200">
+                                  {item.description}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        // 项目经历格式化：name/title | role | duration，然后 description
+                        if (key === 'project_experience' && typeof item === 'object') {
+                          const projectName = item.name || item.title;
+                          return (
+                            <div key={idx} className="text-sm text-gray-600 space-y-1">
+                              <div className="font-medium">
+                                {[projectName, item.role, item.duration].filter(Boolean).join(' | ')}
+                              </div>
+                              {item.description && (
+                                <div className="text-gray-500 pl-2 border-l-2 border-gray-200">
+                                  {item.description}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        // 默认渲染
+                        return (
+                          <div key={idx} className="text-sm text-gray-600">
+                            {typeof item === 'string' ? item : item.name || item.title || JSON.stringify(item)}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
