@@ -102,7 +102,7 @@ export default function Footer() {
         {/* 免责声明 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 text-center">
           <p className="text-blue-300/40 text-xs">
-            本平台岗位信息来源于公开招聘平台，仅供参考。职途星不对岗位信息的准确性和时效性承担责任。
+            本平台岗位信息来源于国聘网、国家24365大学生就业服务平台、中国公共招聘网、广西人才网等合规招聘平台，仅供参考。职途星不对岗位信息的准确性和时效性承担责任。
           </p>
         </div>
       </div>
