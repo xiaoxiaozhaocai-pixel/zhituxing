@@ -134,15 +134,32 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       console.log('[profile] 响应状态:', res.status);
       const data = await res.json();
       console.log('[profile] 响应数据:', JSON.stringify(data, null, 2).slice(0, 500));
-      if (data.data?.profile) {
+      
+      // 兼容多种响应格式
+      // 格式1: { code: 200, data: { profile: {...} } }
+      // 格式2: { success: true, data: {...} } - data 直接就是 profile
+      // 格式3: { success: true, profile: {...} }
+      let profileData = null;
+      if (data.code === 200 && data.data?.profile) {
         console.log('[profile] 使用 data.data.profile');
-        setProfile(data.data.profile);
+        profileData = data.data.profile;
+      } else if (data.success && data.data) {
+        console.log('[profile] 使用 data.data (success格式)');
+        profileData = data.data;
+      } else if (data.data?.profile) {
+        console.log('[profile] 使用 data.data.profile');
+        profileData = data.data.profile;
       } else if (data.profile) {
         console.log('[profile] 使用 data.profile');
-        setProfile(data.profile);
+        profileData = data.profile;
       } else if (data.data) {
         console.log('[profile] 使用 data.data');
-        setProfile(data.data);
+        profileData = data.data;
+      }
+      
+      if (profileData) {
+        console.log('[profile] 解析到的profile:', JSON.stringify(profileData, null, 2).slice(0, 500));
+        setProfile(profileData);
       } else {
         console.log('[profile] 未找到profile数据');
       }
