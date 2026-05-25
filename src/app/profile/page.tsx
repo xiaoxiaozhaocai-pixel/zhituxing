@@ -129,11 +129,23 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
   const fetchProfile = async () => {
     try {
+      console.log('[profile] 开始获取用户信息, userId:', userId);
       const res = await fetch('/api/user/profile', { credentials: 'include' });
+      console.log('[profile] 响应状态:', res.status);
       const data = await res.json();
-      if (data.data?.profile) setProfile(data.data.profile);
-      else if (data.profile) setProfile(data.profile);
-      else if (data.data) setProfile(data.data);
+      console.log('[profile] 响应数据:', JSON.stringify(data, null, 2).slice(0, 500));
+      if (data.data?.profile) {
+        console.log('[profile] 使用 data.data.profile');
+        setProfile(data.data.profile);
+      } else if (data.profile) {
+        console.log('[profile] 使用 data.profile');
+        setProfile(data.profile);
+      } else if (data.data) {
+        console.log('[profile] 使用 data.data');
+        setProfile(data.data);
+      } else {
+        console.log('[profile] 未找到profile数据');
+      }
     } catch (e) {
       console.error('获取个人信息失败:', e);
     } finally {
