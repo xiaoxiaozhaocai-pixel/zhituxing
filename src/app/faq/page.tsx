@@ -74,7 +74,7 @@ const faqs = [
   {
     category: 'data',
     question: '岗位信息是真实的吗？',
-    answer: '所有岗位信息均来自BOSS直聘、智联招聘、拉勾网等各大招聘平台的真实JD，我们每周更新数据，确保信息准确可靠。'
+    answer: '所有岗位信息均来自公开招聘平台的真实JD，我们每周更新数据，确保信息准确可靠。'
   },
   {
     category: 'data',
