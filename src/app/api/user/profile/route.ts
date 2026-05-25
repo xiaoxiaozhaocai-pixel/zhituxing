@@ -28,20 +28,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 动态导入 Supabase
+    // 用 ANON_KEY 客户端验证 token（getUser 需要 anon key，不是 service role）
     const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
+    const supabaseAnon = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
     // 验证 token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token);
+    console.log('[user/profile GET] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
+    
     if (authError || !user) {
-      return NextResponse.json({ error: '认证失败' }, { status: 401 });
+      console.log('[user/profile GET] 认证失败:', authError?.message);
+      return NextResponse.json({ error: '认证失败: ' + (authError?.message || 'token无效') }, { status: 401 });
     }
 
     const userId = user.id;
+
+    // 用 SERVICE_ROLE 客户端查询数据库（绕过 RLS）
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const supabase = getSupabaseAdmin();
 
     const { data: profile, error } = await supabase
       .from('user_profiles')
@@ -86,15 +93,15 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 动态导入 Supabase
+    // 用 ANON_KEY 客户端验证 token（getUser 需要 anon key，不是 service role）
     const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
+    const supabaseAnon = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
     // 验证 token
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token);
     console.log('[user/profile PUT] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
     
     if (authError || !user) {
@@ -103,6 +110,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const userId = user.id;
+
+    // 用 SERVICE_ROLE 客户端操作数据库（绕过 RLS）
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const supabase = getSupabaseAdmin();
+    
     const body = await request.json();
 
     // 直接透传前端字段，不做任何映射转换
