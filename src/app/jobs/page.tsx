@@ -72,6 +72,7 @@ interface Job {
     professional?: number;
     problem_solve?: number;
   } | null;
+  raw_jd?: string; // 原始招聘JD文本
 }
 
 // 聊天消息类型
@@ -97,6 +98,7 @@ export default function JobsPage() {
   });
   const [filterOpen, setFilterOpen] = useState(false); // 移动端筛选区折叠状态
   const [selectedJob, setSelectedJob] = useState<Job | null>(null); // 选中的岗位，用于弹窗展示
+  const [showRawJd, setShowRawJd] = useState(false); // 原始JD折叠状态
   const [industries, setIndustries] = useState<FilterOption[]>(defaultIndustries);
   const [cities, setCities] = useState<FilterOption[]>(defaultCities);
   const [educationOpts, setEducationOpts] = useState<FilterOption[]>(defaultEducation);
@@ -1055,6 +1057,35 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   )}
                 </div>
               </div>
+
+              {/* 免责声明 + 原始JD折叠区域 */}
+              {selectedJob.raw_jd && (
+                <div className="mt-4">
+                  <p className="text-xs text-gray-400 mb-2">
+                    以上信息由AI从公开招聘平台自动解析，可能与原始发布内容存在差异，具体以原始发布为准
+                  </p>
+                  <div className="border rounded-lg overflow-hidden">
+                    <button
+                      className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+                      onClick={() => setShowRawJd(!showRawJd)}
+                    >
+                      <span className="text-sm font-medium text-gray-700">查看原始招聘信息</span>
+                      {showRawJd ? (
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                      )}
+                    </button>
+                    {showRawJd && (
+                      <div className="p-4 bg-white border-t">
+                        <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed">
+                          {selectedJob.raw_jd}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <DialogFooter className="mt-6 flex-col gap-3">
                 <div className="flex gap-3 w-full">
