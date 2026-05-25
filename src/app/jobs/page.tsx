@@ -683,8 +683,9 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
           </div>
         ) : jobs.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
-            <p className="text-lg">未找到符合条件的岗位</p>
-            <p className="text-sm mt-2">试试调整筛选条件</p>
+            <div className="text-6xl mb-4">📋</div>
+            <p className="text-lg font-medium">暂无岗位数据，敬请期待</p>
+            <p className="text-sm mt-2 text-gray-400">我们正在持续更新岗位库</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -741,23 +742,6 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                         {tag}
                       </span>
                     ))}
-                  </div>
-
-                  {/* 来源平台 */}
-                  <div className="text-xs text-gray-400 mb-3">
-                    {job.sourceUrl ? (
-                      <a
-                        href={job.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#165DFF] hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {job.sourcePlatform || '招聘平台'}
-                      </a>
-                    ) : (
-                      <span>{job.sourcePlatform || '综合招聘平台'}</span>
-                    )}
                   </div>
 
                   {/* AI深度分析按钮 - 使用 stopPropagation 阻止事件冒泡 */}
@@ -1072,40 +1056,9 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     </Badge>
                   )}
                 </div>
-
-                {/* 来源信息 - 合规展示 */}
-                <div className="pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>来源：</span>
-                    {selectedJob.sourceUrl ? (
-                      <a
-                        href={selectedJob.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#165DFF] hover:underline"
-                      >
-                        {selectedJob.sourcePlatform || '招聘平台'}
-                      </a>
-                    ) : (
-                      <span>{selectedJob.sourcePlatform || '综合招聘平台'}</span>
-                    )}
-                  </div>
-                </div>
               </div>
 
               <DialogFooter className="mt-6 flex-col gap-3">
-                {/* 查看完整岗位信息按钮 */}
-                {selectedJob.sourceUrl && (
-                  <Button
-                    className="w-full bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
-                    onClick={() => {
-                      window.open(selectedJob.sourceUrl, '_blank', 'noopener,noreferrer');
-                    }}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    查看完整岗位信息
-                  </Button>
-                )}
                 <div className="flex gap-3 w-full">
                   <Button variant="outline" className="flex-1" onClick={() => { setSelectedJob(null); }}>
                     关闭
