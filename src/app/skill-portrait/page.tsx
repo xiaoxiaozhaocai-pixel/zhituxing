@@ -826,9 +826,7 @@ export default function SkillPortraitPage() {
         target_cities: form.city ? [form.city] : undefined,
         hard_skills: hardSkills.length > 0 ? hardSkills : undefined,
         soft_skills: softSkills.length > 0 ? softSkills : undefined,
-        ability_background: Object.keys(skillProficiency).length > 0 
-          ? { skill_proficiency: skillProficiency } 
-          : undefined,
+        // 技能熟练度暂不保存（数据库无对应列）
       };
       
       console.log('[skill-portrait] 保存请求:', JSON.stringify(requestBody, null, 2));

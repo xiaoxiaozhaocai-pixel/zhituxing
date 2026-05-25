@@ -156,8 +156,7 @@ export async function PUT(request: NextRequest) {
     if (body.hard_skills !== undefined) updateData.hard_skills = body.hard_skills;
     if (body.soft_skills !== undefined) updateData.soft_skills = body.soft_skills;
 
-    // 直接透传 ability_background (jsonb) - 包含技能熟练度等信息
-    if (body.ability_background !== undefined) updateData.ability_background = body.ability_background;
+    // 注意：ability_background 列不存在，不处理
 
     // 字段映射：internship_experience → has_internship (boolean)
     if (body.internship_experience !== undefined) {
