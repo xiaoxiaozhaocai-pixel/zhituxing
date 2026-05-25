@@ -167,8 +167,6 @@ function formatJob(job: any, relevance?: number) {
     hardSkills,
     majorRequire: job.major_require || '',
     bonusSkillCert: job.bonus_skill_cert || '',
-    sourceUrl: job.source_url || '',
-    sourcePlatform: job.source_platform || '',
     postCategory: job.post_category || '',
     graduateFriendlyLevel: job.graduate_friendly_level || '',
     competencyWeights: job.competency_weights || null,
@@ -462,8 +460,6 @@ export async function GET(request: NextRequest) {
           softSkills: job.softSkills?.slice(0, 3) || [],
           coreDutyModule: job.coreDutyModule || '',
           majorRequire: job.majorRequire || '',
-          sourceUrl: job.sourceUrl || '',
-          sourcePlatform: job.sourcePlatform || '',
           graduateFriendlyLevel: job.graduateFriendlyLevel || '',
           bonusSkillCert: job.bonusSkillCert || '',
           // 不包含 jdContent、competencyWeights 等详细/敏感字段

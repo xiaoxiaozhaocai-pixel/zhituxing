@@ -63,8 +63,6 @@ interface Job {
   hardSkills?: string[];
   majorRequire?: string;
   bonusSkillCert?: string;
-  sourceUrl?: string;
-  sourcePlatform?: string;
   postCategory?: string;
   graduateFriendlyLevel?: string;
   competencyWeights?: {
@@ -905,7 +903,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
             <div className="px-4 pb-3 border-b border-gray-100 flex-shrink-0">
               <div className="flex gap-2">
                 <Input
-                  placeholder="粘贴招聘链接自动解析"
+                  placeholder="粘贴招聘链接，自动解析岗位JD"
                   value={jdUrlInput}
                   onChange={(e) => setJdUrlInput(e.target.value)}
                   disabled={isTyping || jdUrlLoading}
