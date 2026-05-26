@@ -64,6 +64,7 @@ function AuthContent() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   
   // 表单验证
   const [emailError, setEmailError] = useState('');
@@ -577,13 +578,30 @@ function AuthContent() {
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '登录'}
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={handleRegister}
-                    disabled={loading || !password || !confirmPassword || !!passwordError || !!confirmPasswordError}
-                    className="w-full h-12 text-base"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '注册'}
-                  </Button>
+                  <>
+                    {/* 合规性：注册前需同意服务条款 */}
+                    <label className="flex items-start gap-2 cursor-pointer mb-4">
+                      <input
+                        type="checkbox"
+                        checked={agreeTerms}
+                        onChange={(e) => setAgreeTerms(e.target.checked)}
+                        className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        我已阅读并同意{' '}
+                        <Link href="/terms" className="text-blue-600 hover:underline" target="_blank">服务条款</Link>
+                        {' '}和{' '}
+                        <Link href="/privacy" className="text-blue-600 hover:underline" target="_blank">隐私政策</Link>
+                      </span>
+                    </label>
+                    <Button 
+                      onClick={handleRegister}
+                      disabled={loading || !password || !confirmPassword || !!passwordError || !!confirmPasswordError || !agreeTerms}
+                      className="w-full h-12 text-base"
+                    >
+                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '注册'}
+                    </Button>
+                  </>
                 )}
 
                 {/* 切换登录/注册 */}

@@ -70,27 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-      const userId = storedUser ? JSON.parse(storedUser)?.id : null;
-      
+      // 安全修复：不再从 localStorage 读取用户信息
+      // 认证状态完全由 httpOnly cookie 管理
       const response = await fetch('/api/auth/me', {
-        headers: userId ? { 'x-user-id': userId } : {},
-        credentials: 'include'
+        credentials: 'include' // 确保发送 cookie
       });
       const data = await response.json();
       
       if (data.success && data.user) {
         setUser(data.user);
         setQuota(data.user.quota);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
       } else {
         setUser(null);
         setQuota(null);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('user');
-        }
       }
     } catch (error) {
       console.error('检查登录状态失败:', error);
@@ -103,11 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshQuota = useCallback(async () => {
     try {
-      const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-      const userId = storedUser ? JSON.parse(storedUser)?.id : null;
-      
       const response = await fetch('/api/auth/me', {
-        headers: userId ? { 'x-user-id': userId } : {}
+        credentials: 'include'
       });
       const data = await response.json();
       
@@ -126,14 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
       
       const data = await response.json();
       
       if (data.success && data.user) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
+        // 安全修复：不再将用户数据存储到 localStorage
+        // 用户数据从 /api/auth/me API 获取，认证由 httpOnly cookie 管理
         setUser(data.user);
         
         const isMemberUser = data.user.is_member || data.user.user_type === 'member';
@@ -164,6 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, nickname }),
+        credentials: 'include'
       });
       
       const data = await response.json();
@@ -173,9 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       if (data.success && data.user) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
+        // 安全修复：不再将用户数据存储到 localStorage
         setUser(data.user);
       }
       
@@ -192,14 +180,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, token, type: 'magiclink', flowType: 'signup' }),
+        credentials: 'include'
       });
       
       const data = await response.json();
       
       if (data.success && data.user) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
+        // 安全修复：不再将用户数据存储到 localStorage
         setUser(data.user);
       }
       
@@ -212,20 +199,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('user');
-      }
+      // 安全修复：不再操作 localStorage
+      // 清理内存状态
       setUser(null);
       setQuota(null);
       
-      // Clear cookies by setting them to expired
+      // 清理 cookie（通过服务端）
       if (typeof document !== 'undefined') {
         document.cookie = 'sb-access-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
         document.cookie = 'sb-refresh-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
       }
       
-      // Also call the server to clear cookies
-      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+      // 调用服务端清理 cookie
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     } catch (error) {
       console.error('退出登录失败:', error);
     }

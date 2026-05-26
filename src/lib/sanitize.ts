@@ -1,57 +1,134 @@
 /**
  * HTML 内容净化工具
- * 用于防止 XSS 攻击
+ * 使用 DOMPurify 防止 XSS 攻击
  */
 
+import DOMPurify from 'dompurify';
+
 /**
- * 基础 HTML 净化函数
- * 移除 script 标签和危险的事件处理器
+ * 客户端 DOMPurify 实例配置
+ */
+let purifyInstance: typeof DOMPurify | null = null;
+
+/**
+ * 获取 DOMPurify 实例（在浏览器环境中）
+ */
+function getPurify(): typeof DOMPurify {
+  if (typeof window === 'undefined') {
+    // 服务端渲染环境，返回一个安全的空函数
+    return {
+      sanitize: (html: string) => html,
+    } as unknown as typeof DOMPurify;
+  }
+  
+  if (!purifyInstance) {
+    purifyInstance = DOMPurify;
+    
+    // 添加安全钩子：移除所有 on* 事件属性
+    DOMPurify.addHook('uponSanitizeElement', (node) => {
+      if (node instanceof Element) {
+        for (const attr of Array.from(node.attributes)) {
+          if (attr.name.toLowerCase().startsWith('on')) {
+            node.removeAttribute(attr.name);
+          }
+        }
+      }
+    });
+    
+    // 添加钩子：确保链接安全
+    DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+      if (node.tagName === 'A') {
+        node.setAttribute('rel', 'noopener noreferrer');
+        // 如果是外部链接，添加 target="_blank" 并确保安全
+        const href = node.getAttribute('href') || '';
+        if (href.startsWith('http://') || href.startsWith('https://')) {
+          if (!href.includes(window.location.hostname)) {
+            node.setAttribute('target', '_blank');
+          }
+        }
+      }
+    });
+  }
+  
+  return purifyInstance;
+}
+
+/**
+ * HTML 净化函数 - 使用 DOMPurify
+ * 移除所有潜在的 XSS payload，包括：
+ * - script 标签
+ * - on* 事件处理器
+ * - javascript: 协议
+ * - data: 协议
+ * - iframe, object, embed, form 等危险标签
  */
 export function sanitizeHtml(html: string): string {
   if (!html) return '';
   
-  return html
-    // 移除 script 标签及其内容
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // 移除 on* 事件处理器 (onclick, onload, onerror 等)
-    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
-    // 移除 javascript: 协议
-    .replace(/javascript:/gi, '')
-    // 移除 data: 协议（可能用于恶意 payload）
-    .replace(/data:\s*text\/html/gi, '')
-    // 移除 iframe 标签
-    .replace(/<iframe\b[^>]*>.*?<\/iframe>/gi, '')
-    // 移除 object 和 embed 标签
-    .replace(/<object\b[^>]*>.*?<\/object>/gi, '')
-    .replace(/<embed\b[^>]*>/gi, '')
-    // 移除 form 标签（防止表单劫持）
-    .replace(/<form\b[^>]*>.*?<\/form>/gi, '');
+  const purify = getPurify();
+  return purify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'span', 'div', 
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+      'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'a', 'img', 'blockquote', 'pre', 'code',
+      'hr', 'figure', 'figcaption'
+    ],
+    ALLOWED_ATTR: [
+      'href', 'src', 'alt', 'class', 'id', 'style',
+      'target', 'rel', 'title', 'width', 'height'
+    ],
+    ALLOW_DATA_ATTR: false, // 不允许 data-* 属性
+  });
 }
 
 /**
- * 允许的 HTML 标签白名单
- * 用于更严格的净化
- */
-const ALLOWED_TAGS = [
-  'p', 'br', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'strong', 'b', 'em', 'i', 'u', 's', 'strike',
-  'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-  'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'a', 'img', 'blockquote', 'pre', 'code',
-  'hr', 'figure', 'figcaption'
-].join('|');
-
-/**
- * 严格净化模式
- * 只保留白名单中的标签
+ * 严格净化模式 - 只允许有限的标签和属性
  */
 export function sanitizeHtmlStrict(html: string): string {
-  // 先执行基础净化
-  let sanitized = sanitizeHtml(html);
+  if (!html) return '';
   
-  // 移除不在白名单中的标签
-  const tagRegex = new RegExp(`<(/?)(?!${ALLOWED_TAGS}|!--)[a-z][a-z0-9]*\\b[^>]*>`, 'gi');
-  sanitized = sanitized.replace(tagRegex, '');
+  const purify = getPurify();
+  return purify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'a'],
+    ALLOWED_ATTR: ['href'],
+    ALLOW_DATA_ATTR: false,
+  });
+}
+
+/**
+ * 纯文本净化 - 移除所有 HTML 标签
+ */
+export function sanitizeText(text: string): string {
+  if (!text) return '';
   
-  return sanitized;
+  const purify = getPurify();
+  return purify.sanitize(text, {
+    ALLOWED_TAGS: [], // 不允许任何标签
+    ALLOWED_ATTR: [],
+    ALLOW_DATA_ATTR: false,
+  });
+}
+
+/**
+ * URL 净化 - 确保 URL 安全
+ */
+export function sanitizeUrl(url: string): string {
+  if (!url) return '';
+  
+  // 移除 javascript: 协议
+  if (url.toLowerCase().includes('javascript:')) {
+    return '';
+  }
+  
+  // 移除 data: 协议（除了安全的 image/png, image/gif 等）
+  if (url.toLowerCase().startsWith('data:')) {
+    const allowedTypes = ['image/png', 'image/gif', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+    const isAllowed = allowedTypes.some(type => url.toLowerCase().startsWith(`data:${type}`));
+    return isAllowed ? url : '';
+  }
+  
+  return url;
 }
