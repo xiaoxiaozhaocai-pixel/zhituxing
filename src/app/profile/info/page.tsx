@@ -446,6 +446,9 @@ function ProfileInfoContent() {
   // 保存中状态
   const [saving, setSaving] = useState(false);
 
+  // 岗位选项（从 API 动态获取）
+  const [jobOptions, setJobOptions] = useState<string[]>(JOB_INTENTION_OPTIONS);
+
   // 页面加载时获取用户信息
   useEffect(() => {
     if (!authLoading && !user) {
@@ -457,30 +460,54 @@ function ProfileInfoContent() {
     }
   }, [user, authLoading, router]);
 
-  // 监听skill-portrait保存后的同步更新
+  // Bug 2 修复: 监听 skill-portrait 页面保存完成信号
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'skill-portrait-done' && e.newValue === 'true') {
-        // skill-portrait保存完成，重新获取数据
+    const checkSkillPortraitDone = () => {
+      const done = localStorage.getItem('skill-portrait-done');
+      if (done === 'true') {
         localStorage.removeItem('skill-portrait-done');
         fetchProfile();
       }
     };
     
-    // 监听其他页面触发的storage变化
-    window.addEventListener('storage', handleStorageChange);
+    // 初始检查
+    checkSkillPortraitDone();
     
-    // 检查当前页面的localStorage（同一页面不会触发storage事件）
-    const portraitDone = localStorage.getItem('skill-portrait-done');
-    if (portraitDone === 'true') {
-      localStorage.removeItem('skill-portrait-done');
-      fetchProfile();
-    }
+    // 监听 storage 事件（跨标签页）
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'skill-portrait-done') {
+        checkSkillPortraitDone();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    
+    // 轮询检查（同标签页）
+    const interval = setInterval(checkSkillPortraitDone, 1000);
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
     };
   }, [fetchProfile]);
+
+  // Bug 3 修复: 从 API 获取岗位列表
+  useEffect(() => {
+    const fetchJobOptions = async () => {
+      try {
+        const response = await fetch('/api/jobs?limit=100');
+        const data = await response.json();
+        if (data.code === 200 && data.data?.jobs) {
+          const uniquePositions = [...new Set(data.data.jobs.map((j: { position: string }) => j.position).filter(Boolean))];
+          if (uniquePositions.length > 0) {
+            setJobOptions(uniquePositions as string[]);
+          }
+        }
+      } catch (error) {
+        console.error('获取岗位列表失败:', error);
+      }
+    };
+    fetchJobOptions();
+  }, []);
 
   // 获取用户个人信息
   const fetchProfile = async () => {
