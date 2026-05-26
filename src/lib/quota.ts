@@ -44,7 +44,7 @@ async function getUserProfile(userId: string) {
     .from('user_profiles')
     .select('user_type, member_expires_at')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
   
   if (error || !data) {
     return { userType: 'free', memberExpiresAt: null };
@@ -61,10 +61,32 @@ async function getUserQuotaFromDb(userId: string) {
     .from('user_quotas')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
   
   if (error || !data) {
-    return null;
+    // 自动 upsert 默认记录
+    const now = new Date();
+    const defaultRecord = {
+      user_id: userId,
+      monthly_quota: 10,
+      used_quota: 0,
+      interview_quota: 3,
+      assessment_quota: 1,
+      member_type: 'free',
+      quota_reset_time: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      interview_quota_reset_time: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      assessment_quota_reset_time: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    };
+    const { data: upsertedData, error: upsertError } = await supabase
+      .from('user_quotas')
+      .upsert(defaultRecord, { onConflict: 'user_id' })
+      .select()
+      .single();
+    if (upsertError || !upsertedData) {
+      // fallback 返回默认对象
+      return defaultRecord;
+    }
+    return upsertedData;
   }
   return data;
 }

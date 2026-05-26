@@ -53,7 +53,7 @@ export async function GET() {
       .from('user_quotas')
       .select('quota_reset_time')
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -72,7 +72,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: {
-        nextResetTime: data?.quota_reset_time,
+        nextResetTime: data?.quota_reset_time ?? null,
         daysUntilReset
       }
     });
