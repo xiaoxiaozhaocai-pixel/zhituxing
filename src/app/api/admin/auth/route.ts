@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
@@ -19,7 +19,7 @@ function isAdminUser(userId: string): boolean {
   return adminList.includes(userId.toLowerCase());
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUserId(request);
     if (!userId) {

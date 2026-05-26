@@ -48,7 +48,7 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
       
       return {
         id: user.id,
-        email: user.email,
+        email: user.email ?? null,
         phone: user.user_metadata?.phone || user.phone || null,
         nickname: profile?.nickname || user.user_metadata?.nickname || null,
         userType: profile?.user_type === 'member' ? 'member' : 'free',

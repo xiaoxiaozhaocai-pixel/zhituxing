@@ -10,8 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import GenerateGuideModal from '@/components/GenerateGuideModal';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
-import { 
-import Breadcrumb from '@/components/Breadcrumb';
+import {
   Sparkles, 
   Loader2, 
   CheckCircle, 
@@ -26,6 +25,7 @@ import Breadcrumb from '@/components/Breadcrumb';
   Lock,
   LogIn
 } from 'lucide-react';
+import Breadcrumb from '@/components/Breadcrumb';
 
 // 年级选项
 const gradeOptions = [

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 // 保存搜索历史
 export async function POST(request: NextRequest) {

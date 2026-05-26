@@ -399,7 +399,7 @@ function ProfileInfoContent() {
     graduation_year: '',
     city: '',
     job_intention: '',
-    target_industry: profile.target_industry || '',
+    target_industry: '',
     skills: [],
     internship_experience: '',
     project_experience: '',
@@ -446,8 +446,6 @@ function ProfileInfoContent() {
   // 保存中状态
   const [saving, setSaving] = useState(false);
 
-  // 岗位选项（从 API 动态获取）
-  const [jobOptions, setJobOptions] = useState<string[]>(JOB_INTENTION_OPTIONS);
 
   // 页面加载时获取用户信息
   useEffect(() => {
@@ -488,7 +486,7 @@ function ProfileInfoContent() {
       window.removeEventListener('storage', handleStorage);
       clearInterval(interval);
     };
-  }, [fetchProfile]);
+  }, []);
 
   // Bug 3 修复: 从 API 获取岗位列表
   useEffect(() => {
