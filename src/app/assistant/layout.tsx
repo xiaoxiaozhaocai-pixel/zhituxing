@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职搭子JD助手' }],
   },
   alternates: {
-    canonical: 'https://t498zk3cs9.coze.site/assistant',
+    canonical: 'https://zhituxing.zeabur.app/assistant',
   },
 };
 

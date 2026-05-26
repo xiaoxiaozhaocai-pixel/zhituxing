@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.COZE_PROJECT_DOMAIN_DEFAULT || 'https://t498zk3cs9.coze.site';
+  const siteUrl = process.env.COZE_PROJECT_DOMAIN_DEFAULT || 'https://zhituxing.zeabur.app';
   const now = new Date();
 
   // 静态页面
