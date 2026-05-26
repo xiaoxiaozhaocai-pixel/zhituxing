@@ -399,12 +399,37 @@ function ProfileInfoContent() {
     graduation_year: '',
     city: '',
     job_intention: '',
-    target_industry: '',
+    target_industry: profile.target_industry || '',
     skills: [],
     internship_experience: '',
     project_experience: '',
     awards: '',
   });
+
+  // 岗位列表（从job_descriptions表获取）
+  const [jobOptions, setJobOptions] = useState<string[]>(JOB_INTENTION_OPTIONS);
+
+  // 获取岗位列表
+  useEffect(() => {
+    const fetchJobOptions = async () => {
+      try {
+        const response = await fetch('/api/jobs/list', { credentials: 'include' });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.code === 200 && Array.isArray(data.data) && data.data.length > 0) {
+            // 从job_descriptions表获取唯一岗位名称
+            const jobs = [...new Set(data.data.map((j: { job_title?: string }) => j.job_title).filter(Boolean))];
+            if (jobs.length > 0) {
+              setJobOptions(jobs as string[]);
+            }
+          }
+        }
+      } catch (error) {
+        console.log('获取岗位列表失败，使用默认选项');
+      }
+    };
+    fetchJobOptions();
+  }, []);
 
   // AI 推荐结果
   const [aiLoading, setAiLoading] = useState(false);
@@ -432,6 +457,31 @@ function ProfileInfoContent() {
     }
   }, [user, authLoading, router]);
 
+  // 监听skill-portrait保存后的同步更新
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'skill-portrait-done' && e.newValue === 'true') {
+        // skill-portrait保存完成，重新获取数据
+        localStorage.removeItem('skill-portrait-done');
+        fetchProfile();
+      }
+    };
+    
+    // 监听其他页面触发的storage变化
+    window.addEventListener('storage', handleStorageChange);
+    
+    // 检查当前页面的localStorage（同一页面不会触发storage事件）
+    const portraitDone = localStorage.getItem('skill-portrait-done');
+    if (portraitDone === 'true') {
+      localStorage.removeItem('skill-portrait-done');
+      fetchProfile();
+    }
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [fetchProfile]);
+
   // 获取用户个人信息
   const fetchProfile = async () => {
     try {
@@ -451,7 +501,7 @@ function ProfileInfoContent() {
             graduation_year: profile.graduation_year ? String(profile.graduation_year) : '',
             city: profile.target_cities?.[0] || profile.city || '',
             job_intention: profile.target_job || '',
-            target_industry: '',
+            target_industry: profile.target_industry || '',
             skills: [],
             internship_experience: profile.internship_experience || '',
             project_experience: profile.project_experience || '',
@@ -702,6 +752,7 @@ function ProfileInfoContent() {
           graduation_year: form.graduation_year ? parseInt(form.graduation_year) : undefined,
           target_cities: form.city ? [form.city] : undefined,
           target_job: form.job_intention || undefined,
+          target_industry: form.target_industry || undefined,
           hard_skills: skillsData.filter(s => s.category === 'professional' || s.category === 'office').map(s => s.name),
           soft_skills: skillsData.filter(s => s.category === 'soft').map(s => s.name),
           internship_experience: form.internship_experience || undefined,
@@ -714,12 +765,12 @@ function ProfileInfoContent() {
       console.log('[profile/info] 保存响应:', data);
 
       if (data.code === 200) {
-        showToast('信息保存成功', 'success', 2000);
+        showToast('✅ 信息保存成功', 'success', 3000);
         setTimeout(() => {
           router.push(fromPage || '/profile');
         }, 800);
       } else {
-        showToast(data.error || '保存失败，请稍后重试', 'error', 5000);
+        showToast('❌ ' + (data.error || '保存失败，请稍后重试'), 'error', 5000);
       }
     } catch (error) {
       console.error('保存失败:', error);
@@ -844,7 +895,7 @@ function ProfileInfoContent() {
                     求职意向 <span className="text-red-500">*</span>
                   </Label>
                   <Combobox
-                    options={JOB_INTENTION_OPTIONS}
+                    options={jobOptions}
                     value={form.job_intention}
                     onChange={(v) => updateForm('job_intention', v)}
                     placeholder="选择或输入求职方向"
