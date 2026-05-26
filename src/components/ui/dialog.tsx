@@ -54,6 +54,19 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // 模态框焦点管理 - WCAG 2.1 AA
+  const handleOpenAutoFocus = (e: Event) => {
+    e.preventDefault();
+    // 焦点保持在模态框内的第一个可交互元素
+    const firstFocusable = document.querySelector("[data-slot=\"dialog-content\"] button, [data-slot=\"dialog-content\"] input, [data-slot=\"dialog-content\"] a, [data-slot=\"dialog-content\"] [tabindex=\"0\"]") as HTMLElement;
+    firstFocusable?.focus();
+  };
+  
+  const handleCloseAutoFocus = (e: Event) => {
+    e.preventDefault();
+    // 关闭时焦点由 Radix UI 管理
+  };
+  
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -63,6 +76,8 @@ function DialogContent({
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 outline-none sm:max-w-lg",
           className
         )}
+        onOpenAutoFocus={handleOpenAutoFocus}
+        onCloseAutoFocus={handleCloseAutoFocus}
         {...props}
       >
         {children}

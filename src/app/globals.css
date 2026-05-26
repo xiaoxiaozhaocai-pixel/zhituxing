@@ -225,3 +225,24 @@ select:focus {
     min-height: 44px;
   }
 }
+
+/* ===== 无障碍修复: focus-visible 焦点样式 (WCAG 2.1 AA) ===== */
+*:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+[aria-live="polite"] { }
+.notification-container, .toast-container, .alert-container {
+  role: status;
+  aria-live: polite;
+  aria-atomic: true;
+}
+.error-container, .form-error {
+  role: alert;
+  aria-live: assertive;
+}

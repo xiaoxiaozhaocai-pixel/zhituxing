@@ -108,8 +108,8 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
+            <Link href="/" className="flex items-center space-x-2" aria-label="职途星 - 返回首页">
+              <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center" aria-hidden="true">
                 <span className="text-white font-bold text-lg">职</span>
               </div>
               <div>

@@ -525,9 +525,10 @@ function AuthContent() {
                 {!isRegistered && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
                       <div className="relative">
                         <Input
+                          id="confirmPassword"
                           type={showConfirmPassword ? 'text' : 'password'}
                           placeholder="请再次输入密码"
                           value={confirmPassword}
