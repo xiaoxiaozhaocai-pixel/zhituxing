@@ -52,7 +52,14 @@ export default function DiagnosticsPage() {
     setLoading(true);
     setError(null);
     try {
-      const userId = localStorage.getItem('userId') || '';
+      let userId = '';
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsed = JSON.parse(userData);
+          userId = parsed.id || '';
+        }
+      } catch { userId = ''; }
       const res = await fetch('/api/admin/diagnostics', {
         headers: { 'x-user-id': userId },
       });

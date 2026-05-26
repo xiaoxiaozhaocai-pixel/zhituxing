@@ -28,7 +28,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function checkAdmin() {
       try {
-        const userId = localStorage.getItem('userId') || '999';
+        let userId = '';
+        try {
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const parsed = JSON.parse(userData);
+            userId = parsed.id || '';
+          }
+        } catch { userId = ''; }
         const res = await fetch('/api/admin/auth', {
           headers: { 'x-user-id': userId },
         });
