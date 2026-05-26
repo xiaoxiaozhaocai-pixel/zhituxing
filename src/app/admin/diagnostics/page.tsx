@@ -52,16 +52,8 @@ export default function DiagnosticsPage() {
     setLoading(true);
     setError(null);
     try {
-      let userId = '';
-      try {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          const parsed = JSON.parse(userData);
-          userId = parsed.id || '';
-        }
-      } catch { userId = ''; }
       const res = await fetch('/api/admin/diagnostics', {
-        headers: { 'x-user-id': userId },
+        credentials: 'include',
       });
       const result = await res.json();
       if (result.error) {
