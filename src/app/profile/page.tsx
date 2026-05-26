@@ -42,6 +42,7 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
+import Breadcrumb from '@/components/Breadcrumb';
 
 // 侧边栏菜单项
 const menuItems = [
@@ -1213,6 +1214,7 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Breadcrumb theme="light" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" />
       <div className="flex">
         {/* 左侧侧边栏 */}
         <aside className="w-[240px] bg-white border-r min-h-screen fixed left-0 top-0 pt-20">

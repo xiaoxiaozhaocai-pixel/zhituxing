@@ -11,11 +11,16 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const userId = await getAuthenticatedUserId(request);
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
 
     const { data: referral, error } = await supabase
       .from('referrals')
       .select('*')
       .eq('id', id)
+      .eq('user_id', userId)
       .single();
 
     if (error || !referral) {
@@ -35,12 +40,18 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const userId = await getAuthenticatedUserId(request);
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
     const body = await request.json();
 
     const { data: referral, error } = await supabase
       .from('referrals')
       .update(body)
       .eq('id', id)
+      .eq('user_id', userId)
       .select()
       .single();
 

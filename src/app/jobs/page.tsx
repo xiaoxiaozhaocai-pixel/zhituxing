@@ -19,6 +19,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { SkeletonCardList } from '@/components/SkeletonCard';
+import Breadcrumb from '@/components/Breadcrumb';
 
 // 动态筛选选项类型
 interface FilterOption {
@@ -455,6 +456,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Breadcrumb theme="light" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" />
       {/* Header */}
       <div className="bg-gradient-to-r from-[#165DFF] to-[#4080FF] text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
