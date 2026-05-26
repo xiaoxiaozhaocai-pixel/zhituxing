@@ -4,7 +4,7 @@
  */
 
 // 网站基础URL - 用于sitemap、canonical、JSON-LD等
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://t498zk3cs9.coze.site";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://zhituxing.zeabur.app";
 
 // 网站名称
 export const SITE_NAME = "职途星";
