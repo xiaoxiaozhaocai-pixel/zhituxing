@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 // 领取奖励
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
 
     if (!userId) {
       return NextResponse.json(

@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 const supabase = getSupabaseAdmin();
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     const body = await request.json();
     const { type, content, rating, targetId } = body;
 
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     const type = request.nextUrl.searchParams.get('type');
 
     let query = supabase

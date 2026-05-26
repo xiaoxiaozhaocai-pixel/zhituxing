@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 const supabase = getSupabaseAdmin();
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     const limit = parseInt(request.nextUrl.searchParams.get('limit') || '10');
 
     // 获取用户画像

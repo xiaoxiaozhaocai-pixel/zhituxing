@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const supabase = getSupabase();
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     const { id: articleId } = await params;
 
     if (!userId) {

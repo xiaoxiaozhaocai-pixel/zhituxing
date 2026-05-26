@@ -1,12 +1,14 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
 // 管理员权限校验
 async function checkAdmin(request: NextRequest): Promise<number | null> {
-  const userId = parseInt(request.headers.get('x-user-id') || '0');
+  const authUserId = await getAuthenticatedUserId(request);
+    const userId = authUserId ? parseInt(authUserId) : 0;
   if (!userId) return null;
   const rows = await execSql(
     `SELECT is_admin FROM user_profiles WHERE user_id = '${userId}'`

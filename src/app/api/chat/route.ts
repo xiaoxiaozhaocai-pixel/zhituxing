@@ -172,20 +172,11 @@ export async function POST(request: NextRequest) {
     // ============================================================
     // 安全检查：必须登录
     // ============================================================
+    // 使用统一的认证函数，不再信任 x-user-id header
+    // 漏洞修复：之前允许 x-user-id 绕过登录检查是严重的安全漏洞
     const accessToken = parseAccessTokenFromCookie(request.headers) || request.cookies.get('sb-access-token')?.value || null;
-    const headerUserId = request.headers.get('x-user-id');
     
-    // 允许 x-user-id header 绕过登录检查（用于测试和多端调用）
-    // 如果提供了 x-user-id header，直接信任它
-    // 生产环境应该通过 rate limiting 和其他安全措施保护
-    
-    console.log('[chat] Auth check:', {
-      hasAccessToken: !!accessToken,
-      headerUserId: headerUserId || 'none',
-      willBypass: !!(headerUserId && !accessToken)
-    });
-    
-    if (!accessToken && !headerUserId) {
+    if (!accessToken) {
       return new Response(
         JSON.stringify({ error: '请先登录' }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
@@ -275,13 +266,8 @@ export async function POST(request: NextRequest) {
     // 1. 用户验证，查 user_profiles 表获取 user_type
     let userInfo = await getUserInfoFromRequest(request);
     
-    // 如果有 x-user-id header 但 userInfo 为空，直接使用 header 中的用户ID
-    if (!userInfo && headerUserId) {
-      userInfo = { userId: headerUserId, userType: 'free' };
-      console.log('[chat] Using x-user-id header:', headerUserId);
-    }
-    
-    // Fix6: 如果 userInfo 为 null 但有 accessToken，说明用户已登录但查不到信息，允许继续
+    // userInfo 现在通过 getUserInfoFromRequest（已修复为验证 token）获取
+    // 如果 userInfo 为 null 但有 accessToken，说明用户已登录但查不到信息，允许继续
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
     

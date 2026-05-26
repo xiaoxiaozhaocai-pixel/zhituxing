@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql, escapeParam } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
 // Admin权限校验
 async function checkAdmin(request: NextRequest): Promise<boolean> {
-  const userId = request.headers.get('x-user-id');
+  const userId = await getAuthenticatedUserId(request);
   if (!userId) return false;
   const rows = await execSql(
     `SELECT is_admin FROM user_profiles WHERE user_id = ${Number(userId)}`

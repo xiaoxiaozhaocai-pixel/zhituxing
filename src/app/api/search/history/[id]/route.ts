@@ -9,7 +9,7 @@ export async function DELETE(
 ) {
   try {
     const supabase = getSupabase();
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     const { id } = await params;
 
     if (!userId) {

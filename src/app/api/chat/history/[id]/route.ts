@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 const supabase = getSupabaseAdmin();
 
@@ -10,7 +11,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     if (!userId) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }

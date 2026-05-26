@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
 
     if (!userId) {
       return NextResponse.json({ success: false, error: '请先登录' }, { status: 401 });

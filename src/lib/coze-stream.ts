@@ -12,46 +12,21 @@ export interface UserInfo {
 }
 
 /**
- * 1. 用户验证 — 查 user_profiles 表，返回 { userId, userType }
- * Fix5: 使用 REST API 避免 SQL 注入
+ * 1. 用户验证 — 使用统一的 JWT token 认证
+ * 漏洞修复：不再信任 x-user-id header，改为验证 JWT token
+ * Fix5: 使用统一认证工具 getAuthenticatedUserWithType
  */
 export async function getUserInfoFromRequest(request: NextRequest): Promise<UserInfo | null> {
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return null;
-
-  try {
-    // 使用 Supabase REST API 查询，避免 SQL 注入
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${encodeURIComponent(userId)}&select=user_id,user_type&limit=1`,
-      {
-        headers: {
-          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
-        },
-      }
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.length > 0) {
-        return {
-          userId,
-          userType: data[0].user_type || 'free',
-        };
-      }
-      // Fix: user_profiles 无记录时，用户已通过 x-user-id 验证，返回默认 free 用户
-      // 这允许新用户（未完善资料）也能保存对话历史
-      return {
-        userId,
-        userType: 'free',
-      };
-    }
-  } catch (e) {
-    console.error('User validation error:', e);
-  }
-
-  // 仅当请求失败或异常时返回 null
-  return null;
+  // 导入会在运行时解析，避免循环依赖
+  const { getAuthenticatedUserWithType } = await import('./auth');
+  const result = await getAuthenticatedUserWithType(request);
+  
+  if (!result) return null;
+  
+  return {
+    userId: result.userId,
+    userType: result.userType,
+  };
 }
 
 /**

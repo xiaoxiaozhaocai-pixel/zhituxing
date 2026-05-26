@@ -125,31 +125,15 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
 
   // --------------------------------------------------------
   // 3. /api/chat 路由：登录检查 + 5次/分钟限流
+  // 漏洞修复：移除 x-user-id 绕过登录检查，只验证 JWT token
   // --------------------------------------------------------
   if (pathname.startsWith('/api/chat')) {
     const accessToken = parseAccessTokenFromCookie(request.headers);
-    const devUserId = request.headers.get('x-user-id');
     
-    // DEBUG: 详细打印所有 headers 和认证信息
-    const allHeaders: Record<string, string> = {};
-    request.headers.forEach((value, key) => {
-      allHeaders[key] = value;
-    });
-    console.log('[middleware] /api/chat DEBUG:', {
-      pathname,
-      hasAccessToken: !!accessToken,
-      accessTokenValue: accessToken ? `${accessToken.substring(0, 10)}...` : null,
-      devUserId,
-      devUserIdType: typeof devUserId,
-      devUserIdCheck: !devUserId,
-      allHeadersKeys: Object.keys(allHeaders),
-      xUserIdHeader: allHeaders['x-user-id'],
-    });
-    
-    // 允许 x-user-id header 绕过登录检查（用于测试和多端调用）
-    // 生产环境应该通过 rate limiting 和其他安全措施保护
-    if (!accessToken && !devUserId) {
-      console.log('[middleware] /api/chat returning 401 - no auth');
+    // 漏洞修复：之前允许 x-user-id 绕过登录检查是严重安全漏洞
+    // 现在只验证 JWT token，不再信任 x-user-id header
+    if (!accessToken) {
+      console.log('[middleware] /api/chat returning 401 - no auth token');
       const response = NextResponse.json(
         { error: '请先登录' },
         { status: 401 }

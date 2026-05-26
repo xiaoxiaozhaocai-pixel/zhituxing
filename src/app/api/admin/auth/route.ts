@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
   try {
-    const userId = request.headers.get('x-user-id');
+    const userId = await getAuthenticatedUserId(request);
     if (!userId) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
