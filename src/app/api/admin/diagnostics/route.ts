@@ -213,15 +213,15 @@ async function testSecurity(): Promise<any[]> {
 // 数据库状态检查
 async function testDatabase(): Promise<any[]> {
   const tables = [
-    { name: 'job_descriptions', min: 1000, display: '岗位数据' },
-    { name: 'skill_taxonomy', min: 100, display: '技能分类' },
-    { name: 'skill_relations', min: 100, display: '技能关系' },
-    { name: 'career_paths', min: 10, display: '职业路径' },
-    { name: 'interview_questions', min: 10, display: '面试题库' },
-    { name: 'skill_assessments', min: 10, display: '技能测评' },
-    { name: 'learning_resources', min: 10, display: '学习资源' },
-    { name: 'articles', min: 1, display: '文章内容' },
-    { name: 'user_profiles', min: 0, display: '用户数据' },
+    { name: 'public.job_descriptions', min: 1000, display: '岗位数据' },
+    { name: 'public.skill_taxonomy', min: 100, display: '技能分类' },
+    { name: 'public.skill_relations', min: 100, display: '技能关系' },
+    { name: 'public.career_paths', min: 10, display: '职业路径' },
+    { name: 'public.interview_questions', min: 10, display: '面试题库' },
+    { name: 'public.skill_assessments', min: 10, display: '技能测评' },
+    { name: 'public.learning_resources', min: 10, display: '学习资源' },
+    { name: 'public.articles', min: 1, display: '文章内容' },
+    { name: 'public.user_profiles', min: 0, display: '用户数据' },
   ];
 
   return Promise.all(
