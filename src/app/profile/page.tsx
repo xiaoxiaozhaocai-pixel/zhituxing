@@ -120,6 +120,7 @@ function SkillCategorySection({
 // 个人信息面板组件
 function ProfileInfoPanel({ userId }: { userId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [profile, setProfile] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
 
@@ -127,6 +128,15 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
     if (!userId) { setLoading(false); return; }
     fetchProfile();
   }, [userId]);
+
+  // 监听从info页保存回来的刷新信号
+  useEffect(() => {
+    if (searchParams.get('updated') === '1') {
+      fetchProfile();
+      // 清除URL参数，避免重复刷新
+      window.history.replaceState({}, '', '/profile?tab=info');
+    }
+  }, [searchParams]);
 
   const fetchProfile = async () => {
     try {

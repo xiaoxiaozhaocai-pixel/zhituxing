@@ -794,7 +794,7 @@ function ProfileInfoContent() {
       if (data.code === 200) {
         showToast('✅ 信息保存成功', 'success', 3000);
         setTimeout(() => {
-          router.push(fromPage || '/profile');
+          router.push((fromPage || '/profile') + '?updated=1');
         }, 800);
       } else {
         showToast('❌ ' + (data.error || '保存失败，请稍后重试'), 'error', 5000);
