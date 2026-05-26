@@ -421,6 +421,9 @@ function ProfileInfoContent() {
   // 保存中状态
   const [saving, setSaving] = useState(false);
 
+  // 岗位选项（从 API 动态获取）
+  const [jobOptions, setJobOptions] = useState<string[]>(JOB_INTENTION_OPTIONS);
+
   // 页面加载时获取用户信息
   useEffect(() => {
     if (!authLoading && !user) {
@@ -431,6 +434,55 @@ function ProfileInfoContent() {
       fetchProfile();
     }
   }, [user, authLoading, router]);
+
+  // Bug 2 修复: 监听 skill-portrait 页面保存完成信号
+  useEffect(() => {
+    const checkSkillPortraitDone = () => {
+      const done = localStorage.getItem('skill-portrait-done');
+      if (done === 'true') {
+        localStorage.removeItem('skill-portrait-done');
+        fetchProfile();
+      }
+    };
+    
+    // 初始检查
+    checkSkillPortraitDone();
+    
+    // 监听 storage 事件（跨标签页）
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'skill-portrait-done') {
+        checkSkillPortraitDone();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    
+    // 轮询检查（同标签页）
+    const interval = setInterval(checkSkillPortraitDone, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Bug 3 修复: 从 API 获取岗位列表
+  useEffect(() => {
+    const fetchJobOptions = async () => {
+      try {
+        const response = await fetch('/api/jobs?limit=100');
+        const data = await response.json();
+        if (data.code === 200 && data.data?.jobs) {
+          const uniquePositions = [...new Set(data.data.jobs.map((j: { position: string }) => j.position).filter(Boolean))];
+          if (uniquePositions.length > 0) {
+            setJobOptions(uniquePositions as string[]);
+          }
+        }
+      } catch (error) {
+        console.error('获取岗位列表失败:', error);
+      }
+    };
+    fetchJobOptions();
+  }, []);
 
   // 获取用户个人信息
   const fetchProfile = async () => {
@@ -702,6 +754,7 @@ function ProfileInfoContent() {
           graduation_year: form.graduation_year ? parseInt(form.graduation_year) : undefined,
           target_cities: form.city ? [form.city] : undefined,
           target_job: form.job_intention || undefined,
+          target_industry: form.target_industry || undefined,
           hard_skills: skillsData.filter(s => s.category === 'professional' || s.category === 'office').map(s => s.name),
           soft_skills: skillsData.filter(s => s.category === 'soft').map(s => s.name),
           internship_experience: form.internship_experience || undefined,
@@ -844,7 +897,7 @@ function ProfileInfoContent() {
                     求职意向 <span className="text-red-500">*</span>
                   </Label>
                   <Combobox
-                    options={JOB_INTENTION_OPTIONS}
+                    options={jobOptions}
                     value={form.job_intention}
                     onChange={(v) => updateForm('job_intention', v)}
                     placeholder="选择或输入求职方向"
