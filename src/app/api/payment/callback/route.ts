@@ -4,31 +4,37 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 会员套餐天数配置
-const planDays = {
+const planDays: Record<string, number> = {
   monthly: 30,
   quarterly: 90,
+  trial: 30,
+  semester: 180,
   yearly: 365
 };
 
-// 支付回调（模拟）
+// 支付回调（签名验证已强制启用）
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabaseAdmin();
     const body = await request.json();
     const { orderNo, status, paidAt, sign } = body;
 
-    // 签名验证（启用时执行）
-    const SIGNATURE_ENABLED = process.env.PAYMENT_SIGNATURE_ENABLED === 'true';
-    if (SIGNATURE_ENABLED) {
-      const signKey = process.env.PAYMENT_SIGN_KEY;
-      if (!signKey) {
-        return NextResponse.json({ success: false, error: '支付配置错误' }, { status: 500 });
-      }
-      const payload = `${orderNo}${status}`;
-      const expectedSign = crypto.createHmac('sha256', signKey).update(payload).digest('hex');
-      if (!sign || sign !== expectedSign) {
-        return NextResponse.json({ success: false, error: '签名验证失败' }, { status: 401 });
-      }
+    // 【安全修复】始终执行签名验证，不再依赖环境变量开关
+    // 生产环境必须验证签名，防止伪造支付回调
+    const signKey = process.env.PAYMENT_SIGN_KEY;
+    if (!signKey) {
+      console.error('支付签名密钥未配置，请设置 PAYMENT_SIGN_KEY 环境变量');
+      return NextResponse.json({ success: false, error: '支付配置错误' }, { status: 500 });
+    }
+    
+    // 构建签名Payload
+    const payload = `${orderNo}${status}`;
+    const expectedSign = crypto.createHmac('sha256', signKey).update(payload).digest('hex');
+    
+    // 验证签名（安全比较，防止时序攻击）
+    if (!sign || !crypto.timingSafeEqual(Buffer.from(sign), Buffer.from(expectedSign))) {
+      console.warn('支付签名验证失败:', { orderNo, receivedSign: sign?.substring(0, 10) });
+      return NextResponse.json({ success: false, error: '签名验证失败' }, { status: 401 });
     }
 
     // 查找订单
@@ -62,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     // 更新用户会员状态
     const planId = order.plan_id;
-    const days = planDays[planId as keyof typeof planDays] || 30;
+    const days = planDays[planId] || 30;
 
     // 计算新的到期时间
     let newExpiresAt: Date;
@@ -75,10 +81,8 @@ export async function POST(request: NextRequest) {
     if (currentQuota && currentQuota.member_expires_at) {
       const currentExpires = new Date(currentQuota.member_expires_at);
       if (currentExpires > new Date()) {
-        // 会员未过期，累加时间
         newExpiresAt = new Date(currentExpires.getTime() + days * 24 * 60 * 60 * 1000);
       } else {
-        // 会员已过期，从现在开始计算
         newExpiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
       }
     } else {
@@ -91,7 +95,7 @@ export async function POST(request: NextRequest) {
       .upsert({
         user_id: order.user_id,
         member_type: planId,
-        quota: 999999, // 无限次
+        quota: 999999,
         used_quota: 0,
         member_expires_at: newExpiresAt.toISOString(),
         updated_at: new Date().toISOString()
