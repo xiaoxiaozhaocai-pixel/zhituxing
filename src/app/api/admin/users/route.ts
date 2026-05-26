@@ -10,8 +10,10 @@ async function checkAdmin(request: NextRequest): Promise<number | null> {
   const authUserId = await getAuthenticatedUserId(request);
     const userId = authUserId ? parseInt(authUserId) : 0;
   if (!userId) return null;
+  // 使用参数化查询防止SQL注入
   const rows = await execSql(
-    `SELECT is_admin FROM user_profiles WHERE user_id = '${userId}'`
+    `SELECT is_admin FROM user_profiles WHERE user_id = %L`,
+    userId
   ) as Record<string, unknown>[];
   if (!rows?.length || !rows[0].is_admin) return null;
   return userId;
@@ -52,17 +54,17 @@ export async function GET(request: NextRequest) {
 }
 
 async function getStats() {
-  // 总用户数
+  // 总用户数（无参数，使用直接查询）
   const totalRows = await execSql(
     `SELECT COUNT(*)::int as total FROM user_profiles`
   ) as Record<string, unknown>[];
 
-  // 会员数
+  // 会员数（无参数，使用直接查询）
   const memberRows = await execSql(
     `SELECT COUNT(*)::int as total FROM user_profiles WHERE membership_type = 'member'`
   ) as Record<string, unknown>[];
 
-  // 本周新增
+  // 本周新增（无参数，使用直接查询）
   const weekRows = await execSql(
     `SELECT COUNT(*)::int as total FROM user_profiles WHERE created_at >= NOW() - INTERVAL '7 days'`
   ) as Record<string, unknown>[];
@@ -80,12 +82,14 @@ async function getStats() {
 
 async function getGrowthTrend(days: string) {
   const d = Math.min(parseInt(days) || 30, 90);
+  // 使用参数化查询防止SQL注入
   const rows = await execSql(
     `SELECT DATE(created_at) as date, COUNT(*)::int as count
      FROM user_profiles
-     WHERE created_at >= NOW() - INTERVAL '${d} days'
+     WHERE created_at >= NOW() - (%L::text || ' days')::interval
      GROUP BY DATE(created_at)
-     ORDER BY DATE(created_at) ASC`
+     ORDER BY DATE(created_at) ASC`,
+    d
   ) as Record<string, unknown>[];
 
   return NextResponse.json({
@@ -96,46 +100,53 @@ async function getGrowthTrend(days: string) {
 }
 
 async function getUserDetail(userId: number) {
-  // 用户画像
+  // 使用参数化查询防止SQL注入
   const profileRows = await execSql(
     `SELECT user_id, user_type, membership_type, membership_plan, major, grade,
             job_intention, city, skills, personality_type, ability_background::text,
             internship_experience, project_experience, awards, is_admin, created_at
-     FROM user_profiles WHERE user_id = '${userId}'`
+     FROM user_profiles WHERE user_id = %L`,
+    userId
   ) as Record<string, unknown>[];
 
   if (!profileRows?.length) {
     return NextResponse.json({ error: '用户不存在' }, { status: 404 });
   }
 
-  // 用户技能
+  // 使用参数化查询
   const skillRows = await execSql(
-    `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = '${userId}' ORDER BY level DESC`
+    `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = %L ORDER BY level DESC`,
+    userId
   ) as Record<string, unknown>[];
 
-  // 测评历史
+  // 使用参数化查询
   const assessmentRows = await execSql(
-    `SELECT id, result_data::text, created_at FROM assessment_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, result_data::text, created_at FROM assessment_results WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
   ) as Record<string, unknown>[];
 
-  // 匹配记录
+  // 使用参数化查询
   const matchRows = await execSql(
-    `SELECT id, match_data::text, created_at FROM skill_job_match WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, match_data::text, created_at FROM skill_job_match WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
   ) as Record<string, unknown>[];
 
-  // 面试记录
+  // 使用参数化查询
   const interviewRows = await execSql(
-    `SELECT id, result_data::text, created_at FROM interview_results WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, result_data::text, created_at FROM interview_results WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
   ) as Record<string, unknown>[];
 
-  // 职业规划
+  // 使用参数化查询
   const careerRows = await execSql(
-    `SELECT id, plan_data::text, created_at FROM career_plans WHERE user_id = '${userId}' ORDER BY created_at DESC LIMIT 5`
+    `SELECT id, plan_data::text, created_at FROM career_plans WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
   ) as Record<string, unknown>[];
 
-  // 行为统计
+  // 使用参数化查询
   const behaviorRows = await execSql(
-    `SELECT event_type, COUNT(*)::int as count FROM analytics_events WHERE user_id = '${userId}' GROUP BY event_type ORDER BY count DESC`
+    `SELECT event_type, COUNT(*)::int as count FROM analytics_events WHERE user_id = %L GROUP BY event_type ORDER BY count DESC`,
+    userId
   ) as Record<string, unknown>[];
 
   const profile = profileRows[0];
@@ -172,39 +183,52 @@ async function getUserList(searchParams: URLSearchParams) {
 
   const offset = (page - 1) * pageSize;
 
-  // 构建WHERE条件
+  // 构建参数数组和WHERE条件
+  const params: any[] = [];
   const conditions: string[] = [];
+  
   if (keyword) {
-    conditions.push(`(CAST(user_id AS TEXT) ILIKE '%${keyword}%' OR major ILIKE '%${keyword}%' OR job_intention ILIKE '%${keyword}%')`);
+    // 转义LIKE通配符
+    const escapedKeyword = keyword.replace(/[%_]/g, '\\$&');
+    conditions.push(`(CAST(user_id AS TEXT) ILIKE '%' || %L || '%' OR major ILIKE '%' || %L || '%' OR job_intention ILIKE '%' || %L || '%')`);
+    params.push(escapedKeyword, escapedKeyword, escapedKeyword);
   }
   if (membershipType) {
-    conditions.push(`membership_type = '${membershipType}'`);
+    conditions.push(`membership_type = %L`);
+    params.push(membershipType);
   }
   if (major) {
-    conditions.push(`major ILIKE '%${major}%'`);
+    conditions.push(`major ILIKE '%' || %L || '%'`);
+    params.push(major);
   }
   if (grade) {
-    conditions.push(`grade = '${grade}'`);
+    conditions.push(`grade = %L`);
+    params.push(grade);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
   // 查总数
   const countRows = await execSql(
-    `SELECT COUNT(*)::int as total FROM user_profiles ${whereClause}`
+    `SELECT COUNT(*)::int as total FROM user_profiles ${whereClause}`,
+    ...params
   ) as Record<string, unknown>[];
   const total = (countRows?.[0]?.total as number) || 0;
 
-  // 查列表
+  // 查列表 - 限制分页参数防止注入
+  const safePageSize = Math.min(100, Math.max(1, pageSize));
+  const safeOffset = Math.max(0, offset);
+  
   const rows = await execSql(
     `SELECT user_id, user_type, membership_type, membership_plan, major, grade,
             job_intention, city, personality_type, is_admin, created_at
      FROM user_profiles ${whereClause}
      ORDER BY created_at DESC
-     LIMIT ${pageSize} OFFSET ${offset}`
+     LIMIT ${safePageSize} OFFSET ${safeOffset}`,
+    ...params
   ) as Record<string, unknown>[];
 
-  // 查每个用户的技能数量
+  // 查每个用户的技能数量（无参数，使用直接查询）
   const skillCountRows = await execSql(
     `SELECT user_id, COUNT(*)::int as skill_count FROM user_skills GROUP BY user_id`
   ) as Record<string, unknown>[];
@@ -213,7 +237,7 @@ async function getUserList(searchParams: URLSearchParams) {
     skillCountMap[row.user_id as number] = row.skill_count as number;
   }
 
-  // 查每个用户的测评次数
+  // 查每个用户的测评次数（无参数，使用直接查询）
   const assessCountRows = await execSql(
     `SELECT user_id, COUNT(*)::int as count FROM assessment_results GROUP BY user_id`
   ) as Record<string, unknown>[];
