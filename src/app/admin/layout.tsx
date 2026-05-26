@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: '/admin/users', label: '用户看板', icon: '👥' },
   { href: '/admin/skills', label: '技能管理', icon: '🔗' },
   { href: '/admin/analytics', label: '行为看板', icon: '📊' },
+  { href: '/admin/diagnostics', label: '网站诊断', icon: '🔍' },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -15,6 +16,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/users': '用户数据看板',
   '/admin/skills': '技能关系图管理',
   '/admin/analytics': '行为数据看板',
+  '/admin/diagnostics': '网站诊断',
 };
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
