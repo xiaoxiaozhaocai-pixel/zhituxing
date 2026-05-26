@@ -1,7 +1,10 @@
+# A. 完整新文件：`src/components/CookieConsent.tsx`
+
+```tsx
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { X, Cookie, Settings } from 'lucide-react';
+import { X, Cookie, ChevronDown, Settings } from 'lucide-react';
 
 interface CookieCategories {
   necessary: boolean;
@@ -40,7 +43,7 @@ const CookieConsent = () => {
     }
   }, []);
 
-  // Listen for custom event to reopen preferences (triggered from footer link)
+  // Listen for custom event to reopen preferences
   useEffect(() => {
     const handleOpenPreferences = () => {
       setShowBanner(true);
@@ -57,18 +60,16 @@ const CookieConsent = () => {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const data: CookieConsentData = JSON.parse(stored);
-        if (data && data.accepted && data.categories) {
+        if (data.accepted && data.categories) {
           return true;
         }
       }
 
-      // Check cookie (SSR-friendly fallback)
-      if (typeof document !== 'undefined') {
-        const cookies = document.cookie.split(';');
-        const consentCookie = cookies.find(c => c.trim().startsWith(`${COOKIE_NAME}=`));
-        if (consentCookie) {
-          return true;
-        }
+      // Check cookie
+      const cookies = document.cookie.split(';');
+      const consentCookie = cookies.find(c => c.trim().startsWith(`${COOKIE_NAME}=`));
+      if (consentCookie) {
+        return true;
       }
 
       return false;
@@ -88,7 +89,7 @@ const CookieConsent = () => {
       // Save to localStorage
       localStorage.setItem(STORAGE_KEY, JSON.stringify(consentData));
 
-      // Save to cookie (so SSR can detect on next visit)
+      // Save to cookie
       document.cookie = `${COOKIE_NAME}=1; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
 
       setShowBanner(false);
@@ -142,12 +143,10 @@ const CookieConsent = () => {
         className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-blue-100 shadow-2xl transition-transform duration-300 ease-in-out ${
           showBanner ? 'translate-y-0' : 'translate-y-full'
         }`}
-        role="region"
-        aria-label="Cookie 同意横幅"
       >
         <div className="max-w-4xl mx-auto p-4 md:p-6">
           <div className="flex items-start gap-3 mb-3">
-            <Cookie className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" aria-hidden="true" />
+            <Cookie className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-1">
                 🍪 我们使用 Cookie 提升您的体验
@@ -156,7 +155,7 @@ const CookieConsent = () => {
                 职途星使用必要 Cookie 维持登录与安全，并希望使用分析 Cookie 帮助我们改进产品。
                 您可以选择"全部接受"或仅保留必要功能。详情请查看
                 <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline mx-1">
-                  《隐私政策》
+                  隐私政策
                 </a>
                 。
               </p>
@@ -164,8 +163,7 @@ const CookieConsent = () => {
             <button
               onClick={() => setShowBanner(false)}
               className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
-              aria-label="关闭 Cookie 横幅"
-              type="button"
+              aria-label="关闭"
             >
               <X className="w-5 h-5" />
             </button>
@@ -174,21 +172,18 @@ const CookieConsent = () => {
           <div className="flex flex-wrap items-center gap-3 mt-4">
             <button
               onClick={handleAcceptNecessary}
-              type="button"
               className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border-2 border-blue-600 rounded-lg hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               仅必要
             </button>
             <button
               onClick={() => setShowDetails(true)}
-              type="button"
               className="px-4 py-2 text-sm font-medium text-blue-600 bg-white border-2 border-blue-600 rounded-lg hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               查看详情
             </button>
             <button
               onClick={handleAcceptAll}
-              type="button"
               className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
             >
               全部接受（推荐）
@@ -199,19 +194,18 @@ const CookieConsent = () => {
 
       {/* Details Modal */}
       {showDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Cookie 偏好设置">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-blue-600" aria-hidden="true" />
+                  <Settings className="w-5 h-5 text-blue-600" />
                   <h3 className="text-lg font-semibold text-gray-900">Cookie 偏好设置</h3>
                 </div>
                 <button
                   onClick={() => setShowDetails(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
-                  aria-label="关闭偏好设置"
-                  type="button"
+                  aria-label="关闭"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -237,8 +231,6 @@ const CookieConsent = () => {
                         type="checkbox"
                         checked={true}
                         disabled
-                        readOnly
-                        aria-label="必要 Cookie 始终启用"
                         className="w-5 h-5 rounded border-gray-300 bg-blue-100 cursor-not-allowed"
                       />
                     </div>
@@ -259,7 +251,6 @@ const CookieConsent = () => {
                         type="checkbox"
                         checked={selectedCategories.analytics}
                         onChange={() => toggleCategory('analytics')}
-                        aria-label="分析 Cookie 开关"
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -281,7 +272,6 @@ const CookieConsent = () => {
                         type="checkbox"
                         checked={selectedCategories.marketing}
                         onChange={() => toggleCategory('marketing')}
-                        aria-label="营销 Cookie 开关"
                         className="sr-only peer"
                       />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -293,14 +283,12 @@ const CookieConsent = () => {
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleSavePreferences}
-                  type="button"
                   className="flex-1 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   保存我的选择
                 </button>
                 <button
                   onClick={() => setShowDetails(false)}
-                  type="button"
                   className="px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   取消
@@ -315,3 +303,47 @@ const CookieConsent = () => {
 };
 
 export default CookieConsent;
+```
+
+# B. layout.tsx 改动 diff
+
+```diff
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -XX,XX +XX,XX @@
+         <FloatingMembershipButton />
+         {children}
+         <Footer />
++        <CookieConsent />
+       </ProfileGuideProvider>
+     </MembershipProvider>
+   </ToastProvider>
+```
+
+# C. Footer.tsx 改动 diff
+
+```diff
+--- a/src/components/Footer.tsx
++++ b/src/components/Footer.tsx
+@@ -XX,XX +XX,XX @@
+   <Link href="/contact" className="hover:text-blue-200 transition-colors">联系我们</Link>
++  <button
++    onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-preferences'))}
++    className="hover:text-blue-200 transition-colors cursor-pointer bg-transparent border-none p-0 text-blue-300/50 text-xs"
++  >
++    管理 Cookie 偏好
++  </button>
+ </div>
+```
+
+# D. 验证步骤 Checklist
+
+1. **首次访问验证**：清除 localStorage 和 cookies，刷新页面，确认底部弹出蓝色主题横幅，包含三个按钮（仅必要、查看详情、全部接受）
+
+2. **全部接受验证**：点击「全部接受（推荐）」，确认横幅消失，检查 localStorage 中 `cookie_consent_v1` 存在且 `categories` 中 `analytics` 和 `marketing` 均为 `true`，检查 cookie 中 `cookie_consent=1` 存在
+
+3. **仅必要验证**：清除存储后刷新，点击「仅必要」，确认横幅消失，检查 localStorage 中 `analytics` 和 `marketing` 均为 `false`
+
+4. **分类弹层验证**：点击「查看详情」，确认弹出模态框，必要 Cookie 为禁用状态（不可切换），分析/营销 Cookie 可切换，点击「保存我的选择」后按选择保存
+
+5. **再次访问与偏好管理验证**：确认已有存储时刷新不弹横幅；在 Footer 中点击「管理 Cookie 偏好」，确认重新弹出横幅并打开分类弹层

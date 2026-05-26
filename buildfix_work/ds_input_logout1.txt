@@ -1,0 +1,142 @@
+# 任务：分析 P0 安全 bug —— 退出登录后 /api/auth/me 仍返回 200
+
+## 现象
+用户点击"退出登录"后，访问 `/api/auth/me` 仍然返回 200 + 完整用户信息。
+风险：会话固定 / cookie 复用 —— "退出"按钮等于装饰品。
+
+## 测试方式（curl 端到端）
+```bash
+# 登录（保存 cookie）
+curl -s -c /tmp/ck.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"...","password":"..."}'
+# 注销
+curl -s -b /tmp/ck.txt -c /tmp/ck.txt -X POST http://localhost:3000/api/auth/logout
+# 关键：注销后 me 必须返 401，但目前返 200
+curl -s -b /tmp/ck.txt http://localhost:3000/api/auth/me -w "After logout HTTP:%{http_code}\n"
+```
+
+## 当前代码
+
+### src/app/api/auth/logout/route.ts
+```ts
+export const dynamic = 'force-dynamic';
+import { NextResponse } from 'next/server';
+import { clearAuthCookies } from '@/lib/auth-cookies';
+
+export async function POST() {
+  try {
+    const response = NextResponse.json({ success: true, message: '已退出登录' });
+    clearAuthCookies(response);
+    return response;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return NextResponse.json({ error: '退出失败' }, { status: 500 });
+  }
+}
+```
+
+### src/app/api/auth/me/route.ts
+```ts
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: Request) {
+  try {
+    const cookieHeader = request.headers.get('cookie') || '';
+    const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
+    const token = tokenMatch ? tokenMatch[1] : null;
+
+    if (!token) {
+      return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      return NextResponse.json({ error: '认证失败' }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.user_metadata?.phone || user.phone || null,
+        nickname: user.user_metadata?.nickname || '用户' + (user.email?.split('@')[0]?.slice(-4) || '')
+      }
+    });
+  } catch (err) {
+    console.error('[auth/me] Error:', err);
+    return NextResponse.json({ error: '服务器错误' }, { status: 500 });
+  }
+}
+```
+
+### src/lib/auth-cookies.ts
+```ts
+import { NextResponse } from 'next/server';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+};
+
+export function setAuthCookies(
+  response: NextResponse,
+  accessToken: string,
+  refreshToken: string,
+  expiresAt: number
+): void {
+  const now = Math.floor(Date.now() / 1000);
+  const expiresIn = Math.max(expiresAt - now, 3600);
+  const maxAge = 30 * 24 * 60 * 60;
+
+  response.cookies.set('sb-access-token', accessToken, {
+    ...COOKIE_OPTIONS,
+    maxAge: expiresIn,
+  });
+  response.cookies.set('sb-refresh-token', refreshToken, {
+    ...COOKIE_OPTIONS,
+    maxAge: maxAge,
+  });
+}
+
+export function clearAuthCookies(response: NextResponse): void {
+  response.cookies.set('sb-access-token', '', { ...COOKIE_OPTIONS, maxAge: 0 });
+  response.cookies.set('sb-refresh-token', '', { ...COOKIE_OPTIONS, maxAge: 0 });
+}
+
+export function parseAccessTokenFromCookie(headers: Headers): string | null {
+  const cookieHeader = headers.get('cookie') || '';
+  const match = cookieHeader.match(/sb-access-token=([^;]+)/);
+  return match ? match[1] : null;
+}
+```
+
+### src/lib/auth.ts （节选）
+使用 `getSupabaseAdmin()` (service role) + `supabase.auth.getUser(accessToken)` 验证。
+
+### src/app/api/auth/login/route.ts （节选）
+使用 `supabase.auth.signInWithPassword` 登录，然后 `setAuthCookies` 写入 access/refresh token。
+Supabase client 使用 `SUPABASE_SERVICE_ROLE_KEY`（service role）。
+
+## 请你给出：
+1. **根因分析**：为什么注销后 /api/auth/me 仍能返回 200？是 cookie 没清干净，还是 JWT token 在 Supabase 服务端仍然有效？
+2. **最小改动方案**：必须满足三个要求
+   - ① cookies.delete 两个 token（access + refresh）
+   - ② 调用 supabase.auth.signOut() 让服务端 session 失效（注意：service-role client 调 signOut 是否会让该用户的所有 session 失效？最佳实践是怎样？）
+   - ③ /api/auth/me 真正校验 token 有效性（当前已经在调 getUser，是否够？）
+3. **完整修改后的代码**：logout/route.ts 完整新代码（**不要动 login/register**）。如果 me/route.ts 也需要小调整，一并给出。
+4. **验证步骤**：按上面 curl 流程，验证注销后 me 返 401。
+
+请用简洁的中文 markdown 回答，代码完整可粘贴。

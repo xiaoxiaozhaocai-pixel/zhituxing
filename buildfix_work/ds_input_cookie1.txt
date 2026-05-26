@@ -1,0 +1,98 @@
+你是 Next.js 16 (App Router) + React + Tailwind CSS 资深前端工程师。
+请为「职途星」站点编写一个符合 PIPL/GDPR 合规要求的 Cookie 同意横幅组件，输出可直接落盘的完整代码 + diff。
+
+============================
+【一、功能要求（硬性）】
+============================
+1. 首次访问展示：底部 fixed 横幅
+2. 三个按钮：
+   - 「全部接受（推荐）」——主按钮，蓝色高亮 bg-blue-600
+   - 「仅必要」——次要按钮（白底蓝字 outline）
+   - 「查看详情」——次要按钮，点开同页内的分类弹层
+3. 同意分类（PIPL）：
+   - 必要（disabled，不可关闭，写明"维持登录与安全"）
+   - 分析（toggle，可选）
+   - 营销（toggle，可选）
+4. 持久化：
+   - localStorage key = `cookie_consent_v1`，value = JSON `{accepted: boolean, categories: {necessary:true, analytics:boolean, marketing:boolean}, timestamp: number}`
+   - 普通 cookie `cookie_consent=1; path=/; max-age=15552000; SameSite=Lax`（180 天）
+5. 再次访问：localStorage 或 cookie 任一存在即不弹
+6. 页脚加链接「管理 Cookie 偏好」，点击触发 `window.dispatchEvent(new CustomEvent('open-cookie-preferences'))`，组件 useEffect 监听该事件后重置 state 并打开横幅
+
+============================
+【二、UI / 风格要求（硬性）】
+============================
+- Tailwind 蓝白配色（参考 #1E3A8A、bg-blue-600、text-blue-600）
+- **严禁任何 dark: 类名**（项目禁用暗色主题）
+- 底部 fixed，z-50
+- 移动端友好（max-w-4xl mx-auto，flex-wrap gap-3，p-4 md:p-6）
+- CSS transition 从底部滑入（translate-y-full → translate-y-0，duration-300）
+- 分类弹层用纯 div 实现，不要额外依赖
+
+============================
+【三、技术要求（硬性）】
+============================
+- `'use client'` 顶部
+- 处理 SSR 水合：useState 初始 false → useEffect 内 mount 后再判断（避免 hydration mismatch）
+- localStorage 全 try/catch 包裹
+- **严禁引入新 npm 包**（项目已有 lucide-react 可用：X / Cookie / ChevronDown / Settings）
+- 纯 button + Tailwind 即可（不强制用 Shadcn Button）
+- 不要写 Footer 完整版本，只输出"加链接的 diff"
+
+============================
+【四、文案（按这个写）】
+============================
+横幅标题：🍪 我们使用 Cookie 提升您的体验
+横幅正文：
+  职途星使用必要 Cookie 维持登录与安全，并希望使用分析 Cookie 帮助我们改进产品。
+  您可以选择"全部接受"或仅保留必要功能。详情请查看《[隐私政策](/privacy)》。
+
+分类弹层：
+- 必要 Cookie（始终启用）：用于维持登录状态、会话安全、CSRF 防护。这是网站正常运行所必需的。
+- 分析 Cookie（可选）：帮助我们了解访客如何使用网站，用于改进产品体验。
+- 营销 Cookie（可选）：用于个性化推荐和广告投放，目前职途星暂未启用。
+
+按钮（从左到右）：[仅必要]  [查看详情]  [全部接受（推荐）]
+弹层内增加：[保存我的选择]
+
+============================
+【五、需要你输出的内容】
+============================
+A. **完整新文件**：`src/components/CookieConsent.tsx`（覆盖现有同名文件，现有文件是简陋两按钮 + 暗色主题版本，需要整体重写）
+B. **layout.tsx 改动 diff**：当前 layout.tsx 已经 import 了 `CookieConsent` 但**没有 JSX 挂载**，你只需要给出在 `<Footer />` 之后插入 `<CookieConsent />` 的 unified diff
+C. **Footer.tsx 改动 diff**：在底栏链接区（已有「数据来源 | 隐私政策 | 用户协议 | 联系我们」）后追加一个 button「管理 Cookie 偏好」，点击触发 `window.dispatchEvent(new CustomEvent('open-cookie-preferences'))`，给出 unified diff
+D. **验证步骤**：列出 5 步本地 prod 验证 checklist
+
+============================
+【六、现有 src/app/layout.tsx body 关键部分】
+============================
+```tsx
+<Providers>
+  <ToastProvider>
+    <MembershipProvider>
+      <ProfileGuideProvider>
+        <Navbar />
+        <FreeQuotaBadge />
+        <FloatingMembershipButton />
+        {children}
+        <Footer />
+        {/* ← 这里需要挂载 <CookieConsent /> */}
+      </ProfileGuideProvider>
+    </MembershipProvider>
+  </ToastProvider>
+</Providers>
+```
+
+============================
+【七、现有 Footer.tsx 底栏链接区代码片段】
+============================
+```tsx
+<div className="flex items-center gap-4 text-blue-300/50 text-xs">
+  <Link href="/data-source" className="hover:text-blue-200 transition-colors">数据来源</Link>
+  <Link href="/privacy" className="hover:text-blue-200 transition-colors">隐私政策</Link>
+  <Link href="/terms" className="hover:text-blue-200 transition-colors">用户协议</Link>
+  <Link href="/contact" className="hover:text-blue-200 transition-colors">联系我们</Link>
+</div>
+```
+
+请严格按 A/B/C/D 顺序输出，A 部分一定是完整 .tsx 代码（开头 'use client'），B/C 部分用 unified diff 格式（带 @@ 行号或上下文）。D 部分 5 条 checklist 即可，不要发散。

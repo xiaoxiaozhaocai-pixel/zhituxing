@@ -107,6 +107,7 @@ export default function RootLayout({
                 <FloatingMembershipButton />
                 {children}
                 <Footer />
+                <CookieConsent />
               </ProfileGuideProvider>
             </MembershipProvider>
           </ToastProvider>

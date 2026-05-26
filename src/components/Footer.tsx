@@ -99,6 +99,13 @@ export default function Footer() {
             <Link href="/privacy" className="hover:text-blue-200 transition-colors">隐私政策</Link>
             <Link href="/terms" className="hover:text-blue-200 transition-colors">用户协议</Link>
             <Link href="/contact" className="hover:text-blue-200 transition-colors">联系我们</Link>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-preferences'))}
+              className="hover:text-blue-200 transition-colors cursor-pointer bg-transparent border-0 p-0 m-0 text-blue-300/50 text-xs"
+            >
+              管理 Cookie 偏好
+            </button>
           </div>
         </div>
         {/* 免责声明 */}

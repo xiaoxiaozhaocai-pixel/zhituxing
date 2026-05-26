@@ -1,0 +1,99 @@
+## 任务A：精确字符串替换方案
+
+以下9条替换对，可直接用于sed或Python脚本：
+
+```json
+[
+  {
+    "old_string": "{ name: 'job_descriptions', min: 1000, display: '岗位数据' }",
+    "new_string": "{ name: 'public.job_descriptions', min: 1000, display: '岗位数据' }"
+  },
+  {
+    "old_string": "{ name: 'skill_taxonomy', min: 100, display: '技能分类' }",
+    "new_string": "{ name: 'public.skill_taxonomy', min: 100, display: '技能分类' }"
+  },
+  {
+    "old_string": "{ name: 'skill_relations', min: 100, display: '技能关系' }",
+    "new_string": "{ name: 'public.skill_relations', min: 100, display: '技能关系' }"
+  },
+  {
+    "old_string": "{ name: 'career_paths', min: 10, display: '职业路径' }",
+    "new_string": "{ name: 'public.career_paths', min: 10, display: '职业路径' }"
+  },
+  {
+    "old_string": "{ name: 'interview_questions', min: 10, display: '面试题库' }",
+    "new_string": "{ name: 'public.interview_questions', min: 10, display: '面试题库' }"
+  },
+  {
+    "old_string": "{ name: 'skill_assessments', min: 10, display: '技能测评' }",
+    "new_string": "{ name: 'public.skill_assessments', min: 10, display: '技能测评' }"
+  },
+  {
+    "old_string": "{ name: 'learning_resources', min: 10, display: '学习资源' }",
+    "new_string": "{ name: 'public.learning_resources', min: 10, display: '学习资源' }"
+  },
+  {
+    "old_string": "{ name: 'articles', min: 1, display: '文章内容' }",
+    "new_string": "{ name: 'public.articles', min: 1, display: '文章内容' }"
+  },
+  {
+    "old_string": "{ name: 'user_profiles', min: 0, display: '用户数据' }",
+    "new_string": "{ name: 'public.user_profiles', min: 0, display: '用户数据' }"
+  }
+]
+```
+
+**sed 批量替换示例**（将上述JSON中的old_string替换为new_string）：
+```bash
+sed -i "s/{ name: 'job_descriptions', min: 1000, display: '岗位数据' }/{ name: 'public.job_descriptions', min: 1000, display: '岗位数据' }/g" src/app/api/admin/diagnostics/route.ts
+# ... 重复其他8条
+```
+
+## 任务B：品牌文案缺失原因分析
+
+### 可能原因
+
+1. **SSR/SSG 渲染差异**：首页可能通过服务端渲染（SSR）或静态生成（SSG）输出，而"职途星"字符串可能被编译/压缩工具（如Terser）在构建时移除（如果它仅作为注释或未使用的变量存在）。
+
+2. **国际化/多语言配置**：如果项目使用了i18n，首页可能根据请求头或cookie返回了其他语言版本，而其他语言版本中不包含"职途星"。
+
+3. **动态内容注入**：品牌文案可能通过客户端JavaScript动态注入（如`document.title`或`innerHTML`），而`fetch('/')`获取的是初始HTML骨架，不包含动态渲染后的内容。
+
+4. **CDN/缓存层**：Zeabur或上游CDN可能缓存了旧版本首页，或返回了错误页面（如404、503）的HTML，其中不包含品牌文案。
+
+5. **构建产物缺失**：`next build`时，如果品牌文案所在的组件被错误地排除（如条件编译、环境变量控制），则生产环境HTML中不会包含该字符串。
+
+### 验证步骤
+
+1. **直接curl验证**：
+   ```bash
+   curl -s https://zhituxing.zeabur.app/ | grep -o '职途星' | wc -l
+   ```
+   确认返回0。
+
+2. **检查响应头**：
+   ```bash
+   curl -I https://zhituxing.zeabur.app/
+   ```
+   查看`x-powered-by`、`cache-control`等头，判断是否命中缓存。
+
+3. **查看完整HTML结构**：
+   ```bash
+   curl -s https://zhituxing.zeabur.app/ | head -100
+   ```
+   检查`<title>`、`<meta>`、`<h1>`等关键位置是否包含品牌信息。
+
+4. **对比本地开发环境**：
+   在本地运行`npm run dev`，访问`http://localhost:3000/`，检查HTML中是否包含"职途星"。
+
+5. **检查构建产物**：
+   ```bash
+   grep -r '职途星' .next/ --include='*.html' --include='*.js'
+   ```
+   确认构建产物中是否存在该字符串。
+
+6. **检查环境变量**：
+   查看`.env.production`或Zeabur环境变量中是否有`NEXT_PUBLIC_*`相关配置影响品牌文案的显示。
+
+7. **检查组件渲染逻辑**：
+   定位首页组件（如`pages/index.tsx`或`app/page.tsx`），确认品牌文案的渲染条件（如`process.env.NEXT_PUBLIC_BRAND`等）。
