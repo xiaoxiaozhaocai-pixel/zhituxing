@@ -1,32 +1,40 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
-import { execSql } from '@/lib/exec-sql';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'edge';
+
+/**
+ * 检查用户是否为admin
+ * 从环境变量 ADMIN_USER_IDS 读取admin的UUID列表
+ */
+function isAdminUser(userId: string): boolean {
+  const adminIds = process.env.ADMIN_USER_IDS;
+  if (!adminIds) {
+    console.warn('[admin/auth] ADMIN_USER_IDS not configured');
+    return false;
+  }
+  const adminList = adminIds.split(',').map(id => id.trim().toLowerCase());
+  return adminList.includes(userId.toLowerCase());
+}
 
 export async function GET(request: Request) {
   try {
     const userId = await getAuthenticatedUserId(request);
     if (!userId) {
-      return NextResponse.json({ error: '未登录' }, { status: 401 });
+      return NextResponse.json({ isAdmin: false, error: '未登录' }, { status: 401 });
     }
 
-    // 使用参数化查询防止SQL注入
-    const numericUserId = Number(userId);
-    if (isNaN(numericUserId)) {
-      return NextResponse.json({ error: '无效的用户ID' }, { status: 400 });
-    }
+    // 直接使用UUID格式的userId，不再转Number
+    const admin = isAdminUser(userId);
     
-    const result = await execSql(
-      `SELECT is_admin FROM user_profiles WHERE user_id = %L`,
-      numericUserId
-    ) as Array<Record<string, unknown>>;
-
-    const isAdmin = (result?.[0]?.is_admin as boolean) === true;
-    return NextResponse.json({ isAdmin, userId: numericUserId });
+    return NextResponse.json({ 
+      isAdmin: admin, 
+      userId: userId 
+    });
   } catch (error) {
     console.error('[admin/auth] Error:', error);
-    return NextResponse.json({ error: '权限校验失败' }, { status: 500 });
+    return NextResponse.json({ isAdmin: false, error: '权限校验失败' }, { status: 500 });
   }
 }

@@ -5,15 +5,21 @@ import { execSql, escapeParam } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
-// Admin权限校验
+// Admin权限校验 - 使用环境变量 ADMIN_USER_IDS
 async function checkAdmin(request: NextRequest): Promise<boolean> {
   const userId = await getAuthenticatedUserId(request);
   if (!userId) return false;
-  const rows = await execSql(
-    `SELECT is_admin FROM user_profiles WHERE user_id = ${Number(userId)}`
-  ) as Record<string, unknown>[];
-  return rows.length > 0 && rows[0].is_admin === true;
+  
+  const adminIds = process.env.ADMIN_USER_IDS;
+  if (!adminIds) {
+    console.warn('[admin/skills] ADMIN_USER_IDS not configured');
+    return false;
+  }
+  
+  const adminList = adminIds.split(',').map(id => id.trim().toLowerCase());
+  return adminList.includes(userId.toLowerCase());
 }
+
 
 // GET: 查询技能分类/关系/可视化数据
 export async function GET(request: NextRequest) {

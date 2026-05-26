@@ -5,18 +5,21 @@ import { execSql } from '@/lib/exec-sql';
 
 export const runtime = 'edge';
 
-// 管理员权限校验
-async function checkAdmin(request: NextRequest): Promise<number | null> {
+// 管理员权限校验 - 使用环境变量 ADMIN_USER_IDS
+async function checkAdmin(request: NextRequest): Promise<string | null> {
   const authUserId = await getAuthenticatedUserId(request);
-    const userId = authUserId ? parseInt(authUserId) : 0;
-  if (!userId) return null;
-  // 使用参数化查询防止SQL注入
-  const rows = await execSql(
-    `SELECT is_admin FROM user_profiles WHERE user_id = %L`,
-    userId
-  ) as Record<string, unknown>[];
-  if (!rows?.length || !rows[0].is_admin) return null;
-  return userId;
+  if (!authUserId) return null;
+  
+  const adminIds = process.env.ADMIN_USER_IDS;
+  if (!adminIds) {
+    console.warn('[admin/users] ADMIN_USER_IDS not configured');
+    return null;
+  }
+  
+  const adminList = adminIds.split(',').map(id => id.trim().toLowerCase());
+  if (!adminList.includes(authUserId.toLowerCase())) return null;
+  
+  return authUserId;
 }
 
 // GET /api/admin/users — 用户列表 + 统计 + 详情

@@ -4,15 +4,22 @@ import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql } from '@/lib/exec-sql';
 
 // 管理员权限校验
-async function checkAdmin(request: NextRequest): Promise<number | null> {
+async function checkAdmin(request: NextRequest): Promise<string | null> {
   const userId = await getAuthenticatedUserId(request);
   if (!userId) return null;
-  const result = await execSql(
-    `SELECT is_admin FROM user_profiles WHERE user_id = ${Number(userId)}`
-  ) as Array<Record<string, unknown>>;
-  if (!result?.length || (result[0].is_admin as boolean) !== true) return null;
-  return Number(userId);
+  
+  const adminIds = process.env.ADMIN_USER_IDS;
+  if (!adminIds) {
+    console.warn('[admin/diagnostics] ADMIN_USER_IDS not configured');
+    return null;
+  }
+  
+  const adminList = adminIds.split(',').map(id => id.trim().toLowerCase());
+  if (!adminList.includes(userId.toLowerCase())) return null;
+  
+  return userId;
 }
+
 
 // 带超时的fetch
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {
