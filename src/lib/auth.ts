@@ -1,165 +1,135 @@
-import { NextRequest } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+/**
+ * 统一认证工具
+ * 从 JWT token 验证用户身份，替代不安全的 x-user-id header
+ * 
+ * 漏洞修复：x-user-id 认证绕过
+ * 原问题：攻击者可伪造 x-user-id header 冒充任意用户
+ * 修复方案：从 cookie 读取 JWT token 并用 Supabase 验证
+ */
 
-const JWT_SECRET = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET || '';
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseAdmin } from './supabase';
+import { parseAccessTokenFromCookie } from './auth-cookies';
 
-interface AuthResult {
-  userId: string;
-  authMethod: 'jwt' | 'header';
+export interface AuthUser {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  nickname: string | null;
+  userType: 'free' | 'member';
 }
 
 /**
- * JWT双认证中间件
- * 1. 优先 sb-access-token cookie（Supabase Auth session）
- * 2. 回退 JWT Bearer Token
- * 3. 最后回退 x-user-id header
- * 排除test_前缀（安全后门已关闭）
+ * 获取认证用户
+ * 优先从 JWT token 验证，生产环境强制验证
+ * 开发环境允许 x-user-id fallback（仅用于开发测试）
  */
-export async function authenticateUser(request: NextRequest): Promise<AuthResult | null> {
-  // 1. 优先从 cookie 读取 sb-access-token（Supabase Auth session）
-  const accessTokenCookie = request.cookies.get('sb-access-token');
-  if (accessTokenCookie?.value) {
-    const userId = await verifySupabaseSession(accessTokenCookie.value);
-    if (userId && !userId.startsWith('test_')) {
-      return { userId, authMethod: 'jwt' };
+export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUser | null> {
+  // 1. 尝试从 cookie 获取并验证 token
+  const accessToken = parseAccessTokenFromCookie(request.headers);
+  
+  if (accessToken) {
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+      
+      if (error || !user) {
+        console.error('[auth] Token verification failed:', error?.message);
+        // Token 无效，拒绝访问
+        return null;
+      }
+      
+      // 从 user_profiles 获取用户类型
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('user_type, nickname')
+        .eq('user_id', user.id)
+        .single();
+      
+      return {
+        id: user.id,
+        email: user.email,
+        phone: user.user_metadata?.phone || user.phone || null,
+        nickname: profile?.nickname || user.user_metadata?.nickname || null,
+        userType: profile?.user_type === 'member' ? 'member' : 'free',
+      };
+    } catch (err) {
+      console.error('[auth] Unexpected error:', err);
+      return null;
     }
   }
-
-  // 2. 回退 JWT Bearer Token
-  const authHeader = request.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    const jwtResult = verifyJWT(token);
-    if (jwtResult) {
-      if (jwtResult.startsWith('test_')) return null;
-      return { userId: jwtResult, authMethod: 'jwt' };
+  
+  // 2. 开发环境 fallback 到 x-user-id（仅开发环境）
+  if (process.env.NODE_ENV !== 'production') {
+    const headerUserId = request.headers.get('x-user-id');
+    if (headerUserId) {
+      console.warn('[auth] WARNING: Using x-user-id fallback in non-production environment');
+      return {
+        id: headerUserId,
+        email: null,
+        phone: null,
+        nickname: null,
+        userType: 'free',
+      };
     }
   }
-
-  // 3. 最后回退 x-user-id header
-  // 开发/测试模式：允许任意 x-user-id，不验证 user_profiles
-  const headerUserId = request.headers.get('x-user-id');
-  if (headerUserId) {
-    if (headerUserId.startsWith('test_')) return null;
-    // 直接信任 x-user-id header，不验证用户是否存在
-    // 这允许测试和跨平台调用
-    return { userId: headerUserId, authMethod: 'header' };
-  }
-
+  
   return null;
 }
 
 /**
- * 必须认证 — 未认证返回401 Response
+ * 获取认证用户ID（简化版）
  */
-export async function requireAuth(request: NextRequest): Promise<AuthResult | Response> {
-  const result = await authenticateUser(request);
-  if (!result) {
-    return new Response(JSON.stringify({ error: '请先登录', code: 401 }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-  return result;
+export async function getAuthenticatedUserId(request: NextRequest): Promise<string | null> {
+  const user = await getAuthenticatedUser(request);
+  return user?.id || null;
 }
 
 /**
- * 验证JWT Token（HMAC-SHA256）
+ * 获取认证用户（包含用户类型，用于需要权限判断的场景）
  */
-function verifyJWT(token: string): string | null {
-  if (!JWT_SECRET) return null;
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
+export async function getAuthenticatedUserWithType(request: NextRequest): Promise<{ userId: string; userType: string } | null> {
+  const user = await getAuthenticatedUser(request);
+  if (!user) return null;
+  return { userId: user.id, userType: user.userType };
+}
 
-    const crypto = require('crypto');
-    const signedContent = parts[0] + '.' + parts[1];
-    const expectedSig = crypto
-      .createHmac('sha256', JWT_SECRET)
-      .update(signedContent)
-      .digest('base64url');
-
-    if (expectedSig !== parts[2]) return null;
-
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64url').toString('utf-8')
+/**
+ * 快速验证函数，用于需要立即返回401的场景
+ * 返回 { user, userId } 或直接返回 NextResponse
+ */
+export async function requireAuth(request: NextRequest): Promise<{ user: AuthUser; userId: string } | NextResponse> {
+  const user = await getAuthenticatedUser(request);
+  
+  if (!user) {
+    return NextResponse.json(
+      { error: '请先登录' },
+      { status: 401 }
     );
-
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
-
-    return payload.sub || null;
-  } catch {
-    return null;
   }
+  
+  return { user, userId: user.id };
 }
 
 /**
- * 验证 Supabase Session Token
- * 通过 Supabase Auth API 验证 access token 并返回 user_id
+ * 检查用户是否为会员
  */
-async function verifySupabaseSession(accessToken: string): Promise<string | null> {
-  try {
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase.auth.getUser(accessToken);
-    
-    if (error || !data.user) {
-      return null;
-    }
-    
-    return data.user.id;
-  } catch {
-    return null;
+export async function requireMember(request: NextRequest): Promise<{ user: AuthUser; userId: string } | NextResponse> {
+  const user = await getAuthenticatedUser(request);
+  
+  if (!user) {
+    return NextResponse.json(
+      { error: '请先登录' },
+      { status: 401 }
+    );
   }
-}
-
-/**
- * 生成JWT Token
- */
-export function generateJWT(userId: string, expiresInHours: number = 72): string {
-  if (!JWT_SECRET) throw new Error('JWT_SECRET not configured');
-
-  const crypto = require('crypto');
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-  const now = Math.floor(Date.now() / 1000);
-  const payload = Buffer.from(JSON.stringify({
-    sub: userId,
-    iat: now,
-    exp: now + expiresInHours * 3600
-  })).toString('base64url');
-
-  const signature = crypto
-    .createHmac('sha256', JWT_SECRET)
-    .update(header + '.' + payload)
-    .digest('base64url');
-
-  return header + '.' + payload + '.' + signature;
-}
-
-/**
- * 验证用户是否存在于user_profiles表
- */
-async function verifyUserExists(userId: string): Promise<boolean> {
-  try {
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('user_id')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
-
-    if (error) {
-      console.error('[Auth] User verification error:', error);
-      return false;
-    }
-    
-    if (!data) {
-      console.warn('[Auth] User not found in user_profiles:', userId);
-    }
-    
-    return !!data;
-  } catch (e) {
-    console.error('[Auth] User verification failed:', e);
-    return false;
+  
+  if (user.userType !== 'member') {
+    return NextResponse.json(
+      { error: '此功能仅对会员开放' },
+      { status: 403 }
+    );
   }
+  
+  return { user, userId: user.id };
 }
