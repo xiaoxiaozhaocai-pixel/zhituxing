@@ -31,7 +31,7 @@ const moreNavItems = [
 ];
 
 export default function Navbar() {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
   const { isMember, membershipPlan } = useMembership();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -205,14 +205,19 @@ export default function Navbar() {
               )}
 
               {/* Auth Buttons */}
-              {user ? (
+              {authLoading ? (
+                <div className="flex items-center space-x-2" aria-hidden="true">
+                  <div className="w-20 h-9 bg-white/10 rounded-lg animate-pulse" />
+                  <div className="w-8 h-8 bg-white/10 rounded-full animate-pulse" />
+                </div>
+              ) : user ? (
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
                     className="flex items-center space-x-2 text-sm font-medium text-blue-100 hover:text-white hover:bg-white/10"
                     onClick={goToProfile}
                   >
-                    <span>个人中心</span>
+                    <span>{user.nickname || '个人中心'}</span>
                   </Button>
 
                   <button onClick={goToProfile}>
@@ -288,7 +293,9 @@ export default function Navbar() {
 
               {/* Auth Buttons */}
               <div className="pt-4 border-t border-blue-700/50 space-y-2">
-                {user ? (
+                {authLoading ? (
+                  <div className="w-full h-12 bg-white/10 rounded-lg animate-pulse" aria-hidden="true" />
+                ) : user ? (
                   <>
                     <button
                       onClick={() => {
@@ -298,7 +305,7 @@ export default function Navbar() {
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-base font-medium bg-white/20 text-white"
                     >
                       <User className="w-5 h-5" />
-                      个人中心
+                      {user.nickname || '个人中心'}
                     </button>
                     <Button
                       variant="ghost"

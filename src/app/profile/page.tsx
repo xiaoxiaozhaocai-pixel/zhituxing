@@ -458,8 +458,8 @@ function MessagesPanel({ userId }: { userId: string }) {
         headers: { 'x-user-id': userId }
       });
       const data = await res.json();
-      if (data.success && data.data) {
-        setNotifications(data.data.notifications || []);
+      if (data.success && Array.isArray(data.data)) {
+        setNotifications(data.data);
       } else {
         setNotifications([]);
       }
@@ -1176,7 +1176,8 @@ function ProfileContent() {
   const handleLogout = async () => {
     setShowLogoutModal(false);
     await logout();
-    router.push('/');
+    // 使用 window.location.href 硬跳转，避免被 useEffect 中 (!user → /auth) 的重定向竞争
+    window.location.href = '/';
   };
 
   if (loading) {
