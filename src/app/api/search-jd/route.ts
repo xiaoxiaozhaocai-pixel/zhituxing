@@ -70,8 +70,9 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
   try {
     type DbResponse = { data: Record<string, unknown>[] | null; error: { message: string } | null };
     const result = await withTimeout(
-      supabase
+      (supabase as any)
         .from('job_descriptions')
+        .or('is_synthetic.is.null,is_synthetic.eq.false')
         .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly, source_platform')
         .or('job_title.ilike.%' + query + '%,company.ilike.%' + query + '%,city.ilike.%' + query + '%')
         .limit(20) as unknown as Promise<DbResponse>,

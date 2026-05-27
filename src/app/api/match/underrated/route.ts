@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseAdmin();
 
     // 获取岗位数据
-    const { data: jobs, error } = await supabase
+    const { data: jobs, error } = await (supabase as any)
       .from('job_descriptions')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('id, job_title, city, industry, hard_skills, soft_skills, salary_min, salary_max')
       .limit(100);
 
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 计算每个岗位的匹配度
-    const matchResults = jobs.map((job) => {
+    const matchResults = (jobs as any[]).map((job: { hard_skills?: string[]; soft_skills?: string[]; job_title: string; city?: string; industry?: string; salary_min?: number; salary_max?: number }) => {
       const requiredSkills = [
         ...(job.hard_skills || []),
         ...(job.soft_skills || []),

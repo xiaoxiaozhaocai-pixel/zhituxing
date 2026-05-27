@@ -256,8 +256,9 @@ export async function GET(request: NextRequest) {
     // ===== 关键词搜索：核心查询合并 =====
     if (keyword) {
       const buildBaseQuery = () => {
-        let q = supabaseAdmin
+        let q = (supabaseAdmin as any)
           .from('job_descriptions')
+          .or('is_synthetic.is.null,is_synthetic.eq.false')
           .select(LIGHT_SELECT_FIELDS)
           .limit(500);
         if (industry && industry !== '全部') q = q.eq('industry', industry);
@@ -405,8 +406,9 @@ export async function GET(request: NextRequest) {
     }
 
     // ===== 无关键词：简单筛选查询 =====
-    let query = supabaseAdmin
+    let query = (supabaseAdmin as any)
       .from('job_descriptions')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('*', { count: 'exact' });
     
     if (industry && industry !== '全部') query = query.eq('industry', industry);
@@ -438,7 +440,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '查询失败' }, { status: 500 });
     }
     
-    const formattedData = data?.map(job => formatJob(job)) || [];
+    const formattedData = (data as any)?.map((job: any) => formatJob(job)) || [];
     
     // ============================================================
     // 安全处理：未登录用户过滤敏感字段

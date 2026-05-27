@@ -64,8 +64,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 查询匹配的岗位 - 使用 job_descriptions 表
-    const { data: jdData, error: jdError } = await supabase
+    const { data: jdData, error: jdError } = await (supabase as any)
       .from('job_descriptions')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('id, job_title, company, city, salary_range, education, experience, industry, hard_skills, soft_skills, tags, fresh_graduate_friendly')
       .limit(100);
 
@@ -183,15 +184,15 @@ export async function POST(request: NextRequest) {
         fresh_graduate_friendly: jd.fresh_graduate_friendly
       };
     })
-    .filter((m) => m.match_score > 0)
-    .sort((a, b) => b.match_score - a.match_score)
+    .filter((m: { match_score: number }) => m.match_score > 0)
+    .sort((a: { match_score: number }, b: { match_score: number }) => b.match_score - a.match_score)
     .slice(0, 10);
 
     // 如果指定了目标岗位，筛选相关岗位
     let finalMatches = matches;
     if (targetPosition && matches.length > 0) {
       const targetLower = targetPosition.toLowerCase();
-      const targetMatches = matches.filter((m) => {
+      const targetMatches = matches.filter((m: { job_title?: string }) => {
         const jobTitle = m.job_title?.toLowerCase() || '';
         return jobTitle.includes(targetLower) || targetLower.includes(jobTitle);
       });
@@ -243,8 +244,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 获取热门岗位 - 使用 job_descriptions 表
-    const { data: hotJobs, error } = await supabase
+    const { data: hotJobs, error } = await (supabase as any)
       .from('job_descriptions')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('id, job_title, company, city, salary_range, education, experience, industry, fresh_graduate_friendly')
       .order('created_at', { ascending: false })
       .limit(20);

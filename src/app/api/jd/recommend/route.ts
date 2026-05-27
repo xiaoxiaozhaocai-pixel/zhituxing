@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
 
-const supabase = getSupabaseAdmin();
-
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabaseAdmin();
     const userId = await getAuthenticatedUserId(request);
     const limit = parseInt(request.nextUrl.searchParams.get('limit') || '10');
 

@@ -8,8 +8,9 @@ export async function GET(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin();
 
     // 从job_descriptions表获取所有唯一的job_title
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await (supabaseAdmin as any)
       .from('job_descriptions')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('job_title')
       .not('job_title', 'is', null)
       .not('job_title', 'eq', '');
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 提取唯一岗位名称并去重
-    const uniqueJobs = [...new Set(data?.map(j => j.job_title).filter(Boolean) || [])];
+    const uniqueJobs = [...new Set((data as { job_title: string }[])?.map(j => j.job_title).filter(Boolean) || [])];
 
     return NextResponse.json({ 
       code: 200, 
