@@ -84,12 +84,12 @@ export default function MatchPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setResults(data.data || []);
-        setUserSkills(data.userSkills || []);
+        setResults(data.matches || []);
+        setUserSkills(data.user_skills || []);
         
         // 获取反向匹配数据
-        if (data.userSkills && data.userSkills.length > 0) {
-          fetchUnderratedJobs(data.userSkills);
+        if (data.user_skills && data.user_skills.length > 0) {
+          fetchUnderratedJobs(data.user_skills);
         }
       }
     } catch (err) {
