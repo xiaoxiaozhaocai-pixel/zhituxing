@@ -71,7 +71,8 @@ function AuthContent() {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  // 从URL获取邀请码
+  // 从URL获取邀请码和redirect参数
+  const redirectTo = searchParams.get('redirect') || '/';
   useEffect(() => {
     const code = searchParams.get('invite_code');
     if (code) {
@@ -84,12 +85,16 @@ function AuthContent() {
     }
   }, [searchParams]);
 
-  // 如果已登录，跳转到首页
+  // 如果已登录，跳转到来源页或首页
   useEffect(() => {
     if (user) {
-      router.push('/');
+      // 安全检查：redirect 必须是相对路径
+      const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+        ? redirectTo
+        : '/';
+      router.push(safeRedirect);
     }
-  }, [user, router]);
+  }, [user, router, redirectTo]);
 
   // 验证邮箱格式
   const validateEmail = (value: string): boolean => {
