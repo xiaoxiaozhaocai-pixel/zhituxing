@@ -37,7 +37,7 @@ export default function FavoritesPage() {
       const data = await res.json();
 
       if (data.success) {
-        setFavorites(data.data.favorites);
+        setFavorites(data.data || []);
       }
     } catch (error) {
       console.error('获取收藏失败:', error);

@@ -30,7 +30,7 @@ export const COMMON_CITIES = [
 /** C 端公开 JD 字段（不含 source_url/source_platform/raw_jd） */
 export const PUBLIC_JD_FIELDS = [
   'id', 'job_title', 'company', 'industry', 'city',
-  'salary_range', 'salary_min', 'salary_max', 'education', 'experience',
+  'salary_range', 'education', 'experience',
   'post_nature', 'responsibilities', 'hard_skills', 'soft_skills', 'tags',
   'fresh_graduate_friendly', 'graduate_friendly_level',
   'company_type', 'core_duty_module', 'major_require',

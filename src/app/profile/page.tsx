@@ -757,7 +757,7 @@ function FavoritesPanel({ userId }: { userId: string }) {
       });
       const data = await res.json();
       if (data.success && data.data) {
-        setFavorites(data.data.favorites || []);
+        setFavorites(Array.isArray(data.data) ? data.data : (data.data?.favorites || []));
       } else {
         setFavorites([]);
       }
