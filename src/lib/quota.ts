@@ -38,7 +38,7 @@ export const FeatureConfig: Record<FeatureType, {
   resume_optimize: { freeQuota: 0, memberOnly: false, requiresBaseReport: false }
 };
 
-async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('user_profiles')
@@ -55,7 +55,7 @@ async function getUserProfile(userId: string) {
   };
 }
 
-async function getUserQuotaFromDb(userId: string) {
+export async function getUserQuotaFromDb(userId: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('user_quotas')
