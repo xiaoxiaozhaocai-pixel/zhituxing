@@ -1,103 +1,103 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.COZE_PROJECT_DOMAIN_DEFAULT || 'https://zhituxing.zeabur.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
   const now = new Date();
 
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: siteUrl,
+      url: baseUrl,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 1,
     },
     {
-      url: `${siteUrl}/match`,
+      url: `${baseUrl}/match`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/assessment`,
+      url: `${baseUrl}/assessment`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/learning-path`,
+      url: `${baseUrl}/learning-path`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.7,
     },
     {
-      url: `${siteUrl}/skills-graph`,
+      url: `${baseUrl}/skills-graph`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.7,
     },
     {
-      url: `${siteUrl}/assistant`,
+      url: `${baseUrl}/assistant`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${siteUrl}/career-planning`,
+      url: `${baseUrl}/career-planning`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${siteUrl}/jobs-encyclopedia`,
+      url: `${baseUrl}/jobs-encyclopedia`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.5,
     },
     {
-      url: `${siteUrl}/membership`,
+      url: `${baseUrl}/membership`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
-      url: `${siteUrl}/faq`,
+      url: `${baseUrl}/faq`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.4,
     },
     {
-      url: `${siteUrl}/decision`,
+      url: `${baseUrl}/decision`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.6,
     },
     {
-      url: `${siteUrl}/contact`,
+      url: `${baseUrl}/contact`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.3,
     },
     {
-      url: `${siteUrl}/privacy`,
+      url: `${baseUrl}/privacy`,
       lastModified: now,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
-      url: `${siteUrl}/terms`,
+      url: `${baseUrl}/terms`,
       lastModified: now,
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
-      url: `${siteUrl}/feedback`,
+      url: `${baseUrl}/feedback`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.3,
     },
     {
-      url: `${siteUrl}/resume-optimize`,
+      url: `${baseUrl}/resume-optimize`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.5,
