@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('job_descriptions')
       .select('*')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .limit(limit);
 
     // 如果有目标岗位，按标题匹配
@@ -53,6 +54,7 @@ export async function GET(request: NextRequest) {
         const { data: jds, error } = await supabase
           .from('job_descriptions')
           .select('*')
+          .or('is_synthetic.is.null,is_synthetic.eq.false')
           .ilike('job_title', `%${targetPosition}%`)
           .limit(limit);
 
