@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
     // 使用 job_descriptions 表（jd_library 可能不存在）
     let query = (supabase as any)
       .from('job_descriptions')
-      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select(PUBLIC_JD_FIELDS)
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .limit(limit);
 
     // 如果有目标岗位，按标题匹配
@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
       try {
         const { data: jds, error } = await (supabase as any)
           .from('job_descriptions')
-          .or('is_synthetic.is.null,is_synthetic.eq.false')
           .select(PUBLIC_JD_FIELDS)
+          .or('is_synthetic.is.null,is_synthetic.eq.false')
           .ilike('job_title', `%${targetPosition}%`)
           .limit(limit);
 
