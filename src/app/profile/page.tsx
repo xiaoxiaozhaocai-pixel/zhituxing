@@ -810,7 +810,11 @@ function FavoritesPanel({ userId }: { userId: string }) {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900">{favorite.jobTitle}</h3>
-                    {favorite.company && <p className="text-sm text-gray-600">{favorite.company}</p>}
+                    {(() => {
+                      const fallback = [favorite.industry, favorite.company_type].filter(Boolean).join(' · ');
+                      const display = favorite.company || fallback;
+                      return display ? <p className="text-sm text-gray-600">{display}</p> : null;
+                    })()}
                     <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
                       {favorite.location && (
                         <span className="flex items-center gap-1">

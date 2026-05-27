@@ -10,6 +10,7 @@ export interface JdMatchData {
   match_score?: number;
   job_name?: string;
   company_name?: string;
+  company_type?: string;
   city?: string;
   salary_range?: string;
   skill_gaps?: string[];
@@ -98,7 +99,11 @@ export default function JdMatchCard({ data }: JdMatchCardProps) {
           <MatchRing score={matchScore} />
           <div className="text-center sm:text-left flex-1">
             {jobName && <div className="text-lg font-bold text-orange-700">{jobName}</div>}
-            {companyName && <div className="text-sm text-gray-600 mt-0.5">{companyName}</div>}
+            {(() => {
+              const fallback = [data.industry, data.company_type].filter(Boolean).join(' · ');
+              const display = companyName || fallback;
+              return display ? <div className="text-sm text-gray-600 mt-0.5">{display}</div> : null;
+            })()}
             <div className="flex items-center justify-center sm:justify-start gap-2 mt-1 text-sm text-gray-500">
               {city && <span>{city}</span>}
               {industry && <span>· {industry}</span>}

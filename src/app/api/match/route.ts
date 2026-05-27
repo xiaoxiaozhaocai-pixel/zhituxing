@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // 查询匹配的岗位 - 使用 job_descriptions 表
     const { data: jdData, error: jdError } = await (supabase as any)
       .from('job_descriptions')
-      .select('id, job_title, company, city, salary_range, education, experience, industry, hard_skills, soft_skills, tags, fresh_graduate_friendly')
+      .select('id, job_title, company, company_type, city, salary_range, education, experience, industry, hard_skills, soft_skills, tags, fresh_graduate_friendly')
       .or('is_synthetic.is.null,is_synthetic.eq.false')
       .limit(100);
 
@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
       id: string;
       job_title: string;
       company: string | null;
+      company_type: string | null;
       city: string | null;
       salary_range: string | null;
       education: string | null;
@@ -172,7 +173,7 @@ export async function POST(request: NextRequest) {
       return {
         id: jd.id,
         job_title: jd.job_title,
-        company: jd.company,
+        company: jd.company || [jd.industry, jd.company_type].filter(Boolean).join(' · ') || null,
         city: jd.city,
         salary_range: jd.salary_range || '面议',
         education: jd.education,
@@ -247,7 +248,7 @@ export async function GET(request: NextRequest) {
     // 获取热门岗位 - 使用 job_descriptions 表
     const { data: hotJobs, error } = await (supabase as any)
       .from('job_descriptions')
-      .select('id, job_title, company, city, salary_range, education, experience, industry, fresh_graduate_friendly')
+      .select('id, job_title, company, company_type, city, salary_range, education, experience, industry, fresh_graduate_friendly')
       .or('is_synthetic.is.null,is_synthetic.eq.false')
       .order('created_at', { ascending: false })
       .limit(20);
@@ -266,6 +267,7 @@ export async function GET(request: NextRequest) {
         id: string;
         job_title: string;
         company: string | null;
+        company_type: string | null;
         city: string | null;
         salary_range: string | null;
         education: string | null;
@@ -275,7 +277,7 @@ export async function GET(request: NextRequest) {
       }) => ({
         id: job.id,
         job_title: job.job_title,
-        company: job.company,
+        company: job.company || [job.industry, job.company_type].filter(Boolean).join(' · ') || null,
         city: job.city,
         salary_range: job.salary_range || '面议',
         education: job.education,

@@ -9,6 +9,8 @@ interface Favorite {
   jobId: string;
   jobTitle: string;
   company: string | null;
+  industry?: string | null;
+  company_type?: string | null;
   salary: string | null;
   location: string | null;
   source: string | null;
@@ -137,9 +139,13 @@ export default function FavoritesPage() {
                       <h3 className="font-semibold text-gray-900">{favorite.jobTitle}</h3>
                     </div>
 
-                    {favorite.company && (
-                      <p className="text-gray-600 mb-2">{favorite.company}</p>
-                    )}
+                    {(() => {
+                      const fallback = [favorite.industry, favorite.company_type].filter(Boolean).join(' · ');
+                      const display = favorite.company || fallback;
+                      return display ? (
+                        <p className="text-gray-600 mb-2">{display}</p>
+                      ) : null;
+                    })()}
 
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                       {favorite.location && (

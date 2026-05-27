@@ -72,7 +72,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
     const result = await withTimeout(
       (supabase as any)
         .from('job_descriptions')
-        .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly')
+        .select('job_title, company, company_type, city, salary_range, industry, responsibilities, fresh_graduate_friendly')
         .or('is_synthetic.is.null,is_synthetic.eq.false')
         .or('job_title.ilike.%' + query + '%,company.ilike.%' + query + '%,city.ilike.%' + query + '%')
         .limit(20) as unknown as Promise<DbResponse>,
@@ -89,11 +89,11 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
     return (data || []).map((job) => ({
       source: 'ZhiTuXing Database',
       job_name: (job.job_title as string) || '',
-      company_name: (job.company as string) || 'Unknown',
+      company_name: (job.company as string) || [job.industry, job.company_type].filter(Boolean).join(' · ') || '行业未填',
       city: (job.city as string) || 'Unknown',
       salary_range: (job.salary_range as string) || 'Negotiable',
       industry: (job.industry as string) || 'General',
-      company_type: '',
+      company_type: (job.company_type as string) || '',
       job_description: (job.responsibilities as string) || 'No detailed information',
       is_fresh_friendly: job.fresh_graduate_friendly === true,
     }));
