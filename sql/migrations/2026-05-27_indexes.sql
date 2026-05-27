@@ -15,7 +15,7 @@ CREATE INDEX IF NOT EXISTS idx_jobs_created_at_desc ON public.job_descriptions(c
 -- articles 表
 -- ============================================================
 CREATE INDEX IF NOT EXISTS idx_articles_category_views ON public.articles(category, views DESC);
-CREATE INDEX IF NOT EXISTS idx_articles_featured ON public.articles(featured) WHERE featured = true;
+CREATE INDEX IF NOT EXISTS idx_articles_is_featured ON public.articles(is_featured) WHERE is_featured = true;
 
 -- ============================================================
 -- user_quotas 表
