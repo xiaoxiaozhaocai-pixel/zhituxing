@@ -1,12 +1,38 @@
-import { createClient } from '@supabase/supabase-js'
+/**
+ * 内存版本限流（替代原 supabase 远程查询版本）
+ *
+ * 变更背景：
+ *   原实现每次请求都对 supabase rate_limits 表做 1 次 SELECT + 1 次 INSERT，
+ *   middleware 全局命中导致首页 TTFB 飙到 40s+、/auth 超 55s 直接超时。
+ *
+ * 设计：
+ *   - 单实例内存 Map<key, timestamps[]>，O(1) 查询
+ *   - 懒清理：每次调用先删过期时间戳
+ *   - Map 大小上限 MAX_KEYS=50000，超过则按"最久未访问"清退 20%
+ *   - API 签名与旧版本完全一致，调用方零改动
+ *
+ * 取舍：
+ *   - 多实例不共享计数（Zeabur 当前单实例够用；上量加 Redis 再说）
+ *   - 进程重启计数清零（限流目的是反爬，宽松无害）
+ */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+interface RateBucket {
+  timestamps: number[];
+  lastAccess: number;
+}
 
-function getAdminClient() {
-  return createClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: { persistSession: false },
-  })
+const MAX_KEYS = 50000;
+const buckets = new Map<string, RateBucket>();
+
+function evictIfNeeded(): void {
+  if (buckets.size <= MAX_KEYS) return;
+  // 按 lastAccess 升序，淘汰最旧的 20%
+  const entries = Array.from(buckets.entries());
+  entries.sort((a, b) => a[1].lastAccess - b[1].lastAccess);
+  const evictCount = Math.floor(MAX_KEYS * 0.2);
+  for (let i = 0; i < evictCount; i++) {
+    buckets.delete(entries[i][0]);
+  }
 }
 
 export async function checkRateLimit(
@@ -14,38 +40,24 @@ export async function checkRateLimit(
   maxRequests: number = 10,
   windowMs: number = 60000
 ): Promise<{ allowed: boolean; remaining?: number }> {
-  try {
-    const client = getAdminClient()
-    const windowStart = new Date(Date.now() - windowMs).toISOString()
+  const now = Date.now();
+  const windowStart = now - windowMs;
 
-    const { count, error: queryError } = await client
-      .from('rate_limits')
-      .select('*', { count: 'exact', head: true })
-      .eq('key', key)
-      .gte('created_at', windowStart)
-
-    if (queryError) {
-      console.error('Rate limit query error:', queryError)
-      return { allowed: true }
-    }
-
-    if (count! >= maxRequests) {
-      return { allowed: false, remaining: 0 }
-    }
-
-    const { error: insertError } = await client
-      .from('rate_limits')
-      .insert({ key, created_at: new Date().toISOString() })
-
-    if (insertError) {
-      console.error('Rate limit insert error:', insertError)
-      return { allowed: true }
-    }
-
-    const remaining = maxRequests - count! - 1
-    return { allowed: true, remaining: Math.max(0, remaining) }
-  } catch (err) {
-    console.error('Rate limit check failed:', err)
-    return { allowed: true }
+  let bucket = buckets.get(key);
+  if (!bucket) {
+    bucket = { timestamps: [], lastAccess: now };
+    buckets.set(key, bucket);
+    evictIfNeeded();
   }
+
+  // 懒清理过期时间戳
+  bucket.timestamps = bucket.timestamps.filter((t) => t > windowStart);
+  bucket.lastAccess = now;
+
+  if (bucket.timestamps.length >= maxRequests) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  bucket.timestamps.push(now);
+  return { allowed: true, remaining: Math.max(0, maxRequests - bucket.timestamps.length) };
 }

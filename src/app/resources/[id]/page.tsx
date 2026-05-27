@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { marked } from 'marked';
 
 interface Article {
   id: string;
@@ -319,7 +320,7 @@ export default function ArticleDetailPage() {
             {/* Content */}
             <div
               className="prose prose-blue max-w-none mt-6"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(marked.parse(article.content || '', { async: false }) as string) }}
             />
 
             {/* Like & Share */}
