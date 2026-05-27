@@ -12,9 +12,10 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const offset = (page - 1) * limit;
 
+    // 性能优化：列表页只 select 需要的字段，砍掉 content（平均 2.3KB/篇）减少传输量
     let query = supabase
       .from('articles')
-      .select('*')
+      .select('id,title,summary,category,tags,views,is_featured,author,created_at')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
