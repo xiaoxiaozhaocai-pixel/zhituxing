@@ -4,6 +4,18 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 
 // ============================================================
+// 限流常量
+// ============================================================
+const RATE_LIMIT = 400;
+const RATE_WINDOW_MS = 60_000;
+
+// ============================================================
+// 静态资源前缀和扩展名（豁免限流）
+// ============================================================
+const STATIC_PREFIXES = ['/_next/static', '/_next/image', '/favicon', '/images/', '/fonts/', '/assets/'];
+const STATIC_EXTENSIONS = ['.ico', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.woff', '.woff2', '.ttf', '.css', '.js', '.map'];
+
+// ============================================================
 // 安全响应头配置
 // ============================================================
 const SECURITY_HEADERS = {
@@ -32,25 +44,32 @@ const SECURITY_HEADERS = {
 };
 
 // ============================================================
-// 获取客户端 IP（优先级：Cloudflare > x-real-ip > x-forwarded-for）
+// 获取客户端 IP（Zeabur 在 x-forwarded-for 里塞多个 IP，取第一个真实 IP）
 // ============================================================
 function getClientIP(request: NextRequest): string {
-  // 1. 优先 Cloudflare 真实 IP
-  const cfIP = request.headers.get('cf-connecting-ip');
-  if (cfIP) return cfIP;
-  
-  // 2. 其次 x-real-ip
-  const realIP = request.headers.get('x-real-ip');
-  if (realIP) return realIP;
-  
-  // 3. 最后 x-forwarded-for（取第一个）
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
+  const xff = request.headers.get('x-forwarded-for');
+  if (xff) {
+    // 取第一个非空非 unknown 的 IP
+    const ips = xff.split(',').map(s => s.trim()).filter(s => s && s !== 'unknown');
+    if (ips[0]) return ips[0];
   }
-  
-  // 兜底
-  return 'unknown';
+  return request.headers.get('x-real-ip') ||
+         request.headers.get('cf-connecting-ip') ||
+         'anonymous';
+}
+
+// ============================================================
+// 获取限流 key（优先 user_id，回退 IP）
+// ============================================================
+function getRateLimitKey(req: NextRequest): string {
+  const token = req.cookies.get('sb-access-token')?.value;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload?.sub) return `user:${payload.sub}`;
+    } catch {}
+  }
+  return `ip:${getClientIP(req)}`;
 }
 
 // ============================================================
@@ -79,13 +98,23 @@ function createRateLimitResponse(): NextResponse {
 // 中间件主函数（异步，支持分布式限流）
 // ============================================================
 export async function middleware(request: NextRequest): Promise<NextResponse | undefined> {
-  const { pathname } = request.nextUrl;
-  const ip = getClientIP(request);
+  const pathname = request.nextUrl.pathname;
 
   // --------------------------------------------------------
-  // 1. 全局 IP 速率限制（100次/分钟）
+  // 0. 静态资源豁免（不参与限流）
   // --------------------------------------------------------
-  const globalCheck = await checkRateLimit(`global:${ip}`, 100, 60000);
+  if (
+    STATIC_PREFIXES.some(p => pathname.startsWith(p)) ||
+    STATIC_EXTENSIONS.some(ext => pathname.endsWith(ext))
+  ) {
+    return NextResponse.next();
+  }
+
+  // --------------------------------------------------------
+  // 1. 全局限流（400次/分钟，按 user_id 或 IP）
+  // --------------------------------------------------------
+  const rateLimitKey = getRateLimitKey(request);
+  const globalCheck = await checkRateLimit(`global:${rateLimitKey}`, RATE_LIMIT, RATE_WINDOW_MS);
   if (!globalCheck.allowed) {
     return createRateLimitResponse();
   }
@@ -142,7 +171,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
     }
     
     console.log('[middleware] /api/chat auth passed, checking rate limit');
-    const chatCheck = await checkRateLimit(`chat:${ip}`, 5, 60000);
+    const chatCheck = await checkRateLimit(`chat:${rateLimitKey}`, 5, 60000);
     if (!chatCheck.allowed) {
       return createRateLimitResponse();
     }
@@ -152,7 +181,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
   // 4. /api/auth/login 和 /api/auth/register 路由：5次/分钟限流
   // --------------------------------------------------------
   if (pathname === '/api/auth/login' || pathname === '/api/auth/register') {
-    const authCheck = await checkRateLimit(`auth:${ip}`, 5, 60000);
+    const authCheck = await checkRateLimit(`auth:${rateLimitKey}`, 5, 60000);
     if (!authCheck.allowed) {
       return createRateLimitResponse();
     }
@@ -162,7 +191,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
   // 5. /api/jobs 路由：30次/分钟限流
   // --------------------------------------------------------
   if (pathname.startsWith('/api/jobs')) {
-    const jobsCheck = await checkRateLimit(`jobs:${ip}`, 30, 60000);
+    const jobsCheck = await checkRateLimit(`jobs:${rateLimitKey}`, 30, 60000);
     if (!jobsCheck.allowed) {
       return createRateLimitResponse();
     }
