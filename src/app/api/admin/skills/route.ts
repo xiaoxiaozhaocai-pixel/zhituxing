@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql, escapeParam } from '@/lib/exec-sql';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // Admin权限校验 - 使用环境变量 ADMIN_USER_IDS
 async function checkAdmin(request: NextRequest): Promise<boolean> {

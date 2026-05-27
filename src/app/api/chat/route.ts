@@ -32,7 +32,7 @@ import {
 } from '@/lib/rag-utils';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 

@@ -30,7 +30,7 @@ import {
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // 职业规划 fallback 回复
 function getCareerFallback(major: string, grade: string, city: string): string {

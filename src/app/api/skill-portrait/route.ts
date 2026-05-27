@@ -13,7 +13,7 @@ import {
   createTextStream,
 } from '@/lib/coze-stream';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 function getSkillPortraitFallback(major?: string, targetCity?: string): string {
   const majorName = major || '您的专业';

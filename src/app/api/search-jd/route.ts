@@ -20,7 +20,7 @@ import {
   getWorkflowConfig,
 } from '@/lib/coze-stream';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',

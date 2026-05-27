@@ -28,7 +28,7 @@ import {
   createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 // DeepSeek 开关
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
