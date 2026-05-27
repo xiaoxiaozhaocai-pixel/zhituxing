@@ -27,6 +27,17 @@ export const COMMON_CITIES = [
   '贵阳', '太原', '沈阳', '哈尔滨', '长春',
 ];
 
+/** C 端公开 JD 字段（不含 source_url/source_platform/raw_jd） */
+export const PUBLIC_JD_FIELDS = [
+  'id', 'job_title', 'company', 'industry', 'city',
+  'salary_range', 'salary_min', 'salary_max', 'education', 'experience',
+  'post_nature', 'responsibilities', 'hard_skills', 'soft_skills', 'tags',
+  'fresh_graduate_friendly', 'graduate_friendly_level',
+  'company_type', 'core_duty_module', 'major_require',
+  'bonus_skill_cert', 'post_category', 'party_label',
+  'is_synthetic', 'url_status', 'status', 'created_at', 'updated_at',
+].join(', ')
+
 /** 常见岗位关键词 */
 export const COMMON_JOB_KEYWORDS = [
   '产品经理', '产品运营', '运营', 'UI设计', 'UX设计', '设计师',

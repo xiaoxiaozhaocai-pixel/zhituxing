@@ -26,6 +26,7 @@ import {
   querySupabase,
   buildRAGContext,
   createDeepSeekRAGStream,
+  PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
           querySupabase('job_descriptions', [
             ...(industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${industry}%` }] : []),
             ...(targetCity ? [{ field: 'city', operator: 'ilike' as const, value: `%${targetCity}%` }] : []),
-          ], 8),
+          ], 8, PUBLIC_JD_FIELDS),
           querySupabase('career_paths', [
             ...(industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${industry}%` }] : []),
           ], 5),

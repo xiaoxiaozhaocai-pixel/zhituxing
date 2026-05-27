@@ -2,6 +2,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { sanitizeJDList } from '@/lib/jd-sanitizer';
+import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 
 // ============================================================
 // 内存缓存 - Edge Runtime 下为 best-effort（同实例命中时更快）
@@ -117,7 +119,7 @@ function tryParseJson(str: string): any {
 }
 
 // 搜索阶段只查轻量字段（不含responsibilities）
-const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly,source_platform,graduate_friendly_level,core_duty_module,major_require,bonus_skill_cert,source_url,post_category,competency_weights';
+const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly,graduate_friendly_level,core_duty_module,major_require,bonus_skill_cert,post_category,competency_weights';
 
 // 格式化单条职位数据
 function formatJob(job: any, relevance?: number) {
@@ -408,8 +410,8 @@ export async function GET(request: NextRequest) {
     // ===== 无关键词：简单筛选查询 =====
     let query = (supabaseAdmin as any)
       .from('job_descriptions')
-      .select('*', { count: 'exact' })
-      .or('is_synthetic.is.null,is_synthetic.eq.false');
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
+      .select(PUBLIC_JD_FIELDS, { count: 'exact' });
     
     if (industry && industry !== '全部') query = query.eq('industry', industry);
     if (city && city !== '全国') query = query.eq('city', city);

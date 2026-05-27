@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
+import { sanitizeJDList } from '@/lib/jd-sanitizer';
+import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,24 +44,24 @@ export async function GET(request: NextRequest) {
 
     // 推荐逻辑：优先匹配目标岗位，其次按热门排序
     // 使用 job_descriptions 表（jd_library 可能不存在）
-    let query = supabase
+    let query = (supabase as any)
       .from('job_descriptions')
-      .select('*')
       .or('is_synthetic.is.null,is_synthetic.eq.false')
+      .select(PUBLIC_JD_FIELDS)
       .limit(limit);
 
     // 如果有目标岗位，按标题匹配
     if (targetPosition) {
       try {
-        const { data: jds, error } = await supabase
+        const { data: jds, error } = await (supabase as any)
           .from('job_descriptions')
-          .select('*')
           .or('is_synthetic.is.null,is_synthetic.eq.false')
+          .select(PUBLIC_JD_FIELDS)
           .ilike('job_title', `%${targetPosition}%`)
           .limit(limit);
 
         if (!error && jds && jds.length > 0) {
-          return NextResponse.json({ success: true, data: jds });
+          return NextResponse.json({ success: true, data: sanitizeJDList(jds) });
         }
       } catch {
         // job_descriptions 表查询失败，继续尝试其他查询
@@ -69,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     // 回退：按创建时间排序
     try {
-      const { data: jds, error } = await query.order('created_at', { ascending: false });
+      const { data: jds, error } = await (query as any).order('created_at', { ascending: false });
 
       if (error) {
         console.log('job_descriptions 按时间排序失败:', error);
@@ -80,7 +82,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      return NextResponse.json({ success: true, data: jds || [] });
+      return NextResponse.json({ success: true, data: sanitizeJDList(jds) || [] });
     } catch {
       // job_descriptions 表可能不存在
       return NextResponse.json({ 

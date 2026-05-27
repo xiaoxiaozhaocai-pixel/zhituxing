@@ -26,6 +26,7 @@ import {
   querySupabase,
   buildRAGContext,
   createDeepSeekRAGStream,
+  PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
 
 export const runtime = 'nodejs';
@@ -151,7 +152,7 @@ export async function POST(request: NextRequest) {
             { field: 'status', operator: 'eq' as const, value: 'parsed' },
             ...(keywords.industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${keywords.industry}%` }] : []),
             ...(keywords.jobTitle ? [{ field: 'job_title', operator: 'ilike' as const, value: `%${keywords.jobTitle}%` }] : []),
-          ], 3),
+          ], 3, PUBLIC_JD_FIELDS),
         ]);
         
         // 构建 RAG 上下文

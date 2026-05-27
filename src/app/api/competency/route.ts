@@ -19,6 +19,7 @@ import {
   querySupabase,
   buildRAGContext,
   createDeepSeekRAGStream,
+  PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
 
 export const runtime = 'nodejs';
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
             { field: 'status', operator: 'eq' as const, value: 'parsed' },
             ...(keywords.industry ? [{ field: 'industry', operator: 'ilike' as const, value: `%${keywords.industry}%` }] : []),
             ...(keywords.jobTitle ? [{ field: 'job_title', operator: 'ilike' as const, value: `%${keywords.jobTitle}%` }] : []),
-          ], 5, 'job_title,hard_skills,soft_skills,responsibilities,industry'),
+          ], 5, PUBLIC_JD_FIELDS),
           
           querySupabase('skill_taxonomy', [
             ...(keywords.industry ? [{ field: 'domain', operator: 'ilike' as const, value: `%${keywords.industry}%` }] : []),

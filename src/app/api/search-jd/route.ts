@@ -72,8 +72,8 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
     const result = await withTimeout(
       (supabase as any)
         .from('job_descriptions')
-        .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly, source_platform')
         .or('is_synthetic.is.null,is_synthetic.eq.false')
+        .select('job_title, company, city, salary_range, industry, responsibilities, fresh_graduate_friendly')
         .or('job_title.ilike.%' + query + '%,company.ilike.%' + query + '%,city.ilike.%' + query + '%')
         .limit(20) as unknown as Promise<DbResponse>,
       5000
@@ -87,7 +87,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
     }
 
     return (data || []).map((job) => ({
-      source: (job.source_platform as string) || 'ZhiTuXing Database',
+      source: 'ZhiTuXing Database',
       job_name: (job.job_title as string) || '',
       company_name: (job.company as string) || 'Unknown',
       city: (job.city as string) || 'Unknown',

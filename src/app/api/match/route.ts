@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { sanitizeJDList } from '@/lib/jd-sanitizer';
 
 export async function POST(request: NextRequest) {
   try {
@@ -205,7 +206,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      matches: finalMatches,
+      matches: sanitizeJDList(finalMatches),
       user_skills: validSkills,
       total: finalMatches.length
     });
