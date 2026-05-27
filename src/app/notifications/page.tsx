@@ -9,7 +9,7 @@ interface Notification {
   title: string;
   content: string;
   type: string;
-  status: string;
+  is_read: boolean;
   is_global: boolean;
   created_at: string;
 }
@@ -179,7 +179,7 @@ export default function NotificationsPage() {
               <div
                 key={notification.id}
                 className={`bg-white rounded-lg border ${
-                  notification.status === 'unread'
+                  !notification.is_read
                     ? 'border-blue-300 bg-blue-50/30'
                     : 'border-gray-200'
                 } p-4 hover:shadow-sm transition-shadow`}
@@ -193,9 +193,9 @@ export default function NotificationsPage() {
                   {/* 内容 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className={`font-medium ${notification.status === 'unread' ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <h3 className={`font-medium ${!notification.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
                         {notification.title}
-                        {notification.status === 'unread' && (
+                        {!notification.is_read && (
                           <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block" />
                         )}
                       </h3>
@@ -208,7 +208,7 @@ export default function NotificationsPage() {
                     </p>
 
                     {/* 操作按钮 */}
-                    {notification.status === 'unread' && (
+                    {!notification.is_read && (
                       <div className="mt-3 flex items-center gap-2">
                         <button
                           onClick={() => markAsRead(notification.id)}

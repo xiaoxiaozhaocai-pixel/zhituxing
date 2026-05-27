@@ -46,11 +46,11 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { read } = body;
+    const { is_read } = body;
 
     const { data: notification, error } = await supabase
       .from('notifications')
-      .update({ read })
+      .update({ is_read })
       .eq('id', id)
       .eq('user_id', userId)
       .select()

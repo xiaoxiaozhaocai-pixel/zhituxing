@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (unreadOnly) {
-      query = query.eq('read', false);
+      query = query.eq('is_read', false);
     }
 
     const { data: notifications, error } = await query;
@@ -45,11 +45,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, read } = body;
+    const { id, is_read } = body;
 
     const { error } = await supabase
       .from('notifications')
-      .update({ read })
+      .update({ is_read })
       .eq('id', id)
       .eq('user_id', userId);
 
