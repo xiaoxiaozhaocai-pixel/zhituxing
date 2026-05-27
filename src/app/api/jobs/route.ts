@@ -258,8 +258,8 @@ export async function GET(request: NextRequest) {
       const buildBaseQuery = () => {
         let q = (supabaseAdmin as any)
           .from('job_descriptions')
-          .or('is_synthetic.is.null,is_synthetic.eq.false')
           .select(LIGHT_SELECT_FIELDS)
+          .or('is_synthetic.is.null,is_synthetic.eq.false')
           .limit(500);
         if (industry && industry !== '全部') q = q.eq('industry', industry);
         if (city && city !== '全国') q = q.eq('city', city);
@@ -408,8 +408,8 @@ export async function GET(request: NextRequest) {
     // ===== 无关键词：简单筛选查询 =====
     let query = (supabaseAdmin as any)
       .from('job_descriptions')
-      .or('is_synthetic.is.null,is_synthetic.eq.false')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .or('is_synthetic.is.null,is_synthetic.eq.false');
     
     if (industry && industry !== '全部') query = query.eq('industry', industry);
     if (city && city !== '全国') query = query.eq('city', city);

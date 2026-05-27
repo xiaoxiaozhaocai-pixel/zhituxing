@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     // 获取岗位数据
     const { data: jobs, error } = await (supabase as any)
       .from('job_descriptions')
-      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('id, job_title, city, industry, hard_skills, soft_skills, salary_min, salary_max')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .limit(100);
 
     if (error) {

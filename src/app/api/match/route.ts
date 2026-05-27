@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
     // 查询匹配的岗位 - 使用 job_descriptions 表
     const { data: jdData, error: jdError } = await (supabase as any)
       .from('job_descriptions')
-      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('id, job_title, company, city, salary_range, education, experience, industry, hard_skills, soft_skills, tags, fresh_graduate_friendly')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .limit(100);
 
     if (jdError) {
@@ -246,8 +246,8 @@ export async function GET(request: NextRequest) {
     // 获取热门岗位 - 使用 job_descriptions 表
     const { data: hotJobs, error } = await (supabase as any)
       .from('job_descriptions')
-      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('id, job_title, company, city, salary_range, education, experience, industry, fresh_graduate_friendly')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .order('created_at', { ascending: false })
       .limit(20);
 

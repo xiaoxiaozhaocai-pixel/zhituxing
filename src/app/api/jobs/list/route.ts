@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
     // 从job_descriptions表获取所有唯一的job_title
     const { data, error } = await (supabaseAdmin as any)
       .from('job_descriptions')
-      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .select('job_title')
+      .or('is_synthetic.is.null,is_synthetic.eq.false')
       .not('job_title', 'is', null)
       .not('job_title', 'eq', '');
 
