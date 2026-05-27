@@ -8,7 +8,52 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { marked } from 'marked';
+
+// 保底 markdown 渲染（不依赖外部包，避免打包/安装失败）
+function renderMarkdown(md: string): string {
+  if (!md) return '';
+  let html = md.replace(/\r\n/g, '\n');
+  // 代码块（先抽出占位，避免内部被其他规则吃掉）
+  const codeBlocks: string[] = [];
+  html = html.replace(/```([\w-]*)\n([\s\S]*?)```/g, (_m, lang, body) => {
+    const safe = body.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    codeBlocks.push('<pre><code class="language-' + (lang || 'text') + '">' + safe + '</code></pre>');
+    return '\u0000CB' + (codeBlocks.length - 1) + '\u0000';
+  });
+  // 标题（H6 -> H1 顺序，避免误吃）
+  html = html.replace(/^###### (.+)$/gm, '<h6>$1</h6>');
+  html = html.replace(/^##### (.+)$/gm, '<h5>$1</h5>');
+  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  // 分隔线
+  html = html.replace(/^\s*---+\s*$/gm, '<hr/>');
+  // 加粗 + 斜体
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(?<!\*)\*(?!\*)([^*\n]+?)\*(?!\*)/g, '<em>$1</em>');
+  // 行内代码
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  // 链接 [text](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  // 列表（无序/有序）
+  html = html.replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^\s*\d+\. (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]+?<\/li>(?:\n<li>[\s\S]+?<\/li>)*)/g, '<ul>$1</ul>');
+  // 段落（双换行分段，已含块元素不再包 <p>）
+  html = html.split(/\n{2,}/).map((p) => {
+    const t = p.trim();
+    if (!t) return '';
+    if (/^<(h[1-6]|ul|ol|pre|blockquote|hr|li|p|div|table)/i.test(t)) return t;
+    return '<p>' + t.replace(/\n/g, '<br/>') + '</p>';
+  }).join('\n');
+  // 还原代码块占位
+  html = html.replace(/\u0000CB(\d+)\u0000/g, (_m, i) => codeBlocks[Number(i)] || '');
+  return html;
+}
+
+
 
 interface Article {
   id: string;
@@ -320,7 +365,7 @@ export default function ArticleDetailPage() {
             {/* Content */}
             <div
               className="prose prose-blue max-w-none mt-6"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(marked.parse(article.content || '', { async: false }) as string) }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderMarkdown(article.content || '')) }}
             />
 
             {/* Like & Share */}
