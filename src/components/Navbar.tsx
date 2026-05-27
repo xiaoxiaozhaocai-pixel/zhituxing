@@ -142,6 +142,10 @@ export default function Navbar() {
               <div ref={moreRef} className="relative">
                 <button
                   onClick={() => setIsMoreOpen(!isMoreOpen)}
+                  aria-expanded={isMoreOpen}
+                  aria-haspopup="menu"
+                  aria-controls="more-menu"
+                  aria-label="更多导航菜单"
                   className={`flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isMoreOpen
                       ? 'bg-white/20 text-white'
@@ -149,11 +153,14 @@ export default function Navbar() {
                   }`}
                 >
                   更多
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isMoreOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown aria-hidden="true" className={`w-3.5 h-3.5 transition-transform duration-200 ${isMoreOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* 下拉面板 */}
                 <div
+                  id="more-menu"
+                  role="menu"
+                  aria-label="更多功能"
                   className={`absolute top-full right-0 mt-2 w-52 rounded-xl border shadow-xl transition-all duration-200 origin-top-right ${
                     isMoreOpen
                       ? 'opacity-100 scale-100'
@@ -193,11 +200,12 @@ export default function Navbar() {
               {user && (
                 <Link
                   href="/profile?tab=messages"
+                  aria-label={unreadNotifications > 0 ? `通知中心，${unreadNotifications} 条未读` : '通知中心'}
                   className="relative p-2 rounded-lg transition-colors hover:bg-white/10"
                 >
-                  <Bell className="w-5 h-5 text-blue-100" />
+                  <Bell aria-hidden="true" className="w-5 h-5 text-blue-100" />
                   {unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
+                    <span aria-hidden="true" className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
                       {unreadNotifications > 9 ? '9+' : unreadNotifications}
                     </span>
                   )}
@@ -220,11 +228,11 @@ export default function Navbar() {
                     <span>{user.nickname || '个人中心'}</span>
                   </Button>
 
-                  <button onClick={goToProfile}>
+                  <button onClick={goToProfile} aria-label={isMember ? '会员个人中心' : '个人中心'}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors relative bg-white/20 hover:bg-white/30">
-                      <User className="w-4 h-4 text-white" />
+                      <User aria-hidden="true" className="w-4 h-4 text-white" />
                       {isMember && (
-                        <Crown className="w-3 h-3 text-amber-400 absolute -top-1 -right-1" />
+                        <Crown aria-hidden="true" className="w-3 h-3 text-amber-400 absolute -top-1 -right-1" />
                       )}
                     </div>
                   </button>
@@ -256,13 +264,16 @@ export default function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              className="lg:hidden p-2"
+              className="lg:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? '关闭主菜单' : '打开主菜单'}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? (
-                <X className="w-6 h-6 text-white" />
+                <X aria-hidden="true" className="w-6 h-6 text-white" />
               ) : (
-                <Menu className="w-6 h-6 text-white" />
+                <Menu aria-hidden="true" className="w-6 h-6 text-white" />
               )}
             </button>
           </div>
@@ -270,7 +281,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-blue-700/50 bg-[#1E40AF]">
+          <div id="mobile-menu" className="lg:hidden border-t border-blue-700/50 bg-[#1E40AF]">
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
               {[...mainNavItems, ...moreNavItems].map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));

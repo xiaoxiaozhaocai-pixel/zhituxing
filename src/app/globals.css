@@ -226,23 +226,20 @@ select:focus {
   }
 }
 
-/* ===== 无障碍修复: focus-visible 焦点样式 (WCAG 2.1 AA) ===== */
-*:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
-a:focus-visible, button:focus-visible, [role="button"]:focus-visible {
+/* ===== 无障碍修复: focus-visible 焦点样式 (WCAG 2.1 AA) =====
+ * P3-15: 仅对可交互元素加焦点样式，避免 * 通配符污染容器
+ * P3-14: 移除非法 CSS 规则 (role/aria-* 应在 JSX 中处理，不是 CSS 属性)
+ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="menuitem"]:focus-visible,
+[role="tab"]:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
-}
-[aria-live="polite"] { }
-.notification-container, .toast-container, .alert-container {
-  role: status;
-  aria-live: polite;
-  aria-atomic: true;
-}
-.error-container, .form-error {
-  role: alert;
-  aria-live: assertive;
 }

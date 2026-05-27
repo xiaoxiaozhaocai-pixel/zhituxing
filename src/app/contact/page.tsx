@@ -185,20 +185,25 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700 mb-1">
                         姓名（选填）
                       </label>
                       <Input
+                        id="contact-name"
+                        autoComplete="name"
                         placeholder="你的姓名"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700 mb-1">
                         手机号（选填）
                       </label>
                       <Input
+                        id="contact-phone"
+                        type="tel"
+                        autoComplete="tel"
                         placeholder="方便我们联系你"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -207,14 +212,14 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="contact-type" className="block text-sm font-medium text-gray-700 mb-1">
                       反馈类型
                     </label>
                     <Select
                       value={formData.type}
                       onValueChange={(value) => setFormData({ ...formData, type: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="contact-type" aria-label="反馈类型">
                         <SelectValue placeholder="请选择反馈类型" />
                       </SelectTrigger>
                       <SelectContent>
@@ -228,10 +233,13 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      反馈内容 <span className="text-red-500">*</span>
+                    <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700 mb-1">
+                      反馈内容 <span className="text-red-500" aria-hidden="true">*</span>
+                      <span className="sr-only">必填</span>
                     </label>
                     <Textarea
+                      id="contact-message"
+                      aria-required="true"
                       placeholder="请详细描述你遇到的问题或建议..."
                       rows={5}
                       value={formData.message}

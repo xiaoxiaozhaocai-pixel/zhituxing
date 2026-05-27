@@ -455,9 +455,14 @@ function AuthContent() {
             {step === 'input' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">邮箱地址</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">邮箱地址</label>
                   <Input
+                    id="email"
                     type="email"
+                    autoComplete="email"
+                    aria-required="true"
+                    aria-invalid={!!emailError}
+                    aria-describedby={emailError ? 'email-error' : undefined}
                     placeholder="请输入邮箱地址"
                     value={email}
                     onChange={handleEmailChange}
@@ -465,7 +470,7 @@ function AuthContent() {
                     className={`h-12 ${emailError ? 'border-red-300 focus:border-red-500' : ''}`}
                     autoFocus
                   />
-                  {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+                  {emailError && <p id="email-error" role="alert" className="text-xs text-red-500 mt-1">{emailError}</p>}
                 </div>
                 
                 <Button 
@@ -498,10 +503,15 @@ function AuthContent() {
 
                 {/* 密码输入 */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">密码</label>
                   <div className="relative">
                     <Input
+                      id="password"
                       type={showPassword ? 'text' : 'password'}
+                      autoComplete={isRegistered ? 'current-password' : 'new-password'}
+                      aria-required="true"
+                      aria-invalid={!!passwordError}
+                      aria-describedby={passwordError ? 'password-error' : undefined}
                       placeholder="请输入密码"
                       value={password}
                       onChange={(e) => {
@@ -514,12 +524,14 @@ function AuthContent() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? '隐藏密码' : '显示密码'}
+                      aria-pressed={showPassword}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      {showPassword ? <EyeOff aria-hidden="true" className="w-5 h-5" /> : <Eye aria-hidden="true" className="w-5 h-5" />}
                     </button>
                   </div>
-                  {passwordError && <p className="text-xs text-red-500 mt-1">{passwordError}</p>}
+                  {passwordError && <p id="password-error" role="alert" className="text-xs text-red-500 mt-1">{passwordError}</p>}
                 </div>
 
                 {/* 注册时需要确认密码和昵称 */}
@@ -531,6 +543,10 @@ function AuthContent() {
                         <Input
                           id="confirmPassword"
                           type={showConfirmPassword ? 'text' : 'password'}
+                          autoComplete="new-password"
+                          aria-required="true"
+                          aria-invalid={!!confirmPasswordError}
+                          aria-describedby={confirmPasswordError ? 'confirm-password-error' : undefined}
                           placeholder="请再次输入密码"
                           value={confirmPassword}
                           onChange={(e) => {
@@ -542,27 +558,31 @@ function AuthContent() {
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          aria-label={showConfirmPassword ? '隐藏密码' : '显示密码'}
+                          aria-pressed={showConfirmPassword}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          {showConfirmPassword ? <EyeOff aria-hidden="true" className="w-5 h-5" /> : <Eye aria-hidden="true" className="w-5 h-5" />}
                         </button>
                       </div>
-                      {confirmPasswordError && <p className="text-xs text-red-500 mt-1">{confirmPasswordError}</p>}
+                      {confirmPasswordError && <p id="confirm-password-error" role="alert" className="text-xs text-red-500 mt-1">{confirmPasswordError}</p>}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
                         昵称 <span className="text-gray-400 text-xs">（选填）</span>
                       </label>
                       <div className="relative">
                         <Input
+                          id="nickname"
                           type="text"
+                          autoComplete="nickname"
                           placeholder="给自己取个名字吧"
                           value={nickname}
                           onChange={(e) => setNickname(e.target.value)}
                           className="h-12 pl-10"
                         />
-                        <Pencil className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Pencil aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       </div>
                     </div>
                   </>
@@ -580,14 +600,16 @@ function AuthContent() {
                 ) : (
                   <>
                     {/* 合规性：注册前需同意服务条款 */}
-                    <label className="flex items-start gap-2 cursor-pointer mb-4">
+                    <label htmlFor="agree-terms" className="flex items-start gap-2 cursor-pointer mb-4">
                       <input
+                        id="agree-terms"
                         type="checkbox"
                         checked={agreeTerms}
                         onChange={(e) => setAgreeTerms(e.target.checked)}
+                        aria-required="true"
                         className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-gray-600">
                         我已阅读并同意{' '}
                         <Link href="/terms" className="text-blue-600 hover:underline" target="_blank">服务条款</Link>
                         {' '}和{' '}

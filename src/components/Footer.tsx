@@ -27,7 +27,7 @@ export default function Footer() {
             <p className="text-blue-200/70 text-sm leading-relaxed mb-4">
               全行业全岗位 AI 模拟甄选与职业能力发展平台，帮助每一位大学生找到属于自己的职业道路。
             </p>
-            <div className="space-y-1.5 text-blue-200/50 text-xs">
+            <div className="space-y-1.5 text-blue-200/80 text-xs">
               <p>客服微信：zhituxing_kefu</p>
               <p>商务合作：business@zhituxing.com</p>
               <p>项目地址：桂林电子科技大学</p>
@@ -35,7 +35,7 @@ export default function Footer() {
           </div>
 
           {/* 产品 */}
-          <div>
+          <nav aria-label="产品链接">
             <h4 className="text-sm font-semibold text-blue-100 mb-4 uppercase tracking-wider">产品</h4>
             <ul className="space-y-2.5">
               {[
@@ -46,14 +46,14 @@ export default function Footer() {
                 { name: '技能图谱', href: '/skills-graph' },
               ].map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-blue-200/60 hover:text-blue-100 text-sm transition-colors">{link.name}</Link>
+                  <Link href={link.href} className="text-blue-200/80 hover:text-blue-100 text-sm transition-colors">{link.name}</Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* 资源 */}
-          <div>
+          <nav aria-label="资源链接">
             <h4 className="text-sm font-semibold text-blue-100 mb-4 uppercase tracking-wider">资源</h4>
             <ul className="space-y-2.5">
               {[
@@ -64,14 +64,14 @@ export default function Footer() {
                 { name: '求职干货', href: '/resources' },
               ].map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-blue-200/60 hover:text-blue-100 text-sm transition-colors">{link.name}</Link>
+                  <Link href={link.href} className="text-blue-200/80 hover:text-blue-100 text-sm transition-colors">{link.name}</Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
           {/* 关于 */}
-          <div>
+          <nav aria-label="关于链接">
             <h4 className="text-sm font-semibold text-blue-100 mb-4 uppercase tracking-wider">关于</h4>
             <ul className="space-y-2.5">
               {[
@@ -82,19 +82,19 @@ export default function Footer() {
                 { name: '用户协议', href: '/terms' },
               ].map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-blue-200/60 hover:text-blue-100 text-sm transition-colors">{link.name}</Link>
+                  <Link href={link.href} className="text-blue-200/80 hover:text-blue-100 text-sm transition-colors">{link.name}</Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
       </div>
 
       {/* 底栏 */}
       <div className="border-t border-blue-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-blue-300/50 text-xs">Made with <Heart className="w-3 h-3 inline text-red-400/60" /> for 大学生求职</p>
-          <div className="flex items-center gap-4 text-blue-300/50 text-xs">
+          <p className="text-blue-200/80 text-xs">Made with <Heart className="w-3 h-3 inline text-red-400/60" /> for 大学生求职</p>
+          <div className="flex items-center gap-4 text-blue-200/80 text-xs">
             <Link href="/data-source" className="hover:text-blue-200 transition-colors">数据来源</Link>
             <Link href="/privacy" className="hover:text-blue-200 transition-colors">隐私政策</Link>
             <Link href="/terms" className="hover:text-blue-200 transition-colors">用户协议</Link>
@@ -102,7 +102,7 @@ export default function Footer() {
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-cookie-preferences'))}
-              className="hover:text-blue-200 transition-colors cursor-pointer bg-transparent border-0 p-0 m-0 text-blue-300/50 text-xs"
+              className="hover:text-blue-200 transition-colors cursor-pointer bg-transparent border-0 p-0 m-0 text-blue-200/80 text-xs"
             >
               管理 Cookie 偏好
             </button>
@@ -110,7 +110,7 @@ export default function Footer() {
         </div>
         {/* 免责声明 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 text-center">
-          <p className="text-blue-300/40 text-xs">
+          <p className="text-blue-200/70 text-xs">
             本平台岗位信息来源于国聘网、国家24365大学生就业服务平台、中国公共招聘网、广西人才网等合规招聘平台，仅供参考。职途星不对岗位信息的准确性和时效性承担责任。
           </p>
         </div>
