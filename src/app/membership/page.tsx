@@ -379,13 +379,26 @@ export default function MembershipPage() {
               </div>
             </div>
 
-            {/* 收款码（按支付方式切换） */}
+            {/* 金额警告（醒目红框，防止用户付错金额） */}
+            {selectedPlan && (
+              <div className="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-center">
+                <p className="text-sm text-red-700 font-semibold">
+                  ⚠️ 请支付准确金额：<span className="text-lg font-bold">¥{selectedPlan.price.toFixed(1)}</span> 整
+                </p>
+                <p className="text-xs text-red-600 mt-1">
+                  金额不符的订单将被审核驳回，不予开通会员
+                </p>
+              </div>
+            )}
+
+            {/* 收款码（按支付方式切换；key 强制 React 重挂载 img，避免浏览器缓存复用） */}
             <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${paymentMethod === 'wechat' ? 'border-green-300 bg-green-50/50' : 'border-blue-300 bg-blue-50/50'}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
+                key={paymentMethod}
                 src={paymentMethod === 'wechat' ? '/images/payment/wechat-pay.jpg' : '/images/payment/alipay-pay.jpg'}
                 alt={paymentMethod === 'wechat' ? '微信支付收款码' : '支付宝收款码'}
-                className="w-56 h-auto mx-auto rounded-lg shadow-sm mb-3"
+                className="w-48 h-48 mx-auto rounded-lg shadow-sm mb-3 object-contain"
               />
               <p className="text-sm text-gray-700 font-medium">
                 {paymentMethod === 'wechat' ? '使用微信扫一扫支付' : '使用支付宝扫一扫支付'}
