@@ -43,7 +43,7 @@ async function testApiEndpoints(): Promise<any[]> {
     { path: '/api/articles', method: 'GET', expected: 200, name: '文章列表' },
     { path: '/api/skills/relations?skill=Java', method: 'GET', expected: 200, name: '技能关系' },
     { path: '/api/membership', method: 'GET', expected: 401, name: '会员信息' },
-    { path: '/api/payment', method: 'POST', expected: 401, name: '支付接口' },
+    { path: '/api/orders', method: 'POST', expected: 401, name: '订单接口' },
     { path: '/api/quota', method: 'GET', expected: 200, name: '配额查询' },
     { path: '/api/industries', method: 'GET', expected: 200, name: '行业列表' },
   ];
@@ -54,7 +54,7 @@ async function testApiEndpoints(): Promise<any[]> {
         const options: RequestInit = { method: test.method };
         if (test.method === 'POST') {
           options.headers = { 'Content-Type': 'application/json' };
-          options.body = JSON.stringify(test.path === '/api/payment' ? { amount: 0.01 } : {});
+          options.body = JSON.stringify(test.path === '/api/orders' ? { plan: 'monthly', payment_method: 'wechat', payment_screenshot_url: 'x' } : {});
         }
         const res = await fetchWithTimeout(`${baseUrl}${test.path}`, options);
         const status = res.status;
@@ -154,24 +154,24 @@ async function testSecurity(): Promise<any[]> {
     tests.push({ name: 'SQL注入拦截', status: 0, result: 'fail', detail: e.message });
   }
 
-  // 2. 支付篡改拦截测试
+  // 2. 订单篡改拦截测试
   try {
-    const res = await fetchWithTimeout(`${baseUrl}/api/payment`, {
+    const res = await fetchWithTimeout(`${baseUrl}/api/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: 0.01 }),
+      body: JSON.stringify({ plan: 'monthly', payment_method: 'wechat', payment_screenshot_url: 'x' }),
     });
     const status = res.status;
     // 应该返回401（未登录）或400（参数校验失败），不应该成功
     const passed = status !== 200;
     tests.push({ 
-      name: '支付篡改拦截', 
+      name: '订单篡改拦截', 
       status, 
       result: passed ? 'pass' : 'fail', 
       detail: passed ? '已拦截' : `HTTP ${status}` 
     });
   } catch (e: any) {
-    tests.push({ name: '支付篡改拦截', status: 0, result: 'fail', detail: e.message });
+    tests.push({ name: '订单篡改拦截', status: 0, result: 'fail', detail: e.message });
   }
 
   // 3. 首页品牌文案检测

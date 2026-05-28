@@ -1,81 +1,99 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
-// 管理员鉴权验证
-async function verifyAdmin(request: NextRequest): Promise<boolean> {
-  const adminToken = request.headers.get('x-admin-token') || request.headers.get('Authorization')?.replace('Bearer ', '');
-  const validToken = process.env.ADMIN_SECRET_KEY;
-  if (!validToken) {
-    console.error('ADMIN_SECRET_KEY is not configured');
+export const runtime = 'nodejs';
+
+/**
+ * /api/admin/orders
+ *
+ * admin 订单审核工作台 - 列表 + 单条签名截图 URL
+ * - GET：所有 pending_orders（默认按 status 升序 + created_at 倒序）
+ *   - 支持 ?status=pending|approved|rejected|all 过滤
+ *   - 支持 ?sign=ID 单独签 signed URL（用 service_role）
+ *
+ * admin 校验：复用 ADMIN_USER_IDS 环境变量（项目统一规范）
+ */
+
+async function checkAdmin(request: NextRequest): Promise<boolean> {
+  const userId = await getAuthenticatedUserId(request);
+  if (!userId) return false;
+  const adminIds = process.env.ADMIN_USER_IDS;
+  if (!adminIds) {
+    console.warn('[admin/orders] ADMIN_USER_IDS not configured');
     return false;
   }
-  return adminToken === validToken;
+  const list = adminIds.split(',').map((x) => x.trim().toLowerCase());
+  return list.includes(userId.toLowerCase());
 }
 
-// 获取所有订单（管理员）
 export async function GET(request: NextRequest) {
-  // 鉴权检查
-  if (!(await verifyAdmin(request))) {
-    return NextResponse.json({ error: '未授权访问' }, { status: 401 });
+  if (!(await checkAdmin(request))) {
+    return NextResponse.json({ code: 403, message: '无权限' }, { status: 403 });
   }
-  
+
+  const { searchParams } = new URL(request.url);
+  const statusFilter = searchParams.get('status') || 'all';
+  const signPath = searchParams.get('sign'); // ?sign=path 单独签 URL
+
+  const supabase = getSupabaseAdmin();
+
+  // 单独签 URL 模式
+  if (signPath) {
+    try {
+      const { data, error } = await supabase.storage
+        .from('payment-screenshots')
+        .createSignedUrl(signPath, 3600);
+      if (error || !data) {
+        return NextResponse.json({ code: 500, message: error?.message || '签名失败' }, { status: 500 });
+      }
+      return NextResponse.json({ code: 200, data: { signed_url: data.signedUrl } });
+    } catch (err) {
+      console.error('[admin/orders sign] err:', err);
+      return NextResponse.json({ code: 500, message: '服务器错误' }, { status: 500 });
+    }
+  }
+
   try {
-    const supabase = getSupabase();
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const status = searchParams.get('status');
-    const offset = (page - 1) * limit;
-
     let query = supabase
-      .from('orders')
-      .select(`
-        *,
-        user:users(id, phone, nickname)
-      `, { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .from('pending_orders')
+      .select('id, user_id, user_email, plan, amount, payment_method, payment_screenshot_url, user_note, status, admin_note, approved_at, approved_by, created_at, updated_at')
+      .order('status', { ascending: true })   // pending 先
+      .order('created_at', { ascending: false });
 
-    if (status && status !== 'all') {
-      query = query.eq('status', status);
+    if (statusFilter !== 'all') {
+      query = query.eq('status', statusFilter);
     }
 
-    const { data: orders, error, count } = await query;
-
+    const { data, error } = await query;
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      console.error('[admin/orders GET] db err:', error.message);
+      return NextResponse.json({ code: 500, message: '查询失败' }, { status: 500 });
     }
 
-    // 格式化返回数据
-    const formattedOrders = (orders || []).map(order => ({
-      id: order.id,
-      orderNo: order.order_no,
-      userId: order.user_id,
-      userPhone: order.user?.phone || '未知',
-      userName: order.user?.nickname || '未设置昵称',
-      planName: order.plan_name,
-      planId: order.plan_id,
-      amount: parseFloat(order.amount),
-      paymentMethod: order.payment_method,
-      status: order.status,
-      createdAt: order.created_at,
-      paidAt: order.paid_at
-    }));
+    // 统计卡片：待审核 / 今日通过 / 今日拒绝 / 总收入（approved sum）
+    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+    const all = (data || []) as Array<Record<string, unknown>>;
+    const stats = {
+      pending_count: all.filter((o) => o.status === 'pending').length,
+      today_approved: all.filter(
+        (o) => o.status === 'approved' && typeof o.approved_at === 'string' && (o.approved_at as string).startsWith(todayStr),
+      ).length,
+      today_rejected: all.filter(
+        (o) => o.status === 'rejected' && typeof o.approved_at === 'string' && (o.approved_at as string).startsWith(todayStr),
+      ).length,
+      total_revenue: all
+        .filter((o) => o.status === 'approved')
+        .reduce((sum, o) => sum + Number(o.amount || 0), 0),
+    };
 
     return NextResponse.json({
-      success: true,
-      data: {
-        orders: formattedOrders,
-        total: count || 0,
-        page,
-        limit,
-        totalPages: Math.ceil((count || 0) / limit)
-      }
+      code: 200,
+      data: { orders: data || [], stats },
     });
-
-  } catch (error) {
-    console.error('获取订单列表失败:', error);
-    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
+  } catch (err) {
+    console.error('[admin/orders GET] unexpected:', err);
+    return NextResponse.json({ code: 500, message: '服务器错误' }, { status: 500 });
   }
 }
