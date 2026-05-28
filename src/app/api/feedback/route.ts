@@ -17,7 +17,8 @@ function getClientIp(request: NextRequest): string {
   if (xRealIp) {
     return xRealIp;
   }
-  return request.ip || 'unknown';
+  // Next.js 16 已移除 NextRequest.ip，前两个 header 兜底足够（Zeabur 必带 x-forwarded-for）
+  return 'unknown';
 }
 
 export async function POST(request: NextRequest) {
