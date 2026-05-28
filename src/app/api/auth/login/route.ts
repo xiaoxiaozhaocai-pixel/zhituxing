@@ -30,31 +30,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '登录失败，请重试' }, { status: 500 });
     }
 
-    // 修复 5/28：登录时同步查 user_profiles 拿真实会员状态，避免登录瞬间显示"普通用户"
-    let userType: string = 'free';
-    let membershipType: string | null = null;
-    let membershipExpiresAt: string | null = null;
-    try {
-      const { data: profileData } = await supabase
-        .from('user_profiles')
-        .select('user_type, membership_type, membership_expires_at')
-        .eq('user_id', authData.user.id)
-        .maybeSingle();
-      if (profileData) {
-        userType = profileData.user_type || 'free';
-        membershipType = profileData.membership_type || null;
-        membershipExpiresAt = profileData.membership_expires_at || null;
-      }
-    } catch (e) {
-      console.warn('[auth/login] 查询 user_profiles 失败，按 free 兜底:', e);
-    }
-
-    const isLifetime = userType === 'lifetime';
-    const isExpired = !isLifetime && membershipExpiresAt
-      ? new Date(membershipExpiresAt) < new Date()
-      : false;
-    const isMember = (userType === 'member' || userType === 'lifetime') && !isExpired;
-
     const response = NextResponse.json({
       success: true,
       message: '登录成功',
@@ -62,11 +37,7 @@ export async function POST(request: NextRequest) {
         id: authData.user.id,
         email: authData.user.email,
         nickname: authData.user.user_metadata?.nickname || `用户${authData.user.email?.split('@')[0]?.slice(-4) || ''}`,
-        user_type: userType,
-        is_member: isMember,
-        is_lifetime_member: isLifetime,
-        membership_type: membershipType,
-        membership_expires_at: isLifetime ? null : membershipExpiresAt,
+        is_member: false
       }
     });
     
