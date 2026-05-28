@@ -274,7 +274,21 @@ export default function MatchPage() {
             {filtered.map((item) => {
               const isExpanded = expandedId === item.job.id;
               return (
-                <Card key={item.job.id} className="border-orange-100 overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={item.job.id}
+                  className="border-orange-100 overflow-hidden hover:shadow-lg hover:border-orange-300 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isExpanded}
+                  aria-label={`${item.job.jobName}，匹配度${item.matchScore}%，点击${isExpanded ? '收起' : '展开'}详情`}
+                  onClick={() => setExpandedId(isExpanded ? null : item.job.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setExpandedId(isExpanded ? null : item.job.id);
+                    }
+                  }}
+                >
                   <div className="h-1 bg-gradient-to-r from-orange-400 to-amber-500" />
                   <CardContent className="py-5">
                     {/* 头部：匹配度 + 岗位信息 */}
@@ -335,11 +349,17 @@ export default function MatchPage() {
                         </div>
                       </div>
 
-                      {/* 展开按钮 */}
+                      {/* 展开按钮（与卡片同步状态，点击不再冒泡到 Card） */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setExpandedId(isExpanded ? null : item.job.id)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedId(isExpanded ? null : item.job.id);
+                        }}
+                        aria-hidden="true"
+                        tabIndex={-1}
                         className="shrink-0"
                       >
                         {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
