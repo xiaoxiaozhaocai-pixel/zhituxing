@@ -1,317 +1,226 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { MessageSquare, Send, Loader2, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-interface Feedback {
-  id: string;
-  type: string;
-  title: string;
-  content: string;
-  status: string;
-  admin_reply: string | null;
-  created_at: string;
-}
-
-const feedbackTypes = [
-  { value: 'bug', label: '功能问题' },
-  { value: 'feature', label: '功能建议' },
-  { value: 'content', label: '内容纠错' },
-  { value: 'other', label: '其他问题' }
+const PAGE_OPTIONS = [
+  { value: '首页', label: '首页' },
+  { value: '匹配', label: '岗位匹配' },
+  { value: '测评', label: '能力测评' },
+  { value: '面试', label: '模拟面试' },
+  { value: '职业规划', label: '职业规划' },
+  { value: '学习路径', label: '学习路径' },
+  { value: '技能图谱', label: '技能图谱' },
+  { value: '个人中心', label: '个人中心' },
+  { value: '其他', label: '其他页面' }
 ];
 
-const statusLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700', icon: <Clock className="w-4 h-4" /> },
-  processing: { label: '处理中', color: 'bg-blue-100 text-blue-700', icon: <Loader2 className="w-4 h-4 animate-spin" /> },
-  resolved: { label: '已解决', color: 'bg-green-100 text-green-700', icon: <CheckCircle className="w-4 h-4" /> },
-  closed: { label: '已关闭', color: 'bg-gray-100 text-gray-700', icon: <AlertCircle className="w-4 h-4" /> }
-};
+const TYPE_OPTIONS = [
+  { value: 'bug', label: 'Bug反馈' },
+  { value: 'slow', label: '页面卡顿' },
+  { value: 'ux', label: '体验问题' },
+  { value: 'suggest', label: '功能建议' },
+  { value: 'praise', label: '表扬鼓励' }
+];
+
+const SEVERITY_OPTIONS = [
+  { value: 'P0', label: 'P0 - 紧急（系统崩溃）' },
+  { value: 'P1', label: 'P1 - 严重（核心功能不可用）' },
+  { value: 'P2', label: 'P2 - 一般（功能可用但有问题）' },
+  { value: 'P3', label: 'P3 - 轻微（UI显示等小问题）' }
+];
 
 export default function FeedbackPage() {
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'submit' | 'list'>('submit');
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  // 表单状态
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    type: 'bug',
-    title: '',
-    content: '',
-    contact: ''
+    page: '',
+    type: '',
+    severity: '',
+    description: ''
   });
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchFeedbacks();
-    }
-  }, [isAuthenticated]);
-
-  const fetchFeedbacks = async () => {
-    try {
-      const res = await fetch('/api/feedback', {
-        headers: { 'x-user-id': user!.id }
-      });
-      const data = await res.json();
-      if (data.success) {
-        setFeedbacks(data.data);
-      }
-    } catch (error) {
-      console.error('获取反馈列表失败:', error);
-    }
-  };
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.title.trim() || !formData.content.trim()) {
-      alert('请填写标题和内容');
+    
+    if (!formData.page || !formData.type || !formData.description) {
+      setError('请填写必填字段');
       return;
     }
 
     setSubmitting(true);
+    setError('');
 
     try {
-      const res = await fetch('/api/feedback', {
+      const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user!.id
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          page: formData.page,
+          type: formData.type,
+          severity: formData.severity,
+          description: formData.description
+        })
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (data.success) {
-        alert('反馈已提交成功');
-        setFormData({ type: 'bug', title: '', content: '', contact: '' });
-        setActiveTab('list');
-        fetchFeedbacks();
+      if (response.ok && data.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          router.push('/');
+        }, 5000);
       } else {
-        alert(data.error || '提交失败');
+        setError(data.error || '提交失败，请稍后重试');
       }
-    } catch (error) {
-      console.error('提交反馈失败:', error);
-      alert('提交失败，请重试');
+    } catch (err) {
+      setError('网络异常，请稍后重试');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const formatTime = (time: string) => {
-    return new Date(time).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (authLoading) {
+  if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600 mb-4">请先登录提交反馈</p>
-          <a
-            href="/auth"
-            className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">感谢反馈！</h2>
+          <p className="text-gray-600 mb-6">
+            您的反馈已提交，我们会尽快处理。<br />
+            页面将在 <span className="text-blue-600 font-semibold">5秒</span> 后自动返回首页...
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            登录
-          </a>
+            立即返回
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">意见反馈</h1>
-
-        {/* Tab 切换 */}
-        <div className="flex space-x-4 mb-6 border-b">
-          <button
-            onClick={() => setActiveTab('submit')}
-            className={`pb-3 px-2 font-medium transition-colors ${
-              activeTab === 'submit'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            提交反馈
-          </button>
-          <button
-            onClick={() => setActiveTab('list')}
-            className={`pb-3 px-2 font-medium transition-colors ${
-              activeTab === 'list'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            我的反馈 ({feedbacks.length})
-          </button>
-        </div>
-
-        {/* 提交表单 */}
-        {activeTab === 'submit' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* 反馈类型 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  反馈类型
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {feedbackTypes.map((type) => (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, type: type.value })}
-                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                        formData.type === type.value
-                          ? 'bg-blue-100 text-blue-700 border-2 border-blue-500'
-                          : 'bg-gray-50 text-gray-600 border-2 border-transparent hover:bg-gray-100'
-                      }`}
-                    >
-                      {type.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 标题 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  问题标题 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="请简要描述您的问题"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  maxLength={100}
-                />
-                <p className="mt-1 text-sm text-gray-400 text-right">
-                  {formData.title.length}/100
-                </p>
-              </div>
-
-              {/* 内容 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  详细描述 <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="请详细描述您遇到的问题或建议..."
-                  rows={6}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                  maxLength={2000}
-                />
-                <p className="mt-1 text-sm text-gray-400 text-right">
-                  {formData.content.length}/2000
-                </p>
-              </div>
-
-              {/* 联系方式 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  联系方式（选填）
-                </label>
-                <input
-                  type="text"
-                  value={formData.contact}
-                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                  placeholder="手机号或邮箱，方便我们联系您"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                />
-              </div>
-
-              {/* 提交按钮 */}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    提交中...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5" />
-                    提交反馈
-                  </>
-                )}
-              </button>
-            </form>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8">
+            <h1 className="text-2xl font-bold text-white mb-2">提交反馈</h1>
+            <p className="text-blue-100">帮助我们改进产品，让职途星更好用</p>
           </div>
-        )}
 
-        {/* 反馈列表 */}
-        {activeTab === 'list' && (
-          <div className="space-y-4">
-            {feedbacks.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl">
-                <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-500">暂无反馈记录</p>
-                <button
-                  onClick={() => setActiveTab('submit')}
-                  className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  提交反馈
-                </button>
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                {error}
               </div>
-            ) : (
-              feedbacks.map((feedback) => (
-                <div key={feedback.id} className="bg-white rounded-xl shadow-sm p-5">
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
-                          {feedbackTypes.find(t => t.value === feedback.type)?.label}
-                        </span>
-                        <span className={`px-2 py-0.5 text-xs rounded-full flex items-center gap-1 ${statusLabels[feedback.status]?.color}`}>
-                          {statusLabels[feedback.status]?.icon}
-                          {statusLabels[feedback.status]?.label}
-                        </span>
-                      </div>
-                      <h3 className="font-medium text-gray-900">{feedback.title}</h3>
-                    </div>
-                    <span className="text-sm text-gray-400 whitespace-nowrap">
-                      {formatTime(feedback.created_at)}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-600 text-sm mb-3">{feedback.content}</p>
-
-                  {feedback.admin_reply && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
-                      <p className="text-sm font-medium text-green-800 mb-1">官方回复</p>
-                      <p className="text-sm text-green-700">{feedback.admin_reply}</p>
-                    </div>
-                  )}
-                </div>
-              ))
             )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                在哪个页面 <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.page}
+                onChange={(e) => setFormData({ ...formData, page: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+              >
+                <option value="">请选择页面</option>
+                {PAGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                反馈类型 <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+              >
+                <option value="">请选择类型</option>
+                {TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                严重程度
+              </label>
+              <select
+                value={formData.severity}
+                onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+              >
+                <option value="">请选择（可选）</option>
+                {SEVERITY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                问题描述 <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={5}
+                maxLength={2000}
+                placeholder="请详细描述您遇到的问题或建议..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none bg-white"
+              />
+              <p className="mt-1 text-sm text-gray-400 text-right">
+                {formData.description.length}/2000
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  提交中...
+                </span>
+              ) : (
+                '提交反馈'
+              )}
+            </button>
+          </form>
+
+          <div className="bg-gray-50 px-6 py-4 border-t">
+            <p className="text-sm text-gray-500 text-center">
+              您的反馈对我们非常重要，感谢您的支持！
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
