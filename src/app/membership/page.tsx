@@ -379,16 +379,22 @@ export default function MembershipPage() {
               </div>
             </div>
 
-            {/* 收款码占位 */}
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
-              <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-2">
-                <ImageIcon className="w-12 h-12 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-500">
-                向客服微信 <strong>zhituxing</strong> 转账后上传截图
+            {/* 收款码（按支付方式切换） */}
+            <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${paymentMethod === 'wechat' ? 'border-green-300 bg-green-50/50' : 'border-blue-300 bg-blue-50/50'}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={paymentMethod === 'wechat' ? '/images/payment/wechat-pay.jpg' : '/images/payment/alipay-pay.jpg'}
+                alt={paymentMethod === 'wechat' ? '微信支付收款码' : '支付宝收款码'}
+                className="w-56 h-auto mx-auto rounded-lg shadow-sm mb-3"
+              />
+              <p className="text-sm text-gray-700 font-medium">
+                {paymentMethod === 'wechat' ? '使用微信扫一扫支付' : '使用支付宝扫一扫支付'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                转账时请备注您的注册手机号或邮箱，付款后下方上传截图
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                转账时请备注您的注册手机号或邮箱
+                扫码遇到问题？加客服微信 <strong>zhituxing</strong> 协助
               </p>
             </div>
 
