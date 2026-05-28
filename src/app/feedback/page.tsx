@@ -36,8 +36,7 @@ export default function FeedbackPage() {
     page: '',
     type: '',
     severity: '',
-    description: '',
-    screenshot: null as File | null
+    description: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -188,34 +187,13 @@ export default function FeedbackPage() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={5}
+                maxLength={2000}
                 placeholder="请详细描述您遇到的问题或建议..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none bg-white"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                截图（可选）
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, screenshot: e.target.files?.[0] || null })}
-                  className="hidden"
-                  id="screenshot-upload"
-                />
-                <label htmlFor="screenshot-upload" className="cursor-pointer">
-                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="text-gray-500">点击或拖拽上传截图</p>
-                  <p className="text-sm text-gray-400 mt-1">支持 JPG、PNG 格式</p>
-                </label>
-                {formData.screenshot && (
-                  <p className="text-green-600 mt-3">已选择: {formData.screenshot.name}</p>
-                )}
-              </div>
+              <p className="mt-1 text-sm text-gray-400 text-right">
+                {formData.description.length}/2000
+              </p>
             </div>
 
             <button
