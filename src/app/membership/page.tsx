@@ -1,11 +1,21 @@
 'use client';
 
+import { useState, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Crown, Check, Zap, BarChart3, Network, Route, Download, Sparkles, Star, Shield
+  Crown, Check, Zap, BarChart3, Network, Sparkles, Star, Shield, Loader2, ImageIcon, X
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 const MEMBERSHIP_PLANS = [
   {
@@ -20,7 +30,8 @@ const MEMBERSHIP_PLANS = [
       '学习路径规划',
       '1个月有效期'
     ],
-    popular: false
+    popular: true,
+    slug: 'monthly'
   },
   {
     name: '学期会员',
@@ -35,7 +46,8 @@ const MEMBERSHIP_PLANS = [
       '测评报告PDF导出',
       '4个月有效期'
     ],
-    popular: false
+    popular: false,
+    slug: 'semester'
   },
   {
     name: '年度会员',
@@ -52,7 +64,8 @@ const MEMBERSHIP_PLANS = [
       '职业规划深度分析',
       '12个月有效期'
     ],
-    popular: true
+    popular: false,
+    slug: 'yearly'
   },
   {
     name: '永久会员',
@@ -67,7 +80,8 @@ const MEMBERSHIP_PLANS = [
       '简历优化服务',
       '求职指导咨询'
     ],
-    popular: false
+    popular: false,
+    slug: 'lifetime'
   }
 ];
 
@@ -79,6 +93,136 @@ const FREE_BENEFITS = [
 ];
 
 export default function MembershipPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<typeof MEMBERSHIP_PLANS[0] | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const [userNote, setUserNote] = useState('');
+  const [orderStatus, setOrderStatus] = useState<'idle' | 'uploading' | 'submitting' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleOpenPlan = useCallback((plan: typeof MEMBERSHIP_PLANS[0]) => {
+    if (!isAuthenticated) {
+      router.push('/login?redirect=/membership');
+      return;
+    }
+    setSelectedPlan(plan);
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+    setUserNote('');
+    setOrderStatus('idle');
+    setErrorMessage('');
+    setPaymentMethod('wechat');
+    setDialogOpen(true);
+  }, [isAuthenticated, router]);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('仅支持 JPG、PNG、WebP 格式的图片');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('图片大小不能超过 5MB');
+      return;
+    }
+
+    setScreenshotFile(file);
+    setScreenshotPreview(URL.createObjectURL(file));
+    setErrorMessage('');
+  }, []);
+
+  const clearScreenshot = useCallback(() => {
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const handleSubmitOrder = useCallback(async () => {
+    if (!selectedPlan || !screenshotFile) return;
+
+    setOrderStatus('uploading');
+    setErrorMessage('');
+
+    try {
+      // Step 1: Upload screenshot
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', screenshotFile);
+
+      const uploadRes = await fetch('/api/orders/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (uploadRes.status === 401) {
+        toast.error('登录已过期，请重新登录');
+        router.push('/login?redirect=/membership');
+        return;
+      }
+
+      const uploadData = await uploadRes.json();
+      if (uploadData.code !== 200) {
+        setOrderStatus('error');
+        setErrorMessage(uploadData.message || '上传截图失败');
+        return;
+      }
+
+      const { path } = uploadData.data;
+
+      // Step 2: Create order
+      setOrderStatus('submitting');
+      const orderBody: Record<string, unknown> = {
+        plan: selectedPlan.slug,
+        payment_method: paymentMethod,
+        payment_screenshot_url: path,
+      };
+      if (userNote.trim()) {
+        orderBody.user_note = userNote.trim().slice(0, 500);
+      }
+
+      const orderRes = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderBody),
+      });
+
+      if (orderRes.status === 401) {
+        toast.error('登录已过期，请重新登录');
+        router.push('/login?redirect=/membership');
+        return;
+      }
+
+      if (orderRes.status === 409) {
+        toast.error('您已是终身会员，无需购买其他套餐');
+        setDialogOpen(false);
+        return;
+      }
+
+      const orderData = await orderRes.json();
+      if (orderData.code !== 200) {
+        setOrderStatus('error');
+        setErrorMessage(orderData.message || '创建订单失败');
+        return;
+      }
+
+      toast.success('订单提交成功，请等待审核');
+      setDialogOpen(false);
+      router.push('/profile/orders');
+    } catch (err) {
+      setOrderStatus('error');
+      setErrorMessage('网络异常，请重试');
+      toast.error('网络异常，请重试');
+    }
+  }, [selectedPlan, screenshotFile, paymentMethod, userNote, router]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 pt-24 pb-16">
       <div className="max-w-6xl mx-auto px-4">
@@ -137,6 +281,7 @@ export default function MembershipPage() {
                       ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600' 
                       : 'bg-gray-800 hover:bg-gray-900'
                   }`}
+                  onClick={() => handleOpenPlan(plan)}
                 >
                   立即开通
                 </Button>
@@ -181,6 +326,156 @@ export default function MembershipPage() {
           </p>
         </div>
       </div>
+
+      {/* 下单 Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              开通 {selectedPlan?.name} - ¥{selectedPlan?.price}
+            </DialogTitle>
+            <DialogDescription>
+              请选择支付方式并上传付款截图完成订单
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* 支付方式选择 */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">支付方式</label>
+              <div className="flex gap-4">
+                <label className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+                  paymentMethod === 'wechat' 
+                    ? 'border-green-500 bg-green-50 text-green-700' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="wechat"
+                    checked={paymentMethod === 'wechat'}
+                    onChange={() => setPaymentMethod('wechat')}
+                    className="sr-only"
+                  />
+                  <span className="text-lg">💚</span>
+                  <span className="font-medium">微信支付</span>
+                </label>
+                <label className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+                  paymentMethod === 'alipay' 
+                    ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="alipay"
+                    checked={paymentMethod === 'alipay'}
+                    onChange={() => setPaymentMethod('alipay')}
+                    className="sr-only"
+                  />
+                  <span className="text-lg">💙</span>
+                  <span className="font-medium">支付宝</span>
+                </label>
+              </div>
+            </div>
+
+            {/* 收款码占位 */}
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
+              <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-2">
+                <ImageIcon className="w-12 h-12 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-500">
+                向客服微信 <strong>zhituxing</strong> 转账后上传截图
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                转账时请备注您的注册手机号或邮箱
+              </p>
+            </div>
+
+            {/* 上传截图 */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">上传付款截图</label>
+              {!screenshotPreview ? (
+                <div 
+                  className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">点击选择截图文件</p>
+                  <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP，最大 5MB</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              ) : (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={screenshotPreview} 
+                    alt="付款截图预览" 
+                    className="w-full max-h-48 object-contain rounded-lg border border-gray-200"
+                  />
+                  <button
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                    onClick={clearScreenshot}
+                  >
+                    <X className="w-4 h-4 text-gray-500" />
+                  </button>
+                  <p className="text-xs text-gray-500 mt-1">{screenshotFile?.name}</p>
+                </div>
+              )}
+            </div>
+
+            {/* 备注 */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">
+                备注 <span className="text-gray-400 font-normal">（可选）</span>
+              </label>
+              <textarea
+                className="w-full border border-gray-200 rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={2}
+                maxLength={500}
+                placeholder="如有备注请填写，如转账时备注的姓名"
+                value={userNote}
+                onChange={(e) => setUserNote(e.target.value)}
+              />
+              <p className="text-xs text-gray-400 text-right">{userNote.length}/500</p>
+            </div>
+
+            {/* 错误提示 */}
+            {orderStatus === 'error' && errorMessage && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg p-3">
+                {errorMessage}
+              </div>
+            )}
+
+            {/* 提交按钮 */}
+            <Button
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+              disabled={!screenshotFile || orderStatus === 'uploading' || orderStatus === 'submitting'}
+              onClick={handleSubmitOrder}
+            >
+              {orderStatus === 'uploading' ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  上传截图中...
+                </>
+              ) : orderStatus === 'submitting' ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  创建订单中...
+                </>
+              ) : (
+                '提交订单'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
