@@ -106,11 +106,14 @@ export default function DecisionPage() {
         })
       });
 
-      if (response.status === 403) {
-        const data = await response.json();
+      // 契约化：配额耗尽走 jsonError → 429 + { ok:false, error:{ code:'QUOTA_EXCEEDED', message } }
+      // 同时兼容 middleware 401（未登录）
+      if (response.status === 429 || response.status === 403) {
+        const data = await response.json().catch(() => null);
+        const msg = data?.error?.message || data?.message || '该功能为会员专享，请开通会员后使用';
         setMessages(prev => [...prev.slice(0, -1), { 
           role: 'assistant', 
-          content: `🔒 ${data.message || '该功能为会员专享，请开通会员后使用'}` 
+          content: `🔒 ${msg}` 
         }]);
         setLoading(false);
         return;

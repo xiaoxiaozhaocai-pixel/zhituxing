@@ -128,11 +128,11 @@ if (data.ok) {
 | /api/match POST | ✅ 已契约化 | (本次) |
 | /api/match GET | ✅ 已契约化 | (本次) |
 | /api/jobs | ✅ 已契约化 | (本次) |
-| /api/membership | ⏳ 阶段 2 | - |
-| /api/quota | ⏳ 阶段 2 | - |
-| /api/career-planning/stream | ⏳ 阶段 2（SSE 特殊处理） | - |
-| /api/chat | ⏳ 阶段 2（SSE 特殊处理） | - |
-| /api/search-jd | ⏳ 阶段 2（SSE 特殊处理） | - |
+| /api/membership | ✅ 已契约化（阶段 2.1） | 0f4e934 |
+| /api/quota | ✅ 已契约化（阶段 2.1） | 0f4e934 |
+| /api/search-jd | ✅ 已契约化（阶段 2.2，SSE 首接） | b32bb9f |
+| /api/career-planning/stream | ✅ 已契约化（阶段 2.3，SSE） | (本次) |
+| /api/chat | ✅ 已契约化（阶段 2.3，SSE） | (本次) |
 | 其他 91 个 | ⏳ 阶段 3（Trae 批量） | - |
 
 ## SSE 流式响应特殊处理（阶段 2 设计）

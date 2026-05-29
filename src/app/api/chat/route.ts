@@ -14,6 +14,8 @@ import { NextRequest } from 'next/server';
 import { checkFeatureAccess } from '@/lib/quota';
 import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 import { detectInjection, createBlockedSSE } from '@/lib/injection-detect';
+import { jsonError, parseRequestBody, ErrorCode } from '@/lib/api-contracts/_shared';
+import { ChatRequestSchema } from '@/lib/api-contracts/chat';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -177,13 +179,15 @@ export async function POST(request: NextRequest) {
     const accessToken = parseAccessTokenFromCookie(request.headers) || request.cookies.get('sb-access-token')?.value || null;
     
     if (!accessToken) {
-      return new Response(
-        JSON.stringify({ error: '请先登录' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonError(ErrorCode.UNAUTHORIZED, '请先登录');
     }
 
-    const { message, botType, conversationId } = await request.json();
+    // 契约化：用 zod 校验请求体
+    const parsed = await parseRequestBody(request, ChatRequestSchema);
+    if (!parsed.ok) return parsed.response;
+    const { message, botType } = parsed.data;
+    // conversationId 允许 null（前端会显式传 null），统一收敛成 undefined
+    const conversationId = parsed.data.conversationId ?? undefined;
 
     // botType 标准化（空输入校验需要用到）
     const effectiveBotType = botType || 'career';
@@ -287,10 +291,7 @@ export async function POST(request: NextRequest) {
                       botType === 'assessment' ? 'assessment' : 'career_planning';
       const access = await checkFeatureAccess(userId, feature);
       if (!access.allowed) {
-        return new Response(
-          JSON.stringify({ error: 'quota_exceeded', message: access.reason }),
-          { status: 403, headers: { 'Content-Type': 'application/json' } }
-        );
+        return jsonError(ErrorCode.QUOTA_EXCEEDED, access.reason || '配额已用完');
       }
     }
 

@@ -565,9 +565,14 @@ function AssistantContent() {
         body: JSON.stringify(requestBody),
       });
 
-      if (response.status === 403) {
-        const data = await response.json();
-        if (data.error === 'quota_exceeded') {
+      // 契约化：配额耗尽走 jsonError → 429 + { ok:false, error:{ code:'QUOTA_EXCEEDED', ... } }
+      // 同时兼容 /api/interview / /api/partner 旧 403 + { error:'quota_exceeded' } 格式
+      if (response.status === 429 || response.status === 403) {
+        const data = await response.json().catch(() => null);
+        const isQuotaExceeded =
+          (data?.ok === false && data?.error?.code === 'QUOTA_EXCEEDED') ||
+          data?.error === 'quota_exceeded';
+        if (isQuotaExceeded) {
           refreshQuota();
           setShowQuotaDialog(true);
           setMessages(prev => prev.slice(0, -1));
