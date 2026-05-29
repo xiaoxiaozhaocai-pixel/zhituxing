@@ -10,6 +10,11 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { jsonError, parseRequestBody, ErrorCode } from '@/lib/api-contracts/_shared';
+import {
+  SearchJdGetResponseSchema,
+  SearchJdPostRequestSchema,
+} from '@/lib/api-contracts/search-jd';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -148,10 +153,11 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('query') || searchParams.get('keyword') || '';
 
     if (!query) {
-      return NextResponse.json({
+      const payload = SearchJdGetResponseSchema.parse({
         code: 0,
         result: 'Please provide search keyword, e.g. ?query=recruiter',
       });
+      return NextResponse.json(payload);
     }
 
     console.log('[Search] Keyword:', query);
@@ -161,28 +167,24 @@ export async function GET(request: NextRequest) {
 
     console.log('[Search] Found', databaseResults.length, 'results');
 
-    return NextResponse.json({ code: 0, result });
+    const payload = SearchJdGetResponseSchema.parse({ code: 0, result });
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('[Search] API error:', error);
-    return NextResponse.json({
+    const payload = SearchJdGetResponseSchema.parse({
       code: 1,
       result: 'Service temporarily unavailable',
     });
+    return NextResponse.json(payload);
   }
 }
 
 // POST: 供前端直接调用职搭子智能体
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { message, conversationId } = body;
-
-    if (!message || typeof message !== 'string') {
-      return new Response(
-        JSON.stringify({ error: '搜索内容不能为空' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const parsed = await parseRequestBody(request, SearchJdPostRequestSchema);
+    if (!parsed.ok) return parsed.response;
+    const { message, conversationId } = parsed.data;
 
     // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
@@ -268,9 +270,8 @@ export async function POST(request: NextRequest) {
     return new Response(stream, { headers: SSE_HEADERS });
   } catch (error) {
     console.error('Search-JD API Error:', error);
-    return NextResponse.json(
-      { code: 500, message: '搜索失败', error: error instanceof Error ? error.message : '未知错误' },
-      { status: 500 }
-    );
+    return jsonError(ErrorCode.INTERNAL_ERROR, '搜索失败', {
+      details: { error: error instanceof Error ? error.message : '未知错误' },
+    });
   }
 }
