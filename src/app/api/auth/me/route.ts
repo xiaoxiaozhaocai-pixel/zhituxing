@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
 import {
   parseAccessTokenFromCookie,
   parseRefreshTokenFromCookie,
   setAuthCookies,
 } from '@/lib/auth-cookies';
 import { tryRefreshSession } from '@/lib/auth-refresh';
+import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
+import { MeDataSchema, type MeData } from '@/lib/api-contracts/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
     const refreshToken = parseRefreshTokenFromCookie(request.headers);
 
     if (!accessToken && !refreshToken) {
-      return NextResponse.json({ error: '请先登录' }, { status: 401 });
+      return jsonError('UNAUTHORIZED', '请先登录');
     }
 
     const { createClient } = await import('@supabase/supabase-js');
@@ -53,22 +54,23 @@ export async function GET(request: Request) {
 
     // 3. 都失败 → 401
     if (!user) {
-      return NextResponse.json({ error: '认证失败' }, { status: 401 });
+      return jsonError('UNAUTHORIZED', '认证失败');
     }
 
-    // 返回用户信息
-    const response = NextResponse.json({
-      success: true,
+    // 构造契约 data
+    const data: MeData = {
       user: {
         id: user.id,
-        email: user.email,
+        email: user.email ?? null,
         phone: user.user_metadata?.phone || user.phone || null,
         nickname:
           user.user_metadata?.nickname ||
           '用户' + (user.email?.split('@')[0]?.slice(-4) || ''),
       },
-      ...(refreshed && { refreshed: true }),
-    });
+      ...(refreshed && { refreshed: true as const }),
+    };
+
+    const response = jsonOk(MeDataSchema, data);
 
     // 如果是续期来的，写回新 cookie
     if (refreshed) {
@@ -83,6 +85,6 @@ export async function GET(request: Request) {
     return response;
   } catch (err) {
     console.error('[auth/me] Error:', err);
-    return NextResponse.json({ error: '服务器错误' }, { status: 500 });
+    return jsonError('INTERNAL_ERROR', '服务器错误');
   }
 }

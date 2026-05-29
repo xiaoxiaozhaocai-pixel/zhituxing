@@ -93,9 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await response.json();
       
-      if (data.success && data.user) {
-        setUser(data.user);
-        setQuota(data.user.quota);
+      if (data.ok && data.data?.user) {
+        setUser(data.data.user);
+        // quota 由 /api/quota 单独提供（me 契约不含 quota，遗留待治理）
+        setQuota(null);
       } else {
         setUser(null);
         setQuota(null);
@@ -116,9 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await response.json();
       
-      if (data.success && data.user) {
-        setUser(data.user);
-        setQuota(data.user.quota);
+      if (data.ok && data.data?.user) {
+        setUser(data.data.user);
+        setQuota(null);
       }
     } catch (error) {
       console.error('刷新配额失败:', error);

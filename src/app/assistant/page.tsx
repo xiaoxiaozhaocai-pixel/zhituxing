@@ -481,7 +481,7 @@ function AssistantContent() {
       const meResponse = await fetch('/api/auth/me');
       const meData = await meResponse.json();
       
-      if (!meData.success) {
+      if (!meData.ok) {
         // 未登录，弹出登录弹窗
         setShowLoginModal(true);
         return;
@@ -521,7 +521,7 @@ function AssistantContent() {
     try {
       const meResponse = await fetch('/api/auth/me');
       const meData = await meResponse.json();
-      const userId = meData.success ? meData.user.id : null;
+      const userId = meData.ok ? meData.data?.user?.id ?? null : null;
       
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',

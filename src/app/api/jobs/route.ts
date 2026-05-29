@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sanitizeJDList } from '@/lib/jd-sanitizer';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
+import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
+import { JobsListDataSchema, type JobsListData } from '@/lib/api-contracts/jobs';
 
 // ============================================================
 // 内存缓存 - Edge Runtime 下为 best-effort（同实例命中时更快）
@@ -218,24 +220,10 @@ export async function GET(request: NextRequest) {
     // ============================================================
     if (keyword) {
       if (keyword.length > MAX_KEYWORD_LENGTH) {
-        return NextResponse.json({
-          success: true,
-          data: [],
-          total: 0,
-          page,
-          pageSize,
-          totalPages: 0
-        });
+        return jsonOk(JobsListDataSchema, { items: [], total: 0, page, pageSize, totalPages: 0 });
       }
       if (!KEYWORD_REGEX.test(keyword)) {
-        return NextResponse.json({
-          success: true,
-          data: [],
-          total: 0,
-          page,
-          pageSize,
-          totalPages: 0
-        });
+        return jsonOk(JobsListDataSchema, { items: [], total: 0, page, pageSize, totalPages: 0 });
       }
     }
     
@@ -245,11 +233,11 @@ export async function GET(request: NextRequest) {
     // 缓存检查
     // ============================================================
     const cacheKey = `jobs:${keyword}:${industry}:${city}:${freshOnly}:${education}:${experience}:${companyType}:${page}:${pageSize}`;
-    const cached = getCachedResult(cacheKey);
+    const cached = getCachedResult(cacheKey) as JobsListData | null;
     if (cached) {
       console.log('[jobs] 缓存命中:', cacheKey);
-      return NextResponse.json(cached, {
-        headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
+      return jsonOk(JobsListDataSchema, cached, {
+        headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' },
       });
     }
 
@@ -311,7 +299,7 @@ export async function GET(request: NextRequest) {
       const allErrors = results.every(r => r.error);
       if (allErrors) {
         console.error('[jobs] 所有查询都失败');
-        return NextResponse.json({ error: '查询失败' }, { status: 500 });
+        return jsonError('INTERNAL_ERROR', '查询失败');
       }
       
       // 合并结果并去重
@@ -329,17 +317,16 @@ export async function GET(request: NextRequest) {
       }
       
       if (uniqueResults.length === 0) {
-        const emptyResult = {
-          success: true,
-          data: [],
+        const emptyResult: JobsListData = {
+          items: [],
           total: 0,
           page,
           pageSize,
-          totalPages: 0
+          totalPages: 0,
         };
         setCachedResult(cacheKey, emptyResult);
-        return NextResponse.json(emptyResult, {
-          headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
+        return jsonOk(JobsListDataSchema, emptyResult, {
+          headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' },
         });
       }
       
@@ -392,18 +379,17 @@ export async function GET(request: NextRequest) {
       
       const formattedData = paginatedData.map(job => formatJob(job, job._relevance));
       
-      const result = {
-        success: true,
-        data: formattedData,
+      const result: JobsListData = {
+        items: formattedData,
         total,
         page,
         pageSize,
-        totalPages
+        totalPages,
       };
-      
+
       setCachedResult(cacheKey, result);
-      return NextResponse.json(result, {
-        headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
+      return jsonOk(JobsListDataSchema, result, {
+        headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' },
       });
     }
 
@@ -439,7 +425,7 @@ export async function GET(request: NextRequest) {
     
     if (error) {
       console.error('数据库查询错误:', error);
-      return NextResponse.json({ error: '查询失败' }, { status: 500 });
+      return jsonError('INTERNAL_ERROR', '查询失败');
     }
     
     const formattedData = (data as any)?.map((job: any) => formatJob(job)) || [];
@@ -469,29 +455,21 @@ export async function GET(request: NextRequest) {
           // 不包含 jdContent、competencyWeights 等详细/敏感字段
         }));
     
-    const result = {
-      success: true,
-      data: safeData,
+    const result: JobsListData = {
+      items: safeData,
       total: count || 0,
       page,
       pageSize,
-      totalPages: Math.ceil((count || 0) / pageSize)
+      totalPages: Math.ceil((count || 0) / pageSize),
     };
-    
+
     setCachedResult(cacheKey, result);
-    return NextResponse.json(result, {
-      headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' }
+    return jsonOk(JobsListDataSchema, result, {
+      headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' },
     });
   } catch (error: any) {
-    // 安全处理：不暴露错误详情，返回空结果
+    // 安全处理：不暴露错误详情，返回空结果（仍走契约格式）
     console.error('[jobs] 内部错误:', error?.message);
-    return NextResponse.json({
-      success: true,
-      data: [],
-      total: 0,
-      page: 1,
-      pageSize: 20,
-      totalPages: 0
-    });
+    return jsonOk(JobsListDataSchema, { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 });
   }
 }

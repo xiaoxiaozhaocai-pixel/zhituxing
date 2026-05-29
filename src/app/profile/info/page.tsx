@@ -494,8 +494,11 @@ function ProfileInfoContent() {
       try {
         const response = await fetch('/api/jobs?limit=100');
         const data = await response.json();
-        if (data.code === 200 && data.data?.jobs) {
-          const uniquePositions = [...new Set(data.data.jobs.map((j: { position: string }) => j.position).filter(Boolean))];
+        // 修复 dead bug：原代码读 data.code===200 && data.data?.jobs，俩字段在 /api/jobs 响应中均不存在
+        if (data.ok && Array.isArray(data.data?.items)) {
+          const uniquePositions = [...new Set(
+            data.data.items.map((j: { name?: string }) => j.name).filter(Boolean)
+          )];
           if (uniquePositions.length > 0) {
             setJobOptions(uniquePositions as string[]);
           }

@@ -196,13 +196,25 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
     fetch('/api/jobs?limit=20')
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.data?.jobs) {
-          setJobs(data.data.jobs.map((j: any) => ({
-            job_title: j.job_title || j.jobName,
-            hard_skills: j.hard_skills || j.requiredSkills || [],
-            city: j.city,
-            industry: j.industry,
-          })));
+        // 修复 dead bug：原代码读 data.data?.jobs，/api/jobs 响应无该嵌套
+        if (data.ok && Array.isArray(data.data?.items)) {
+          setJobs(
+            data.data.items.map((j: {
+              name?: string;
+              job_title?: string;
+              jobName?: string;
+              hardSkills?: string[];
+              hard_skills?: string[];
+              requiredSkills?: string[];
+              city?: string;
+              industry?: string;
+            }) => ({
+              job_title: j.name || j.job_title || j.jobName || '',
+              hard_skills: j.hardSkills || j.hard_skills || j.requiredSkills || [],
+              city: j.city || '',
+              industry: j.industry || '',
+            })),
+          );
         }
       })
       .catch(console.error);

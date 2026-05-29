@@ -165,13 +165,13 @@ export default function JobsPage() {
       
       const response = await fetch(`/api/jobs?${params.toString()}`);
       const data = await response.json();
-      
-      if (data.success) {
-        setJobs(data.data);
+
+      if (data.ok && data.data) {
+        setJobs(data.data.items);
         setPagination(prev => ({
           ...prev,
-          total: data.total,
-          totalPages: data.totalPages
+          total: data.data.total,
+          totalPages: data.data.totalPages
         }));
       }
     } catch (error) {

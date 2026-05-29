@@ -89,8 +89,9 @@ export default function LearningPathPage() {
         headers: { 'x-user-id': user!.id },
       });
       const matchData = await matchRes.json();
-      if (matchData.success) {
-        const results = matchData.data || [];
+      // 修复 dead bug：原代码 matchData.data || [] 永远是空数组（GET /api/match 返回字段是 matches）
+      if (matchData.ok && matchData.data) {
+        const results = matchData.data.matches || [];
         setMatchResults(results);
         if (results.length > 0) setSelectedJobIdx(0);
       }

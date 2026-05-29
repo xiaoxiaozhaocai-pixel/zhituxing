@@ -83,13 +83,13 @@ export default function MatchPage() {
         headers: { 'x-user-id': user.id },
       });
       const data = await res.json();
-      if (data.success) {
-        setResults(data.matches || []);
-        setUserSkills(data.user_skills || []);
-        
+      if (data.ok && data.data) {
+        setResults(data.data.matches || []);
+        setUserSkills(data.data.user_skills || []);
+
         // 获取反向匹配数据
-        if (data.user_skills && data.user_skills.length > 0) {
-          fetchUnderratedJobs(data.user_skills);
+        if (data.data.user_skills && data.data.user_skills.length > 0) {
+          fetchUnderratedJobs(data.data.user_skills);
         }
       }
     } catch (err) {

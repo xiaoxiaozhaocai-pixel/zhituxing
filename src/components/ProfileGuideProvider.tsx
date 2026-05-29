@@ -30,7 +30,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
       const userResponse = await fetch('/api/auth/me');
       const userData = await userResponse.json();
       
-      if (userData.code === 200 && userData.data?.id) {
+      if (userData.ok && userData.data?.user?.id) {
         // 获取用户个人信息
         const profileResponse = await fetch('/api/user/profile', {
           credentials: 'include'
