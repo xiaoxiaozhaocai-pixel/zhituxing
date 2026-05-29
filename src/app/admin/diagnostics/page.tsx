@@ -39,7 +39,7 @@ const categoryConfig = {
   database: { label: '数据库状态', icon: Database, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
   api: { label: 'API端点', icon: FileCode, color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
   pages: { label: '页面路由', icon: Globe, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
-  security: { label: '安全检查', icon: Shield, color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' },
+  security: { label: '安全检查', icon: Shield, color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
   sse: { label: 'SSE流测试', icon: Radio, color: 'text-orange-600', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
 };
 
