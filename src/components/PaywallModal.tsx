@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useMembership } from '@/contexts/MembershipContext';
 
 const PLANS = [
   {
@@ -62,21 +62,16 @@ interface PaywallModalProps {
 }
 
 export default function PaywallModal({ open, onClose, feature }: PaywallModalProps) {
-  const { upgrade } = useMembership();
+  const router = useRouter();
   const [upgrading, setUpgrading] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success] = useState(false);
 
-  const handleUpgrade = async (planKey: string) => {
+  // 历史 dead bug：旧版 upgrade() POST /api/membership 但接口不存在，点击永远无效。
+  // 治理方案：套餐点击改为跳 /membership 页（真实下单流程，走 /api/orders）。
+  const handleUpgrade = (planKey: string) => {
     setUpgrading(planKey);
-    const ok = await upgrade(planKey);
-    if (ok) {
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-        onClose();
-      }, 1500);
-    }
-    setUpgrading(null);
+    onClose();
+    router.push(`/membership?plan=${encodeURIComponent(planKey)}`);
   };
 
   return (
@@ -152,7 +147,7 @@ export default function PaywallModal({ open, onClose, feature }: PaywallModalPro
             </div>
 
             <p className="text-center text-xs text-gray-500 mt-3">
-              演示模式：点击套餐即可直接升级（实际项目中需接入支付系统）
+              点击套餐将跳转至下单页面，完成支付后会员权益自动开通
             </p>
           </>
         ) : (

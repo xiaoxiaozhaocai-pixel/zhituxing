@@ -1,8 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { MembershipDataSchema, type MembershipData } from '@/lib/api-contracts/membership';
+import { successResponse } from '@/lib/api-contracts/_shared';
 
-// 从 localStorage 获取当前用户 ID
+// 从 localStorage 获取当前用户 ID（仅作 cookie 不存在时的兜底；实际依赖 cookie 凭据）
 function getCurrentUserId(): string | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -18,16 +20,19 @@ function getCurrentUserId(): string | null {
 }
 
 export interface MembershipState {
+  /** 'free' 或 'member'，UI 简化用 */
   membershipType: 'free' | 'member';
+  /** 是否当前生效会员（非 free 且未过期） */
   isMember: boolean;
+  /** 当前生效套餐 key（monthly/semester/annual/lifetime），free 或过期时 null */
   membershipPlan: string | null;
+  /** 会员到期 ISO 字符串（lifetime / 非会员时 null） */
   expiresAt: string | null;
   loading: boolean;
 }
 
 interface MembershipContextValue extends MembershipState {
   refresh: () => Promise<void>;
-  upgrade: (plan: string) => Promise<boolean>;
 }
 
 const defaultState: MembershipState = {
@@ -41,71 +46,66 @@ const defaultState: MembershipState = {
 const MembershipContext = createContext<MembershipContextValue>({
   ...defaultState,
   refresh: async () => {},
-  upgrade: async () => false,
 });
+
+const ResponseSchema = successResponse(MembershipDataSchema);
+
+function applyData(data: MembershipData): MembershipState {
+  return {
+    membershipType: data.isMember ? 'member' : 'free',
+    isMember: data.isMember,
+    membershipPlan: data.membershipPlan,
+    expiresAt: data.membershipExpiresAt,
+    loading: false,
+  };
+}
 
 export function MembershipProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MembershipState>(defaultState);
 
   const refresh = useCallback(async () => {
     try {
-      setState(prev => ({ ...prev, loading: true }));
+      setState((prev) => ({ ...prev, loading: true }));
       const userId = getCurrentUserId();
-      if (!userId) {
-        setState(prev => ({ ...prev, loading: false }));
+      const headers: HeadersInit = {};
+      if (userId) headers['x-user-id'] = userId;
+
+      const res = await fetch('/api/membership', {
+        headers,
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        // 401 视为未登录，重置为默认 free
+        setState({ ...defaultState, loading: false });
         return;
       }
-      const res = await fetch('/api/membership', {
-        headers: { 'x-user-id': userId },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) {
-          setState({
-            membershipType: json.data.membershipType,
-            isMember: json.data.isMember,
-            membershipPlan: json.data.membershipPlan,
-            expiresAt: json.data.expiresAt,
-            loading: false,
-          });
+
+      const json = await res.json();
+      const parsed = ResponseSchema.safeParse(json);
+      if (!parsed.success) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('[MembershipContext] /api/membership 响应不符合契约', parsed.error.issues);
+        } else {
+          console.warn('[MembershipContext] /api/membership 响应不符合契约');
         }
+        setState({ ...defaultState, loading: false });
+        return;
       }
-    } catch {
-      setState(prev => ({ ...prev, loading: false }));
+
+      setState(applyData(parsed.data.data));
+    } catch (err) {
+      console.warn('[MembershipContext] refresh 异常', err);
+      setState((prev) => ({ ...prev, loading: false }));
     }
   }, []);
-
-  const upgrade = useCallback(async (plan: string): Promise<boolean> => {
-    try {
-      const userId = getCurrentUserId();
-      if (!userId) return false;
-      const res = await fetch('/api/membership', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': userId,
-        },
-        body: JSON.stringify({ plan }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) {
-          await refresh();
-          return true;
-        }
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  }, [refresh]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
   return (
-    <MembershipContext.Provider value={{ ...state, refresh, upgrade }}>
+    <MembershipContext.Provider value={{ ...state, refresh }}>
       {children}
     </MembershipContext.Provider>
   );
