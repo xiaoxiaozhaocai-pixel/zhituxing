@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1180,16 +1180,21 @@ function ProfileContent() {
     }>;
   } | null>(null);
   const [growthLoading, setGrowthLoading] = useState(false);
+  const hasFetchedGrowth = useRef(false);
 
   useEffect(() => {
-    if (activeTab === 'growth' && !growthData) {
+    if (activeTab === 'growth' && !hasFetchedGrowth.current) {
+      hasFetchedGrowth.current = true;
       setGrowthLoading(true);
       fetch('/api/user/growth', { credentials: 'include' })
         .then(res => res.json())
         .then(data => {
           if (data.success) setGrowthData(data.data);
         })
-        .catch(console.error)
+        .catch((err) => {
+          console.error(err);
+          hasFetchedGrowth.current = false; // 失败时允许重试
+        })
         .finally(() => setGrowthLoading(false));
     }
   }, [activeTab]);
