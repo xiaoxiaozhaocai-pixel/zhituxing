@@ -55,7 +55,7 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
         setState(prev => ({ ...prev, loading: false }));
         return;
       }
-      const res = await fetch('/api/user/membership', {
+      const res = await fetch('/api/membership', {
         headers: { 'x-user-id': userId },
       });
       if (res.ok) {
@@ -79,7 +79,7 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     try {
       const userId = getCurrentUserId();
       if (!userId) return false;
-      const res = await fetch('/api/user/membership', {
+      const res = await fetch('/api/membership', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

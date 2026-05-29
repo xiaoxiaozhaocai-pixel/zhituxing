@@ -44,7 +44,7 @@ async function testApiEndpoints(): Promise<any[]> {
     { path: '/api/skills/relations?skill=Java', method: 'GET', expected: 200, name: '技能关系' },
     { path: '/api/membership', method: 'GET', expected: 401, name: '会员信息' },
     { path: '/api/orders', method: 'POST', expected: 401, name: '订单接口' },
-    { path: '/api/quota', method: 'GET', expected: 200, name: '配额查询' },
+    { path: '/api/quota', method: 'GET', expected: 401, name: '未登录配额（应拒）' },
     { path: '/api/industries', method: 'GET', expected: 200, name: '行业列表' },
   ];
 
