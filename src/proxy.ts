@@ -97,7 +97,7 @@ function createRateLimitResponse(): NextResponse {
 // ============================================================
 // 中间件主函数（异步，支持分布式限流）
 // ============================================================
-export async function middleware(request: NextRequest): Promise<NextResponse | undefined> {
+export async function proxy(request: NextRequest): Promise<NextResponse | undefined> {
   const pathname = request.nextUrl.pathname;
 
   // --------------------------------------------------------
@@ -162,7 +162,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
     // 漏洞修复：之前允许 x-user-id 绕过登录检查是严重安全漏洞
     // 现在只验证 JWT token，不再信任 x-user-id header
     if (!accessToken) {
-      console.log('[middleware] /api/chat returning 401 - no auth token');
+      console.log('[proxy] /api/chat returning 401 - no auth token');
       const response = NextResponse.json(
         { error: '请先登录' },
         { status: 401 }
@@ -170,7 +170,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse | u
       return addSecurityHeaders(response);
     }
     
-    console.log('[middleware] /api/chat auth passed, checking rate limit');
+    console.log('[proxy] /api/chat auth passed, checking rate limit');
     const chatCheck = await checkRateLimit(`chat:${rateLimitKey}`, 5, 60000);
     if (!chatCheck.allowed) {
       return createRateLimitResponse();
