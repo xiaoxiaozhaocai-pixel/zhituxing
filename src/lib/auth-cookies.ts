@@ -37,3 +37,9 @@ export function parseAccessTokenFromCookie(headers: Headers): string | null {
   const match = cookieHeader.match(/sb-access-token=([^;]+)/);
   return match ? match[1] : null;
 }
+
+export function parseRefreshTokenFromCookie(headers: Headers): string | null {
+  const cookieHeader = headers.get('cookie') || '';
+  const match = cookieHeader.match(/sb-refresh-token=([^;]+)/);
+  return match ? match[1] : null;
+}

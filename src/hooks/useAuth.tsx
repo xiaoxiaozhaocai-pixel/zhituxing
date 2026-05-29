@@ -68,6 +68,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
+  // P0 修复：用户切回标签页时重新校验会话（防"假在线"）
+  // 配合 /api/auth/me 服务端 refresh_token 自动续期能力，
+  // 实现 access_token 过期后无感续期；refresh 失败则自动登出。
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAuth();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+
   const checkAuth = async () => {
     try {
       // 安全修复：不再从 localStorage 读取用户信息
@@ -203,14 +219,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 清理内存状态
       setUser(null);
       setQuota(null);
-      
-      // 清理 cookie（通过服务端）
-      if (typeof document !== 'undefined') {
-        document.cookie = 'sb-access-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
-        document.cookie = 'sb-refresh-token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
-      }
-      
-      // 调用服务端清理 cookie
+
+      // 调用服务端清理 cookie（HttpOnly cookie 必须服务端清，客户端 document.cookie 写不动）
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     } catch (error) {
       console.error('退出登录失败:', error);
