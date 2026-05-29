@@ -43,6 +43,8 @@ import {
 } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 import Breadcrumb from '@/components/Breadcrumb';
+import GrowthCompanionCard from '@/components/GrowthCompanionCard';
+import GrowthTimeline from '@/components/GrowthTimeline';
 
 // 侧边栏菜单项
 const menuItems = [
@@ -50,6 +52,7 @@ const menuItems = [
   { id: 'messages', label: '我的消息', icon: Bell, color: '#165DFF' },
   { id: 'membership', label: '我的会员', icon: Crown, color: '#FF7D00' },
   { id: 'reports', label: '我的报告', icon: FileText, color: '#722ED1' },
+  { id: 'growth', label: '成长记录', icon: Sparkles, color: '#165DFF' },
   { id: 'favorites', label: '我的收藏', icon: Heart, color: '#EF4444' },
   { id: 'invite', label: '我的邀请', icon: Users, color: '#10B981' },
   { id: 'settings', label: '账号设置', icon: Settings, color: '#6B7280' },
@@ -1163,6 +1166,33 @@ function ProfileContent() {
   const { user, loading, logout, quota } = useAuth();
   const [activeTab, setActiveTab] = useState('messages');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [growthData, setGrowthData] = useState<{
+    companionDays: number;
+    totalReports: number;
+    totalFavorites: number;
+    totalAssessments: number;
+    milestones: Array<{
+      id: string;
+      type: 'register' | 'assessment' | 'report' | 'resume' | 'favorite' | 'interview';
+      title: string;
+      description: string;
+      date: string;
+    }>;
+  } | null>(null);
+  const [growthLoading, setGrowthLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'growth' && !growthData) {
+      setGrowthLoading(true);
+      fetch('/api/user/growth', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) setGrowthData(data.data);
+        })
+        .catch(console.error)
+        .finally(() => setGrowthLoading(false));
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -1206,6 +1236,22 @@ function ProfileContent() {
         return <MembershipPanel user={user} quota={quota} />;
       case 'reports':
         return <ReportsPanel userId={user.id} />;
+      case 'growth':
+        return (
+          <div className="space-y-6">
+            <GrowthCompanionCard
+              companionDays={growthData?.companionDays ?? 0}
+              totalReports={growthData?.totalReports ?? 0}
+              totalFavorites={growthData?.totalFavorites ?? 0}
+              totalAssessments={growthData?.totalAssessments ?? 0}
+              isLoading={growthLoading}
+            />
+            <GrowthTimeline
+              milestones={growthData?.milestones ?? []}
+              isLoading={growthLoading}
+            />
+          </div>
+        );
       case 'favorites':
         return <FavoritesPanel userId={user.id} />;
       case 'invite':
