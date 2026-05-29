@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic';
  */
 
 import { NextRequest } from 'next/server';
+import { parseRequestBody } from '@/lib/api-contracts/_shared';
+import { CareerPlanningStreamRequestSchema } from '@/lib/api-contracts/career-planning';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -95,8 +97,10 @@ const SSE_HEADERS = {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { major, grade, city, message, conversationId } = body;
+    // 契约化：用 zod 校验请求体，失败立即返回 INVALID_REQUEST
+    const parsed = await parseRequestBody(request, CareerPlanningStreamRequestSchema);
+    if (!parsed.ok) return parsed.response;
+    const { major, grade, city, message, conversationId } = parsed.data;
 
     // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
@@ -112,7 +116,7 @@ export async function POST(request: NextRequest) {
     // 3. 构建最终消息
     const queryContent = message || `请根据以下信息，为我生成一份专属的职业规划报告：\n\n【基本信息】\n- 所属专业：${major || '未填写'}\n- 当前年级：${grade || '未填写'}\n- 意向城市：${city || '未填写'}\n\n请生成一份详细的职业规划报告。`;
     const finalMessage = userContext + queryContent;
-    const fallbackText = getCareerFallback(major, grade, city);
+    const fallbackText = getCareerFallback(major || '', grade || '', city || '');
 
     // ===========================
     // DeepSeek + RAG 分支
