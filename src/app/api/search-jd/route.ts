@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import {
   getUserInfoFromRequest,
+  getUserProfileContext,
   callCozeStreamApi,
   createCozeSSEStream,
   callWorkflowStreamApi,
@@ -188,6 +189,12 @@ export async function POST(request: NextRequest) {
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
 
+    // 2. 获取用户个人信息上下文（让岗位搜索智能体知道用户专业/年级/意向）
+    let userContext = '';
+    if (userId) {
+      userContext = await getUserProfileContext(userId);
+    }
+
     const fallbackText = await getDbFallback(message);
 
     // ===========================
@@ -201,7 +208,7 @@ export async function POST(request: NextRequest) {
         const workflowResponse = await callWorkflowStreamApi({
           botType: 'jobs',
           message,
-          userContext: '',
+          userContext,
         });
 
         if (workflowResponse.ok) {
@@ -234,6 +241,7 @@ export async function POST(request: NextRequest) {
       botId,
       message,
       userType,
+      userContext,
       conversationId,
     });
 
