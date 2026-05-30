@@ -18,8 +18,6 @@ jobs:
       # 必须在 setup-node 之前装 pnpm，否则 cache:'pnpm' 找不到可执行文件
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
