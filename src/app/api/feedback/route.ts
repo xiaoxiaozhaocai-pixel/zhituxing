@@ -17,7 +17,6 @@ function getClientIp(request: NextRequest): string {
   if (xRealIp) {
     return xRealIp;
   }
-  // Next.js 16 已移除 NextRequest.ip，前两个 header 兜底足够（Zeabur 必带 x-forwarded-for）
   return 'unknown';
 }
 
@@ -57,12 +56,25 @@ export async function POST(request: NextRequest) {
       .select('id')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[feedback] DB insert 失败:', JSON.stringify(error));
+      throw error;
+    }
 
-    return NextResponse.json({ success: true, id: feedback.id });
+    return NextResponse.json(
+      { success: true, id: feedback.id },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('提交反馈失败:', error);
-    return NextResponse.json({ error: '提交失败' }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error('[feedback] POST 异常:', errMsg);
+    return NextResponse.json(
+      { error: '提交失败，请稍后重试' },
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 }
 
@@ -83,11 +95,18 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    if (error) throw error;
+    if (error) {
+      console.error('[feedback] DB 查询失败:', JSON.stringify(error));
+      throw error;
+    }
 
     return NextResponse.json({ success: true, data: feedbacks || [] });
   } catch (error) {
-    console.error('获取反馈失败:', error);
-    return NextResponse.json({ error: '获取失败' }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error('[feedback] GET 异常:', errMsg);
+    return NextResponse.json(
+      { error: '获取失败' },
+      { status: 500 }
+    );
   }
 }
