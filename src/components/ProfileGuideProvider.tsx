@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import ProfileGuideBar from './ProfileGuideBar';
 import FirstVisitModal from './FirstVisitModal';
 
@@ -11,21 +11,29 @@ interface ProfileGuideProviderProps {
 
 export default function ProfileGuideProvider({ children }: ProfileGuideProviderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [hasProfile, setHasProfile] = useState(false);
   const [checkDone, setCheckDone] = useState(false);
 
-  // 如果是后台管理页面，不显示引导组件
-  if (pathname?.startsWith('/admin')) {
+  // 如果是后台/onboarding/auth页面，不拦截
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) {
     return <>{children}</>;
   }
 
   useEffect(() => {
-    // 检查用户是否已完善个人信息
     checkUserProfile();
   }, []);
 
   const checkUserProfile = async () => {
     try {
+      // 已通过引导的标志
+      const onboardingDone = localStorage.getItem('onboarding_done');
+      if (onboardingDone === 'true') {
+        setHasProfile(true);
+        setCheckDone(true);
+        return;
+      }
+
       // 获取当前登录用户
       const userResponse = await fetch('/api/auth/me');
       const userData = await userResponse.json();
@@ -39,13 +47,21 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
         
         const has = profileData.success && (profileData.data?.major || profileData.data?.grade);
         setHasProfile(has);
+
+        if (has) {
+          // 已有基本信息，标记引导完成
+          localStorage.setItem('onboarding_done', 'true');
+        } else {
+          // 无基本信息 → 跳转到引导页
+          router.push('/onboarding');
+        }
       } else {
-        // 未登录，不显示引导
+        // 未登录
         setHasProfile(true);
       }
     } catch (error) {
       console.error('检查用户信息失败:', error);
-      setHasProfile(true); // 出错时默认不显示引导
+      setHasProfile(true);
     } finally {
       setCheckDone(true);
     }

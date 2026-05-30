@@ -316,6 +316,56 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
         </CardContent>
       </Card>
 
+      {/* 补充信息卡片（可选项） */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-600" />
+            补充信息（可选）
+          </CardTitle>
+          <CardDescription className="text-xs text-gray-400">
+            填写后可让所有AI服务获得更精准的上下文，一次填写处处生效
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[
+              { key: 'gpa', label: 'GPA', icon: Bookmark, color: 'text-orange-600' },
+              { key: 'target_industry', label: '意向行业', icon: Target, color: 'text-blue-600', format: (v: any) => Array.isArray(v) ? v.join('、') : v },
+              { key: 'target_cities', label: '意向城市', icon: MapPin, color: 'text-green-600', format: (v: any) => Array.isArray(v) ? v.join('、') : v },
+              { key: 'economic_pressure', label: '家庭经济', icon: DollarSign, color: 'text-red-500' },
+              { key: 'career_tendency', label: '学术vs实践', icon: Brain, color: 'text-purple-600' },
+            ].map(field => {
+              const rawVal = getFieldValue(field.key === 'target_cities' ? 'target_city' : field.key);
+              const displayVal = rawVal ? (field.format ? field.format(rawVal) : rawVal) : null;
+              const Icon = field.icon;
+              return (
+                <div key={field.key} className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <Icon className={`w-4 h-4 ${field.color}`} />
+                    <span className="text-sm text-gray-600">{field.label}</span>
+                  </div>
+                  <div>
+                    {displayVal ? (
+                      <span className="text-sm text-gray-900 font-medium">{displayVal}</span>
+                    ) : (
+                      <span className="text-xs text-gray-400">未填写</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 pt-3 border-t">
+            <Link href="/onboarding">
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                补充更多信息
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 奖项/实习/项目卡片 */}
       {arrayFields.some(f => {
         const val = profile[f.key];
