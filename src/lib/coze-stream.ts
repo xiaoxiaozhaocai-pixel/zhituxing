@@ -37,7 +37,7 @@ export async function getUserProfileContext(userId: string): Promise<string> {
   try {
     // 使用 Supabase REST API 查询，避免 SQL 注入
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${encodeURIComponent(userId)}&select=personality_type,major,grade,graduation_year,city,job_intention,skills,internship_experience,project_experience,awards,ability_background&limit=1`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${encodeURIComponent(userId)}&select=personality_type,major,grade,graduation_year,target_job,target_cities,target_industry,gpa,economic_pressure,career_tendency,hard_skills,soft_skills,internship_experience,project_experience,awards&limit=1`,
       {
         headers: {
           'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
@@ -59,68 +59,113 @@ export async function getUserProfileContext(userId: string): Promise<string> {
       personality_type: string | null;
       major: string | null;
       grade: string | null;
-      graduation_year: number | null;
-      city: string | null;
-      job_intention: string | null;
-      skills: string | null;
-      internship_experience: string | null;
-      project_experience: string | null;
-      awards: string | null;
-      ability_background: string | null;
+      graduation_year: string | null;
+      target_job: string | null;
+      target_cities: unknown;
+      target_industry: string | null;
+      gpa: string | null;
+      economic_pressure: string | null;
+      career_tendency: string | null;
+      hard_skills: unknown;
+      soft_skills: unknown;
+      internship_experience: unknown;
+      project_experience: unknown;
+      awards: unknown;
     };
 
     const contextParts: string[] = [];
 
+    // === 基础信息 ===
     if (profile.personality_type) contextParts.push(`人格测评结果：${profile.personality_type}`);
     if (profile.major) contextParts.push(`专业：${profile.major}`);
     if (profile.grade) contextParts.push(`年级：${profile.grade}`);
     if (profile.graduation_year) contextParts.push(`毕业年份：${profile.graduation_year}年`);
-    if (profile.city) contextParts.push(`意向工作城市：${profile.city}`);
-    if (profile.job_intention) contextParts.push(`求职意向：${profile.job_intention}`);
-    if (profile.skills) {
-      // skills 是 jsonb，可能是字符串数组或对象数组
-      const skillsData = profile.skills;
-      if (Array.isArray(skillsData)) {
-        const skillNames = skillsData.map((s: unknown) =>
-          typeof s === 'object' && s !== null ? (s as Record<string, unknown>).name : s
+    if (profile.target_job) contextParts.push(`目标岗位：${profile.target_job}`);
+
+    // === 技能画像相关 ===
+    if (profile.target_industry) contextParts.push(`意向行业：${profile.target_industry}`);
+    if (profile.target_cities) {
+      const cities = profile.target_cities;
+      if (Array.isArray(cities) && cities.length > 0) {
+        contextParts.push(`意向工作城市：${cities.join('、')}`);
+      }
+    }
+
+    // 硬技能解析（jsonb，支持数组或对象数组）
+    if (profile.hard_skills) {
+      const skills = profile.hard_skills;
+      if (Array.isArray(skills)) {
+        const names = skills.map((s: unknown) =>
+          typeof s === 'object' && s !== null ? (s as Record<string, unknown>).name || (s as Record<string, unknown>).skill : s
         ).filter(Boolean);
-        if (skillNames.length > 0) contextParts.push(`已掌握技能：${skillNames.join('、')}`);
+        if (names.length > 0) contextParts.push(`专业技能：${names.join('、')}`);
       }
     }
 
-    // 解析 ability_background 结构化数据
-    if (profile.ability_background) {
-      try {
-        const ab = typeof profile.ability_background === 'string'
-          ? JSON.parse(profile.ability_background)
-          : profile.ability_background;
-        if (ab.professional_skills?.length) {
-          contextParts.push(`专业核心技能：${ab.professional_skills.join('、')}`);
-        }
-        if (ab.office_skills) {
-          const officeParts: string[] = [];
-          if (ab.office_skills.default_selected?.length) officeParts.push(...ab.office_skills.default_selected);
-          if (ab.office_skills.custom_skills?.length) officeParts.push(...ab.office_skills.custom_skills);
-          if (officeParts.length) contextParts.push(`办公软件技能：${officeParts.join('、')}`);
-        }
-        if (ab.language_abilities?.length) {
-          const langStr = ab.language_abilities
-            .map((l: { language?: string; level?: string; proficiency?: string }) =>
-              `${l.language || ''}${l.level ? ' ' + l.level : ''}${l.proficiency ? '（' + l.proficiency + '）' : ''}`)
-            .join('、');
-          if (langStr) contextParts.push(`外语能力：${langStr}`);
-        }
-        if (ab.certificates?.length) {
-          contextParts.push(`职业技能证书：${ab.certificates.join('、')}`);
-        }
-      } catch {
-        // 解析失败，忽略
+    // 软技能解析
+    if (profile.soft_skills) {
+      const skills = profile.soft_skills;
+      if (Array.isArray(skills)) {
+        const names = skills.map((s: unknown) =>
+          typeof s === 'object' && s !== null ? (s as Record<string, unknown>).name || (s as Record<string, unknown>).skill : s
+        ).filter(Boolean);
+        if (names.length > 0) contextParts.push(`软技能：${names.join('、')}`);
       }
     }
 
-    if (profile.internship_experience) contextParts.push(`实习经历：${profile.internship_experience}`);
-    if (profile.project_experience) contextParts.push(`项目经历：${profile.project_experience}`);
-    if (profile.awards) contextParts.push(`获奖情况：${profile.awards}`);
+    // === 考研就业决策相关 ===
+    if (profile.gpa) contextParts.push(`GPA/成绩：${profile.gpa}`);
+    if (profile.economic_pressure) {
+      const ecoMap: Record<string, string> = {
+        'none': '无经济压力',
+        'little': '有一定压力',
+        'heavy': '压力较大',
+      };
+      contextParts.push(`家庭经济情况：${ecoMap[profile.economic_pressure] || profile.economic_pressure}`);
+    }
+    if (profile.career_tendency) {
+      const tendMap: Record<string, string> = {
+        'academic': '偏学术研究',
+        'practice': '偏实践工作',
+        'undecided': '还没想好',
+      };
+      contextParts.push(`发展偏好：${tendMap[profile.career_tendency] || profile.career_tendency}`);
+    }
+
+    // === 经历相关 ===
+    if (profile.internship_experience) {
+      const exp = profile.internship_experience;
+      if (Array.isArray(exp)) {
+        const summaries = exp.slice(0, 3).map((e: Record<string, unknown>) =>
+          [e.company, e.position, e.duration].filter(Boolean).join(' - ')
+        );
+        if (summaries.length > 0) contextParts.push(`实习经历：${summaries.join('；')}`);
+      } else if (typeof exp === 'string') {
+        contextParts.push(`实习经历：${exp}`);
+      }
+    }
+    if (profile.project_experience) {
+      const exp = profile.project_experience;
+      if (Array.isArray(exp)) {
+        const summaries = exp.slice(0, 3).map((e: Record<string, unknown>) =>
+          [e.name, e.role, e.description?.toString().slice(0, 50)].filter(Boolean).join(' - ')
+        );
+        if (summaries.length > 0) contextParts.push(`项目经历：${summaries.join('；')}`);
+      } else if (typeof exp === 'string') {
+        contextParts.push(`项目经历：${exp}`);
+      }
+    }
+    if (profile.awards) {
+      const awards = profile.awards;
+      if (Array.isArray(awards)) {
+        const names = awards.map((a: unknown) =>
+          typeof a === 'object' && a !== null ? (a as Record<string, unknown>).name || (a as Record<string, unknown>).title : a
+        ).filter(Boolean);
+        if (names.length > 0) contextParts.push(`获奖情况：${names.join('、')}`);
+      } else if (typeof awards === 'string') {
+        contextParts.push(`获奖情况：${awards}`);
+      }
+    }
 
     if (contextParts.length === 0) return '';
 
@@ -145,7 +190,7 @@ export async function saveStructuredData(
   try {
     const now = new Date().toISOString();
     
-    // 确定目标表
+    // 确定目标表 — 覆盖全部智能体
     let table = '';
     let dataField = 'result_data';
     if (dataType === 'interview_result' || botType === 'interview') {
@@ -158,6 +203,15 @@ export async function saveStructuredData(
       dataField = 'match_data';
     } else if (dataType === 'skill_assessment' || botType === 'assessment') {
       table = 'assessment_results';
+    } else if (dataType === 'resume_optimization' || botType === 'resume') {
+      table = 'resume_optimizations';
+    } else if (dataType === 'competency_result' || botType === 'competency') {
+      table = 'competency_results';
+    } else if (dataType === 'decision_result' || botType === 'decision') {
+      table = 'decision_results';
+    } else if (dataType === 'skill_portrait' || botType === 'skill_portrait') {
+      table = 'skill_portraits';
+      dataField = 'portrait_data';
     }
     
     if (!table) return;

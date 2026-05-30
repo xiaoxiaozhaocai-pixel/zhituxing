@@ -437,7 +437,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
   // 跳转到AI助手（带完整岗位信息）
   const handleJobClick = (job: Job) => {
     const prompt = generateJobAnalysisPrompt(job);
-    router.push(`/assistant?query=${encodeURIComponent(prompt)}`);
+    router.push(`/assistant?bot=jobs&jobId=${job.id}&query=${encodeURIComponent(prompt)}`);
   };
 
   // 分页

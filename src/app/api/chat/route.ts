@@ -169,6 +169,242 @@ const SSE_HEADERS = {
   'Connection': 'keep-alive',
 };
 
+
+/**
+ * 获取上游智能体产物并构建上下文
+ * 实现跨智能体数据透传：下游自动消费上游结果
+ */
+async function getUpstreamArtifacts(userId: string, botType: string): Promise<string | null> {
+  try {
+    const supabase = getSupabaseAdmin();
+    const parts: string[] = [];
+
+    // ================================================================
+    // 全智能体调用链：每条链 = 当前 botType ← 上游产物
+    // ================================================================
+
+    if (botType === 'competency') {
+      // 胜任力评估 ← 职业规划 + 能力测评
+      const { data: plans } = await supabase
+        .from('career_plans')
+        .select('plan_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (plans && plans.length > 0 && plans[0].plan_data) {
+        const plan = plans[0].plan_data;
+        const planSummary = typeof plan === 'string' 
+          ? plan 
+          : JSON.stringify(plan).slice(0, 1000);
+        parts.push(`【上游职业规划结果】\n${planSummary}`);
+      }
+
+      // 胜任力 ← 能力测评
+      const { data: assessments } = await supabase
+        .from('assessment_results')
+        .select('result_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (assessments && assessments.length > 0 && assessments[0].result_data) {
+        const ass = assessments[0].result_data;
+        const assSummary = typeof ass === 'string'
+          ? ass
+          : JSON.stringify(ass).slice(0, 1000);
+        parts.push(`【上游能力测评结果】\n${assSummary}`);
+      }
+
+    } else if (botType === 'interview') {
+      // 模拟面试 ← 简历优化 + JD分析
+      const { data: resumes } = await supabase
+        .from('resume_optimizations')
+        .select('result_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (resumes && resumes.length > 0 && resumes[0].result_data) {
+        const resume = resumes[0].result_data;
+        const resumeSummary = typeof resume === 'string' 
+          ? resume 
+          : JSON.stringify(resume).slice(0, 1500);
+        parts.push(`【上游简历优化结果】\n${resumeSummary}`);
+      }
+
+      const { data: jdMatches } = await supabase
+        .from('skill_job_match')
+        .select('match_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (jdMatches && jdMatches.length > 0 && jdMatches[0].match_data) {
+        const match = jdMatches[0].match_data;
+        const matchSummary = typeof match === 'string'
+          ? match
+          : JSON.stringify(match).slice(0, 1000);
+        parts.push(`【上游JD分析结果】\n${matchSummary}`);
+      }
+
+    } else if (botType === 'career') {
+      // 职业规划 ← 能力测评 + 技能画像
+      const { data: assessments } = await supabase
+        .from('assessment_results')
+        .select('result_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (assessments && assessments.length > 0 && assessments[0].result_data) {
+        const ass = assessments[0].result_data;
+        const assSummary = typeof ass === 'string'
+          ? ass
+          : JSON.stringify(ass).slice(0, 1000);
+        parts.push(`【上游能力测评结果】\n${assSummary}`);
+      }
+
+      // 职业规划 ← 技能画像（已有技能清单）
+      const { data: portraits } = await supabase
+        .from('skill_portraits')
+        .select('portrait_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (portraits && portraits.length > 0 && portraits[0].portrait_data) {
+        const p = portraits[0].portrait_data;
+        const pSummary = typeof p === 'string'
+          ? p
+          : JSON.stringify(p).slice(0, 1000);
+        parts.push(`【上游技能画像结果】\n${pSummary}`);
+      }
+
+    } else if (botType === 'assessment') {
+      // 能力测评 ← 技能画像（差距清单：知道缺什么才能精准出题）
+      const { data: portraits } = await supabase
+        .from('skill_portraits')
+        .select('portrait_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (portraits && portraits.length > 0 && portraits[0].portrait_data) {
+        const p = portraits[0].portrait_data;
+        const pSummary = typeof p === 'string'
+          ? p
+          : JSON.stringify(p).slice(0, 1000);
+        parts.push(`【上游技能画像结果（差距清单）】\n${pSummary}`);
+      }
+
+    } else if (botType === 'decision') {
+      // 考研就业决策 ← 能力测评 + 胜任力评估 + 职业规划
+      const { data: assessments } = await supabase
+        .from('assessment_results')
+        .select('result_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (assessments && assessments.length > 0 && assessments[0].result_data) {
+        const ass = assessments[0].result_data;
+        const assSummary = typeof ass === 'string'
+          ? ass
+          : JSON.stringify(ass).slice(0, 1000);
+        parts.push(`【上游能力测评结果】\n${assSummary}`);
+      }
+
+      const { data: competencies } = await supabase
+        .from('competency_results')
+        .select('result_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (competencies && competencies.length > 0 && competencies[0].result_data) {
+        const comp = competencies[0].result_data;
+        const compSummary = typeof comp === 'string'
+          ? comp
+          : JSON.stringify(comp).slice(0, 1000);
+        parts.push(`【上游胜任力评估结果】\n${compSummary}`);
+      }
+
+      const { data: plans } = await supabase
+        .from('career_plans')
+        .select('plan_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (plans && plans.length > 0 && plans[0].plan_data) {
+        const plan = plans[0].plan_data;
+        const planSummary = typeof plan === 'string'
+          ? plan
+          : JSON.stringify(plan).slice(0, 1000);
+        parts.push(`【上游职业规划结果】\n${planSummary}`);
+      }
+
+    } else if (botType === 'resume') {
+      // 简历优化 ← JD分析结果 + 技能画像
+      const { data: jdMatches } = await supabase
+        .from('skill_job_match')
+        .select('match_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (jdMatches && jdMatches.length > 0 && jdMatches[0].match_data) {
+        const match = jdMatches[0].match_data;
+        const matchSummary = typeof match === 'string'
+          ? match
+          : JSON.stringify(match).slice(0, 1000);
+        parts.push(`【上游JD分析结果】\n${matchSummary}`);
+      }
+
+      const { data: portraits } = await supabase
+        .from('skill_portraits')
+        .select('portrait_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (portraits && portraits.length > 0 && portraits[0].portrait_data) {
+        const p = portraits[0].portrait_data;
+        const pSummary = typeof p === 'string'
+          ? p
+          : JSON.stringify(p).slice(0, 1000);
+        parts.push(`【上游技能画像结果】\n${pSummary}`);
+      }
+
+    } else if (botType === 'skill_portrait') {
+      // 技能画像 ← 无需上游产物，仅依赖个人信息（已在getUserProfileContext注入）
+      // 但可以标注已有测评数据供参考
+      const { data: assessments } = await supabase
+        .from('assessment_results')
+        .select('result_data, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (assessments && assessments.length > 0 && assessments[0].result_data) {
+        const ass = assessments[0].result_data;
+        const assSummary = typeof ass === 'string'
+          ? ass
+          : JSON.stringify(ass).slice(0, 800);
+        parts.push(`【已有能力测评结果参考】\n${assSummary}`);
+      }
+    }
+
+    if (parts.length === 0) return null;
+    return `\n【上游智能体产物（自动注入）】\n${parts.join('\n\n')}\n---\n`;
+  } catch (error) {
+    console.error('获取上游智能体产物失败:', error);
+    return null;
+  }
+}
+
+
 export async function POST(request: NextRequest) {
   try {
     // ============================================================
@@ -283,6 +519,15 @@ export async function POST(request: NextRequest) {
     let userContext = '';
     if (userId) {
       userContext = await getUserProfileContext(userId);
+      
+      // ============================================================
+      // 智能体调用链：下游自动消费上游产物
+      // 根据当前 botType，自动查询相关的上游智能体产物并注入上下文
+      // ============================================================
+      const upstreamArtifacts = await getUpstreamArtifacts(userId, effectiveBotType);
+      if (upstreamArtifacts) {
+        userContext += '\n\n' + upstreamArtifacts;
+      }
     }
 
     // 检查配额（仅当 userId 存在时）

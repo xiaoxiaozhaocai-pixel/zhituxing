@@ -348,8 +348,15 @@ function AssistantContent() {
     }
   }, [activeBot, currentBot.welcomeMessage]);
 
-  // 解析 URL query 参数（只执行一次）
+  // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
+    const bot = searchParams.get('bot');
+    if (bot && !pendingQuery) {
+      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency'];
+      if (validBots.includes(bot)) {
+        setActiveBot(bot);
+      }
+    }
     const query = searchParams.get('query');
     if (query && !pendingQuery) {
       setPendingQuery(query);
