@@ -32,15 +32,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 用 ANON_KEY 客户端验证 token（getUser 需要 anon key，不是 service role）
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAnon = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    // 用 SERVICE_ROLE 客户端验证 token
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const supabaseAdmin = getSupabaseAdmin();
 
     // 验证 token
-    const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     console.log('[user/profile GET] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
     
     if (authError || !user) {
@@ -97,15 +94,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    // 用 ANON_KEY 客户端验证 token（getUser 需要 anon key，不是 service role）
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAnon = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    // 用 SERVICE_ROLE 客户端验证 token
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const supabaseAdmin = getSupabaseAdmin();
 
     // 验证 token
-    const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     console.log('[user/profile PUT] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
     
     if (authError || !user) {
