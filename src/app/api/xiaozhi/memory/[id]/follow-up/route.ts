@@ -8,7 +8,7 @@ const supabase = getSupabaseAdmin();
 // PATCH /api/xiaozhi/memory/:id/follow-up — 标记为已主动关心
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getAuthenticatedUserId(request);
@@ -16,9 +16,8 @@ export async function PATCH(
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
-    // 验证这条记忆属于该用户
     const { data: existing, error: fetchError } = await supabase
       .from('mascot_emotional_memory')
       .select('id')
@@ -38,7 +37,6 @@ export async function PATCH(
       .single();
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('标记已关心失败:', error);

@@ -8,7 +8,7 @@ const supabase = getSupabaseAdmin();
 // PATCH /api/xiaozhi/tasks/:id — 更新任务状态或内容
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getAuthenticatedUserId(request);
@@ -16,9 +16,8 @@ export async function PATCH(
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
-    // 验证任务属于该用户
     const { data: existing, error: fetchError } = await supabase
       .from('mascot_task_memory')
       .select('id')
@@ -40,7 +39,6 @@ export async function PATCH(
       }
       updateData.task_status = body.taskStatus;
     }
-
     if (body.taskTitle) updateData.task_title = body.taskTitle;
     if (body.relatedAgent) updateData.related_agent = body.relatedAgent;
     if (body.metadata) updateData.metadata = body.metadata;
@@ -53,7 +51,6 @@ export async function PATCH(
       .single();
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error('更新小职任务记忆失败:', error);
@@ -64,7 +61,7 @@ export async function PATCH(
 // DELETE /api/xiaozhi/tasks/:id — 删除一条任务记录
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getAuthenticatedUserId(request);
@@ -72,7 +69,7 @@ export async function DELETE(
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const { data: existing, error: fetchError } = await supabase
       .from('mascot_task_memory')
@@ -91,7 +88,6 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, message: '删除成功' });
   } catch (error) {
     console.error('删除小职任务记忆失败:', error);
