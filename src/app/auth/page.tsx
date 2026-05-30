@@ -65,6 +65,9 @@ function AuthContent() {
   const [success, setSuccess] = useState('');
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  // 登录成功标志：作为跳转 useEffect 的冗余触发条件，
+  // 避免依赖 useAuth 内 setUser 异步同步到本组件的时机（React 19 + Next.js 16）
+  const [loginSuccess, setLoginSuccess] = useState(false);
   
   // 表单验证
   const [emailError, setEmailError] = useState('');
@@ -85,16 +88,19 @@ function AuthContent() {
     }
   }, [searchParams]);
 
-  // 如果已登录，跳转到来源页或首页
+  // 如果已登录或刚登录成功，跳转到来源页或首页
+  // 修复：原代码仅依赖 user 状态触发，但 React 19 下 useAuth 内 setUser 同步到本组件可能延迟，
+  // 加 loginSuccess 标志位作为冗余触发；router.refresh() 强制 Next.js 16 服务端组件重渲染
   useEffect(() => {
-    if (user) {
+    if (user || loginSuccess) {
       // 安全检查：redirect 必须是相对路径
       const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
         ? redirectTo
         : '/';
       router.push(safeRedirect);
+      router.refresh();
     }
-  }, [user, router, redirectTo]);
+  }, [user, loginSuccess, router, redirectTo]);
 
   // 验证邮箱格式
   const validateEmail = (value: string): boolean => {
@@ -205,6 +211,7 @@ function AuthContent() {
     try {
       const result = await login(email, password);
       if (result.success) {
+        setLoginSuccess(true);  // 立刻触发跳转 useEffect，不等 user state 异步同步
         setSuccess('登录成功，正在跳转...');
       } else {
         setError(getFriendlyError(result.message));

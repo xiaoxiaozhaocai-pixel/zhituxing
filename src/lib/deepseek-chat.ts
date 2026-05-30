@@ -114,17 +114,25 @@ export function createDeepSeekSSEStream(options: DeepSeekStreamOptions): Readabl
         await deepSeekChat({
           ...options,
           onChunk: (chunk) => {
+            // 输出 Coze 兼容格式 {type:'text',content}，与 createCozeSSEStream 对齐
+            // 前端按 parsed.type 解析，OpenAI 风格的 choices/delta 会被前端忽略
             const data = JSON.stringify({
-              choices: [{ delta: { content: chunk } }],
+              type: 'text',
+              content: chunk,
             });
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           },
         });
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        // 完成标记：Coze 风格 {type:'done'}，不用 [DONE]
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
         controller.close();
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : 'Unknown error';
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
+        // 错误格式：Coze 风格 {type:'error',message}
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+          type: 'error',
+          message: errMsg,
+        })}\n\n`));
         controller.close();
       }
     },
