@@ -4,11 +4,12 @@
 
 const XLSX = require('xlsx');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
 const { execSync } = require('child_process');
 
 // Supabase配置
-const supabaseUrl = 'https://br-loyal-lynx-b8e11685.supabase2.aidap-global.cn-beijing.volces.com';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjMzNTY5OTczODQsInJvbGUiOiJzZXJ2aWNlX3JvbGUifQ.3jeOyTGZngC7uixF40G9Wo4VG0EfurS9BWFMI6zSsAw';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 // 读取Excel文件
 const filePath = path.join(__dirname, '../assets/HR 岗位 JD 基础库.xlsx');
