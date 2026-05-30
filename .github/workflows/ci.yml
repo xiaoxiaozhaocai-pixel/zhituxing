@@ -15,7 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 必须在 setup-node 之前装 pnpm，否则 cache:'pnpm' 找不到可执行文件
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -32,7 +31,7 @@ jobs:
         run: pnpm tsc --noEmit
 
       - name: Lint
-        run: pnpm lint || true  # 允许 lint 失败但要看到报告
+        run: pnpm lint || true
 
       - name: Build
         run: pnpm build
@@ -42,6 +41,29 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_ENABLED: "false"
 
-# 注意：CodeQL job 已删除
-# 原因：仓库是 private，CodeQL 需要付费的 GitHub Advanced Security
-# 节点后路线：清理 4 处硬编码 service_role key → 轮转 Supabase key → 改 public → 重新启用 CodeQL
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript-typescript']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
