@@ -55,6 +55,8 @@ const ONBOARDING_TOUR_STEPS = [
     color: 'from-blue-500 to-indigo-600',
     bgColor: 'bg-blue-100',
     iconColor: 'text-blue-600',
+    link: '/career-planning',
+    linkText: '去规划',
   },
   {
     id: 'agent-cards',
@@ -64,6 +66,8 @@ const ONBOARDING_TOUR_STEPS = [
     color: 'from-violet-500 to-purple-600',
     bgColor: 'bg-violet-100',
     iconColor: 'text-violet-600',
+    link: '/assistant',
+    linkText: '去看看',
   },
   {
     id: 'job-matching',
@@ -73,6 +77,8 @@ const ONBOARDING_TOUR_STEPS = [
     color: 'from-cyan-500 to-teal-600',
     bgColor: 'bg-cyan-100',
     iconColor: 'text-cyan-600',
+    link: '/match',
+    linkText: '去匹配',
   },
   {
     id: 'complete',
@@ -82,6 +88,8 @@ const ONBOARDING_TOUR_STEPS = [
     color: 'from-green-500 to-emerald-600',
     bgColor: 'bg-green-100',
     iconColor: 'text-green-600',
+    link: '/',
+    linkText: '开始求职',
   },
 ];
 

@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 // 默认用户画像
 const getDefaultProfile = (userId: string) => ({
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 用 SERVICE_ROLE 客户端验证 token
-    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    
     const supabaseAdmin = getSupabaseAdmin();
 
     // 验证 token
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     const userId = user.id;
 
     // 用 SERVICE_ROLE 客户端查询数据库（绕过 RLS）
-    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    
     const supabase = getSupabaseAdmin();
 
     const { data: profile, error } = await supabase
@@ -95,7 +96,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // 用 SERVICE_ROLE 客户端验证 token
-    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    
     const supabaseAdmin = getSupabaseAdmin();
 
     // 验证 token
@@ -110,7 +111,7 @@ export async function PUT(request: NextRequest) {
     const userId = user.id;
 
     // 用 SERVICE_ROLE 客户端操作数据库（绕过 RLS）
-    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    
     const supabase = getSupabaseAdmin();
     
     const body = await request.json();
