@@ -162,8 +162,8 @@ export default function MatchPage() {
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Lock className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录解锁完整功能</h3>
-              <p className="text-gray-500 mb-6">登录后可保存匹配结果，查看详细技能缺口分析和学习建议</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录后解锁完整功能</h3>
+              <p className="text-gray-500 mb-6">登录后可保存匹配结果，查看详细技能分析，获取专属学习建议</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
                   <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">
