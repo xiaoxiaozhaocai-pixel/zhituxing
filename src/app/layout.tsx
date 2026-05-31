@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
 import FloatingMembershipButton from '@/components/FloatingMembershipButton';
+import FloatingAICTA from '@/components/FloatingAICTA';
 import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
@@ -105,6 +106,7 @@ export default function RootLayout({
                 <Navbar />
                 <FreeQuotaBadge />
                 <FloatingMembershipButton />
+                <FloatingAICTA />
                 {children}
                 <Footer />
                 <CookieConsent />
