@@ -32,6 +32,7 @@ import {
   buildRAGContext,
   createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
+import crypto from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
@@ -746,7 +747,7 @@ export async function POST(request: NextRequest) {
         let cacheKey = '';
         
         if (isCacheable) {
-          cacheKey = require('crypto').createHash('md5')
+          cacheKey = crypto.createHash("md5")
             .update(systemPrompt + '|||' + message)
             .digest('hex');
           try {
