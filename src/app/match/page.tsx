@@ -257,11 +257,27 @@ export default function MatchPage() {
         )}
 
         {!loading && fetched && filtered.length === 0 && (
-          <Card className="border-gray-100">
+          <Card className="border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50">
             <CardContent className="py-16 text-center">
-              <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-700 mb-2">暂无匹配结果</h3>
-              <p className="text-gray-400 text-sm">请在个人资料中完善技能信息，或尝试调整筛选条件</p>
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <Briefcase className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-3">还没有找到匹配的岗位</h3>
+              <p className="text-gray-500 max-w-md mx-auto mb-8">
+                别着急，好工作值得等待～先完善你的技能信息，让AI更懂你
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/profile/info">
+                  <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-lg px-6 py-5">
+                    去完善个人信息
+                  </Button>
+                </Link>
+                <Link href="/jobs">
+                  <Button variant="outline" className="px-6 py-5 border-amber-200 text-amber-700 hover:bg-amber-50">
+                    浏览岗位百科
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         )}
