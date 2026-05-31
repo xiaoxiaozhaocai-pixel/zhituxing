@@ -60,19 +60,19 @@ const painPoints = [
   {
     icon: <Compass className="w-8 h-8" />,
     title: '我到底适合做什么？',
-    description: '专业不对口、兴趣不清晰，看着同学都找到方向，自己还在原地打转。',
+    description: '专业不对口、兴趣不清晰？小职帮你一步步理清思路。',
     gradient: 'from-blue-500 to-indigo-600',
   },
   {
     icon: <Scale className="w-8 h-8" />,
     title: '考研还是就业？',
-    description: '身边有人说考研好，有人说早点工作积累经验，到底怎么选？',
+    description: '数据推演帮你做选择，小职算给你看。',
     gradient: 'from-violet-500 to-purple-600',
   },
   {
     icon: <FileSearch className="w-8 h-8" />,
     title: '投了很多简历没回音',
-    description: '海投了几十份简历，要么石沉大海，要么面试挂掉，不知道问题出在哪。',
+    description: '不用盲投，让小职帮你精准匹配再出击。',
     gradient: 'from-orange-500 to-red-500',
   },
 ];
@@ -143,7 +143,7 @@ const trustData = [
 const agentFeatures = [
   {
     icon: <Compass className="w-8 h-8" />,
-    title: 'AI职业规划师',
+    title: '小职 · AI职业规划师',
     description: '苏格拉底式引导，帮你找到方向',
     link: '/assistant?bot=career',
     gradient: 'from-violet-500 to-purple-600',
@@ -235,8 +235,8 @@ export default function HomeClient() {
           
           {/* 副标题 */}
           <p className="text-lg md:text-xl text-[#64748B] max-w-2xl mx-auto mb-8 md:mb-10 anim-up-d2">
-            职途星 — 大学生的AI职业规划师。<br className="sm:hidden" />
-            从迷茫到清晰，只需一次对话。
+            我是小职，你的AI职业规划师👋<br className="sm:hidden" />
+            从迷茫到清晰，交给我就行。
           </p>
           
           {/* CTA 按钮 */}
@@ -244,7 +244,7 @@ export default function HomeClient() {
             <Link href="/assistant?bot=career">
               <button className="glow-btn bg-gradient-to-r from-violet-600 via-purple-500 to-indigo-600 text-white text-lg px-10 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-xl flex items-center gap-2">
                 <Compass className="w-5 h-5" />
-                开始我的职业规划
+                找小职聊聊你的方向
               </button>
             </Link>
             <Link href="/jobs">
@@ -274,7 +274,7 @@ export default function HomeClient() {
       <section className="py-12 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-8 text-center anim-up-d2">
-            你是不是也在想……
+            小职知道你在想什么……
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {painPoints.map((item, i) => (
@@ -380,7 +380,33 @@ export default function HomeClient() {
       </section>
 
       {/* ================================================
-           5. 功能卡片区 — 6个智能体
+           5. 会员权益预览
+      ================================================ */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-br from-blue-50 to-violet-50/50 rounded-3xl border border-blue-100/50 p-8 md:p-10 text-center">
+            <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-3">
+              更多能力，解锁会员
+            </h2>
+            <p className="text-[#64748B] mb-6 max-w-lg mx-auto">
+              无限AI对话、完整岗位匹配、学习路径规划、面试模拟……<br />
+              小职的完全体，等你来解锁。
+            </p>
+            <Link href="/membership">
+              <button className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto shadow-lg">
+                <Sparkles className="w-5 h-5" />
+                查看会员方案
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================
+           6. 功能卡片区 — 6个智能体
+      ================================================ */}
+      <section className="py-16 md:py-20 bg-[#F8FAFC]" — 6个智能体
       ================================================ */}
       <section className="py-16 md:py-20 bg-[#F8FAFC]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -446,15 +472,15 @@ export default function HomeClient() {
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            还在迷茫？让AI帮你找到方向
+            我是小职，交个朋友？
           </h2>
           <p className="text-white/80 mb-8 max-w-xl mx-auto">
-            职业规划不是拍脑袋，而是数据推演。让AI陪你理清思路，找到属于你的路。
+            免费又好用，不用白不用。来跟小职聊聊，看看你的职业方向。
           </p>
           <Link href="/assistant?bot=career">
             <button className="bg-white text-violet-600 hover:bg-slate-50 px-10 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-xl flex items-center gap-2 mx-auto">
               <Compass className="w-5 h-5" />
-              免费开始规划
+              找小职聊聊
             </button>
           </Link>
         </div>
