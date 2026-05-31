@@ -740,6 +740,55 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // === AI 响应缓存层（DS省钱 Step2）===
+        let cachedResponse: string | null = null;
+        const isCacheable = history.length === 0;
+        let cacheKey = '';
+        
+        if (isCacheable) {
+          cacheKey = require('crypto').createHash('md5')
+            .update(systemPrompt + '|||' + message)
+            .digest('hex');
+          try {
+            const { data: cached } = await getSupabaseAdmin()
+              .from('ai_cache')
+              .select('response')
+              .eq('cache_key', cacheKey)
+              .gte('expires_at', new Date().toISOString())
+              .maybeSingle();
+            if (cached?.response) {
+              console.log(`[chat] CACHE HIT: ${cacheKey}`);
+              cachedResponse = cached.response;
+            }
+          } catch (cacheErr) {
+            console.error('[chat] Cache query error:', cacheErr);
+          }
+        }
+        
+        if (cachedResponse) {
+          const segs = cachedResponse.match(/[^。！？\n]+[。！？\n]?/g) || [cachedResponse];
+          const cachedStream = new ReadableStream({
+            async start(controller) {
+              for (const seg of segs) {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+              }
+              controller.enqueue(encoder.encode(`event: conversation_id\ndata: ${JSON.stringify({ conversation_id: effectiveConversationId })}\n\n`));
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              controller.close();
+            }
+          });
+          if (userId) {
+            const esc = (s) => (s || '').replace(/'/g, "''");
+            const sql = `INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES ('${esc(effectiveConversationId)}', '${esc(userId)}', 'user', '${esc(message)}', ${effectiveBotType ? `'${esc(effectiveBotType)}'` : 'NULL'}),('${esc(effectiveConversationId)}', '${esc(userId)}', 'assistant', '${esc(cachedResponse)}', ${effectiveBotType ? `'${esc(effectiveBotType)}'` : 'NULL'});`;
+            fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
+              method: 'POST',
+              headers: { 'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '', 'Authorization': 'Bearer ' + (process.env.SUPABASE_SERVICE_ROLE_KEY || ''), 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sql }),
+            }).catch(e => console.error('[chat] Cache history save error:', e));
+          }
+          return new Response(cachedStream, { headers: SSE_HEADERS });
+        }
+
         // 创建带历史保存的流包装器
         const baseStream = createDeepSeekRAGStream(systemPrompt, message, history);
         const encoder = new TextEncoder();
@@ -867,6 +916,17 @@ export async function POST(request: NextRequest) {
                 console.log('[chat] Skip saving history: fullResponse=', !!fullResponse, 'userId=', !!userId);
               }
               
+              // 写入 AI 缓存（fire-and-forget）
+              if (isCacheable && fullResponse && cacheKey) {
+                const esc = (s) => (s || '').replace(/'/g, "''");
+                const sql = `INSERT INTO public.ai_cache (cache_key, response, model) VALUES ('${esc(cacheKey)}', '${esc(fullResponse)}', 'deepseek-chat') ON CONFLICT (cache_key) DO NOTHING;`;
+                fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
+                  method: 'POST',
+                  headers: { 'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '', 'Authorization': 'Bearer ' + (process.env.SUPABASE_SERVICE_ROLE_KEY || ''), 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ sql }),
+                }).then(() => console.log(`[chat] Cache WRITE: ${cacheKey}`)).catch(e => console.error('[chat] Cache write error:', e));
+              }
+
               // 发送保存结果事件
               const saveEvent = `event: save_result\ndata: ${JSON.stringify({ result: saveResult, convId: effectiveConversationId })}\n\n`;
               controller.enqueue(encoder.encode(saveEvent));
