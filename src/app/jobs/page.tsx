@@ -684,10 +684,16 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
             <SkeletonCardList count={8} />
           </div>
         ) : jobs.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
+          <div className="text-center py-16 text-gray-500">
             <div className="text-6xl mb-4">📋</div>
-            <p className="text-lg font-medium">暂无岗位数据，敬请期待</p>
-            <p className="text-sm mt-2 text-gray-400">我们正在持续更新岗位库</p>
+            <p className="text-lg font-medium text-gray-700 mb-2">暂无岗位数据，敬请期待</p>
+            <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">我们正在马不停蹄更新中～先去看看AI为你匹配的岗位吧</p>
+            <Link href="/match">
+              <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg px-6 py-5">
+                <Briefcase className="w-4 h-4 mr-2" />
+                去查看匹配推荐
+              </Button>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
