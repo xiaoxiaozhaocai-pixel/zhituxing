@@ -779,7 +779,7 @@ export async function POST(request: NextRequest) {
             }
           });
           if (userId) {
-            const esc = (s) => (s || '').replace(/'/g, "''");
+            const esc = (s: string) => (s || '').replace(/'/g, "''");
             const sql = `INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES ('${esc(effectiveConversationId)}', '${esc(userId)}', 'user', '${esc(message)}', ${effectiveBotType ? `'${esc(effectiveBotType)}'` : 'NULL'}),('${esc(effectiveConversationId)}', '${esc(userId)}', 'assistant', '${esc(cachedResponse)}', ${effectiveBotType ? `'${esc(effectiveBotType)}'` : 'NULL'});`;
             fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
               method: 'POST',
@@ -919,7 +919,7 @@ export async function POST(request: NextRequest) {
               
               // 写入 AI 缓存（fire-and-forget）
               if (isCacheable && fullResponse && cacheKey) {
-                const esc = (s) => (s || '').replace(/'/g, "''");
+                const esc = (s: string) => (s || '').replace(/'/g, "''");
                 const sql = `INSERT INTO public.ai_cache (cache_key, response, model) VALUES ('${esc(cacheKey)}', '${esc(fullResponse)}', 'deepseek-chat') ON CONFLICT (cache_key) DO NOTHING;`;
                 fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
                   method: 'POST',
