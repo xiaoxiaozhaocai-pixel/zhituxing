@@ -171,7 +171,8 @@ export default function NotificationsPage() {
         {notifications.length === 0 ? (
           <div className="text-center py-16">
             <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">暂无通知</p>
+            <p className="text-gray-500 mb-2">暂无通知</p>
+            <p className="text-sm text-gray-400">有新消息时会在这里通知你，记得常来看看～</p>
           </div>
         ) : (
           <div className="space-y-3">
