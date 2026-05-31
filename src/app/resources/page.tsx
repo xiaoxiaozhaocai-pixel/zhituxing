@@ -231,7 +231,14 @@ export default function ResourcesPage() {
         {filteredResources.length === 0 && !loading && (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">暂无相关资源</p>
+            <p className="text-gray-500 mb-2">暂无相关资源</p>
+            <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">换个分类看看，或生成职业规划获取个性化推荐</p>
+            <Link href="/career-planning">
+              <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg px-6 py-5">
+                <Sparkles className="w-4 h-4 mr-2" />
+                去生成职业规划
+              </Button>
+            </Link>
           </div>
         )}
       </div>
