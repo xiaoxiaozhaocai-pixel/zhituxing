@@ -34,6 +34,7 @@ import {
 } from '@/lib/rag-utils';
 import crypto from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { trackCost } from '@/lib/cost-tracker';
 import {
   assembleContext,
   compressConversation,
@@ -906,7 +907,18 @@ export async function POST(request: NextRequest) {
         }
 
         // 创建带历史保存的流包装器
-        const baseStream = createDeepSeekRAGStream(systemPrompt, message, history);
+        const baseStream = createDeepSeekRAGStream(systemPrompt, message, history, (result) => {
+          if (result.usage) {
+            trackCost({
+              user_id: userId,
+              conversation_id: effectiveConversationId,
+              bot_type: effectiveBotType || 'chat',
+              model: 'deepseek-chat',
+              call_type: 'chat',
+              usage: result.usage,
+            });
+          }
+        });
         const encoder = new TextEncoder();
         
         const wrappedStream = new ReadableStream({

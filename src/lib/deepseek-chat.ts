@@ -12,7 +12,19 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface DeepSeekUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
+
+export interface DeepSeekResult {
+  content: string;
+  usage?: DeepSeekUsage;
+}
+
 export interface DeepSeekStreamOptions {
+  onComplete?: (result: DeepSeekResult) => void;
   messages: ChatMessage[];
   model?: string;
   temperature?: number;
@@ -22,9 +34,9 @@ export interface DeepSeekStreamOptions {
 }
 
 /**
- * 调用DeepSeek流式API，返回完整的文本响应
+ * 调用DeepSeek流式API，返回完整的文本响应 + usage信息
  */
-export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<string> {
+export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<DeepSeekResult> {
   const {
     messages,
     model = DEEPSEEK_MODEL,
@@ -62,7 +74,15 @@ export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<stri
   // 非流式
   if (!onChunk) {
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || '';
+    const content = data.choices?.[0]?.message?.content || '';
+    const usage = data.usage
+      ? {
+          prompt_tokens: data.usage.prompt_tokens,
+          completion_tokens: data.usage.completion_tokens,
+          total_tokens: data.usage.total_tokens,
+        }
+      : undefined;
+    return { content, usage };
   }
 
   // 流式读取
@@ -72,6 +92,7 @@ export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<stri
   const decoder = new TextDecoder();
   let fullContent = '';
   let buffer = '';
+  let lastUsage: DeepSeekUsage | undefined;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -93,13 +114,21 @@ export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<stri
           fullContent += content;
           onChunk(content);
         }
+        // 流式最后一条 chunk 可能带 usage
+        if (data.usage) {
+          lastUsage = {
+            prompt_tokens: data.usage.prompt_tokens,
+            completion_tokens: data.usage.completion_tokens,
+            total_tokens: data.usage.total_tokens,
+          };
+        }
       } catch {
         // 跳过解析失败的行
       }
     }
   }
 
-  return fullContent;
+  return { content: fullContent, usage: lastUsage };
 }
 
 /**
@@ -111,11 +140,9 @@ export function createDeepSeekSSEStream(options: DeepSeekStreamOptions): Readabl
   return new ReadableStream({
     async start(controller) {
       try {
-        await deepSeekChat({
+        const result = await deepSeekChat({
           ...options,
           onChunk: (chunk) => {
-            // 输出 Coze 兼容格式 {type:'text',content}，与 createCozeSSEStream 对齐
-            // 前端按 parsed.type 解析，OpenAI 风格的 choices/delta 会被前端忽略
             const data = JSON.stringify({
               type: 'text',
               content: chunk,
@@ -123,12 +150,11 @@ export function createDeepSeekSSEStream(options: DeepSeekStreamOptions): Readabl
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           },
         });
-        // 完成标记：Coze 风格 {type:'done'}，不用 [DONE]
+        options.onComplete?.(result);
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
         controller.close();
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : 'Unknown error';
-        // 错误格式：Coze 风格 {type:'error',message}
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({
           type: 'error',
           message: errMsg,

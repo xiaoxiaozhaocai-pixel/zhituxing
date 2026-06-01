@@ -4,7 +4,7 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { createDeepSeekSSEStream, type ChatMessage } from '@/lib/deepseek-chat';
+import { createDeepSeekSSEStream, type ChatMessage, type DeepSeekUsage } from '@/lib/deepseek-chat';
 
 // ============================================================
 // 常量定义
@@ -302,7 +302,8 @@ export function buildRAGContext(
 export function createDeepSeekRAGStream(
   systemPrompt: string,
   userMessage: string,
-  history?: ChatMessage[]
+  history?: ChatMessage[],
+  onComplete?: (result: { content: string; usage?: DeepSeekUsage }) => void
 ): ReadableStream {
   const messages: ChatMessage[] = [
     { role: 'system', content: systemPrompt },
@@ -310,7 +311,7 @@ export function createDeepSeekRAGStream(
     { role: 'user', content: userMessage },
   ];
 
-  return createDeepSeekSSEStream({ messages });
+  return createDeepSeekSSEStream({ messages, onComplete });
 }
 
 /**
