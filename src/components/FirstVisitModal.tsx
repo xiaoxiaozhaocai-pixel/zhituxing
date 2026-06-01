@@ -43,7 +43,7 @@ const GUIDE_STEPS = [
     link: '/learning-path',
     linkText: '查看路径',
   },
-];
+] as const;
 
 // Onboarding后续航浮层 - 4步首页关键功能引导
 const ONBOARDING_TOUR_STEPS = [
@@ -91,7 +91,7 @@ const ONBOARDING_TOUR_STEPS = [
     link: '/',
     linkText: '开始求职',
   },
-];
+] as const;
 
 export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
   const [show, setShow] = useState(false);
