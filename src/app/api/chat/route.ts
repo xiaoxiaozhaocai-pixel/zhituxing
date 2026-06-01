@@ -39,6 +39,7 @@ import {
   compressConversation,
   needsCompression,
   autoDowngradeCheck,
+  getRecentNRounds,
 } from '@/lib/context-compression';
 
 export const runtime = 'nodejs';
