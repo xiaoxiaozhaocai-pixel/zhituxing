@@ -105,6 +105,7 @@ export default function MembershipPage() {
   const [orderStatus, setOrderStatus] = useState<'idle' | 'uploading' | 'submitting' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
 
   const handleOpenPlan = useCallback((plan: typeof MEMBERSHIP_PLANS[0]) => {
     if (!isAuthenticated) {
@@ -246,13 +247,13 @@ export default function MembershipPage() {
               key={plan.name} 
               className={`relative overflow-hidden transition-all hover:shadow-lg ${
                 plan.popular 
-                  ? 'border-blue-500 ring-2 ring-blue-500/20 scale-[1.02]' 
+                  ? 'border-blue-500 ring-2 ring-blue-500/20 scale-[1.02] bg-gradient-to-b from-blue-50 to-white' 
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               {plan.popular && (
                 <div className="absolute top-0 right-0 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs px-3 py-1 rounded-bl-lg">
-                  最受欢迎
+                  🔥 入门首选
                 </div>
               )}
               <CardHeader className="pb-2">
@@ -315,6 +316,38 @@ export default function MembershipPage() {
             </p>
           </CardContent>
         </Card>
+
+        {/* FAQ */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">常见问题</h3>
+          <div className="max-w-2xl mx-auto space-y-2">
+            {[
+              { q: '审核需要多久？', a: '提交订单后，管理员会在 1 小时内完成审核，审核通过后会员权益自动激活。' },
+              { q: '审核未通过怎么办？', a: '如果支付金额不符或截图不清晰，管理员会驳回并注明原因。您可以在「我的订单」中查看驳回原因，重新提交即可。' },
+              { q: '付款后可以退款吗？', a: '会员权益激活后，如因平台原因无法正常使用，可联系客服全额退款。因个人原因退款，按剩余有效期比例退还。' },
+            ].map((faq, i) => (
+                <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setFaqOpenIndex(faqOpenIndex === i ? null : i)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="font-medium">{faq.q}</span>
+                    <svg
+                      className={`w-4 h-4 text-gray-400 transition-transform ${faqOpenIndex === i ? 'rotate-180' : ''}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {faqOpenIndex === i && (
+                    <div className="px-4 pb-3 text-sm text-gray-500">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
 
         {/* 底部提示 */}
         <div className="text-center">
@@ -384,6 +417,12 @@ export default function MembershipPage() {
               <div className="rounded-lg border-2 border-red-300 bg-red-50 px-4 py-3 text-center">
                 <p className="text-sm text-red-700 font-semibold">
                   ⚠️ 请支付准确金额：<span className="text-lg font-bold">¥{selectedPlan.price.toFixed(1)}</span> 整
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(String(selectedPlan.price)); toast.success('金额已复制'); }}
+                    className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-white border border-red-300 rounded-md hover:bg-red-100 transition-colors"
+                  >
+                    📋 复制
+                  </button>
                 </p>
                 <p className="text-xs text-red-600 mt-1">
                   金额不符的订单将被审核驳回，不予开通会员
