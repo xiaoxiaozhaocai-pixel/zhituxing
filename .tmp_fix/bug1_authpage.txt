@@ -1,0 +1,136 @@
+    }
+  }, [searchParams]);
+
+  // 如果已登录，跳转到来源页或首页
+  useEffect(() => {
+    if (user) {
+      // 安全检查：redirect 必须是相对路径
+      const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+        ? redirectTo
+        : '/';
+      router.push(safeRedirect);
+    }
+  }, [user, router, redirectTo]);
+
+  // 验证邮箱格式
+  const validateEmail = (value: string): boolean => {
+    if (!value) {
+      setEmailError('');
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      setEmailError('请输入正确的邮箱地址');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  // 验证密码（与后端一致的强度校验）
+  const validatePassword = (value: string): boolean => {
+    if (!value) {
+      setPasswordError('');
+      return false;
+    }
+    if (value.length < 8) {
+      setPasswordError('密码至少8位');
+      return false;
+    }
+    if (!/[A-Z]/.test(value)) {
+      setPasswordError('密码需包含大写字母');
+      return false;
+    }
+    if (!/[a-z]/.test(value)) {
+      setPasswordError('密码需包含小写字母');
+      return false;
+    }
+    if (!/[0-9]/.test(value)) {
+      setPasswordError('密码需包含数字');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  // 验证确认密码
+  const validateConfirmPassword = (value: string): boolean => {
+    if (!value) {
+      setConfirmPasswordError('');
+      return false;
+    }
+    if (value !== password) {
+      setConfirmPasswordError('两次密码输入不一致');
+      return false;
+    }
+    setConfirmPasswordError('');
+    return true;
+  };
+
+  // 处理邮箱输入变化
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    if (value) validateEmail(value);
+  };
+
+  // 点击继续（邮箱输入后）
+  const handleContinue = async () => {
+    if (!validateEmail(email)) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      // 尝试检测邮箱是否已注册
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: '___check___' }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.error?.includes('邮箱或密码错误') || data.error?.includes('Invalid')) {
+        // 用户存在但密码错误 → 已注册
+        setIsRegistered(true);
+        setStep('password');
+      } else if (data.error?.includes('未注册') || data.error?.includes('not found') || response.status === 404) {
+        setIsRegistered(false);
+        setStep('password');
+      } else {
+        // 默认假设已注册
+        setIsRegistered(true);
+        setStep('password');
+      }
+    } catch {
+      setIsRegistered(true);
+      setStep('password');
+    }
+    
+    setLoading(false);
+  };
+
+  // 登录
+  const handleLogin = async () => {
+    if (!validateEmail(email) || !validatePassword(password)) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        setSuccess('登录成功，正在跳转...');
+      } else {
+        setError(getFriendlyError(result.message));
+      }
+    } catch (err) {
+      setError('登录失败，请稍后重试');
+    }
+    
+    setLoading(false);
+  };
+
+  // 注册 - 改用OTP验证码流程
+  // 流程：输入邮箱密码 → 发送OTP → 验证OTP → 验证成功后自动设置密码
