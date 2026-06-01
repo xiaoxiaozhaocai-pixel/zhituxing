@@ -51,7 +51,7 @@ const MEMBERSHIP_PLANS = [
   },
   {
     name: '年度会员',
-    price: 79,
+    price: 69.9,
     period: '年',
     description: '最受欢迎的选择',
     features: [

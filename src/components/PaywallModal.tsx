@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 const PLANS = [
   {
     key: 'monthly',
-    name: '基础版',
+    name: '月度会员',
     price: 9.9,
     period: '月',
     highlight: false,
@@ -24,14 +24,14 @@ const PLANS = [
     key: 'semester',
     name: '学期会员',
     price: 29.9,
-    period: '半年',
+    period: '学期',
     highlight: false,
     features: ['180天全功能体验', '无限AI对话', '完整匹配分析', '技能图谱全览'],
   },
   {
     key: 'annual',
     name: '年度会员',
-    price: 99,
+    price: 69.9,
     period: '年',
     highlight: true,
     features: ['365天全功能体验', '无限AI对话', '完整匹配分析', '技能图谱全览', '测评报告下载', '学习路径定制'],
