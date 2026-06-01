@@ -750,7 +750,7 @@ export async function POST(request: NextRequest) {
           console.log(`[chat] Context compression: downgraded to window mode (15 rounds)`);
         } else {
           // 混合模式：摘要 + 最近 3 轮原文
-          const context = await assembleContext(effectiveConversationId, userId, 3);
+          const context = await assembleContext(effectiveConversationId, userId || '', 3);
           systemPrompt = (SYSTEM_PROMPTS[effectiveBotType] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext + '\n\n' + context.fullContextText + roleReinforcement;
           history = context.recentMessages;
           console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs`);
