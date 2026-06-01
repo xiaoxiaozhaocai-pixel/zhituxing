@@ -273,10 +273,10 @@ export default function HomeClient() {
           
           {/* CTA 按钮 */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 anim-up-d3">
-            <Link href="/assistant?bot=career">
+            <Link href="/assistant?bot=xiaozhi">
               <button className="glow-btn bg-gradient-to-r from-violet-600 via-purple-500 to-indigo-600 text-white text-sm sm:text-lg px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 shadow-xl flex items-center gap-2">
-                <Compass className="w-5 h-5" />
-                找小职聊聊你的方向
+                <MessageSquare className="w-5 h-5" />
+                找小职聊天
               </button>
             </Link>
             <Link href="/jobs">

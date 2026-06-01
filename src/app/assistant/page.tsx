@@ -382,7 +382,7 @@ function AssistantContent() {
   useEffect(() => {
     const bot = searchParams.get('bot');
     if (bot && !pendingQuery) {
-      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency'];
+      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency', 'xiaozhi'];
       if (validBots.includes(bot)) {
         setActiveBot(bot);
       }
