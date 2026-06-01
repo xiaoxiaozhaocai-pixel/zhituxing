@@ -5,8 +5,8 @@ import { MessageSquare, Briefcase, Compass, Mic } from 'lucide-react';
 import { useState } from 'react';
 
 const quickActions = [
+  { label: '找小职聊聊', icon: MessageSquare, href: '/assistant?bot=xiaozhi' },
   { label: '职业规划', icon: Compass, href: '/assistant?bot=career' },
-  { label: '岗位匹配', icon: Briefcase, href: '/match' },
   { label: '模拟面试', icon: Mic, href: '/assistant?bot=interview' },
 ];
 

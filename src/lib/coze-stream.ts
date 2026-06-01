@@ -262,6 +262,7 @@ export function getWorkflowConfig(botType?: string): {
     jobs:       { urlKey: 'COZE_JOBS_API_URL',        projectKey: 'COZE_JOBS_PROJECT_ID',       tokenKey: 'COZE_JOBS_API_TOKEN' },
     decision:   { urlKey: 'COZE_DECISION_API_URL',    projectKey: 'COZE_DECISION_PROJECT_ID',   tokenKey: 'COZE_DECISION_API_TOKEN' },
     skill_portrait: { urlKey: 'COZE_SKILL_PORTRAIT_API_URL', projectKey: 'COZE_SKILL_PORTRAIT_PROJECT_ID', tokenKey: 'COZE_SKILL_PORTRAIT_API_TOKEN' },
+    xiaozhi:     { urlKey: 'COZE_XIAOZHI_API_URL',     projectKey: 'COZE_XIAOZHI_PROJECT_ID',     tokenKey: 'COZE_XIAOZHI_API_TOKEN' },
   };
 
   const config = configMap[botType || ''];

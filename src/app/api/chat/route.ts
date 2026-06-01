@@ -47,6 +47,7 @@ function selectBotId(botType?: string): string {
   if (botType === 'career') return process.env.COZE_BOT_CAREER_PLANNING || '';
   if (botType === 'assessment') return process.env.COZE_BOT_ASSESSMENT || process.env.COZE_BOT_CAPABILITY || '';
   if (botType === 'competency') return process.env.COZE_BOT_COMPETENCY || '';
+  if (botType === 'xiaozhi') return process.env.COZE_BOT_XIAOZHI || '';
   return process.env.COZE_BOT_JD_ASSISTANT || '';
 }
 
