@@ -731,7 +731,7 @@ export async function POST(request: NextRequest) {
         // ============================================================
         // 三层混合上下文压缩：画像锚定 + 增量摘要 + 最近3轮原文
         // ============================================================
-        let history: { role: 'user' | 'assistant'; content: string }[] = [];
+        let history: { role: 'user' | 'assistant' | 'system'; content: string }[] = [];
         let effectiveConversationId = conversationId;
         
         // 生成新的 conversationId（如果没有）
