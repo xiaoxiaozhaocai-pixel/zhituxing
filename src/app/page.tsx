@@ -19,6 +19,12 @@ import HomeClient from './HomeClient';
  * build 时定格一次；下次部署会重新算。若需"每日刷新"，把 dynamic
  * 改成 `force-static` + `revalidate = 86400` 走 ISR 即可。
  */
+export const metadata = {
+  title: '先想清楚，再投简历 — 职途星',
+  description:
+    '大学生求职第一站。小职AI帮你做职业规划、技能匹配、模拟面试，从迷茫到清晰，不盲投不焦虑。免费使用，覆盖27大行业20000+真实岗位。',
+};
+
 export const dynamic = 'force-static';
 
 export default function Page() {

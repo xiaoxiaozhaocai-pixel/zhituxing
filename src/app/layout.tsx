@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: '%s | 职途星',
   },
   description:
-    '基于AI的智能职业规划平台，提供岗位搜索、技能匹配、面试模拟等服务，帮助大学生精准规划职业路径。覆盖27大行业20000+真实岗位，AI智能匹配，精准推荐。',
+    '大学生求职第一站。AI职业规划、技能匹配、模拟面试一站式搞定。免费使用。',
   keywords: [
     '职业规划',
     '岗位搜索',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '职途星 - 智能职业规划与岗位匹配平台',
     description:
-      '基于AI的智能职业规划平台，提供岗位搜索、技能匹配、面试模拟等服务，帮助大学生精准规划职业路径。',
+      '大学生求职第一站。AI职业规划、技能匹配、模拟面试一站式搞定。免费使用。',
     locale: 'zh_CN',
     type: 'website',
     siteName: '职途星',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: '职途星 - 智能职业规划与岗位匹配平台',
-    description: '基于AI的智能职业规划平台，提供岗位搜索、技能匹配、面试模拟等服务，帮助大学生精准规划职业路径。',
+    description: '大学生求职第一站。AI职业规划、技能匹配、模拟面试一站式搞定。免费使用。',
     images: ['https://s.coze.cn/image/9JW8vCo1HrY/'],
   },
   alternates: {

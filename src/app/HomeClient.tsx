@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { SITE_URL } from '@/lib/config';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -188,6 +189,7 @@ const agentFeatures = [
 
 export default function HomeClient() {
   const router = useRouter();
+  const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
@@ -210,6 +212,17 @@ export default function HomeClient() {
         .anim-up-d3   { opacity:0; animation: fadeInUp .8s ease-out .45s forwards; }
         .anim-up-d4   { opacity:0; animation: fadeInUp .8s ease-out .60s forwards; }
         .glow-btn     { animation: glow-pulse 3s ease-in-out infinite; }
+
+        @keyframes shimmer {
+          0%   { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .skeleton {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s ease-in-out infinite;
+          border-radius: 8px;
+        }
         .glow-btn:hover {
           animation: none;
           box-shadow: 0 0 40px rgba(99,102,241,.6), 0 0 100px rgba(99,102,241,.3);
@@ -226,6 +239,25 @@ export default function HomeClient() {
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-violet-100/30 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4" />
 
         <div className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 ${mounted ? 'anim-up' : 'opacity-0'}`}>
+          {/* 登录状态横幅 */}
+          {mounted && !authLoading && !isAuthenticated && (
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 mb-4 sm:mb-6 text-xs sm:text-sm text-amber-700 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+              注册即享 <strong>3次免费</strong> AI职业诊断
+              <Link href="/login" className="ml-1 font-semibold text-amber-600 hover:text-amber-800 underline underline-offset-2">
+                立即注册 →
+              </Link>
+            </div>
+          )}
+          {mounted && !authLoading && isAuthenticated && user && (
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-full px-3.5 py-1.5 sm:px-5 sm:py-2 mb-4 sm:mb-6 text-xs sm:text-sm text-blue-700 shadow-sm">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
+              欢迎回来{user.nickname ? `，${user.nickname}` : ''}！
+              <Link href="/assistant?bot=career" className="ml-1 font-semibold text-blue-600 hover:text-blue-800 underline underline-offset-2">
+                继续规划 →
+              </Link>
+            </div>
+          )}
           {/* 主标题 */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-[1.15] tracking-tight anim-up-d1">
             <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-transparent">
@@ -234,21 +266,21 @@ export default function HomeClient() {
           </h1>
           
           {/* 副标题 */}
-          <p className="text-lg md:text-xl text-[#64748B] max-w-2xl mx-auto mb-8 md:mb-10 anim-up-d2">
+          <p className="text-base sm:text-lg md:text-xl text-[#64748B] max-w-2xl mx-auto mb-6 sm:mb-8 md:mb-10 anim-up-d2">
             我是小职，你的AI职业规划师👋<br className="sm:hidden" />
-            从迷茫到清晰，交给我就行。
+            不用焦虑，小职帮你一步步走。
           </p>
           
           {/* CTA 按钮 */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 anim-up-d3">
             <Link href="/assistant?bot=career">
-              <button className="glow-btn bg-gradient-to-r from-violet-600 via-purple-500 to-indigo-600 text-white text-lg px-10 py-4 rounded-2xl font-semibold transition-all duration-300 shadow-xl flex items-center gap-2">
+              <button className="glow-btn bg-gradient-to-r from-violet-600 via-purple-500 to-indigo-600 text-white text-sm sm:text-lg px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 shadow-xl flex items-center gap-2">
                 <Compass className="w-5 h-5" />
                 找小职聊聊你的方向
               </button>
             </Link>
             <Link href="/jobs">
-              <button className="px-8 py-3.5 rounded-xl font-medium border-2 border-[#E2E8F0] text-[#1E293B] hover:border-violet-300 hover:bg-violet-50 transition-all duration-300 flex items-center gap-2">
+              <button className="px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-medium border-2 border-[#E2E8F0] text-[#1E293B] hover:border-violet-300 hover:bg-violet-50 transition-all duration-300 flex items-center gap-2">
                 <Briefcase className="w-4 h-4" />
                 浏览岗位百科
               </button>
@@ -274,9 +306,9 @@ export default function HomeClient() {
       <section className="py-12 md:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-8 text-center anim-up-d2">
-            小职知道你在想什么……
+            小职知道你在想什么 🤔
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {painPoints.map((item, i) => (
               <div
                 key={i}
@@ -300,10 +332,10 @@ export default function HomeClient() {
       <section className="py-16 md:py-20 bg-gradient-to-b from-[#F8FAFC] to-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-4 text-center">
-            从迷茫到入职，AI陪你走完全程
+            从迷茫到入职，AI陪你走完每一步
           </h2>
           <p className="text-[#64748B] text-center mb-10 max-w-xl mx-auto">
-            不只是工具，而是懂你的职业伙伴。每一步都有AI智能体为你把关。
+            每一步都有AI帮你把关，不走弯路。
           </p>
           
           {/* 路径可视化 - 横向流程图 */}
@@ -384,7 +416,7 @@ export default function HomeClient() {
       ================================================ */}
       <section className="py-12 md:py-16 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-br from-blue-50 to-violet-50/50 rounded-3xl border border-blue-100/50 p-8 md:p-10 text-center">
+          <div className="bg-gradient-to-br from-blue-50 to-violet-50/50 rounded-2xl sm:rounded-3xl border border-blue-100/50 p-6 sm:p-8 md:p-10 text-center">
             <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-3">
               更多能力，解锁会员
             </h2>
@@ -409,14 +441,14 @@ export default function HomeClient() {
       <section className="py-16 md:py-20 bg-[#F8FAFC]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-4 text-center">
-            AI智能体全家桶
+            你的AI助手团队
           </h2>
           <p className="text-[#64748B] text-center mb-10">
-            覆盖求职全流程，每个环节都有AI助手
+            覆盖求职每一步，每个环节都有AI帮手
           </p>
           
           {/* 功能卡片网格 — 主角更大 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {agentFeatures.map((item, i) => (
               <div
                 key={i}
@@ -469,11 +501,11 @@ export default function HomeClient() {
         </div>
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            我是小职，交个朋友？
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">
+            交个朋友？让求职不再是一个人。
           </h2>
           <p className="text-white/80 mb-8 max-w-xl mx-auto">
-            免费又好用，不用白不用。来跟小职聊聊，看看你的职业方向。
+            完全免费，马上开聊。让小职帮你找到方向。
           </p>
           <Link href="/assistant?bot=career">
             <button className="bg-white text-violet-600 hover:bg-slate-50 px-10 py-4 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-xl flex items-center gap-2 mx-auto">
