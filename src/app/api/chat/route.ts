@@ -672,6 +672,7 @@ export async function POST(request: NextRequest) {
       career: ['job_descriptions', 'career_paths', 'skill_taxonomy', 'learning_resources'],
       assessment: ['skill_taxonomy'],
       competency: ['job_descriptions', 'skill_taxonomy'],
+      xiaozhi_chat: ['guet_knowledge'],
       xiaozhi: ['guet_knowledge', 'job_descriptions', 'career_paths', 'skill_taxonomy', 'learning_resources'],
     };
 
@@ -698,6 +699,7 @@ export async function POST(request: NextRequest) {
       career: { job_descriptions: '目标岗位', career_paths: '职业发展路径', skill_taxonomy: '技能要求', learning_resources: '学习资源' },
       assessment: { skill_taxonomy: '技能测评题库' },
       competency: { job_descriptions: '目标岗位要求', skill_taxonomy: '技能差距参考' },
+      xiaozhi_chat: { guet_knowledge: '桂电知识' },
       xiaozhi: { guet_knowledge: '桂电知识', job_descriptions: '岗位信息', career_paths: '职业发展路径', skill_taxonomy: '技能要求', learning_resources: '学习资源' },
     };
 
@@ -930,11 +932,13 @@ export async function POST(request: NextRequest) {
                   }
                   filteredChunk += line + '\n';
                   
-                  // 收集助手响应内容
+                  // 收集助手响应内容（兼容两种格式：DeepSeek的type/content 和 OpenAI的choices/delta/content）
                   if (line.startsWith('data: ')) {
                     try {
                       const data = JSON.parse(line.slice(6));
-                      const content = data?.choices?.[0]?.delta?.content;
+                      // DeepSeek RAG格式: {"type":"text","content":"..."}
+                      // OpenAI格式: {"choices":[{"delta":{"content":"..."}}]}
+                      const content = data?.content || data?.choices?.[0]?.delta?.content;
                       if (content) fullResponse += content;
                     } catch { /* ignore */ }
                   }
