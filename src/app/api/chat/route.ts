@@ -34,6 +34,12 @@ import {
 } from '@/lib/rag-utils';
 import crypto from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import {
+  assembleContext,
+  compressConversation,
+  needsCompression,
+  autoDowngradeCheck,
+} from '@/lib/context-compression';
 
 export const runtime = 'nodejs';
 
@@ -721,10 +727,8 @@ export async function POST(request: NextRequest) {
         
         // 三明治结构：systemPrompt = 顶部(SYSTEM_PROMPTS) + 中间(RAG数据) + 底部(角色重申)
         const roleReinforcement = ROLE_REINFORCEMENTS[effectiveBotType] || '';
-        const systemPrompt = (SYSTEM_PROMPTS[effectiveBotType] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext + roleReinforcement;
-
         // ============================================================
-        // 对话历史：从 chat_history 表获取
+        // 三层混合上下文压缩：画像锚定 + 增量摘要 + 最近3轮原文
         // ============================================================
         let history: { role: 'user' | 'assistant'; content: string }[] = [];
         let effectiveConversationId = conversationId;
@@ -734,33 +738,21 @@ export async function POST(request: NextRequest) {
           effectiveConversationId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
         }
         
-        // 从数据库获取历史消息
-        if (conversationId) {
-          try {
-            const { data: historyRecords } = await getSupabaseAdmin()
-              .from('chat_history')
-              .select('role, content')
-              .eq('conversation_id', conversationId)
-              .order('created_at', { ascending: true })
-              .limit(20);  // 最近 10 轮（20 条消息）
-            
-            if (historyRecords && historyRecords.length > 0) {
-              history = historyRecords.map((r: { role: string; content: string }) => ({
-                role: r.role as 'user' | 'assistant',
-                content: r.content
-              }));
-              
-              // Token 限制：估算历史长度，超过 32K 字符时截断
-              const MAX_HISTORY_CHARS = 32000;
-              let totalChars = history.reduce((sum, h) => sum + h.content.length, 0);
-              while (totalChars > MAX_HISTORY_CHARS && history.length > 2) {
-                const removed = history.shift();
-                totalChars -= removed?.content.length || 0;
-              }
-            }
-          } catch (histErr) {
-            console.error('[chat] Failed to fetch history:', histErr);
-          }
+        // 降级检测：用户频繁追问历史时退回到窗口截断
+        const compressionLevel = autoDowngradeCheck([message]);
+        let systemPrompt = '';
+        
+        if (compressionLevel === 'window') {
+          // 降级模式：取最近 15 轮原文（窗口截断）
+          systemPrompt = (SYSTEM_PROMPTS[effectiveBotType] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext + roleReinforcement;
+          history = await getRecentNRounds(effectiveConversationId, 15);
+          console.log(`[chat] Context compression: downgraded to window mode (15 rounds)`);
+        } else {
+          // 混合模式：摘要 + 最近 3 轮原文
+          const context = await assembleContext(effectiveConversationId, userId, 3);
+          systemPrompt = (SYSTEM_PROMPTS[effectiveBotType] || SYSTEM_PROMPTS.career) + '\n\n' + ragContext + '\n\n' + context.fullContextText + roleReinforcement;
+          history = context.recentMessages;
+          console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs`);
         }
 
         // === AI 响应缓存层（DS省钱 Step2）===
@@ -948,6 +940,19 @@ export async function POST(request: NextRequest) {
                   headers: { 'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '', 'Authorization': 'Bearer ' + (process.env.SUPABASE_SERVICE_ROLE_KEY || ''), 'Content-Type': 'application/json' },
                   body: JSON.stringify({ sql }),
                 }).then(() => console.log(`[chat] Cache WRITE: ${cacheKey}`)).catch(e => console.error('[chat] Cache write error:', e));
+              }
+
+              // Fire-and-forget: 检查并触发上下文压缩
+              if (fullResponse && userId) {
+                try {
+                  if (await needsCompression(effectiveConversationId)) {
+                    compressConversation(effectiveConversationId, userId).catch(e =>
+                      console.error('[chat] Background compression failed:', e)
+                    );
+                  }
+                } catch (compressErr) {
+                  console.error('[chat] Compression check error:', compressErr);
+                }
               }
 
               // 发送保存结果事件
