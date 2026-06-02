@@ -12,7 +12,7 @@ import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/t
 import Link from 'next/link';
 import {
   Target, Search, SlidersHorizontal, ChevronDown, ChevronUp,
-  MapPin, DollarSign, TrendingUp, Briefcase, AlertTriangle, Lock, LogIn, Sparkles, EyeOff
+  MapPin, DollarSign, TrendingUp, Briefcase, AlertTriangle, Lock, LogIn, Sparkles, EyeOff, MessageCircle, BookOpen
 } from 'lucide-react';
 
 interface MatchJobResult {
@@ -467,6 +467,19 @@ export default function MatchPage() {
                             </div>
                           </div>
                         )}
+                        {/* 操作按钮 */}
+                        <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
+                          <Link href={`/assistant?bot=xiaozhi&query=帮我针对${encodeURIComponent(item.job.jobName)}岗位准备模拟面试`}>
+                            <Button size="sm" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
+                              <MessageCircle className="w-4 h-4 mr-1" /> 模拟面试
+                            </Button>
+                          </Link>
+                          <Link href="/learning-path">
+                            <Button size="sm" variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50">
+                              <BookOpen className="w-4 h-4 mr-1" /> 学习路径
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     )}
                   </CardContent>
