@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -58,7 +59,8 @@ const relationLabels: Record<string, string> = {
 
 const activeRelations = ['co_occur', 'prerequisite', 'similar', 'career_path'] as const;
 
-export default function SkillsGraphPage() {
+
+function SkillsGraphPageContent() {
   const { isMember, loading: memberLoading } = useMembership();
   const [paywallOpen, setPaywallOpen] = useState(false);
   const router = useRouter();
@@ -556,5 +558,14 @@ export default function SkillsGraphPage() {
       {/* 付费墙弹窗 */}
       <PaywallModal open={paywallOpen} onClose={() => setPaywallOpen(false)} feature="完整技能图谱" />
     </div>
+  );
+}
+
+// Wrap in Suspense to handle useSearchParams prerender error
+export default function SkillsGraphPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>}>
+      <SkillsGraphPageContent />
+    </Suspense>
   );
 }
