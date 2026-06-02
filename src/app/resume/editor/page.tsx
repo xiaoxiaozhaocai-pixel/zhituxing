@@ -143,7 +143,7 @@ function ExperienceEditor({ items, onChange }: {
 }) {
   const add = () => onChange([...items, { id: uid(), company: '', position: '', startDate: '', endDate: '', current: false, description: '', achievements: [] }]);
   const remove = (id: string) => onChange(items.filter(i => i.id !== id));
-  const update = (id: string, field: keyof ResumeExperience, value: any) =>
+  const update = (id: string, field: keyof ResumeExperience, value: string | boolean | string[]) =>
     onChange(items.map(i => i.id === id ? { ...i, [field]: value } : i));
 
   return (
@@ -203,7 +203,7 @@ function ProjectEditor({ items, onChange }: {
 }) {
   const add = () => onChange([...items, { id: uid(), name: '', role: '', startDate: '', endDate: '', description: '', technologies: [] }]);
   const remove = (id: string) => onChange(items.filter(i => i.id !== id));
-  const update = (id: string, field: keyof ResumeProject, value: any) =>
+  const update = (id: string, field: keyof ResumeProject, value: string | string[]) =>
     onChange(items.map(i => i.id === id ? { ...i, [field]: value } : i));
   const updateTechs = (id: string, raw: string) =>
     onChange(items.map(i => i.id === id ? { ...i, technologies: raw.split(',').map(t => t.trim()).filter(Boolean) } : i));
@@ -264,7 +264,7 @@ function SkillsEditor({ skills, certifications, onSkillsChange, onCertsChange }:
 }) {
   const addSkill = () => onSkillsChange([...skills, { id: uid(), name: '', level: 'intermediate', category: '' }]);
   const removeSkill = (id: string) => onSkillsChange(skills.filter(s => s.id !== id));
-  const updateSkill = (id: string, field: keyof ResumeSkill, value: any) =>
+  const updateSkill = (id: string, field: keyof ResumeSkill, value: string) =>
     onSkillsChange(skills.map(s => s.id === id ? { ...s, [field]: value } : s));
 
   const addCert = () => onCertsChange([...certifications, { id: uid(), name: '', issuer: '', date: '' }]);
