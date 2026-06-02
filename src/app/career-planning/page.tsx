@@ -24,7 +24,7 @@ import {
   ListChecks,
   Lock,
   LogIn
-} from 'lucide-react';
+, Briefcase} from 'lucide-react';
 import Breadcrumb from '@/components/Breadcrumb';
 
 // 年级选项
@@ -478,20 +478,46 @@ export default function CareerPlanningPage() {
 
           {/* 操作按钮 */}
           {!generating && generatedContent && (
-            <div className="flex justify-center gap-4">
-              <Button 
-                onClick={resetGeneration}
-                variant="outline"
-                className="border-purple-300 text-purple-700"
-              >
-                重新生成
-              </Button>
-              <Link href="/career-planning/my-reports">
-                <Button className="bg-purple-600 hover:bg-purple-700">
-                  查看完整报告
-                  <ChevronRight className="w-4 h-4 ml-2" />
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-center gap-4">
+                <Button 
+                  onClick={resetGeneration}
+                  variant="outline"
+                  className="border-purple-300 text-purple-700"
+                >
+                  重新生成
                 </Button>
-              </Link>
+                <Link href="/career-planning/my-reports">
+                  <Button className="bg-purple-600 hover:bg-purple-700">
+                    查看完整报告
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+              {/* 闭环CTA：规划报告后的下一步 */}
+              <div className="flex justify-center gap-3">
+                <Button
+                  variant="outline"
+                  className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  onClick={() => router.push('/match')}
+                >
+                  <Briefcase className="w-4 h-4 mr-1" /> 去匹配岗位
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-green-200 text-green-700 hover:bg-green-50"
+                  onClick={() => router.push('/learning-path')}
+                >
+                  <BookOpen className="w-4 h-4 mr-1" /> 规划学习路径
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-orange-200 text-orange-700 hover:bg-orange-50"
+                  onClick={() => router.push('/assistant')}
+                >
+                  <Sparkles className="w-4 h-4 mr-1" /> AI助手咨询
+                </Button>
+              </div>
             </div>
           )}
         </div>
