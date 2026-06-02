@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -472,6 +472,18 @@ export default function ResumeEditorPage() {
   ]);
   const [sending, setSending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // 对话持久化 + 自动滚底
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, sending]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('resume-editor-chat', JSON.stringify(chatMessages));
+    } catch {}
+  }, [chatMessages]);
 
   // 自动保存到 localStorage
 
@@ -600,7 +612,7 @@ export default function ResumeEditorPage() {
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
                 {chatMessages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
-                    <div className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm leading-relaxed ${
+                    <div className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                       msg.role === 'assistant'
                         ? 'bg-[#F1F5F9] text-[#334155]'
                         : 'bg-[#8B5CF6] text-white'
@@ -609,6 +621,19 @@ export default function ResumeEditorPage() {
                     </div>
                   </div>
                 ))}
+                {/* typing indicator */}
+                {sending && (
+                  <div className="flex justify-start">
+                    <div className="bg-[#F1F5F9] rounded-lg px-4 py-3">
+                      <div className="flex gap-1.5">
+                        <div className="w-2 h-2 bg-[#94A3B8] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-2 h-2 bg-[#94A3B8] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 bg-[#94A3B8] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
               </div>
               <div className="px-4 py-3 border-t border-[#E2E8F0]">
                 <div className="flex gap-2">
