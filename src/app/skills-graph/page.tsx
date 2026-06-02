@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import {
-  Network, Search, Info, X, ZoomIn, ZoomOut, RotateCcw, Crown
+  Network, Search, Info, X, ZoomIn, ZoomOut, RotateCcw, Crown, TrendingUp
 } from 'lucide-react';
 import { useMembership } from '@/contexts/MembershipContext';
 import PaywallModal from '@/components/PaywallModal';
@@ -61,6 +61,7 @@ const activeRelations = ['co_occur', 'prerequisite', 'similar', 'career_path'] a
 export default function SkillsGraphPage() {
   const { isMember, loading: memberLoading } = useMembership();
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [searchSkill, setSearchSkill] = useState('');
@@ -335,7 +336,10 @@ export default function SkillsGraphPage() {
             <CardContent className="py-16 text-center">
               <Network className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-700 mb-2">暂无技能关系数据</h3>
-              <p className="text-gray-400 text-sm">尝试搜索特定技能查看关系</p>
+              <p className="text-gray-400 text-sm mb-4">尝试搜索特定技能查看关系，或返回学习路径查看推荐技能</p>
+              <Button variant="outline" className="border-indigo-200 text-indigo-600 hover:bg-indigo-50" onClick={() => router.push('/learning-path')}>
+                返回学习路径
+              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -531,6 +535,17 @@ export default function SkillsGraphPage() {
                         </button>
                       ))}
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* 学习路径导航 */}
+              <Card className="border-green-100 bg-gradient-to-br from-green-50/30 to-emerald-50/30">
+                <CardContent className="py-3">
+                  <Button variant="ghost" className="w-full text-green-700 hover:text-green-800 hover:bg-green-100 justify-start"
+                    onClick={() => router.push('/learning-path')}>
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    返回学习路径
+                  </Button>
                 </CardContent>
               </Card>
             </div>

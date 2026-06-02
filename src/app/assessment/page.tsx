@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import SkillAssessmentCard from '@/components/cards/SkillAssessmentCard';
 import {
   BarChart3, TrendingUp, Award, AlertTriangle, History, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Minus, Crown, Lock, LogIn
+  ArrowUpRight, ArrowDownRight, Minus, Crown, Lock, LogIn, Briefcase, ArrowRight
 } from 'lucide-react';
 import { useMembership } from '@/contexts/MembershipContext';
 import PaywallModal from '@/components/PaywallModal';
@@ -46,6 +47,7 @@ interface PercentileInfo {
 
 export default function AssessmentPage() {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const { isMember, loading: memberLoading } = useMembership();
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -387,7 +389,11 @@ export default function AssessmentPage() {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {selected.data.gap_skills.map((skill, i) => (
-                        <Badge key={i} className="bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50">
+                        <Badge 
+                          key={i} 
+                          className="bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50 cursor-pointer transition-all hover:shadow-sm"
+                          onClick={() => router.push(`/skills-graph?skill=${encodeURIComponent(skill)}`)}
+                        >
                           {skill}
                         </Badge>
                       ))}
@@ -410,6 +416,33 @@ export default function AssessmentPage() {
                     weaknesses: selected.data.gap_skills,
                   }}
                 />
+              )}
+
+              {/* 测评结果 → 下一步动作 */}
+              {selected && (
+                <Card className="border-blue-100 bg-gradient-to-br from-blue-50/40 to-indigo-50/40">
+                  <CardContent className="py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="text-sm text-gray-600">
+                        <span className="font-medium text-gray-800">根据测评结果，你可以：</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                          onClick={() => router.push('/skills-graph')}>
+                          <BarChart3 className="w-3.5 h-3.5 mr-1" /> 查看技能图谱
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-green-200 text-green-700 hover:bg-green-50"
+                          onClick={() => router.push('/learning-path')}>
+                          <TrendingUp className="w-3.5 h-3.5 mr-1" /> 规划学习路径
+                        </Button>
+                        <Button size="sm" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                          onClick={() => router.push('/match')}>
+                          <Briefcase className="w-3.5 h-3.5 mr-1" /> 匹配岗位
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {/* 成长曲线 - 仅会员 */}

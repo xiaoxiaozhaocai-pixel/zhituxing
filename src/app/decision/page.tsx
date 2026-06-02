@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Send, Loader2, GraduationCap, Briefcase, TrendingUp, Target, Sparkles, Share2, Download, Crown, AlertCircle, Copy, Check } from 'lucide-react';
@@ -50,6 +51,7 @@ const sharePrompt = (inviteCode: string) => `
 
 export default function DecisionPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -295,6 +297,7 @@ export default function DecisionPage() {
 
                   {/* 报告操作按钮 */}
                   {message.role === 'assistant' && message.isReport && (
+                    <>
                     <div className="mt-4 pt-4 border-t border-gray-200 flex flex-wrap gap-2 justify-end">
                       <Button 
                         size="sm" 
@@ -314,6 +317,28 @@ export default function DecisionPage() {
                         下载PDF
                       </Button>
                     </div>
+                      {/* 决策后的闭环CTA */}
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-green-600 border-green-300 hover:bg-green-50"
+                          onClick={() => router.push('/learning-path')}
+                        >
+                          <TrendingUp className="w-4 h-4 mr-1" />
+                          制定学习路径
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                          onClick={() => router.push('/match')}
+                        >
+                          <Briefcase className="w-4 h-4 mr-1" />
+                          查看匹配岗位
+                        </Button>
+                        </div>
+                    </>
                   )}
                 </div>
               </div>
