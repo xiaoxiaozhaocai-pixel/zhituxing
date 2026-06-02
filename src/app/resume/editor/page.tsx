@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import {
 import {
   User, GraduationCap, Briefcase, FolderGit2, Wrench, Award,
   Plus, Trash2, GripVertical, Eye, Sparkles, Save, FileDown,
-  ChevronRight, ChevronDown,
+  ChevronRight, ChevronDown, X, MessageCircle, Bot, Send,
 } from 'lucide-react';
 import {
   Resume, ResumeBasicInfo, ResumeEducation, ResumeExperience,
@@ -466,8 +466,51 @@ export default function ResumeEditorPage() {
   });
   const [activeSection, setActiveSection] = useState<SectionKey>('basic');
   const [saving, setSaving] = useState(false);
+  const [conversationMode, setConversationMode] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{role:'assistant'|'user';content:string}[]>([
+    { role: 'assistant' as const, content: '嗨！我是小职，我来帮你写简历。\n\n先聊聊基本信息吧——你叫什么名字？' },
+  ]);
+  const [sending, setSending] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // 自动保存到 localStorage
+  const sendMessage = useCallback(async (text: string) => {
+    if (sending || !text.trim()) return;
+    const userMsg = { role: 'user' as const, content: text.trim() };
+    setChatMessages(prev => [...prev, userMsg]);
+    setSending(true);
+
+    // 构建对话历史（不含最新的用户消息，因为已经加了）
+    const history = [...chatMessages, userMsg];
+
+    try {
+      const res = await fetch('/api/resume/conversation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: history.map(m => ({ role: m.role, content: m.content })),
+          collectedFields: resume,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`API error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+
+      // TODO: 根据 data.updates 更新简历字段
+    } catch (err) {
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: '抱歉，我这边出了点小问题，能再说一遍吗？',
+      }]);
+    } finally {
+      setSending(false);
+    }
+  }, [chatMessages, sending, resume]);
+
   const saveDraft = useCallback(() => {
     try {
       localStorage.setItem('resume-editor-draft', JSON.stringify(resume));
@@ -493,6 +536,15 @@ export default function ResumeEditorPage() {
           <Button variant="outline" size="sm" onClick={saveDraft}>
             <Save className="w-4 h-4 mr-1" />保存草稿
           </Button>
+          <Button
+            variant={conversationMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setConversationMode(!conversationMode)}
+            className={conversationMode ? "bg-[#8B5CF6] hover:bg-[#7C3AED] text-white" : "border-[#8B5CF6] text-[#8B5CF6]"}
+          >
+            {conversationMode ? <X className="w-4 h-4 mr-1" /> : <MessageCircle className="w-4 h-4 mr-1" />}
+            {conversationMode ? "手动编辑" : "让小职帮你写"}
+          </Button>
           <Button size="sm" className="bg-[#3B82F6] hover:bg-[#2563EB]">
             <Sparkles className="w-4 h-4 mr-1" />AI 优化
           </Button>
@@ -503,6 +555,52 @@ export default function ResumeEditorPage() {
       <div className="flex h-[calc(100vh-56px)]">
         {/* 左栏：编辑区 */}
         <div className="w-[480px] shrink-0 border-r border-[#E2E8F0] bg-white overflow-hidden flex flex-col">
+          {conversationMode ? (
+            <div className="flex-1 flex flex-col">
+              <div className="px-4 pt-4 pb-2 border-b border-[#E2E8F0]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Bot className="w-5 h-5 text-[#8B5CF6]" />
+                  <span className="text-sm font-medium text-[#1E293B]">与小职对话</span>
+                  <Badge variant="outline" className="text-xs text-[#8B5CF6] border-[#DDD6FE] bg-[#F5F3FF]">
+                    简历自动填充中
+                  </Badge>
+                </div>
+                <p className="text-xs text-[#64748B]">小职会通过对话帮你填写简历，你只需要聊天即可</p>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
+                    <div className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm leading-relaxed ${
+                      msg.role === 'assistant'
+                        ? 'bg-[#F1F5F9] text-[#334155]'
+                        : 'bg-[#8B5CF6] text-white'
+                    }`}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="px-4 py-3 border-t border-[#E2E8F0]">
+                <div className="flex gap-2">
+                  <Input
+                    ref={inputRef}
+                    placeholder="输入你的回答..."
+                    className="flex-1 text-sm"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                        const val = e.currentTarget.value;
+                        e.currentTarget.value = '';
+                        sendMessage(val);
+                      }
+                    }}
+                  />
+                  <Button size="sm" className="bg-[#8B5CF6] hover:bg-[#7C3AED] shrink-0" disabled={sending} onClick={() => { const inp = inputRef.current; if (inp && inp.value.trim()) { const val = inp.value; inp.value = ''; sendMessage(val); } }}>
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
           <Tabs value={activeSection} onValueChange={v => setActiveSection(v as SectionKey)} className="flex-1 flex flex-col">
             <div className="px-4 pt-4">
               <TabsList className="w-full justify-start gap-1 bg-transparent h-auto flex-wrap">
@@ -535,6 +633,7 @@ export default function ResumeEditorPage() {
               </TabsContent>
             </div>
           </Tabs>
+          )}
         </div>
 
         {/* 右栏：预览区 */}
