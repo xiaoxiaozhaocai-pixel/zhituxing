@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
 };
 
 export default function LearningPathPage() {
+  const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const { isMember, loading: memberLoading } = useMembership();
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -255,7 +257,7 @@ export default function LearningPathPage() {
                                   const progress = skillProgress[skill];
                                   const cfg = statusConfig[progress?.status || 'not_started'];
                                   return (
-                                    <div key={j} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cfg.color}`}>
+                                    <div key={j} onClick={() => router.push(`/skills-graph?skill=${encodeURIComponent(skill)}`)} className={`cursor-pointer transition-all hover:shadow-md inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cfg.color}`}>
                                       {cfg.icon}
                                       <span>{skill}</span>
                                       {progress && (

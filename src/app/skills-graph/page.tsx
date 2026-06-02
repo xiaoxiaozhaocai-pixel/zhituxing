@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +61,7 @@ const activeRelations = ['co_occur', 'prerequisite', 'similar', 'career_path'] a
 export default function SkillsGraphPage() {
   const { isMember, loading: memberLoading } = useMembership();
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [searchSkill, setSearchSkill] = useState('');
   const [edges, setEdges] = useState<RelationEdge[]>([]);
@@ -133,7 +135,13 @@ export default function SkillsGraphPage() {
   }, []);
 
   useEffect(() => {
-    fetchRelations();
+    const skillFromUrl = searchParams.get('skill');
+    if (skillFromUrl) {
+      setSearchSkill(skillFromUrl);
+      fetchRelations(skillFromUrl);
+    } else {
+      fetchRelations();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
