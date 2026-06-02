@@ -536,6 +536,13 @@ export default function MatchPage() {
                         <span className="text-violet-600 font-medium">为什么被低估：</span>
                         {job.reason}
                       </p>
+                      <div className="mt-4 pt-3 border-t border-violet-100">
+                        <Link href={`/assistant?bot=xiaozhi&query=帮我针对${encodeURIComponent(job.jobName)}岗位准备模拟面试，这个岗位被低估了`}>
+                          <Button size="sm" variant="outline" className="w-full border-violet-200 text-violet-700 hover:bg-violet-50 hover:border-violet-300">
+                            <MessageCircle className="w-4 h-4 mr-1" /> 模拟面试
+                          </Button>
+                        </Link>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
