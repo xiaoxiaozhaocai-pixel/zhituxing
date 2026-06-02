@@ -84,6 +84,27 @@ function OnboardingWizard() {
   const toggleCity = (v: string) => {
     setTargetCities(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
   };
+  /**
+   * Persona 双路径路由：根据年级+求职状态，将新用户引导到最适合的入口
+   * - 大一大二探索期 → /guide（新手引导）或 /resources（探索资源）
+   * - 大三大四求职期 → /match（直接匹配）或 /resources
+   */
+  const getPersonaRoute = (g: string, status: string): string => {
+    const isEarly = ["大一", "大二"].includes(g);
+    const isLate = ["大三", "大四", "研二", "研三"].includes(g);
+    if (isEarly) {
+      if (status === "求职中") return "/match";
+      if (["考研", "考公", "留学"].includes(status)) return "/resources";
+      if (status === "未决定") return "/guide";
+    }
+    if (isLate) {
+      if (status === "求职中") return "/match";
+      if (["考研", "考公", "留学"].includes(status)) return "/resources";
+      if (status === "未决定") return "/career-planning";
+    }
+    return "/";
+  };
+
 
   const handleSave = async (redirectToHome = true) => {
     setSaving(true);
@@ -108,7 +129,7 @@ function OnboardingWizard() {
         setSaved(true);
         localStorage.setItem('onboarding_done', 'true');
         if (redirectToHome) {
-          setTimeout(() => router.push('/'), 800);
+          setTimeout(() => router.push(getPersonaRoute(grade, userStatus)), 800);
         }
       }
     } catch (e) {
