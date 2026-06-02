@@ -474,6 +474,33 @@ export default function ResumeEditorPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 自动保存到 localStorage
+
+  /** 将对话 API 返回的 updates 合并到简历状态 */
+  const applyUpdates = useCallback((prev: Resume, updates: Record<string, unknown>): Resume => {
+    const next = { ...prev };
+    for (const [key, value] of Object.entries(updates)) {
+      if (!value) continue;
+      // basic.xxx → 合并到 basic 字段
+      if (key.startsWith("basic.")) {
+        const field = key.slice(6) as keyof ResumeBasicInfo;
+        if (typeof value === "string" && field in next.basic) {
+          next.basic = { ...next.basic, [field]: value };
+        }
+        continue;
+      }
+      // 完整替换数组字段
+      if (["education", "experience", "projects", "skills", "certifications"].includes(key) && Array.isArray(value)) {
+        (next as any)[key] = value;
+        continue;
+      }
+      // 整个 basic 对象替换
+      if (key === "basic" && typeof value === "object" && !Array.isArray(value)) {
+        next.basic = { ...next.basic, ...(value as Partial<ResumeBasicInfo>) };
+        continue;
+      }
+    }
+    return next;
+  }, []);
   const sendMessage = useCallback(async (text: string) => {
     if (sending || !text.trim()) return;
     const userMsg = { role: 'user' as const, content: text.trim() };
@@ -500,7 +527,10 @@ export default function ResumeEditorPage() {
       const data = await res.json();
       setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
 
-      // TODO: 根据 data.updates 更新简历字段
+      // 根据 data.updates 更新简历字段
+      if (data.updates && Object.keys(data.updates).length > 0) {
+        setResume(prev => applyUpdates(prev, data.updates));
+      }
     } catch (err) {
       setChatMessages(prev => [...prev, {
         role: 'assistant',
