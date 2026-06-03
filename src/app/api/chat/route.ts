@@ -214,12 +214,14 @@ const DISPATCH_CARDS: Record<string, { title: string; description: string; actio
     description: '要不要优化一下简历？AI帮你打磨，让HR眼前一亮。',
     actionLabel: '优化简历',
     tabId: 'jobs',
+    url: '/resume',
   },
   skill: {
     title: '🔧 检测到你想提升技能',
     description: '要不要做个技能画像分析？找到你的优势和短板。',
     actionLabel: '技能画像分析',
     tabId: 'career',
+    url: '/skill-portrait',
   },
 };
 
