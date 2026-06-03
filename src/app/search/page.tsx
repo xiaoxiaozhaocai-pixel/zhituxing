@@ -168,7 +168,7 @@ ${job.company ? `公司：${job.company}` : ''}
     e.preventDefault();
     e.stopPropagation();
     const prompt = generateJobAnalysisPrompt(job);
-    router.push(`/assistant?query=${encodeURIComponent(prompt)}`);
+    window.location.href = `/assistant?query=${encodeURIComponent(prompt)}`;
   };
 
   const handleTabChange = (tab: 'all' | 'jobs' | 'articles') => {
