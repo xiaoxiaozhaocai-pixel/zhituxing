@@ -1,5 +1,8 @@
 'use client';
 
+// 强制动态渲染，避免 ISR 缓存导致 "This page couldn't load" 间歇性崩溃
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
