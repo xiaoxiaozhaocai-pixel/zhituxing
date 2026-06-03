@@ -223,6 +223,109 @@ const DISPATCH_CARDS: Record<string, { title: string; description: string; actio
   },
 };
 
+// ============================================================
+// 深度调度：意图 → 独立 API 路由映射（有 SSE 流式 API 的才映射）
+// 无独立 SSE API 的意图（decision/jobs/resume/skill）保持 prompt-based
+// ============================================================
+const DISPATCH_API_MAP: Record<string, string> = {
+  interview: '/api/interview',
+  career: '/api/career-planning/stream',
+  assessment: '/api/assessment',
+  competency: '/api/competency',
+};
+
+/**
+ * 代理转发到专业智能体 API，注入 dispatch + conversation_id 事件
+ * 同时收集 fullResponse 用于聊天历史存储
+ */
+async function proxySpecializedApiStream(
+  apiPath: string,
+  body: Record<string, any>,
+  request: NextRequest,
+  effectiveConversationId: string,
+  resolvedBotType: string,
+): Promise<{ stream: ReadableStream; fullResponse: string }> {
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  
+  // 构建内部 API URL
+  const url = new URL(apiPath, request.url);
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const cookie = request.headers.get('cookie');
+  if (cookie) headers['Cookie'] = cookie;
+  
+  console.log(`[chat] Forwarding to specialized API: ${url.toString()}`);
+  
+  const apiResponse = await fetch(url.toString(), {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+  
+  if (!apiResponse.ok || !apiResponse.body) {
+    throw new Error(`Specialized API ${apiPath} returned ${apiResponse.status}`);
+  }
+  
+  let fullResponse = '';
+  const reader = apiResponse.body.getReader();
+  
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+          
+          for (const line of lines) {
+            // 过滤专业 API 自己的结束标记 {type:'done'} 和 [DONE]
+            if (line.includes('[DONE]') || line.includes('"type":"done"')) continue;
+            
+            // 收集 fullResponse
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                const content = data?.content || data?.choices?.[0]?.delta?.content;
+                if (content) fullResponse += content;
+              } catch { /* non-JSON SSE data */ }
+            }
+            
+            if (line.trim()) {
+              controller.enqueue(encoder.encode(line + '\n'));
+            }
+          }
+        }
+        
+        // 流结束 — 注入 conversation_id
+        const convEvent = `event: conversation_id\ndata: ${JSON.stringify({ conversation_id: effectiveConversationId })}\n\n`;
+        controller.enqueue(encoder.encode(convEvent));
+        
+        // 注入 dispatch 事件
+        const card = DISPATCH_CARDS[resolvedBotType];
+        if (card) {
+          const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
+            intent: resolvedBotType,
+            ...card,
+          })}\n\n`;
+          controller.enqueue(encoder.encode(dispatchEvent));
+          console.log(`[xiaozhi] Dispatch event sent (deep): intent=${resolvedBotType}`);
+        }
+        
+        // [DONE]
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      } catch (err) {
+        console.error('[chat] Proxy stream error:', err);
+        controller.error(err);
+      }
+    }
+  });
+  
+  return { stream, fullResponse };
+}
+
 // SSE 流式响应头
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',
@@ -806,6 +909,48 @@ export async function POST(request: NextRequest) {
         // 没命中 → 小职聊天模式
         resolvedBotType = 'xiaozhi_chat';
         console.log(`[xiaozhi] No dispatch needed, using chat mode`);
+      }
+    }
+
+    // ============================================================
+    // 深度调度：命中专业意图且有独立SSE API时，转发到专业智能体
+    // 被代理的 API 自己处理 RAG + Specialized Prompt，不再走下方 DeepSeek 通用路径
+    // ============================================================
+    if (effectiveBotType === 'xiaozhi' && useVoiceWrapper && DISPATCH_API_MAP[resolvedBotType]) {
+      const deepConvId = conversationId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      const apiPath = DISPATCH_API_MAP[resolvedBotType];
+      
+      console.log(`[chat] Deep dispatch: intent=${resolvedBotType} → ${apiPath}`);
+      
+      try {
+        const apiBody: Record<string, any> = { message, conversationId: deepConvId };
+        const { stream: proxiedStream, fullResponse } = await proxySpecializedApiStream(
+          apiPath, apiBody, request, deepConvId, resolvedBotType,
+        );
+        
+        // 异步保存聊天历史（不阻塞首字节）
+        if (fullResponse && userId) {
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          const esc = (s: string) => (s || '').replace(/'/g, "''");
+          const insertSql = `
+            INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES
+            ('${esc(deepConvId)}', '${esc(userId)}', 'user', '${esc(message)}', '${esc(effectiveBotType)}'),
+            ('${esc(deepConvId)}', '${esc(userId)}', 'assistant', '${esc(fullResponse)}', '${esc(effectiveBotType)}');
+          `;
+          fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
+            method: 'POST',
+            headers: { 'apikey': supabaseKey || '', 'Authorization': `Bearer ${supabaseKey || ''}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sql: insertSql }),
+          }).catch(e => console.error('[chat] Deep dispatch history save error:', e));
+        }
+        
+        return new Response(proxiedStream, { headers: SSE_HEADERS });
+      } catch (err) {
+        console.error('[chat] Deep dispatch failed, falling back to prompt-based:', err);
+        // 回退到下方通用 DeepSeek + RAG 路径
+        useVoiceWrapper = false;
+        resolvedBotType = 'xiaozhi_chat';
       }
     }
 
