@@ -1,0 +1,139 @@
+# 任务：修复 /api/quota 接口 500 错误
+
+## 错误信息
+线上访问 https://zhituxing.zeabur.app 触发的 /api/quota 接口返回 500：
+```
+Cannot coerce the result to a single JSON object
+```
+（这是 Supabase 的 PostgREST 错误码 PGRST116，表示 `.single()` 期望恰好 1 行但得到 0 行或多行）
+
+## 根因
+`user_quotas` 表刚建好，当前登录用户在该表里还没有任何记录。
+代码用了 `.single()` 强制要求恰好 1 行，结果集为空 → 500。
+
+## 涉及文件
+
+### 文件 1：src/app/api/quota/route.ts（GET 处理器有 BUG，第 47-83 行）
+```ts
+// 获取配额重置状态
+export async function GET() {
+  try {
+    const supabase = getSupabaseAdmin();
+    // 获取配额重置配置
+    const { data, error } = await supabase
+      .from('user_quotas')
+      .select('quota_reset_time')
+      .limit(1)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    // 计算距离下次重置还有多少天
+    const now = new Date();
+    const resetDate = data?.quota_reset_time ? new Date(data.quota_reset_time) : null;
+    let daysUntilReset = null;
+
+    if (resetDate) {
+      const diffTime = resetDate.getTime() - now.getTime();
+      daysUntilReset = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        nextResetTime: data?.quota_reset_time,
+        daysUntilReset
+      }
+    });
+
+  } catch (error) {
+    console.error('获取配额重置状态失败:', error);
+    return NextResponse.json({ success: false, error: '服务器错误' }, { status: 500 });
+  }
+}
+```
+
+### 文件 2：src/lib/quota.ts（两处 .single()）
+
+第 41-58 行：
+```ts
+async function getUserProfile(userId: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('user_type, member_expires_at')
+    .eq('user_id', userId)
+    .single();
+  
+  if (error || !data) {
+    return { userType: 'free', memberExpiresAt: null };
+  }
+  return { 
+    userType: data.user_type || 'free',
+    memberExpiresAt: data.member_expires_at 
+  };
+}
+```
+
+第 60-70 行：
+```ts
+async function getUserQuotaFromDb(userId: string) {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('user_quotas')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  
+  if (error || !data) {
+    return null;
+  }
+  return data;
+}
+```
+
+## 修复要求（必须严格遵守）
+
+1. **route.ts GET 必须改成 `.maybeSingle()`**，并且在 data 为 null 时返回 `{ success: true, data: { nextResetTime: null, daysUntilReset: null } }`（HTTP 200），不能再 500。
+
+2. **lib/quota.ts 两处 .single() 都改成 .maybeSingle()**：
+   - getUserProfile：用 maybeSingle，逻辑不变（仍然 fallback 默认值）
+   - getUserQuotaFromDb：用 maybeSingle，**当 data 为 null 时，自动 upsert 一条默认记录然后返回**（推荐 upsert 模式，避免后续每次都查不到）。
+   - upsert 失败时（例如并发竞争）也要 fallback 返回内存中的默认对象，不能抛错。
+
+3. upsert 默认值（参考建表 SQL）：
+   - monthly_quota = 10
+   - used_quota = 0
+   - interview_quota = 3
+   - assessment_quota = 1
+   - member_type = 'free'
+   - quota_reset_time / interview_quota_reset_time / assessment_quota_reset_time = 30 天后的 ISO 字符串
+
+4. upsert 必须用 `{ onConflict: 'user_id' }`（user_id 字段是 user_quotas 表的唯一约束）。
+
+5. **严禁** SQL 注入、DROP/DELETE 整表、引入 N+1 查询。
+
+6. **严禁** 重命名函数、修改导出签名、改动其他无关代码。
+
+7. 修改后 TypeScript 必须仍然能 compile（不要引入新的类型错误）。getUserQuotaFromDb 的返回类型保持原状（any/inferred）。
+
+## 输出格式（严格要求）
+
+返回 JSON 对象，结构如下：
+```json
+{
+  "replacements": [
+    {
+      "file": "src/app/api/quota/route.ts",
+      "old_string": "...精确原文...",
+      "new_string": "...替换后代码..."
+    }
+  ]
+}
+```
+
+要求：
+- 每个 old_string 必须在原文中**唯一**且精确匹配（包含完整上下文、缩进、换行）。
+- 只输出 JSON 本体，不要任何额外说明文字，不要 markdown 代码块包裹（不要 ```json ... ```）。
