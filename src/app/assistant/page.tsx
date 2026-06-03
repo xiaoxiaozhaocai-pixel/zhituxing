@@ -41,6 +41,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  interrupted?: boolean;  // 流中断标记
 }
 
 /** 过滤文本中残留的 <<DATA:type=xxx>>...<<END>> 标记（安全网） */
@@ -681,6 +682,7 @@ function AssistantContent() {
 
       const decoder = new TextDecoder();
       let fullContent = '';
+      let receivedDone = false;  // 追踪是否收到 [DONE]，用于检测流中断
       let sseBuffer = '';
       let firstTokenTimer = setTimeout(() => {
         // 15秒未收到第一个token
@@ -803,8 +805,20 @@ function AssistantContent() {
               continue;
             }
 
+            // save_result 事件 — 后端确认消息已持久化
+            if (eventType === 'save_result') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                console.log('[chat] Save result:', parsed.result, 'convId:', parsed.convId);
+              } catch {
+                // 忽略
+              }
+              continue;
+            }
+
             // 检查 [DONE] 标记
             if (dataLine === '[DONE]') {
+              receivedDone = true;
               clearTimeout(firstTokenTimer);
               clearTimeout(timeoutTimer);
               break;
@@ -1137,6 +1151,24 @@ function AssistantContent() {
                     >
                       重新生成
                     </button>
+                  )}
+                  {/* 流中断提示 + 重试 */}
+                  {msg.interrupted && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-xs text-amber-600">⚠️ 连接中断，回复可能不完整</span>
+                      <button
+                        onClick={() => {
+                          // 重新发送上一条用户消息
+                          const prevUserMsg = messages[index - 1];
+                          if (prevUserMsg?.role === 'user') {
+                            sendMessage(prevUserMsg.content);
+                          }
+                        }}
+                        className="px-3 py-1 bg-amber-50 text-amber-700 text-xs rounded-lg hover:bg-amber-100 transition-colors border border-amber-200"
+                      >
+                        重新生成
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
