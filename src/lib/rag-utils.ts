@@ -297,12 +297,14 @@ export function buildRAGContext(
  * @param systemPrompt 系统提示词（含 RAG 上下文）
  * @param userMessage 用户消息
  * @param history 对话历史（可选）
+ * @param signal 中断信号（可选，用于超时或客户端断开）
  * @returns ReadableStream（SSE 格式）
  */
 export function createDeepSeekRAGStream(
   systemPrompt: string,
   userMessage: string,
-  history?: ChatMessage[]
+  history?: ChatMessage[],
+  signal?: AbortSignal
 ): ReadableStream {
   const messages: ChatMessage[] = [
     { role: 'system', content: systemPrompt },
@@ -310,7 +312,7 @@ export function createDeepSeekRAGStream(
     { role: 'user', content: userMessage },
   ];
 
-  return createDeepSeekSSEStream({ messages });
+  return createDeepSeekSSEStream({ messages, signal });
 }
 
 /**
