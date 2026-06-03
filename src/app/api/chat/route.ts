@@ -793,7 +793,12 @@ export async function POST(request: NextRequest) {
         }
         
         const ragContext = buildRAGContext(ragSources);
-        
+
+        // RAG 失败降级：无数据时告知 LLM 坦诚说明
+        const ragDegradationNote = ragSources.length === 0
+          ? '\n\n【RAG状态】本次未检索到相关数据。请坦诚告知用户你掌握的信息有限，基于通用知识回答，不要编造具体数据。'
+          : '';
+
         // 三明治结构：systemPrompt = 顶部(SYSTEM_PROMPTS) + 中间(RAG数据) + 底部(角色重申)
         const roleReinforcement = ROLE_REINFORCEMENTS[actualBotType] || '';
         
@@ -822,13 +827,13 @@ export async function POST(request: NextRequest) {
         
         if (compressionLevel === 'window') {
           // 降级模式：取最近 15 轮原文（窗口截断）
-          systemPrompt = basePrompt + '\n\n' + ragContext + roleReinforcement;
+          systemPrompt = basePrompt + '\n\n' + ragContext + ragDegradationNote + roleReinforcement;
           history = await getRecentNRounds(effectiveConversationId, 15);
           console.log(`[chat] Context compression: downgraded to window mode (15 rounds)`);
         } else {
           // 混合模式：摘要 + 最近 3 轮原文
           const context = await assembleContext(effectiveConversationId, userId || '', 3);
-          systemPrompt = basePrompt + '\n\n' + ragContext + '\n\n' + context.fullContextText + roleReinforcement;
+          systemPrompt = basePrompt + '\n\n' + ragContext + ragDegradationNote + '\n\n' + context.fullContextText + roleReinforcement;
           history = context.recentMessages;
           console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs`);
         }
@@ -882,8 +887,20 @@ export async function POST(request: NextRequest) {
           return new Response(cachedStream, { headers: SSE_HEADERS });
         }
 
-        // 创建带历史保存的流包装器
-        const baseStream = createDeepSeekRAGStream(systemPrompt, message, history);
+        // 创建带超时保护的 DeepSeek RAG 流（45s 超时 + 客户端断开检测）
+        const timeoutController = new AbortController();
+        const timeoutId = setTimeout(() => {
+          console.log('[chat] DeepSeek RAG stream timeout (45s)');
+          timeoutController.abort();
+        }, 45000);
+        // 客户端断开时取消请求
+        if (request.signal) {
+          request.signal.addEventListener('abort', () => {
+            console.log('[chat] Client disconnected, aborting DeepSeek stream');
+            timeoutController.abort();
+          }, { once: true });
+        }
+        const baseStream = createDeepSeekRAGStream(systemPrompt, message, history, timeoutController.signal);
         const encoder = new TextEncoder();
         
         const wrappedStream = new ReadableStream({
@@ -1051,7 +1068,22 @@ export async function POST(request: NextRequest) {
               controller.enqueue(encoder.encode(saveEvent));
             } catch (err) {
               console.error('[chat] Stream wrapper error:', err);
+              // 超时时发送友好降级消息
+              if (err instanceof Error && err.name === 'AbortError') {
+                try {
+                  const degradeMsg = JSON.stringify({
+                    id: 'timeout-fallback',
+                    object: 'chat.completion.chunk',
+                    created: Math.floor(Date.now() / 1000),
+                    model: 'fallback',
+                    choices: [{ index: 0, delta: { content: '\n\n抱歉，响应超时了。可能是当前访问量较大，请稍后重试或简化一下问题～' }, finish_reason: 'stop' }],
+                  });
+                  controller.enqueue(encoder.encode('data: ' + degradeMsg + '\n\n'));
+                  controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+                } catch (e) { /* best effort */ }
+              }
             } finally {
+              clearTimeout(timeoutId);
               controller.close();
               reader.releaseLock();
             }
