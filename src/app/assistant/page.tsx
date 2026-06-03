@@ -286,6 +286,7 @@ function AssistantContent() {
     description: string;
     actionLabel: string;
     tabId: string;
+    url?: string;  // 优先跳转到独立页面（如 /resume），无则切换 tab
   } | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -766,8 +767,9 @@ function AssistantContent() {
                     description: parsed.description || '',
                     actionLabel: parsed.actionLabel || '去看看',
                     tabId: parsed.tabId || 'jobs',
+                    url: parsed.url || undefined,
                   });
-                  console.log('[chat] Dispatch card received:', parsed.intent);
+                  console.log('[chat] Dispatch card received:', parsed.intent, parsed.url ? `→ ${parsed.url}` : '');
                 }
               } catch {
                 // 忽略解析错误
@@ -1234,7 +1236,11 @@ function AssistantContent() {
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => {
-                      handleTabChange(dispatchCard.tabId);
+                      if (dispatchCard.url) {
+                        router.push(dispatchCard.url);
+                      } else {
+                        handleTabChange(dispatchCard.tabId);
+                      }
                       setDispatchCard(null);
                     }}
                     className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
