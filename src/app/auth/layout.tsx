@@ -3,7 +3,6 @@ import { SITE_URL } from '@/lib/config';
 
 // 强制动态渲染，禁用 ISR 缓存，避免认证页间歇性 "This page couldn't load"
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: '登录注册 - 开启你的AI求职之旅',
