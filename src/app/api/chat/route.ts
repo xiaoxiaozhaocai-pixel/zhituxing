@@ -171,6 +171,58 @@ function getFallbackResponse(botType?: string, message?: string): string {
 请告诉我您的需求！`;
 }
 
+// 调度卡片文案（小职检测到意图后推送给前端的 action card）
+const DISPATCH_CARDS: Record<string, { title: string; description: string; actionLabel: string; tabId: string }> = {
+  interview: {
+    title: '🎙️ 检测到你在准备面试',
+    description: '要不要试试AI模拟面试？还原真实校招全流程，帮你打磨面试技巧。',
+    actionLabel: '进入模拟面试',
+    tabId: 'interview',
+  },
+  career: {
+    title: '🧭 检测到你在思考职业方向',
+    description: '要不要做一次职业规划？基于全行业真实数据，帮你理清成长路径。',
+    actionLabel: '开始职业规划',
+    tabId: 'career',
+  },
+  decision: {
+    title: '⚖️ 检测到你在纠结选择',
+    description: '要不要做个考研vs就业对比分析？数据推演帮你理性决策。',
+    actionLabel: '开始对比分析',
+    tabId: 'decision',
+  },
+  assessment: {
+    title: '📊 检测到你想做能力测评',
+    description: '要不要来一套专业能力测评题？精准定位你的能力短板。',
+    actionLabel: '开始能力测评',
+    tabId: 'assessment',
+  },
+  competency: {
+    title: '🎯 检测到你在关心岗位匹配度',
+    description: '要不要做个胜任力评估？可视化雷达图帮你看到差距。',
+    actionLabel: '查看胜任力评估',
+    tabId: 'competency',
+  },
+  jobs: {
+    title: '💼 检测到你在找岗位信息',
+    description: '要不要帮你精准匹配职位？覆盖27大行业20000+真实JD。',
+    actionLabel: '精准搜岗位',
+    tabId: 'jobs',
+  },
+  resume: {
+    title: '📝 检测到你需要简历帮助',
+    description: '要不要优化一下简历？AI帮你打磨，让HR眼前一亮。',
+    actionLabel: '优化简历',
+    tabId: 'jobs',
+  },
+  skill: {
+    title: '🔧 检测到你想提升技能',
+    description: '要不要做个技能画像分析？找到你的优势和短板。',
+    actionLabel: '技能画像分析',
+    tabId: 'career',
+  },
+};
+
 // SSE 流式响应头
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',
@@ -952,6 +1004,21 @@ export async function POST(request: NextRequest) {
               // 发送 conversationId 事件（在 [DONE] 之前）
               const convEvent = `event: conversation_id\ndata: ${JSON.stringify({ conversation_id: effectiveConversationId })}\n\n`;
               controller.enqueue(encoder.encode(convEvent));
+              
+              // ============================================================
+              // 小职调度：推送 dispatch 事件给前端展示 action card
+              // ============================================================
+              if (effectiveBotType === 'xiaozhi' && useVoiceWrapper) {
+                const card = DISPATCH_CARDS[resolvedBotType];
+                if (card) {
+                  const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
+                    intent: resolvedBotType,
+                    ...card,
+                  })}\n\n`;
+                  controller.enqueue(encoder.encode(dispatchEvent));
+                  console.log(`[xiaozhi] Dispatch event sent: intent=${resolvedBotType}`);
+                }
+              }
               
               // DEBUG: 发送 fullResponse 长度作为事件
               const debugEvent = `event: debug\ndata: ${JSON.stringify({ fullResponseLength: fullResponse?.length || 0, userId: userId || 'null' })}\n\n`;

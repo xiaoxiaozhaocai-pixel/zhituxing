@@ -278,6 +278,16 @@ function AssistantContent() {
   
   // 文件上传状态
   const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
+  
+  // 小职调度卡片状态（Step2: dispatch event → action card）
+  const [dispatchCard, setDispatchCard] = useState<{
+    intent: string;
+    title: string;
+    description: string;
+    actionLabel: string;
+    tabId: string;
+  } | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
@@ -745,6 +755,26 @@ function AssistantContent() {
               continue;
             }
 
+            // dispatch 事件 — 小职调度卡片（Step2: 展示能力跳转卡片）
+            if (eventType === 'dispatch') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                if (parsed.intent && parsed.title) {
+                  setDispatchCard({
+                    intent: parsed.intent,
+                    title: parsed.title,
+                    description: parsed.description || '',
+                    actionLabel: parsed.actionLabel || '去看看',
+                    tabId: parsed.tabId || 'jobs',
+                  });
+                  console.log('[chat] Dispatch card received:', parsed.intent);
+                }
+              } catch {
+                // 忽略解析错误
+              }
+              continue;
+            }
+
             // 检查 [DONE] 标记
             if (dataLine === '[DONE]') {
               clearTimeout(firstTokenTimer);
@@ -909,6 +939,7 @@ function AssistantContent() {
     localStorage.removeItem(`conversationId_${activeBot}`);
     setActiveBot(botId);
     setMessages([]);
+    setDispatchCard(null); // 清除调度卡片
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
@@ -1177,6 +1208,47 @@ function AssistantContent() {
                   JD已解析，内容已附加到输入框
                 </p>
               )}
+            </div>
+          )}
+
+          {/* 小职调度卡片（Step2: 检测到意图后展示跳转卡片） */}
+          {dispatchCard && activeBot === 'xiaozhi' && (
+            <div className="px-4 pb-3">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-blue-900 text-sm mb-1">
+                      {dispatchCard.title}
+                    </h4>
+                    <p className="text-blue-700 text-xs leading-relaxed">
+                      {dispatchCard.description}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setDispatchCard(null)}
+                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      handleTabChange(dispatchCard.tabId);
+                      setDispatchCard(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    {dispatchCard.actionLabel}
+                  </button>
+                  <button
+                    onClick={() => setDispatchCard(null)}
+                    className="px-4 py-2 text-blue-500 text-sm font-medium hover:text-blue-700 transition-colors"
+                  >
+                    先不了
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

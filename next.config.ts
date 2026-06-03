@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   // 安全：移除 X-Powered-By 响应头
   poweredByHeader: false,
 
+  // Turbopack 根目录修正（workspace 多 lockfile 场景）
+  turbopack: {
+    root: __dirname,
+  },
+
   // ============================================================
   // 性能优化（2026-05-29 P5 体验铁律 #1）
   // ============================================================
