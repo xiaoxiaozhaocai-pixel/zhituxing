@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 export default function Footer() {
   const pathname = usePathname();
 
-  // 如果是后台管理页面，不显示Footer
-  if (pathname?.startsWith('/admin')) {
+  // 后台管理页 / 个人中心主页有独立侧边栏，不显示 Footer
+  if (pathname?.startsWith('/admin') || pathname === '/profile') {
     return null;
   }
 

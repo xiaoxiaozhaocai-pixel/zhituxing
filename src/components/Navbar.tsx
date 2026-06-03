@@ -41,8 +41,8 @@ export default function Navbar() {
   const router = useRouter();
   const moreRef = useRef<HTMLDivElement>(null);
 
-  // 如果是后台管理页面，不显示导航栏
-  if (pathname?.startsWith('/admin')) {
+  // 后台管理页 / 个人中心主页有独立侧边栏，不显示顶部导航栏
+  if (pathname?.startsWith('/admin') || pathname === '/profile') {
     return null;
   }
 

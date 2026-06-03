@@ -42,7 +42,6 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
-import Breadcrumb from '@/components/Breadcrumb';
 import GrowthCompanionCard from '@/components/GrowthCompanionCard';
 import GrowthTimeline from '@/components/GrowthTimeline';
 
@@ -1320,10 +1319,21 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Breadcrumb theme="light" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" />
       <div className="flex">
         {/* 左侧侧边栏 */}
-        <aside className="w-[240px] bg-white border-r min-h-screen fixed left-0 top-0 pt-20">
+        <aside className="w-[240px] bg-white border-r min-h-screen fixed left-0 top-0">
+          {/* 顶部 Logo 区，点击返回首页 */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-4 h-14 border-b hover:bg-gray-50 transition-colors"
+            aria-label="返回首页"
+          >
+            <div className="w-7 h-7 bg-[#165DFF] rounded-md flex items-center justify-center">
+              <span className="text-white text-sm font-bold">职</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">职途星 · 个人中心</span>
+          </Link>
+
           {/* 用户信息头部 */}
           <div className="p-4 border-b">
             <div className="flex items-center gap-3">
