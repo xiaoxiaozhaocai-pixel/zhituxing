@@ -772,6 +772,10 @@ export async function POST(request: NextRequest) {
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
               ].filter(Boolean) as any, 5, 'title,url,type')
             : [],
+          
+          allowedTables.includes('guet_knowledge')
+            ? querySupabase('guet_knowledge', [], 20, '*')
+            : [],
         ]);
         
         // 构建 RAG 上下文（只包含有数据的表，使用 botType 定制的标签）
