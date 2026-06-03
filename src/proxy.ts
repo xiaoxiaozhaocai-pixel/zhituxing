@@ -146,7 +146,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
       // 重定向到登录页，并带上回调 URL
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/auth';
-      loginUrl.searchParams.set('redirect', pathname);
+      loginUrl.searchParams.set('redirect', pathname + request.nextUrl.search);
       const response = NextResponse.redirect(loginUrl);
       return addSecurityHeaders(response);
     }
