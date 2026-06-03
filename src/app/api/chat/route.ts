@@ -1165,10 +1165,6 @@ export async function POST(request: NextRequest) {
                 }
               }
               
-              // DEBUG: 发送 fullResponse 长度作为事件
-              const debugEvent = `event: debug\ndata: ${JSON.stringify({ fullResponseLength: fullResponse?.length || 0, userId: userId || 'null' })}\n\n`;
-              controller.enqueue(encoder.encode(debugEvent));
-              
               // 发送 [DONE]
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
               
