@@ -289,6 +289,11 @@ function AssistantContent() {
     url?: string;  // 优先跳转到独立页面（如 /resume），无则切换 tab
   } | null>(null);
   
+  // 调度卡片动画 & 跳转状态
+  const [cardVisible, setCardVisible] = useState(false);
+  const [cardLeaving, setCardLeaving] = useState(false);
+  const [cardNavigating, setCardNavigating] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
@@ -403,6 +408,27 @@ function AssistantContent() {
       setPendingQuery(query);
     }
   }, [searchParams, pendingQuery]);
+
+  // 调度卡片入场/退场动画
+  useEffect(() => {
+    if (dispatchCard && !cardVisible) {
+      const raf = requestAnimationFrame(() => setCardVisible(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    if (!dispatchCard && cardVisible) {
+      setCardVisible(false);
+    }
+  }, [dispatchCard, cardVisible]);
+
+  // 调度卡片关闭（带退场动画）
+  const dismissCard = useCallback(() => {
+    setCardLeaving(true);
+    setTimeout(() => {
+      setDispatchCard(null);
+      setCardLeaving(false);
+      setCardNavigating(false);
+    }, 200);
+  }, []);
 
   // 解析JD链接
   const handleFetchJd = async (url: string) => {
@@ -1215,8 +1241,12 @@ function AssistantContent() {
 
           {/* 小职调度卡片（Step2: 检测到意图后展示跳转卡片） */}
           {dispatchCard && activeBot === 'xiaozhi' && (
-            <div className="px-4 pb-3">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+            <div className={`px-4 pb-3 transition-all duration-300 ease-out ${
+              cardVisible && !cardLeaving
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-3'
+            }`}>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <h4 className="font-semibold text-blue-900 text-sm mb-1">
@@ -1227,8 +1257,9 @@ function AssistantContent() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setDispatchCard(null)}
-                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+                    onClick={dismissCard}
+                    disabled={cardNavigating}
+                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors disabled:opacity-30"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -1236,20 +1267,26 @@ function AssistantContent() {
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => {
+                      setCardNavigating(true);
                       if (dispatchCard.url) {
                         router.push(dispatchCard.url);
                       } else {
                         handleTabChange(dispatchCard.tabId);
                       }
-                      setDispatchCard(null);
                     }}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                    disabled={cardNavigating}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    {dispatchCard.actionLabel}
+                    {cardNavigating ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> 跳转中…</>
+                    ) : (
+                      dispatchCard.actionLabel
+                    )}
                   </button>
                   <button
-                    onClick={() => setDispatchCard(null)}
-                    className="px-4 py-2 text-blue-500 text-sm font-medium hover:text-blue-700 transition-colors"
+                    onClick={dismissCard}
+                    disabled={cardNavigating}
+                    className="px-4 py-2 text-blue-500 text-sm font-medium hover:text-blue-700 transition-colors disabled:opacity-30"
                   >
                     先不了
                   </button>
