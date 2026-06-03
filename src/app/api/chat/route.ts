@@ -868,7 +868,6 @@ export async function POST(request: NextRequest) {
           }, { once: true });
         }
         const baseStream = createDeepSeekRAGStream(systemPrompt, message, history, timeoutController.signal);
-        const encoder = new TextEncoder();
         
         const wrappedStream = new ReadableStream({
           async start(controller) {
