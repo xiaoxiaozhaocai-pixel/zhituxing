@@ -1318,32 +1318,32 @@ function ProfileContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/60 via-white to-purple-50/40">
       <div className="flex">
         {/* 左侧侧边栏 */}
-        <aside className="w-[240px] bg-white border-r min-h-screen fixed left-0 top-0">
+        <aside className="w-[240px] bg-white border-r border-blue-100 min-h-screen fixed left-0 top-0 flex flex-col shadow-[2px_0_12px_rgba(30,58,138,0.06)]">
           {/* 顶部 Logo 区，点击返回首页 */}
           <Link
             href="/"
-            className="flex items-center gap-2 px-4 h-14 border-b hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 h-14 bg-gradient-to-r from-[#1E3A8A] to-[#165DFF] hover:from-[#1e2f6e] hover:to-[#0f4fd4] transition-all group"
             aria-label="返回首页"
           >
-            <div className="w-7 h-7 bg-[#165DFF] rounded-md flex items-center justify-center">
-              <span className="text-white text-sm font-bold">职</span>
-            </div>
-            <span className="text-sm font-semibold text-gray-900">职途星 · 个人中心</span>
+            <svg className="w-5 h-5 text-white/70 flex-shrink-0 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
+            </svg>
+            <span className="text-sm font-semibold text-white">职途星 · 个人中心</span>
           </Link>
 
           {/* 用户信息头部 */}
-          <div className="p-4 border-b">
+          <div className="p-4 border-b border-blue-50 bg-gradient-to-b from-blue-50/50 to-white">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-[#165DFF] rounded-full flex items-center justify-center">
-                <span className="text-white text-lg font-bold">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#165DFF] to-[#722ED1] rounded-full flex items-center justify-center ring-2 ring-blue-100 flex-shrink-0">
+                <span className="text-white text-base font-bold">
                   {user.nickname?.charAt(0) || 'U'}
                 </span>
               </div>
-              <div>
-                <p className="font-medium text-gray-900">{user.nickname || '用户'}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-gray-900 text-sm truncate">{user.nickname || '用户'}</p>
                 <p className="text-xs text-gray-500">
                   {user.phone?.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}
                 </p>
@@ -1352,7 +1352,7 @@ function ProfileContent() {
           </div>
 
           {/* 菜单列表 */}
-          <nav className="p-3">
+          <nav className="p-3 flex-1 space-y-0.5">
             {menuItems.map(item => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -1362,10 +1362,10 @@ function ProfileContent() {
                   <button
                     key={item.id}
                     onClick={() => setShowLogoutModal(true)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-500 hover:bg-red-50 transition-all"
                   >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
+                    <Icon className="w-[18px] h-[18px]" />
+                    <span className="text-sm font-medium">{item.label}</span>
                   </button>
                 );
               }
@@ -1374,18 +1374,27 @@ function ProfileContent() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors ${
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
                     isActive
-                      ? 'bg-[#722ED1] text-white'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-[#165DFF] to-[#722ED1] text-white shadow-md shadow-purple-200/40'
+                      : 'text-gray-600 hover:bg-blue-50/60 hover:text-[#165DFF]'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <Icon className="w-[18px] h-[18px]" />
+                  <span className="text-sm font-medium">{item.label}</span>
+                  {isActive && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80" />
+                  )}
                 </button>
               );
             })}
           </nav>
+
+          {/* sidebar 底部装饰 */}
+          <div className="px-3 pb-4">
+            <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
+            <p className="text-[10px] text-gray-400 text-center mt-3">职途星 · 让求职更简单</p>
+          </div>
         </aside>
 
         {/* 右侧内容区 */}
