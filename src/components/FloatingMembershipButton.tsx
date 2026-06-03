@@ -12,8 +12,8 @@ export default function FloatingMembershipButton() {
   const [visible, setVisible] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
 
-  // 如果是后台管理页面，不显示悬浮按钮
-  if (pathname?.startsWith('/admin')) {
+  // 后台/个人中心页面不显示悬浮按钮
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/profile')) {
     return null;
   }
 

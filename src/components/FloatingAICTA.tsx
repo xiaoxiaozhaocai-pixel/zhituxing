@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MessageSquare, Briefcase, Compass, Mic } from 'lucide-react';
 import { useState } from 'react';
 
@@ -11,7 +12,13 @@ const quickActions = [
 ];
 
 export default function FloatingAICTA() {
+  const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
+
+  // 个人中心/后台等页面不显示小职悬浮按钮
+  if (pathname?.startsWith('/profile') || pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <div
