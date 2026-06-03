@@ -32,18 +32,16 @@ import {
   buildRAGContext,
   createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
-import crypto from 'crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import {
-  assembleContext,
   compressConversation,
   needsCompression,
-  autoDowngradeCheck,
-  getRecentNRounds,
 } from '@/lib/context-compression';
 
 import { DISPATCH_CARDS, DISPATCH_API_MAP, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAMES } from './config';
 import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES } from './prompts';
+import { prepareChatContext } from './chat-context';
+import { saveChatHistory } from './chat-history';
 
 
 export const runtime = 'nodejs';
@@ -815,58 +813,27 @@ export async function POST(request: NextRequest) {
         }
         
         // ============================================================
-        // 三层混合上下文压缩：画像锚定 + 增量摘要 + 最近3轮原文
+        // 三层混合上下文压缩 + AI 缓存查询（提取至 chat-context.ts）
         // ============================================================
-        let history: { role: 'user' | 'assistant' | 'system'; content: string }[] = [];
-        let effectiveConversationId = conversationId;
+        const {
+          systemPrompt,
+          history,
+          effectiveConversationId,
+          cachedResponse: _cachedResponse,
+          cacheKey,
+          isCacheable,
+        } = await prepareChatContext({
+          basePrompt,
+          ragContext,
+          ragDegradationNote,
+          roleReinforcement,
+          conversationId,
+          userId: userId || '',
+          message,
+        });
+        let cachedResponse = _cachedResponse;
         
-        // 生成新的 conversationId（如果没有）
-        if (!effectiveConversationId) {
-          effectiveConversationId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-        }
-        
-        // 降级检测：用户频繁追问历史时退回到窗口截断
-        const compressionLevel = autoDowngradeCheck([message]);
-        let systemPrompt = '';
-        
-        if (compressionLevel === 'window') {
-          // 降级模式：取最近 15 轮原文（窗口截断）
-          systemPrompt = basePrompt + '\n\n' + ragContext + ragDegradationNote + roleReinforcement;
-          history = await getRecentNRounds(effectiveConversationId, 15);
-          console.log(`[chat] Context compression: downgraded to window mode (15 rounds)`);
-        } else {
-          // 混合模式：摘要 + 最近 3 轮原文
-          const context = await assembleContext(effectiveConversationId, userId || '', 3);
-          systemPrompt = basePrompt + '\n\n' + ragContext + ragDegradationNote + '\n\n' + context.fullContextText + roleReinforcement;
-          history = context.recentMessages;
-          console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs`);
-        }
-
-        // === AI 响应缓存层（DS省钱 Step2）===
-        let cachedResponse: string | null = null;
-        const isCacheable = history.length === 0;
-        let cacheKey = '';
-        
-        if (isCacheable) {
-          cacheKey = crypto.createHash("md5")
-            .update(systemPrompt + '|||' + message)
-            .digest('hex');
-          try {
-            const { data: cached } = await getSupabaseAdmin()
-              .from('ai_cache')
-              .select('response')
-              .eq('cache_key', cacheKey)
-              .gte('expires_at', new Date().toISOString())
-              .maybeSingle();
-            if (cached?.response) {
-              console.log(`[chat] CACHE HIT: ${cacheKey}`);
-              cachedResponse = cached.response;
-            }
-          } catch (cacheErr) {
-            console.error('[chat] Cache query error:', cacheErr);
-          }
-        }
-        
+        const encoder = new TextEncoder();
         if (cachedResponse) {
           const segs = cachedResponse.match(/[^。！？\n]+[。！？\n]?/g) || [cachedResponse];
           const cachedStream = new ReadableStream({
@@ -880,13 +847,9 @@ export async function POST(request: NextRequest) {
             }
           });
           if (userId) {
-            const esc = (s: string) => (s || '').replace(/'/g, "''");
-            const sql = `INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES ('${esc(effectiveConversationId)}', '${esc(userId)}', 'user', '${esc(message)}', ${effectiveBotType ? `'${esc(effectiveBotType)}'` : 'NULL'}),('${esc(effectiveConversationId)}', '${esc(userId)}', 'assistant', '${esc(cachedResponse)}', ${effectiveBotType ? `'${esc(effectiveBotType)}'` : 'NULL'});`;
-            fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
-              method: 'POST',
-              headers: { 'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '', 'Authorization': 'Bearer ' + (process.env.SUPABASE_SERVICE_ROLE_KEY || ''), 'Content-Type': 'application/json' },
-              body: JSON.stringify({ sql }),
-            }).catch(e => console.error('[chat] Cache history save error:', e));
+            saveChatHistory(
+              { userId, conversationId: effectiveConversationId, userMessage: message, assistantResponse: cachedResponse, botType: effectiveBotType || '' },
+            ).catch(e => console.error('[chat] Cache history save error:', e));
           }
           return new Response(cachedStream, { headers: SSE_HEADERS });
         }
@@ -969,103 +932,17 @@ export async function POST(request: NextRequest) {
               // 发送 [DONE]
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
               
-              // 等待保存对话历史完成后再关闭流
-              console.log(`[chat] Before save: fullResponse.length=${fullResponse?.length || 0}, userId=${userId}, conversationId=${effectiveConversationId}`);
-              console.log(`[chat] fullResponse preview: ${fullResponse?.substring(0, 100) || 'EMPTY'}`);
-              
-              let saveResult = 'skipped';
-              if (fullResponse && userId) {
-                try {
-                  console.log(`[chat] Attempting to insert into chat_history...`);
-                  
-                  // 使用 SQL endpoint 直接插入（绕过 REST API 的表映射问题）
-                  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-                  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-                  
-                  // 转义单引号
-                  const escapeSql = (str: string | undefined | null) => (str || '').replace(/'/g, "''");
-                  
-                  const insertSql = `
-                    INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES
-                    ('${escapeSql(effectiveConversationId)}', '${escapeSql(userId)}', 'user', '${escapeSql(message)}', ${effectiveBotType ? `'${escapeSql(effectiveBotType)}'` : 'NULL'}),
-                    ('${escapeSql(effectiveConversationId)}', '${escapeSql(userId)}', 'assistant', '${escapeSql(fullResponse)}', ${effectiveBotType ? `'${escapeSql(effectiveBotType)}'` : 'NULL'});
-                  `;
-                  
-                  // 通过 Supabase SQL endpoint 执行
-                  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
-                    method: 'POST',
-                    headers: {
-                      'apikey': supabaseKey || '',
-                      'Authorization': `Bearer ${supabaseKey || ''}`,
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ sql: insertSql }),
-                  });
-                  
-                  // 如果 exec RPC 不存在，尝试直接用 Supabase 内部 SQL API
-                  if (!response.ok && response.status === 404) {
-                    // 备用：直接 POST 到 chat_history 表
-                    const fallbackRes = await fetch(`${supabaseUrl}/rest/v1/chat_history`, {
-                      method: 'POST',
-                      headers: {
-                        'apikey': supabaseKey || '',
-                        'Authorization': `Bearer ${supabaseKey || ''}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal',
-                      },
-                      body: JSON.stringify([
-                        { conversation_id: effectiveConversationId, user_id: userId, role: 'user', content: message, bot_type: effectiveBotType },
-                        { conversation_id: effectiveConversationId, user_id: userId, role: 'assistant', content: fullResponse, bot_type: effectiveBotType }
-                      ]),
-                    });
-                    
-                    if (!fallbackRes.ok) {
-                      const errText = await fallbackRes.text();
-                      console.error('[chat] Fallback insert error:', fallbackRes.status, errText);
-                      saveResult = `error:fallback:${fallbackRes.status}`;
-                    } else {
-                      console.log(`[chat] SUCCESS! Saved via fallback REST API`);
-                      saveResult = 'success';
-                    }
-                  } else if (!response.ok) {
-                    const errText = await response.text();
-                    console.error('[chat] SQL exec error:', response.status, errText);
-                    saveResult = `error:${response.status}`;
-                  } else {
-                    console.log(`[chat] SUCCESS! Saved via SQL endpoint`);
-                    saveResult = 'success';
-                  }
-                } catch (saveErr) {
-                  console.error('[chat] Exception saving history:', saveErr);
-                  saveResult = `exception:${saveErr instanceof Error ? saveErr.message : 'unknown'}`;
-                }
-              } else {
-                console.log('[chat] Skip saving history: fullResponse=', !!fullResponse, 'userId=', !!userId);
-              }
-              
-              // 写入 AI 缓存（fire-and-forget）
-              if (isCacheable && fullResponse && cacheKey) {
-                const esc = (s: string) => (s || '').replace(/'/g, "''");
-                const sql = `INSERT INTO public.ai_cache (cache_key, response, model) VALUES ('${esc(cacheKey)}', '${esc(fullResponse)}', 'deepseek-chat') ON CONFLICT (cache_key) DO NOTHING;`;
-                fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
-                  method: 'POST',
-                  headers: { 'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '', 'Authorization': 'Bearer ' + (process.env.SUPABASE_SERVICE_ROLE_KEY || ''), 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ sql }),
-                }).then(() => console.log(`[chat] Cache WRITE: ${cacheKey}`)).catch(e => console.error('[chat] Cache write error:', e));
-              }
-
-              // Fire-and-forget: 检查并触发上下文压缩
-              if (fullResponse && userId) {
-                try {
-                  if (await needsCompression(effectiveConversationId)) {
-                    compressConversation(effectiveConversationId, userId).catch(e =>
-                      console.error('[chat] Background compression failed:', e)
-                    );
-                  }
-                } catch (compressErr) {
-                  console.error('[chat] Compression check error:', compressErr);
-                }
-              }
+              // 保存对话历史 + 写入缓存 + 触发压缩（提取至 chat-history.ts）
+              const { saveResult } = await saveChatHistory(
+                { userId: userId || '', conversationId: effectiveConversationId, userMessage: message, assistantResponse: fullResponse, botType: effectiveBotType || '' },
+                isCacheable && fullResponse ? cacheKey : undefined,
+                fullResponse && userId ? {
+                  conversationId: effectiveConversationId,
+                  userId,
+                  needsCheck: () => needsCompression(effectiveConversationId),
+                  runCompression: (convId, uid) => compressConversation(convId, uid),
+                } : undefined,
+              );
 
               // 发送保存结果事件
               const saveEvent = `event: save_result\ndata: ${JSON.stringify({ result: saveResult, convId: effectiveConversationId })}\n\n`;
