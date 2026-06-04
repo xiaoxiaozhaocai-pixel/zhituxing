@@ -261,6 +261,8 @@ function AssistantContent() {
   const searchParams = useSearchParams();
   const [activeBot, setActiveBot] = useState('jobs');
   const [messages, setMessages] = useState<Message[]>([]);
+  const MESSAGE_WINDOW = 30;
+  const [visibleCount, setVisibleCount] = useState(MESSAGE_WINDOW);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
@@ -495,22 +497,44 @@ function AssistantContent() {
     }
     
     try {
-      // 读取文件内容
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const content = event.target?.result as string;
-        setUploadedFile({ name: file.name, content: content.slice(0, 5000) }); // 限制内容长度
-        toast.success(`已上传：${file.name}`);
-      };
-      reader.onerror = () => {
-        toast.error('文件读取失败');
-      };
-      
-      // 根据文件类型选择读取方式
-      if (['.txt'].includes(fileExt)) {
+      // TXT：客户端直接读取
+      if (fileExt === '.txt') {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = (event.target?.result as string).slice(0, 5000);
+          setUploadedFile({ name: file.name, content });
+          toast.success(`已上传：${file.name}`);
+        };
+        reader.onerror = () => toast.error('文件读取失败');
         reader.readAsText(file);
+      } else if (fileExt === '.pdf') {
+        // PDF：调用服务端解析
+        setIsLoading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const res = await fetch('/api/upload/parse', { method: 'POST', body: formData });
+          const result = await res.json();
+          if (!res.ok) {
+            toast.error(result.error || 'PDF解析失败');
+          } else {
+            setUploadedFile({ name: file.name, content: result.text.slice(0, 5000) });
+            toast.success(`已解析PDF（${result.pages || '?'}页）`);
+          }
+        } catch {
+          toast.error('PDF解析请求失败，请检查网络');
+        } finally {
+          setIsLoading(false);
+        }
       } else {
-        // PDF/DOCX 等，尝试作为文本读取（可能乱码，但能提取部分内容）
+        // DOCX/其他：前端文本兜底
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = (event.target?.result as string).slice(0, 5000);
+          setUploadedFile({ name: file.name, content });
+          toast.success(`已上传：${file.name}`);
+        };
+        reader.onerror = () => toast.error('文件读取失败');
         reader.readAsText(file);
       }
     } catch {
@@ -981,6 +1005,7 @@ function AssistantContent() {
     localStorage.removeItem(`conversationId_${activeBot}`);
     setActiveBot(botId);
     setMessages([]);
+    setVisibleCount(MESSAGE_WINDOW);
     setDispatchCard(null); // 清除调度卡片
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
@@ -1097,7 +1122,24 @@ function AssistantContent() {
             onScroll={handleChatScroll}
             className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[520px]"
           >
-            {messages.map((msg, index) => (
+            {/* 历史消息加载 + 清空按钮 */}
+            {(messages.length - visibleCount) > 0 && (
+              <div className="flex items-center justify-between px-2 pb-2">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 30)}
+                  className="text-xs text-blue-500 hover:text-blue-700 font-medium"
+                >
+                  ↑ 显示更早消息（{messages.length - visibleCount}条）
+                </button>
+                <button
+                  onClick={() => { setMessages([]); setVisibleCount(30); }}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  清空对话
+                </button>
+              </div>
+            )}
+            {messages.slice(-visibleCount).map((msg, index) => (
               <div
                 key={index}
                 className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
@@ -1519,3 +1561,4 @@ function AssistantContent() {
     </div>
   );
 }
+
