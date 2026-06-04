@@ -34,7 +34,7 @@ const SECURITY_HEADERS = {
   // CSP - 内容安全策略（已收紧：移除 unsafe-eval）
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://fonts.googleapis.cn",
+    "script-src 'self' 'unsafe-inline' https://fonts.googleapis.cn https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.cn https://fonts.gstatic.cn",
     "font-src 'self' https://fonts.gstatic.cn data:",
     "img-src 'self' data: blob: https:",
