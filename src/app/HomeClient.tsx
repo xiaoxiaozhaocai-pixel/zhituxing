@@ -171,14 +171,7 @@ const agentFeatures = [
     link: '/match',
     gradient: 'from-blue-500 to-cyan-500',
   },
-  {
-    icon: <FileText className="w-7 h-7" />,
-    title: '简历创作助手',
-    description: '小职陪你写简历，边聊边生成',
-    link: '/resume-builder',
-    gradient: 'from-blue-500 to-sky-500',
-  },
-  {
+{
     icon: <Mic className="w-7 h-7" />,
     title: 'AI模拟面试',
     description: '真实场景模拟练习',
