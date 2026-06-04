@@ -16,26 +16,26 @@ export async function GET(request: NextRequest) {
 
     // 构建查询
     let query = supabase
-      .from('users')
-      .select('id, nickname, email, created_at, last_sign_in_at, member_type, member_expire_time, is_lifetime_member, interview_quota, assessment_quota, is_blocked, blocked_reason, blocked_at', { count: 'exact' });
+      .from('user_profiles')
+      .select('user_id, user_type, membership_type, membership_plan, major, grade, job_intention, city, personality_type, is_admin, created_at', { count: 'exact' });
 
     // 关键词搜索
     if (keyword) {
-      query = query.or(`nickname.ilike.%${keyword}%,email.ilike.%${keyword}%`);
+      query = query.or(`user_type.ilike.%${keyword}%`);
     }
 
     // 会员类型筛选
     if (memberType === 'member') {
-      query = query.or('member_type.is.not.null,is_lifetime_member.eq.true');
+      query = query.not('membership_type', 'is', null);
     } else if (memberType === 'normal') {
-      query = query.is('member_type', null).eq('is_lifetime_member', false);
+      query = query.is('membership_type', null);
     }
 
     // 拉黑状态筛选
     if (filterBlocked === 'true') {
-      query = query.eq('is_blocked', true);
+      query = query.eq('user_type', 'blocked');
     } else if (filterBlocked === 'false') {
-      query = query.or('is_blocked.is.null,is_blocked.eq.false');
+      query = query.or('user_type.is.null,user_type.neq.blocked');
     }
 
     // 获取列表
@@ -47,26 +47,36 @@ export async function GET(request: NextRequest) {
 
     // 获取统计数据
     const { count: blockedCount } = await supabase
-      .from('users')
+      .from('user_profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('is_blocked', true);
+      .eq('user_type', 'blocked');
 
     const { count: normalCount } = await supabase
-      .from('users')
+      .from('user_profiles')
       .select('*', { count: 'exact', head: true })
-      .or('is_blocked.is.null,is_blocked.eq.false');
+      .or('user_type.is.null,user_type.neq.blocked');
 
     // 获取每个用户的上传JD数量
     const usersWithStats = await Promise.all(
       (users || []).map(async (user) => {
         const { count } = await supabase
-          .from('jd_submissions')
+          .from('job_descriptions')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
         return {
-          ...user,
-          username: user.nickname || '未设置',
-          last_login_time: user.last_sign_in_at,
+          user_id: user.user_id,
+          user_type: user.user_type || 'normal',
+          membership_type: user.membership_type,
+          membership_plan: user.membership_plan,
+          major: user.major,
+          grade: user.grade,
+          job_intention: user.job_intention,
+          city: user.city,
+          personality_type: user.personality_type,
+          is_admin: user.is_admin || false,
+          created_at: user.created_at,
+          skill_count: 0,
+          assessment_count: 0,
           jd_count: count || 0
         };
       })
@@ -106,32 +116,31 @@ export async function POST(request: NextRequest) {
       // 开通会员
       if (memberType === 'lifetime') {
         const { error } = await supabase
-          .from('users')
+          .from('user_profiles')
           .update({
-            is_lifetime_member: true,
-            member_type: 'lifetime',
-            member_expire_time: '2099-12-31 23:59:59'
+            membership_type: 'lifetime',
+            membership_plan: 'lifetime'
           })
-          .eq('id', userId);
+          .eq('user_id', userId);
         if (error) throw error;
         message = '终身会员开通成功';
       } else {
         const expireTime = new Date();
         expireTime.setMonth(expireTime.getMonth() + 1);
         const { error } = await supabase
-          .from('users')
+          .from('user_profiles')
           .update({
-            member_type: 'monthly',
-            member_expire_time: expireTime.toISOString()
+            membership_type: 'monthly',
+            membership_plan: 'monthly'
           })
-          .eq('id', userId);
+          .eq('user_id', userId);
         if (error) throw error;
         message = '月度会员开通成功';
       }
     } else if (action === 'cancel') {
       // 取消会员
       const { error } = await supabase
-        .from('users')
+        .from('user_profiles')
         .update({
           is_lifetime_member: false,
           member_type: null,
@@ -145,9 +154,9 @@ export async function POST(request: NextRequest) {
       if (deleteUserJd === true) {
         // 先将用户上传的JD放入回收站再删除
         const { data: userJds } = await supabase
-          .from('jd_submissions')
+          .from('job_descriptions')
           .select('*')
-          .eq('user_id', userId);
+          .eq('submitted_by', userId);
 
         for (const jd of userJds || []) {
           await supabase.from('recycle_bin').insert({
@@ -158,29 +167,25 @@ export async function POST(request: NextRequest) {
           });
         }
         // 删除用户上传的JD
-        await supabase.from('jd_submissions').delete().eq('user_id', userId);
+        await supabase.from('job_descriptions').delete().eq('user_id', userId);
       }
 
       const { error } = await supabase
-        .from('users')
+        .from('user_profiles')
         .update({
-          is_blocked: true,
-          blocked_reason: blockReason || '违规操作',
-          blocked_at: new Date().toISOString()
+          user_type: 'blocked'
         })
-        .eq('id', userId);
+        .eq('user_id', userId);
       if (error) throw error;
       message = `用户已被拉黑${deleteUserJd ? '，已删除该用户上传的所有JD' : ''}`;
     } else if (action === 'unblock') {
       // 取消拉黑
       const { error } = await supabase
-        .from('users')
+        .from('user_profiles')
         .update({
-          is_blocked: false,
-          blocked_reason: null,
-          blocked_at: null
+          user_type: 'normal'
         })
-        .eq('id', userId);
+        .eq('user_id', userId);
       if (error) throw error;
       message = '用户已取消拉黑';
     }
