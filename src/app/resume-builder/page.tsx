@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, CheckCircle2, AlertCircle, Download } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // 简历结构化字段
 interface ResumeSections {
@@ -38,6 +40,7 @@ export default function ResumeBuilderPage() {
   const [resumeId, setResumeId] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const resumeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading && !user) router.push('/auth');
@@ -83,6 +86,42 @@ export default function ResumeBuilderPage() {
     } catch {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  // 导出 PDF
+  const handleExportPDF = async () => {
+    if (!resumeRef.current) return;
+    setSaveStatus('saving');
+    try {
+      const canvas = await html2canvas(resumeRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      let heightLeft = imgHeight;
+      let position = 10;
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - 20);
+      
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 10;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - 20);
+      }
+      
+      pdf.save(`简历_${resume.basic.name || '未命名'}.pdf`);
+      setSaveStatus('idle');
+    } catch {
+      setSaveStatus('idle');
     }
   };
 
@@ -185,6 +224,9 @@ export default function ResumeBuilderPage() {
               <><Save className="h-4 w-4 mr-1" /> 保存</>
             )}
           </Button>
+          <Button variant="ghost" size="sm" onClick={handleExportPDF} disabled={saveStatus === 'saving'}>
+            <Download className="h-4 w-4 mr-1" /> 导出PDF
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setResume(emptyResume)}>
             <History className="h-4 w-4 mr-1" /> 清空简历
           </Button>
@@ -256,7 +298,7 @@ export default function ResumeBuilderPage() {
 
         {/* 右栏：简历预览 */}
         <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-          <div className="max-w-[700px] mx-auto">
+          <div className="max-w-[700px] mx-auto" ref={resumeRef}>
             <Card className="shadow-sm">
               <CardContent className="p-8">
                 {/* 基本信息 */}
@@ -383,3 +425,4 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
+
