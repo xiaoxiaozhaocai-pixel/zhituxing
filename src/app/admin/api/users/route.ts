@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         const { count } = await supabase
           .from('job_descriptions')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('user_id', user.user_id);
         return {
           user_id: user.user_id,
           user_type: user.user_type || 'normal',
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
           member_type: null,
           member_expire_time: null
         })
-        .eq('id', userId);
+        .eq('user_id', userId);
       if (error) throw error;
       message = '会员已取消';
     } else if (action === 'block') {
