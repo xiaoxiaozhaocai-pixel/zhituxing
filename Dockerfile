@@ -4,14 +4,14 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g corepack@latest && corepack enable && pnpm i --frozen-lockfile
+RUN npm install -g pnpm@9.0.0 && pnpm i --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm install -g corepack@latest && corepack enable && pnpm build
+RUN npm install -g pnpm@9.0.0 && pnpm build
 
 FROM base AS runner
 WORKDIR /app
