@@ -74,6 +74,7 @@ interface Job {
     problem_solve?: number;
   } | null;
   raw_jd?: string; // 原始招聘JD文本
+  xiaozhi_note?: string; // 小职智能点评
 }
 
 // 聊天消息类型
@@ -758,6 +759,16 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     ))}
                   </div>
 
+                  {/* 小职点评 - 卡片内 */}
+                  {(job.xiaozhi_note || job.isFreshFriendly) && (
+                    <div className="flex items-start gap-1 mb-2 px-2 py-1.5 bg-blue-50 rounded-md text-xs text-blue-700 border border-blue-100">
+                      <span className="text-xs mt-0.5">💡</span>
+                      <span className="line-clamp-2">
+                        {job.xiaozhi_note || (job.isFreshFriendly ? '小职推荐：该岗位对应届生友好，值得投递 👀' : '')}
+                      </span>
+                    </div>
+                  )}
+
                   {/* AI深度分析按钮 - 原生<a>防止Turbopack优化JS onClick */}
                   <a
                     href={getJobAnalysisUrl(job)}
@@ -1068,6 +1079,22 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     </Badge>
                   )}
                 </div>
+
+                {/* 小职智能点评 */}
+                {(selectedJob.xiaozhi_note || selectedJob.friendliness) && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg">🤖</span>
+                      <div>
+                        <h4 className="text-sm font-semibold text-blue-700 mb-1">小职点评</h4>
+                        <p className="text-sm text-blue-800 leading-relaxed">
+                          {selectedJob.xiaozhi_note || 
+                            `该岗位${selectedJob.isFreshFriendly ? '对应届生友好' : '值得关注'}，${selectedJob.graduateFriendlyLevel ? `应届生友好度：${selectedJob.graduateFriendlyLevel}` : '建议查看详细JD了解具体要求'}。${selectedJob.friendliness ? `综合评估：${selectedJob.friendliness}` : ''}`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 免责声明 + 原始JD折叠区域 */}
