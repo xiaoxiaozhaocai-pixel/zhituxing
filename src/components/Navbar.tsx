@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network, ChevronDown } from 'lucide-react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network, FileText, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -13,6 +13,7 @@ const mainNavItems = [
   { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
   { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
   { name: 'AI助手', href: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
+  { name: '简历优化', href: '/resume-optimize', icon: <FileText className="w-4 h-4" /> },
 ];
 
 // 更多导航项（低频使用功能，放入下拉菜单）
