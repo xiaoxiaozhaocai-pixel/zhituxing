@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
 
     let query = supabase
-      .from('jd_submissions')
+      .from('job_descriptions')
       .select('*', { count: 'exact' });
 
     if (status) {
@@ -48,7 +48,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const { error } = await supabase
-      .from('jd_submissions')
+      .from('job_descriptions')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', id);
 
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { error } = await supabase
-      .from('jd_submissions')
+      .from('job_descriptions')
       .delete()
       .eq('id', id);
 
