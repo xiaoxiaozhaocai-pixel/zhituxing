@@ -129,17 +129,17 @@ const FEATURE_FLAGS: Record<string, FeatureFlag> = {
   voiceTTS: {
     key: 'voiceTTS',
     name: '语音TTS',
-    description: '浏览器原生SpeechSynthesis + 小职语音朗读',
-    enabled: true,
-    category: 'core',
+    description: '火山引擎TTS接入 + 小职语音点评',
+    enabled: false,
+    category: 'future',
     addedAt: '2026-06-04',
   },
   universityIntegration: {
     key: 'universityIntegration',
     name: '高校集成',
-    description: '高校门户+多租户架构+合作申请',
-    enabled: true,
-    category: 'core',
+    description: 'OpenClaw协议打通高校系统',
+    enabled: false,
+    category: 'future',
     addedAt: '2026-06-04',
   },
 };
