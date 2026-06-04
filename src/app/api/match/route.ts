@@ -16,6 +16,7 @@ import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sanitizeJDList } from '@/lib/jd-sanitizer';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
+import { generateXiaozhiNote } from '@/lib/xiaozhi-recommend';
 import {
   MatchPostRequestSchema,
   MatchPostDataSchema,
@@ -180,10 +181,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 为每个匹配结果生成小职推荐语
+    const matchesWithNotes = (finalMatches as any[]).map((m) => ({
+      ...m,
+      xiaozhi_note: generateXiaozhiNote({
+        matchScore: m.match_score || 0,
+        jobTitle: m.job_title || '',
+        company: m.company || '',
+        matchedSkills: m.matched_skills || [],
+        gapSkills: m.gap_skills || [],
+        freshGraduateFriendly: m.fresh_graduate_friendly,
+        targetPosition: targetPosition || undefined,
+        industry: industry || undefined,
+      }),
+    }));
+
     return jsonOk(MatchPostDataSchema, {
-      matches: sanitizeJDList(finalMatches) as MatchPostItem[],
+      matches: sanitizeJDList(matchesWithNotes) as MatchPostItem[],
       user_skills: validSkills,
-      total: finalMatches.length,
+      total: matchesWithNotes.length,
     });
 
   } catch (error) {
@@ -272,6 +288,18 @@ export async function GET(request: NextRequest) {
 
       const baseScore = Math.max(60, 95 - index * 2);
 
+      // 生成小职推荐语
+      const xiaozhiNote = generateXiaozhiNote({
+        matchScore: baseScore,
+        jobTitle: job.job_title,
+        company: job.company || '',
+        matchedSkills,
+        gapSkills,
+        freshGraduateFriendly: job.fresh_graduate_friendly,
+        targetPosition: targetPosition || undefined,
+        industry: job.industry || undefined,
+      });
+
       return {
         job: {
           id: typeof job.id === 'string' ? parseInt(job.id, 10) || index + 1 : job.id,
@@ -294,6 +322,7 @@ export async function GET(request: NextRequest) {
           estimatedMax: salaryMax,
           estimatedMedian: Math.round((salaryMin + salaryMax) / 2),
         },
+        xiaozhi_note: xiaozhiNote,
       };
     });
 
