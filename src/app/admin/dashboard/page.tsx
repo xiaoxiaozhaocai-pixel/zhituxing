@@ -18,6 +18,7 @@ import {
   Shield,
   MessageSquare,
   Settings,
+  Activity,
   ChevronRight
 } from 'lucide-react';
 
