@@ -1,19 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
-
-const supabase = getSupabaseAdmin();
 
 export async function GET(request: NextRequest) {
   try {
-    const skillName = request.nextUrl.searchParams.get('skill');
+    const skillName = request.nextUrl.searchParams.get('skill') || request.nextUrl.searchParams.get('skill_name');
     const relationType = request.nextUrl.searchParams.get('type');
 
-    if (!skillName) {
-      return NextResponse.json({ error: '缺少技能名称' }, { status: 400 });
-    }
-
-    // 使用 REST API 直接查询，避免 Supabase JS SDK 的 or() 语法问题
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
@@ -21,11 +13,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Supabase配置缺失' }, { status: 500 });
     }
 
-    // 构建 URL 编码的查询参数
-    const skillEncoded = encodeURIComponent(skillName);
-    let url = `${supabaseUrl}/rest/v1/skill_relations?or=(source_skill.eq.${skillEncoded},target_skill.eq.${skillEncoded})`;
-    if (relationType) {
-      url += `&relation_type=eq.${encodeURIComponent(relationType)}`;
+    let url: string;
+    if (skillName) {
+      const skillEncoded = encodeURIComponent(skillName);
+      url = `${supabaseUrl}/rest/v1/skill_relations?or=(source_skill.eq.${skillEncoded},target_skill.eq.${skillEncoded})`;
+      if (relationType) {
+        url += `&relation_type=eq.${encodeURIComponent(relationType)}`;
+      }
+    } else {
+      url = `${supabaseUrl}/rest/v1/skill_relations?select=*&limit=200`;
+      if (relationType) {
+        url += `&relation_type=eq.${encodeURIComponent(relationType)}`;
+      }
     }
 
     const res = await fetch(url, {
@@ -47,7 +46,18 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await res.json();
-    return NextResponse.json({ success: true, data: data || [] });
+
+    const nodeMap = new Map<string, number>();
+    for (const r of (data || [])) {
+      nodeMap.set(r.source_skill, (nodeMap.get(r.source_skill) || 0) + 1);
+      nodeMap.set(r.target_skill, (nodeMap.get(r.target_skill) || 0) + 1);
+    }
+    const nodes = Array.from(nodeMap.entries()).map(([name, relatedCount]) => ({
+      name,
+      relatedCount,
+    }));
+
+    return NextResponse.json({ success: true, data: data || [], nodes });
   } catch (error) {
     console.error('获取技能关系失败:', error);
     const errMsg = error instanceof Error ? error.message : String(error);
