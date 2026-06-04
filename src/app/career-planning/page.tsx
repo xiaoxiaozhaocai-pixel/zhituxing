@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,6 +70,8 @@ export default function CareerPlanningPage() {
   });
 
   const contentRef = useRef<HTMLDivElement>(null);
+  const scrollAnimRef = useRef<number | null>(null);
+  const isUserNearBottomRef = useRef(true);
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(true);
 
@@ -84,12 +86,38 @@ export default function CareerPlanningPage() {
     }
   }, [user]);
 
+  // 检测用户是否主动向上滚动
+  const handleContentScroll = useCallback(() => {
+    const container = contentRef.current;
+    if (!container) return;
+    const threshold = 100;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isUserNearBottomRef.current = distanceFromBottom < threshold;
+  }, []);
+
   // 自动滚动到最新内容
   useEffect(() => {
-    if (contentRef.current) {
+    if (generatedContent && contentRef.current && isUserNearBottomRef.current) {
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
   }, [generatedContent]);
+
+  // SSE流式输出时持续滚动到底部
+  useEffect(() => {
+    if (generating) {
+      const scrollLoop = () => {
+        const container = contentRef.current;
+        if (container && isUserNearBottomRef.current) {
+          container.scrollTop = container.scrollHeight;
+        }
+        scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      };
+      scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      return () => {
+        if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
+      };
+    }
+  }, [generating]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -462,6 +490,7 @@ export default function CareerPlanningPage() {
             <CardContent className="p-6">
               <div 
                 ref={contentRef}
+                onScroll={handleContentScroll}
                 className="min-h-[400px] max-h-[600px] overflow-y-auto prose prose-purple max-w-none"
               >
                 {generatedContent ? (
