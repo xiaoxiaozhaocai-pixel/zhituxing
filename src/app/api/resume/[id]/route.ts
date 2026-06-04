@@ -47,9 +47,18 @@ export async function PUT(
 
     const body = await request.json();
 
+    // Filter allowed fields for update
+    const allowedFields = ['name', 'content', 'sections', 'template_id', 'is_default'];
+    const updateData: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) {
+        updateData[key] = body[key];
+      }
+    }
+
     const { data: resume, error } = await supabase
       .from('resumes')
-      .update(body)
+      .update(updateData)
       .eq('id', id)
       .eq('user_id', userId)
       .select()
