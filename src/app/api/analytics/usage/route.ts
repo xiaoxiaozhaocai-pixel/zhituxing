@@ -2,127 +2,136 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
-const supabase = getSupabaseAdmin();
+export const runtime = 'nodejs';
 
-// event_type → 模块中文名映射
-const MODULE_MAP: Record<string, string> = {
-  chat_send: '小职对话',
-  interview_complete: '模拟面试',
-  course_start: '互动课程',
-  resume_create: '简历优化',
-  job_view: '岗位浏览',
-};
-
-// 使用率 → 状态判定
-function getStatus(rate: number): 'healthy' | 'warning' | 'low' {
-  if (rate > 50) return 'healthy';
-  if (rate >= 10) return 'warning';
-  return 'low';
+interface ModuleUsage {
+  module: string;
+  label: string;
+  users: number;
+  percentage: number;
+  status: 'healthy' | 'warning' | 'low';
 }
 
-// 生成决策规则
-function generateDecisionRules(
-  modules: { name: string; key: string; count: number; rate: number; status: string }[]
-) {
-  const rules: { rule: string; action: string; modules: string[] }[] = [];
-
-  const lowModules = modules.filter((m) => m.status === 'low');
-  const warningModules = modules.filter((m) => m.status === 'warning');
-
-  if (lowModules.length > 0) {
-    rules.push({
-      rule: '使用率 < 10%',
-      action: '🔴 排查问题或考虑砍掉',
-      modules: lowModules.map((m) => m.name),
-    });
-  }
-
-  if (warningModules.length > 0) {
-    rules.push({
-      rule: '使用率 10%–50%',
-      action: '🟡 持续观察，优化体验与引导',
-      modules: warningModules.map((m) => m.name),
-    });
-  }
-
-  const healthyModules = modules.filter((m) => m.status === 'healthy');
-  if (healthyModules.length > 0) {
-    rules.push({
-      rule: '使用率 > 50%',
-      action: '🟢 核心模块，继续投入资源优化',
-      modules: healthyModules.map((m) => m.name),
-    });
-  }
-
-  return rules;
+interface DecisionRule {
+  threshold: string;
+  action: string;
+  priority: 'high' | 'medium' | 'low';
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const days = parseInt(request.nextUrl.searchParams.get('days') || '30');
+    const { searchParams } = new URL(request.url);
+    const days = parseInt(searchParams.get('days') || '30');
 
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const supabase = getSupabaseAdmin();
 
-    // 查询指定时间范围内的所有事件
-    const { data: events, error } = await supabase
-      .from('analytics_events')
-      .select('event_type, user_id')
-      .gte('created_at', startDate.toISOString())
-      .lte('created_at', endDate.toISOString());
+    // 查询各表活跃用户数
+    const sinceDate = new Date();
+    sinceDate.setDate(sinceDate.getDate() - days);
+    const sinceISO = sinceDate.toISOString();
 
-    if (error) {
-      return NextResponse.json(
-        { success: false, message: '查询失败: ' + error.message },
-        { status: 500 }
-      );
-    }
+    // 并行查询各模块活跃用户
+    const [
+      chatResult,
+      interviewResult,
+      courseResult,
+      resumeResult,
+      jobsResult,
+    ] = await Promise.allSettled([
+      // 小职对话：从 messages 表
+      supabase.from('messages')
+        .select('user_id', { count: 'exact', head: false })
+        .gte('created_at', sinceISO),
+      // 模拟面试：从 assessment_results 表（含 interview 标记）
+      supabase.from('assessment_results')
+        .select('user_id', { count: 'exact', head: false })
+        .gte('created_at', sinceISO)
+        .or('result_data->>type.eq.interview,result_data->>interview.not.is.null'),
+      // 互动课程：从 assessment_results 表（含 course 标记）
+      supabase.from('assessment_results')
+        .select('user_id', { count: 'exact', head: false })
+        .gte('created_at', sinceISO)
+        .or('result_data->>type.eq.course,result_data->>course.not.is.null'),
+      // 简历优化：从 messages 表按关键词
+      supabase.from('messages')
+        .select('user_id', { count: 'exact', head: false })
+        .gte('created_at', sinceISO)
+        .or('content.ilike.%简历%,content.ilike.%resume%'),
+      // 岗位浏览：从 jobs 相关事件
+      supabase.from('messages')
+        .select('user_id', { count: 'exact', head: false })
+        .gte('created_at', sinceISO)
+        .or('content.ilike.%岗位%,content.ilike.%职位%,content.ilike.%求职%'),
+    ]);
 
-    if (!events || events.length === 0) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          modules: [],
-          totalUsers: 0,
-          decisionRules: [],
-          period: `${days}天`,
-        },
-      });
-    }
-
-    // 按 event_type 分组，去重统计 user_id
-    const moduleUsersMap = new Map<string, Set<string>>();
-    const allUsers = new Set<string>();
-
-    for (const event of events) {
-      const type = event.event_type as string;
-      const uid = event.user_id as string;
-      if (!uid) continue;
-
-      allUsers.add(uid);
-
-      if (!moduleUsersMap.has(type)) {
-        moduleUsersMap.set(type, new Set());
+    // 获取总活跃用户数（所有有记录的用户去重）
+    const dedupUsers = new Set<string>();
+    [chatResult, interviewResult, courseResult, resumeResult, jobsResult].forEach((r) => {
+      if (r.status === 'fulfilled' && r.value.data) {
+        (r.value.data as { user_id: string }[]).forEach((row) => {
+          if (row.user_id) dedupUsers.add(row.user_id);
+        });
       }
-      moduleUsersMap.get(type)!.add(uid);
-    }
+    });
 
-    const totalUsers = allUsers.size;
+    const totalUsers = dedupUsers.size || 1; // 避免除零
 
-    // 构建模块列表（仅包含 MODULE_MAP 中定义的模块）
-    const modules = Object.entries(MODULE_MAP)
-      .map(([key, name]) => {
-        const users = moduleUsersMap.get(key);
-        const count = users ? users.size : 0;
-        const rate = totalUsers > 0 ? Math.round((count / totalUsers) * 1000) / 10 : 0;
-        const status = getStatus(rate);
+    const extractUserCount = (result: PromiseSettledResult<{ data: { user_id: string }[] | null }>) => {
+      if (result.status !== 'fulfilled' || !result.value.data) return 0;
+      const users = new Set(result.value.data.map((r) => r.user_id).filter(Boolean));
+      return users.size;
+    };
 
-        return { name, key, count, rate, status };
-      })
-      .sort((a, b) => b.rate - a.rate);
+    const modules: ModuleUsage[] = [
+      {
+        module: 'chat',
+        label: '小职对话',
+        users: extractUserCount(chatResult),
+        percentage: 0,
+        status: 'low',
+      },
+      {
+        module: 'interview',
+        label: '模拟面试',
+        users: extractUserCount(interviewResult),
+        percentage: 0,
+        status: 'low',
+      },
+      {
+        module: 'course',
+        label: '互动课程',
+        users: extractUserCount(courseResult),
+        percentage: 0,
+        status: 'low',
+      },
+      {
+        module: 'resume',
+        label: '简历优化',
+        users: extractUserCount(resumeResult),
+        percentage: 0,
+        status: 'low',
+      },
+      {
+        module: 'jobs',
+        label: '岗位浏览',
+        users: extractUserCount(jobsResult),
+        percentage: 0,
+        status: 'low',
+      },
+    ];
 
-    const decisionRules = generateDecisionRules(modules);
+    // 计算百分比和状态
+    modules.forEach((m) => {
+      m.percentage = Math.round((m.users / totalUsers) * 100);
+      m.status = m.percentage > 50 ? 'healthy' : m.percentage >= 10 ? 'warning' : 'low';
+    });
+
+    const decisionRules: DecisionRule[] = [
+      { threshold: '使用率 < 10%', action: '排查功能可用性或砍掉该模块', priority: 'high' },
+      { threshold: '使用率 10%-30%', action: '观察优化：改进入口引导、降低使用门槛', priority: 'medium' },
+      { threshold: '使用率 30%-50%', action: '持续投入：A/B 测试优化体验', priority: 'medium' },
+      { threshold: '使用率 > 50%', action: '核心模块：保证稳定性、收集反馈迭代', priority: 'low' },
+    ];
 
     return NextResponse.json({
       success: true,
@@ -133,10 +142,10 @@ export async function GET(request: NextRequest) {
         period: `${days}天`,
       },
     });
-  } catch (err) {
-    console.error('[analytics/usage] 异常:', err);
+  } catch (error) {
+    console.error('[analytics/usage] 查询失败:', error);
     return NextResponse.json(
-      { success: false, message: '服务器异常' },
+      { success: false, message: '查询使用率数据失败' },
       { status: 500 }
     );
   }
