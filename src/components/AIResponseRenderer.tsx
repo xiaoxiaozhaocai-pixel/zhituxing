@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type PromotionData } from '@/lib/ai-response-parser';
+import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type PromotionData, type TableData } from '@/lib/ai-response-parser';
 import { Lock, ChevronRight, CheckCircle, AlertTriangle, Flame, Clock, Award, TrendingUp } from 'lucide-react';
 
 // ========== 子组件 ==========
@@ -177,6 +177,42 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
 }
 
 /** 会员推广渲染 */
+function TableRenderer({ data }: { data: TableData }) {
+  if (!data?.headers?.length) return null;
+  return (
+    <div className="my-3 overflow-x-auto rounded-lg border border-gray-200">
+      <table className="min-w-full text-sm">
+        <thead className="bg-gray-50">
+          <tr>
+            {data.headers.map((h, i) => (
+              <th
+                key={i}
+                className="px-3 py-2 text-left font-semibold text-gray-700 border-b border-gray-200 whitespace-nowrap"
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.rows.map((row, ri) => (
+            <tr key={ri} className={ri % 2 === 1 ? 'bg-gray-50/50' : ''}>
+              {row.map((cell, ci) => (
+                <td
+                  key={ci}
+                  className="px-3 py-2 text-gray-800 border-b border-gray-100 align-top"
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function PromotionRenderer({ data }: { data: PromotionData }) {
   return (
     <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
@@ -243,6 +279,9 @@ export default function AIResponseRenderer({ rawText, streaming = false, role = 
 
           case 'promotion':
             return <PromotionRenderer key={idx} data={seg.data as PromotionData} />;
+
+          case 'table':
+            return <TableRenderer key={idx} data={seg.data as TableData} />;
 
           case 'disclaimer':
             return (
