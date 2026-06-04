@@ -490,8 +490,9 @@ function parsePlainText(text: string): ParsedSegment[] {
       continue;
     }
 
-    // 检测免责声明/提示
-    if (/免责|声明|注意|仅供参考|提示/.test(trimmed) && trimmed.length < 200) {
+    // 检测免责声明（必须以"免责声明"开头才识别，避免误判 AI 提问）
+    // 兼容前缀：📄/📋/💡 等emoji，或 "---" 分隔符
+    if (/^[\s\-—=*]*[\u{1F4C4}\u{1F4CB}\u{1F4A1}\u{26A0}\u{2139}]?\s*免责声明[:：]/u.test(trimmed) && trimmed.length < 400) {
       if (currentText.trim()) {
         segments.push({ type: 'text', data: decodeUrlStr(currentText.trim()) });
         currentText = '';
