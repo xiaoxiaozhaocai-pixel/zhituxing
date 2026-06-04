@@ -261,6 +261,39 @@ function AssistantContent() {
   const searchParams = useSearchParams();
   const [activeBot, setActiveBot] = useState('jobs');
   const [messages, setMessages] = useState<Message[]>([]);
+  // 按智能体缓存对话历史（key=botId）
+  const conversationCacheRef = useRef<Record<string, Message[]>>({});
+  // 初始化：从 localStorage 恢复所有对话
+  const conversationsInitialized = useRef(false);
+  useEffect(() => {
+    if (conversationsInitialized.current) return;
+    conversationsInitialized.current = true;
+    try {
+      const saved = localStorage.getItem('zhituxing_conversations');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        conversationCacheRef.current = parsed;
+        // 恢复当前 activeBot 的对话
+        const currentMsgs = parsed[activeBot];
+        if (currentMsgs?.length) {
+          setMessages(currentMsgs);
+          setVisibleCount(Math.max(MESSAGE_WINDOW, currentMsgs.length));
+        }
+      }
+    } catch {}
+  }, [activeBot]);
+
+  // 每次 messages 变化时，同步到 cache 和 localStorage
+  useEffect(() => {
+    if (!conversationsInitialized.current) return;
+    conversationCacheRef.current = {
+      ...conversationCacheRef.current,
+      [activeBot]: messages,
+    };
+    try {
+      localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
+    } catch {}
+  }, [messages, activeBot]);
   const MESSAGE_WINDOW = 30;
   const [visibleCount, setVisibleCount] = useState(MESSAGE_WINDOW);
   const [inputValue, setInputValue] = useState('');
@@ -1001,12 +1034,23 @@ function AssistantContent() {
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
-    // 先清除当前 activeBot 的 conversationId，再切换到新的 botId
+    if (botId === activeBot) return;
+    // 保存当前智能体的对话到缓存
+    conversationCacheRef.current = {
+      ...conversationCacheRef.current,
+      [activeBot]: messages,
+    };
+    try {
+      localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
+    } catch {}
+    // 切换到新智能体
     localStorage.removeItem(`conversationId_${activeBot}`);
     setActiveBot(botId);
-    setMessages([]);
-    setVisibleCount(MESSAGE_WINDOW);
-    setDispatchCard(null); // 清除调度卡片
+    // 恢复目标智能体的历史对话
+    const cached = conversationCacheRef.current[botId] || [];
+    setMessages(cached);
+    setVisibleCount(Math.max(MESSAGE_WINDOW, cached.length));
+    setDispatchCard(null);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
@@ -1132,7 +1176,17 @@ function AssistantContent() {
                   ↑ 显示更早消息（{messages.length - visibleCount}条）
                 </button>
                 <button
-                  onClick={() => { setMessages([]); setVisibleCount(30); }}
+                  onClick={() => {
+                      setMessages([]);
+                      setVisibleCount(30);
+                      conversationCacheRef.current = {
+                        ...conversationCacheRef.current,
+                        [activeBot]: [],
+                      };
+                      try {
+                        localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
+                      } catch {}
+                    }}
                   className="text-xs text-gray-400 hover:text-gray-600"
                 >
                   清空对话
