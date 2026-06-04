@@ -28,24 +28,30 @@ import {
   createDeepSeekRAGStream,
   PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
+import {
+  type InterviewStyle,
+  INTERVIEW_STYLES,
+  buildStylePrompt,
+  buildDebriefPrompt,
+  detectDebriefIntent,
+  detectStyleSwitch,
+} from '@/lib/interview-styles';
 
 export const runtime = 'nodejs';
 
 // DeepSeek 开关
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
-// 面试官开场白
-const DEMO_INTERVIEW_INTRO = `👋你好！我是职途星AI面试官，将为你还原真实的企业校招全流程面试。
+// 面试官开场白（多风格）
+const DEMO_INTERVIEW_INTRO = `👋 嘿，我是小职～
 
-【面试模式选择】我们提供两种面试模式，请选择:
-1. 文字面试：纯文字对话形式
-2. 视频面试：AI面试官以视频形象出现，配合语音提问
+模拟面试已就绪，我准备了三种风格陪你练：
 
-请你提供以下信息:
-1. 面试模式
-2. 你应聘的岗位全称
-3. 该岗位的完整官方JD
-4. 你的个人求职简历
+🤝 **温和模式** — 像朋友一样聊天，给足鼓励和引导
+🎯 **严格模式** — 专业严谨，追问细节和数据
+⚡ **压力模式** — 高压追问，提前适应最难面试
+
+回复「温和」「严格」或「压力」选择风格，或者直接告诉我你想面试的岗位，我默认用温和模式开始～
 `;
 
 // fallback 预设回复
@@ -111,7 +117,7 @@ const SSE_HEADERS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, conversationId } = body;
+    const { message, conversationId, style: reqStyle, mode: reqMode } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -119,6 +125,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // 多风格支持：默认温和模式
+    const style: InterviewStyle = (['warm', 'strict', 'pressure'].includes(reqStyle) ? reqStyle : 'warm') as InterviewStyle;
+
+    // 检测是否切换风格
+    const styleSwitch = detectStyleSwitch(message);
+    const effectiveStyle = styleSwitch || style;
+
+    // 检测是否触发本尊点评
+    const isDebrief = reqMode === 'debrief' || detectDebriefIntent(message);
 
     // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
@@ -161,27 +177,27 @@ export async function POST(request: NextRequest) {
           { tableName: 'job_descriptions', displayName: '岗位JD', data: jds },
         ]);
         
-        // 构建系统提示词
-        const systemPrompt = `你是经验丰富的HR面试官"面面"，来自职途星平台。
-
-你的职责：
-1. 根据面试题库和岗位要求模拟真实面试场景
-2. 每次只问一道题，等待用户回答
-3. 用户回答后给出专业点评：指出亮点、改进建议、参考答案要点
-4. 完成3-5题后给出整体评估报告
-
-面试风格：
-- 专业但不严厉，适当鼓励求职者
-- 问题要有针对性，结合岗位JD要求
-- 点评要具体，避免"很好"等空泛评价
-
-${ragContext ? `--- 参考资料 ---\n${ragContext}\n--- 请基于参考资料设计面试问题 ---` : ''}`;
+        // 风格切换提示（检测到切换时在回答前提示）
+        const styleSwitchNotice = styleSwitch && styleSwitch !== style
+          ? `好的，切换到【${INTERVIEW_STYLES[styleSwitch].name}】～\n\n`
+          : '';
+        
+        // 构建系统提示词：面试模式 vs 本尊点评
+        let systemPrompt: string;
+        if (isDebrief) {
+          systemPrompt = buildDebriefPrompt(effectiveStyle, ragContext);
+        } else {
+          systemPrompt = buildStylePrompt(effectiveStyle, ragContext);
+        }
         
         // 构建 DeepSeek 消息
         const history = (body.history || []).filter((m: any) => m.role !== 'system');
         
+        // 风格切换或本尊点评时，在前面加提示
+        const effectiveMessage = styleSwitchNotice ? styleSwitchNotice + message : message;
+        
         // 返回 DeepSeek SSE 流
-        const stream = createDeepSeekRAGStream(systemPrompt, message, history);
+        const stream = createDeepSeekRAGStream(systemPrompt, effectiveMessage, history);
         return new Response(stream, { headers: SSE_HEADERS });
       } catch (error) {
         console.error('[interview] DeepSeek error, falling back to Coze:', error);
@@ -304,6 +320,21 @@ export async function GET(request: NextRequest) {
     });
 
     return new Response(stream, { headers: SSE_HEADERS });
+  }
+
+  if (action === 'styles') {
+    return NextResponse.json({
+      code: 200,
+      data: {
+        styles: Object.values(INTERVIEW_STYLES).map(s => ({
+          id: s.id,
+          name: s.name,
+          emoji: s.emoji,
+          description: s.description,
+        })),
+        defaultStyle: 'warm',
+      },
+    });
   }
 
   return NextResponse.json({
