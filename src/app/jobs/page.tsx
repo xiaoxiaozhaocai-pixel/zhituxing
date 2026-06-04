@@ -434,11 +434,16 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 5. 职业发展路径建议`;
   };
 
-  // 跳转到AI助手（带完整岗位信息）
-  const handleJobClick = (job: Job) => {
+  // 跳转到登录页（带redirect回AI助手）
+  // 使用原生 <a> 标签 + document.location 双保险，防止 Turbopack 生产构建优化
+  const getJobAnalysisUrl = (job: Job) => {
     const prompt = generateJobAnalysisPrompt(job);
-    // 使用 window.location.href 而非 router.push，避免生产构建中函数体被优化为空
-    window.location.href = `/assistant?bot=jobs&jobId=${job.id}&query=${encodeURIComponent(prompt)}`;
+    const target = `/assistant?bot=jobs&jobId=${job.id}&query=${encodeURIComponent(prompt)}`;
+    return `/auth?redirect=${encodeURIComponent(target)}`;
+  };
+
+  const handleJobClick = (job: Job) => {
+    document.location = getJobAnalysisUrl(job);
   };
 
   // 分页
@@ -753,18 +758,16 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     ))}
                   </div>
 
-                  {/* AI深度分析按钮 - 使用 stopPropagation 阻止事件冒泡 */}
-                  <button
+                  {/* AI深度分析按钮 - 原生<a>防止Turbopack优化JS onClick */}
+                  <a
+                    href={getJobAnalysisUrl(job)}
                     className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium hover:underline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleJobClick(job);
-                    }}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>AI深度分析</span>
                     <ArrowRight className="w-3 h-3 ml-1" />
-                  </button>
+                  </a>
                 </CardContent>
               </Card>
             ))}
@@ -1101,16 +1104,14 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   <Button variant="outline" className="flex-1" onClick={() => { setSelectedJob(null); }}>
                     关闭
                   </Button>
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
-                    onClick={() => {
-                      setSelectedJob(null);
-                      handleJobClick(selectedJob);
-                    }}
+                  <a
+                    href={selectedJob ? getJobAnalysisUrl(selectedJob) : '#'}
+                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90 text-white rounded-md flex items-center justify-center h-10 font-medium text-sm"
+                    onClick={() => setSelectedJob(null)}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     AI深度分析
-                  </Button>
+                  </a>
                 </div>
                 {/* 版权声明 */}
                 <p className="text-xs text-gray-400 text-center w-full mt-2">

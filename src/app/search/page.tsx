@@ -163,12 +163,15 @@ ${job.company ? `公司：${job.company}` : ''}
 5. 职业发展路径建议`;
   };
 
-  // AI深度分析跳转
-  const handleAiAnalysis = (job: SearchResult, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // AI深度分析跳转（先到登录页，已登录则自动跳回）
+  const getAnalysisUrl = (job: SearchResult) => {
     const prompt = generateJobAnalysisPrompt(job);
-    window.location.href = `/assistant?query=${encodeURIComponent(prompt)}`;
+    const target = `/assistant?query=${encodeURIComponent(prompt)}`;
+    return `/auth?redirect=${encodeURIComponent(target)}`;
+  };
+
+  const handleAiAnalysis = (job: SearchResult) => {
+    document.location = getAnalysisUrl(job);
   };
 
   const handleTabChange = (tab: 'all' | 'jobs' | 'articles') => {
@@ -337,15 +340,16 @@ ${job.company ? `公司：${job.company}` : ''}
                             </span>
                           )}
                         </div>
-                        {/* AI深度分析按钮 */}
-                        <button
-                          onClick={(e) => handleAiAnalysis(job, e)}
+                        {/* AI深度分析按钮 - 原生<a>防止Turbopack优化 */}
+                        <a
+                          href={getAnalysisUrl(job)}
+                          onClick={(e) => e.stopPropagation()}
                           className="flex items-center gap-1 text-[#165DFF] text-sm hover:text-blue-700 transition-colors font-medium hover:underline"
                         >
                           <Sparkles className="w-4 h-4" />
                           <span>AI分析</span>
                           <ArrowRight className="w-3 h-3" />
-                        </button>
+                        </a>
                       </div>
                     </div>
                   ))}
