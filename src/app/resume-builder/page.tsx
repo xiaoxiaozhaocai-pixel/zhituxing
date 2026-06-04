@@ -8,6 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 // 简历结构化字段
 interface ResumeSections {
@@ -57,17 +62,15 @@ export default function ResumeBuilderPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const r = await fetch('/api/save-resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: '我的简历', resume_data: resume }),
-      });
-      const data = await r.json();
-      if (data.success) {
-        setSavedId(data.id);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+      const payload = { title: '我的简历', data: resume, updated_at: new Date().toISOString() };
+      if (savedId) {
+        await supabaseClient.from('resumes').update(payload).eq('id', savedId);
+      } else {
+        const { data } = await supabaseClient.from('resumes').insert(payload).select('id').single();
+        if (data) setSavedId(data.id);
       }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       console.error('Save failed:', e);
     }
