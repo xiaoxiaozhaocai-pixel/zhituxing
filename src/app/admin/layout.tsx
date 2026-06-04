@@ -2,79 +2,23 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import {
-  LayoutDashboard, Briefcase, FileText, Users, TrendingUp,
-  GitBranch, Activity, CreditCard, MessageSquare, Settings,
-  ChevronDown, ChevronRight, Search, Shield, RefreshCw
-} from 'lucide-react';
 
-interface NavGroup {
-  label: string;
-  items: NavItem[];
-}
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: ReactNode;
-  matchPattern?: string; // 用于匹配子路径，如 '/admin/jd' 匹配 '/admin/jd/xxx'
-}
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: '概览',
-    items: [
-      { href: '/admin/dashboard', label: '数据看板', icon: <LayoutDashboard className="w-4 h-4" /> },
-    ]
-  },
-  {
-    label: '内容运营',
-    items: [
-      { href: '/admin/jd', label: 'JD管理', icon: <Briefcase className="w-4 h-4" />, matchPattern: '/admin/jd' },
-      { href: '/admin/content', label: '内容管理', icon: <FileText className="w-4 h-4" /> },
-      { href: '/admin/users', label: '用户管理', icon: <Users className="w-4 h-4" /> },
-    ]
-  },
-  {
-    label: '数据分析',
-    items: [
-      { href: '/admin/analytics', label: '行为看板', icon: <TrendingUp className="w-4 h-4" /> },
-      { href: '/admin/skills', label: '技能图谱', icon: <GitBranch className="w-4 h-4" /> },
-      { href: '/admin/diagnostics', label: '网站诊断', icon: <Activity className="w-4 h-4" /> },
-    ]
-  },
-  {
-    label: '系统管理',
-    items: [
-      { href: '/admin/orders', label: '订单管理', icon: <CreditCard className="w-4 h-4" /> },
-      { href: '/admin/feedback', label: '反馈管理', icon: <MessageSquare className="w-4 h-4" /> },
-      { href: '/admin/settings', label: '系统设置', icon: <Settings className="w-4 h-4" /> },
-    ]
-  },
+const NAV_ITEMS = [
+  { href: '/admin/jd', label: 'JD管理', icon: '📋' },
+  { href: '/admin/users', label: '用户看板', icon: '👥' },
+  { href: '/admin/skills', label: '技能管理', icon: '🔗' },
+  { href: '/admin/analytics', label: '行为看板', icon: '📊' },
+  { href: '/admin/costs', label: '成本看板', icon: '💰' },
+  { href: '/admin/diagnostics', label: '网站诊断', icon: '🔍' },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
-  '/admin/dashboard': '数据看板',
   '/admin/jd': 'JD数据管理',
-  '/admin/jd-review': 'JD审核',
-  '/admin/jd-sync': 'JD同步',
-  '/admin/content': '内容管理',
-  '/admin/users': '用户管理',
-  '/admin/analytics': '行为数据看板',
+  '/admin/users': '用户数据看板',
   '/admin/skills': '技能关系图管理',
+  '/admin/analytics': '行为数据看板',
+  '/admin/costs': '成本监控看板',
   '/admin/diagnostics': '网站诊断',
-  '/admin/orders': '订单管理',
-  '/admin/feedback': '反馈管理',
-  '/admin/settings': '系统设置',
-  '/admin/logs': '操作日志',
-  '/admin/notifications': '通知管理',
-  '/admin/recycle': '回收站',
-  '/admin/export': '数据导出',
-  '/admin/referrals': '内推管理',
-  '/admin/rewards': '奖励管理',
-  '/admin/sync': '数据同步',
-  '/admin/career-planning': '职业规划',
-  '/admin/jobs': '职位管理',
 };
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -82,22 +26,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-
-  const toggleGroup = (label: string) => {
-    setCollapsedGroups(prev => {
-      const next = new Set(prev);
-      if (next.has(label)) next.delete(label);
-      else next.add(label);
-      return next;
-    });
-  };
-
-  const isItemActive = (item: NavItem) => {
-    if (pathname === item.href) return true;
-    if (item.matchPattern && pathname.startsWith(item.matchPattern)) return true;
-    return false;
-  };
 
   useEffect(() => {
     async function checkAdmin() {
@@ -159,49 +87,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <p className="text-xs text-blue-200/60 mt-1">Administration Panel</p>
         </div>
 
-        {/* 导航项 — 分组折叠 */}
-        <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
-          {NAV_GROUPS.map((group) => {
-            const isCollapsed = collapsedGroups.has(group.label);
-            const hasActiveChild = group.items.some(isItemActive);
+        {/* 导航项 */}
+        <nav className="flex-1 py-4 px-3 space-y-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
             return (
-              <div key={group.label} className="mb-1">
-                {/* 分组标题 — 可点击折叠 */}
-                <button
-                  onClick={() => toggleGroup(group.label)}
-                  className={`w-full flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition ${
-                    hasActiveChild ? 'text-white/80' : 'text-blue-200/50 hover:text-blue-200/70'
-                  }`}
-                >
-                  {isCollapsed
-                    ? <ChevronRight className="w-3 h-3" />
-                    : <ChevronDown className="w-3 h-3" />
-                  }
-                  {group.label}
-                </button>
-                {/* 分组子项 */}
-                {!isCollapsed && (
-                  <div className="space-y-0.5 mt-0.5">
-                    {group.items.map((item) => {
-                      const active = isItemActive(item);
-                      return (
-                        <button
-                          key={item.href}
-                          onClick={() => router.push(item.href)}
-                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-                            active
-                              ? 'bg-white/20 text-white border border-white/10 font-medium'
-                              : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
-                          }`}
-                        >
-                          {item.icon}
-                          <span className="truncate">{item.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                  isActive
+                    ? 'bg-white/20 text-white border border-white/10'
+                    : 'text-blue-100/70 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <span className="text-base">{item.icon}</span>
+                {item.label}
+              </button>
             );
           })}
         </nav>
