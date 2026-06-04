@@ -1,3 +1,4 @@
+// @force-rebuild-v2
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
