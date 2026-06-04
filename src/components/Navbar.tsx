@@ -29,6 +29,7 @@ const moreNavItems = [
   { name: '使用流程', href: '/guide', icon: <Compass className="w-4 h-4" /> },
   { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-4 h-4" /> },
   { name: '联系我们', href: '/contact', icon: <Phone className="w-4 h-4" /> },
+  { name: '高校合作', href: '/university', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 export default function Navbar() {
