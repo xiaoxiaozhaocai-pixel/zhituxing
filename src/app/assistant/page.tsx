@@ -338,6 +338,7 @@ function AssistantContent() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isUserNearBottomRef = useRef(true);
+  const scrollAnimRef = useRef<number | null>(null);
   
   // 待发送的 query 参数（从 URL 解析）
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
@@ -379,6 +380,23 @@ function AssistantContent() {
       });
     }
   }, [messages, scrollToBottom]);
+
+  // SSE流式输出时持续滚动到底部（流式内容更新不触发messages数组变化）
+  useEffect(() => {
+    if (isLoading && messages.length > 1) {
+      const scrollLoop = () => {
+        const container = chatContainerRef.current;
+        if (container && isUserNearBottomRef.current) {
+          container.scrollTop = container.scrollHeight;
+        }
+        scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      };
+      scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      return () => {
+        if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
+      };
+    }
+  }, [isLoading, messages.length]);
 
   // 检查用户个人信息状态
   useEffect(() => {
