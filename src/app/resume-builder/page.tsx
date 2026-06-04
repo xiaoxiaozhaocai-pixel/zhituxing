@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History } from 'lucide-react';
+import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 // 简历结构化字段
@@ -36,6 +36,43 @@ export default function ResumeBuilderPage() {
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('preview');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [savedId, setSavedId] = useState<number | null>(null);
+
+  // 自动加载已有简历
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/save-resume')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setResume(data[0].data);
+          setSavedId(data[0].id);
+        }
+      })
+      .catch(() => {});
+  }, [user]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const r = await fetch('/api/save-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: '我的简历', resume_data: resume }),
+      });
+      const data = await r.json();
+      if (data.success) {
+        setSavedId(data.id);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch (e) {
+      console.error('Save failed:', e);
+    }
+    setSaving(false);
+  };
 
   useEffect(() => {
     if (!loading && !user) router.push('/auth');
@@ -134,6 +171,10 @@ export default function ResumeBuilderPage() {
           <span className="text-gray-700 font-medium">简历创作助手</span>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleSave} disabled={saving}>
+            {saved ? <Check className="h-4 w-4 mr-1 text-green-500" /> : <Save className="h-4 w-4 mr-1" />}
+            {saved ? '已保存' : '保存'}
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setResume(emptyResume)}>
             <History className="h-4 w-4 mr-1" /> 清空简历
           </Button>
