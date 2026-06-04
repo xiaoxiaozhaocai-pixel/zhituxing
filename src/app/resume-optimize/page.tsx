@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock } from 'lucide-react';
+import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Select,
@@ -51,6 +51,15 @@ interface OptimizationRecord {
   created_at: string;
 }
 
+interface ResumeItem {
+  id: string;
+  name: string;
+  template_id: string;
+  sections: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function ResumeOptimizePage() {
   const router = useRouter();
   const { user, loading, quota } = useAuth();
@@ -62,6 +71,7 @@ export default function ResumeOptimizePage() {
     suggestions: Array<{ type: string; title: string; suggestion: string }>;
   } | null>(null);
   const [recentRecords, setRecentRecords] = useState<OptimizationRecord[]>([]);
+  const [myResumes, setMyResumes] = useState<ResumeItem[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -76,6 +86,7 @@ export default function ResumeOptimizePage() {
   useEffect(() => {
     if (user) {
       fetchRecentRecords();
+      fetchMyResumes();
     }
   }, [user]);
 
@@ -94,6 +105,19 @@ export default function ResumeOptimizePage() {
       console.error('获取记录失败:', error);
     } finally {
       setDataLoading(false);
+    }
+  };
+
+  const fetchMyResumes = async () => {
+    if (!user) return;
+    try {
+      const response = await fetch('/api/resume', { credentials: 'include' });
+      const data = await response.json();
+      if (data.success) {
+        setMyResumes(data.data || []);
+      }
+    } catch (error) {
+      console.error('获取简历列表失败:', error);
     }
   };
 
@@ -168,9 +192,18 @@ export default function ResumeOptimizePage() {
                 AI智能分析，量身定制简历优化建议
               </p>
             </div>
-            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
-              完全免费使用
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button
+                className="bg-[#165DFF] hover:bg-[#165DFF]/90"
+                onClick={() => router.push('/resume-edit/new')}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                新建简历
+              </Button>
+              <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
+                完全免费使用
+              </Badge>
+            </div>
           </div>
         </div>
 
@@ -313,8 +346,69 @@ export default function ResumeOptimizePage() {
             )}
           </div>
 
-          {/* Right: Recent Records */}
-          <div>
+          {/* Right: My Resumes + Recent Records */}
+          <div className="space-y-4">
+            {/* My Resumes */}
+            <Card className="border-2 border-[#165DFF]/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center justify-between">
+                  <span>我的简历</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[#165DFF]"
+                    onClick={() => router.push('/resume-edit/new')}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />新建
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {myResumes.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    <FileText className="w-10 h-10 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">还没有简历</p>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-[#165DFF] mt-1"
+                      onClick={() => router.push('/resume-edit/new')}
+                    >
+                      创建第一份简历
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {myResumes.slice(0, 5).map((resume) => (
+                      <div
+                        key={resume.id}
+                        className="p-2.5 bg-gray-50 rounded-lg hover:bg-[#165DFF]/5 transition-colors cursor-pointer border border-transparent hover:border-[#165DFF]/20"
+                        onClick={() => router.push(`/resume-edit/${resume.id}`)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {resume.name || '未命名简历'}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              更新于 {new Date(resume.updated_at || resume.created_at).toLocaleDateString('zh-CN')}
+                            </p>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-[#94A3B8] ml-2 shrink-0" />
+                        </div>
+                      </div>
+                    ))}
+                    {myResumes.length > 5 && (
+                      <p className="text-xs text-center text-[#94A3B8] pt-1">
+                        还有 {myResumes.length - 5} 份简历
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Records */}
             <Card className="border-2 border-gray-100">
               <CardHeader>
                 <CardTitle className="text-lg">最近优化记录</CardTitle>
