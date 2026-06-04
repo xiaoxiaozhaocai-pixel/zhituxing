@@ -762,7 +762,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   <a
                     href={getJobAnalysisUrl(job)}
                     className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); router.push(getJobAnalysisUrl(job)); }}
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>AI深度分析</span>
@@ -1107,7 +1107,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   <a
                     href={selectedJob ? getJobAnalysisUrl(selectedJob) : '#'}
                     className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90 text-white rounded-md flex items-center justify-center h-10 font-medium text-sm"
-                    onClick={() => setSelectedJob(null)}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedJob(null); router.push(getJobAnalysisUrl(selectedJob!)); }}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     AI深度分析
