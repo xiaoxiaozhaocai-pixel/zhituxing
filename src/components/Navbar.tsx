@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network, FileText, ChevronDown, Building2 } from 'lucide-react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network, FileText, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -29,7 +29,6 @@ const moreNavItems = [
   { name: '使用流程', href: '/guide', icon: <Compass className="w-4 h-4" /> },
   { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-4 h-4" /> },
   { name: '联系我们', href: '/contact', icon: <Phone className="w-4 h-4" /> },
-  { name: '高校合作', href: '/university', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 export default function Navbar() {
