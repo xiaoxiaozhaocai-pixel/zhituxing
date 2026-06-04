@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History } from 'lucide-react';
+import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 // 简历结构化字段
@@ -34,6 +34,8 @@ export default function ResumeBuilderPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [resume, setResume] = useState<ResumeSections>(emptyResume);
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('preview');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [resumeId, setResumeId] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -44,6 +46,45 @@ export default function ResumeBuilderPage() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // 自动加载已保存的简历
+  useEffect(() => {
+    if (!user) return;
+    fetch(`/api/user/resume?userId=${user.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.resume?.data) {
+          setResume(prev => ({ ...prev, ...data.resume.data }));
+        }
+        if (data.resume?.id) setResumeId(data.resume.id);
+      })
+      .catch(() => {});
+  }, [user]);
+
+  // 保存简历
+  const handleSave = async () => {
+    if (!user) return;
+    setSaveStatus('saving');
+    try {
+      const res = await fetch('/api/user/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, title: '我的简历', data: resume }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.id) setResumeId(data.id);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } else {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
 
   // 从 AI 回复中提取结构化简历数据
   const extractResumeData = useCallback((content: string) => {
@@ -90,7 +131,6 @@ export default function ResumeBuilderPage() {
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
         fullResponse += chunk;
-        // 实时更新最后一条消息
         setMessages(prev => {
           const updated = [...prev];
           const last = updated[updated.length - 1];
@@ -134,6 +174,17 @@ export default function ResumeBuilderPage() {
           <span className="text-gray-700 font-medium">简历创作助手</span>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={handleSave} disabled={saveStatus === 'saving'}>
+            {saveStatus === 'saving' ? (
+              <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> 保存中</>
+            ) : saveStatus === 'saved' ? (
+              <><CheckCircle2 className="h-4 w-4 mr-1 text-green-500" /> 已保存</>
+            ) : saveStatus === 'error' ? (
+              <><AlertCircle className="h-4 w-4 mr-1 text-red-500" /> 保存失败</>
+            ) : (
+              <><Save className="h-4 w-4 mr-1" /> 保存</>
+            )}
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setResume(emptyResume)}>
             <History className="h-4 w-4 mr-1" /> 清空简历
           </Button>
@@ -206,7 +257,6 @@ export default function ResumeBuilderPage() {
         {/* 右栏：简历预览 */}
         <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
           <div className="max-w-[700px] mx-auto">
-            {/* 简历预览卡片 */}
             <Card className="shadow-sm">
               <CardContent className="p-8">
                 {/* 基本信息 */}
