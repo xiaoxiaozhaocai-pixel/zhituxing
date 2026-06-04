@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Send, Loader2, GraduationCap, Briefcase, TrendingUp, Target, Sparkles, Share2, Download, Crown, AlertCircle, Copy, Check } from 'lucide-react';
@@ -57,15 +57,55 @@ export default function DecisionPage() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollAnimRef = useRef<number | null>(null);
+  const isUserNearBottomRef = useRef(true);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = chatContainerRef.current;
+    if (!container) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    const threshold = 100;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isUserNearBottomRef.current = distanceFromBottom < threshold;
+    if (isUserNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
+  // 检测用户是否主动向上滚动
+  const handleChatScroll = useCallback(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const threshold = 100;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isUserNearBottomRef.current = distanceFromBottom < threshold;
+  }, []);
+
+  // 消息更新时滚动
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingContent]);
+
+  // SSE流式输出时持续滚动到底部
+  useEffect(() => {
+    if (loading && messages.length > 1) {
+      const scrollLoop = () => {
+        const container = chatContainerRef.current;
+        if (container && isUserNearBottomRef.current) {
+          container.scrollTop = container.scrollHeight;
+        }
+        scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      };
+      scrollAnimRef.current = requestAnimationFrame(scrollLoop);
+      return () => {
+        if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
+      };
+    }
+  }, [loading, messages.length]);
 
   // 初始化欢迎消息
   useEffect(() => {
@@ -262,7 +302,7 @@ export default function DecisionPage() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 overflow-auto">
+      <div ref={chatContainerRef} onScroll={handleChatScroll} className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 overflow-auto">
         <div className="space-y-6">
           {messages.map((message, index) => (
             <div
