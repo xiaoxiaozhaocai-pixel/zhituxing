@@ -9,11 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabaseClient = createClient(supabaseUrl, supabaseKey);
+let supabaseClient: SupabaseClient | null = null;
+function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  supabaseClient = createClient(url, key);
+  return supabaseClient;
+}
 
 // 简历结构化字段
 interface ResumeSections {
@@ -49,7 +54,7 @@ export default function ResumeBuilderPage() {
   // 自动加载已有简历
   useEffect(() => {
     if (!user) return;
-    supabaseClient
+    getSupabaseClient()
       .from('resumes')
       .select('id, data')
       .order('updated_at', { ascending: false })
@@ -68,9 +73,9 @@ export default function ResumeBuilderPage() {
     try {
       const payload = { title: '我的简历', data: resume, updated_at: new Date().toISOString() };
       if (savedId) {
-        await supabaseClient.from('resumes').update(payload).eq('id', savedId);
+        await getSupabaseClient().from('resumes').update(payload).eq('id', savedId);
       } else {
-        const { data } = await supabaseClient.from('resumes').insert(payload).select('id').single();
+        const { data } = await getSupabaseClient().from('resumes').insert(payload).select('id').single();
         if (data) setSavedId(data.id);
       }
       setSaved(true);
