@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/admin/analytics', label: '行为看板', icon: '📊' },
   { href: '/admin/costs', label: '成本看板', icon: '💰' },
   { href: '/admin/diagnostics', label: '网站诊断', icon: '🔍' },
+  { href: '/admin/features', label: '功能开关', icon: '🎚️' },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -19,6 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/analytics': '行为数据看板',
   '/admin/costs': '成本监控看板',
   '/admin/diagnostics': '网站诊断',
+  '/admin/features': 'Feature Flag 管理',
 };
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
