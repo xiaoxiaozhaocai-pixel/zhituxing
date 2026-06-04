@@ -49,10 +49,13 @@ export default function ResumeBuilderPage() {
   // 自动加载已有简历
   useEffect(() => {
     if (!user) return;
-    fetch('/api/user/resume')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
+    supabaseClient
+      .from('resumes')
+      .select('id, data')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
           setResume(data[0].data);
           setSavedId(data[0].id);
         }
