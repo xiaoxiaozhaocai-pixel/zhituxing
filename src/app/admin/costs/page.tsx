@@ -155,9 +155,7 @@ export default function AdminCostsPage() {
   async function loadData() {
     setLoading(true);
     try {
-      const res = await fetch(`/admin/api/costs?days=${days}`, {
-        headers: { 'x-user-id': '999' },
-      });
+      const res = await fetch(`/api/costs?days=${days}`);
       const json = await res.json();
       if (json.success) setData(json.data);
     } catch (err) {
