@@ -29,7 +29,7 @@ export function useTTS(options: UseTTSOptions = {}): UseTTSReturn {
   });
   const [speaking, setSpeaking] = useState(false);
   const [paused, setPaused] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const utteranceRef = useRef<any>(null);
   const currentTextRef = useRef<string>('');
 
   const cleanup = useCallback(() => {
