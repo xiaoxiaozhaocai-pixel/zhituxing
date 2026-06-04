@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { sanitizeJDList } from '@/lib/jd-sanitizer';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
+import { generateXiaozhiNote } from '@/lib/xiaozhi-recommend';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,8 +29,34 @@ export async function GET(request: NextRequest) {
           targetPosition = profile.target_position || '';
         }
       } catch {
-        // 查询失败不影响主流程，继续使用默认值
         console.log('user_profiles 查询失败，使用默认值');
+      }
+
+      // 读取最新测评结果，补充技能差距信息
+      try {
+        const { data: latestAssessment } = await supabase
+          .from('assessment_results')
+          .select('result_data')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (latestAssessment?.result_data) {
+          const resultData = typeof latestAssessment.result_data === 'string'
+            ? JSON.parse(latestAssessment.result_data)
+            : latestAssessment.result_data;
+
+          // 从测评结果提取技能弱点
+          if (resultData.weaknesses && Array.isArray(resultData.weaknesses)) {
+            userSkills = [...new Set([...userSkills, ...resultData.weaknesses])];
+          }
+          if (resultData.skill_gaps && Array.isArray(resultData.skill_gaps)) {
+            userSkills = [...new Set([...userSkills, ...resultData.skill_gaps])];
+          }
+        }
+      } catch {
+        // 测评结果读取失败不影响主流程
       }
     }
 
@@ -61,7 +88,23 @@ export async function GET(request: NextRequest) {
           .limit(limit);
 
         if (!error && jds && jds.length > 0) {
-          return NextResponse.json({ success: true, data: sanitizeJDList(jds) });
+          const jdsWithNotes = jds.map((jd: any) => ({
+            ...jd,
+            xiaozhi_note: generateXiaozhiNote({
+              matchScore: 75,
+              jobTitle: jd.job_title || '',
+              company: jd.company || '',
+              matchedSkills: userSkills.filter((s: string) =>
+                (jd.hard_skills || []).concat(jd.soft_skills || []).some((js: string) =>
+                  js.toLowerCase().includes(s.toLowerCase())
+                )
+              ),
+              gapSkills: [],
+              freshGraduateFriendly: jd.fresh_graduate_friendly,
+              targetPosition: targetPosition || undefined,
+            }),
+          }));
+          return NextResponse.json({ success: true, data: sanitizeJDList(jdsWithNotes) });
         }
       } catch {
         // job_descriptions 表查询失败，继续尝试其他查询
