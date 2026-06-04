@@ -142,7 +142,15 @@ function getFallbackResponse(botType?: string, message?: string): string {
 请提供信息，开始您的专业能力测评！`;
   }
 
-  if (botType === 'competency' || msgLower.includes('胜任力')) {
+    if (botType === 'xiaozhi' || msgLower.includes('小职')) {
+    return `嗨～我是小职，你的AI求职伙伴！✨
+
+我可以陪你聊天、帮你改简历、模拟面试、做职业规划、评估胜任力……
+
+💬 有什么想聊的？或者直接告诉我你需要什么帮助～`;
+  }
+
+if (botType === 'competency' || msgLower.includes('胜任力')) {
     return `您好！我是胜任力评估助手（会员专属）。
 
 请告诉我：
@@ -158,7 +166,7 @@ function getFallbackResponse(botType?: string, message?: string): string {
 请提供信息，开始胜任力评估！`;
   }
 
-  return `👋 您好！我是「职途星——职搭子」，您的专属岗位百科助手。
+  return `👋 你好呀！我是小职，你的AI求职伙伴～
 
 🔍 **我可以帮您查询：**
 
