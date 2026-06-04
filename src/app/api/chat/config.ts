@@ -52,6 +52,12 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     tabId: 'career',
     url: '/skill-portrait',
   },
+  course: {
+    title: '📚 检测到你需要补补课',
+    description: '要不要上一堂互动课？我根据你的情况现讲，不是录播～',
+    actionLabel: '开始上课',
+    tabId: 'career',
+  },
 };
 
 // ============================================================
@@ -63,6 +69,7 @@ export const DISPATCH_API_MAP: Record<string, string> = {
   career: '/api/career-planning/stream',
   assessment: '/api/assessment',
   competency: '/api/competency',
+  course: '/api/courses',
 };
 
 // ============================================================
@@ -79,6 +86,7 @@ export const RAG_TABLE_CONFIG: Record<string, string[]> = {
   xiaozhi: ['guet_knowledge', 'job_descriptions', 'career_paths', 'skill_taxonomy', 'learning_resources'],
   resume: ['job_descriptions', 'skill_taxonomy'],
   skill: ['skill_taxonomy', 'job_descriptions', 'career_paths'],
+  course: ['learning_resources', 'skill_taxonomy', 'career_paths'],
 };
 
 // ============================================================
