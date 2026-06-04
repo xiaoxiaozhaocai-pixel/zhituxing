@@ -12,6 +12,7 @@ import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/t
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
+import TTSButton from '@/components/TTSButton';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
