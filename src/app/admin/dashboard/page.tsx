@@ -13,7 +13,12 @@ import {
   RefreshCw,
   FileText,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Server,
+  Shield,
+  MessageSquare,
+  Settings,
+  ChevronRight
 } from 'lucide-react';
 
 interface Stats {
@@ -37,6 +42,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchStats();
+    checkHealth();
   }, []);
 
   const fetchStats = async () => {
@@ -62,6 +68,19 @@ export default function AdminDashboardPage() {
 
   const maxValue = (arr: Array<{ users?: number; jobs?: number }>, key: 'users' | 'jobs') => {
     return Math.max(...arr.map(item => item[key] || 0), 1);
+  };
+
+  // 系统健康状态
+  const [health, setHealth] = useState<{ site: boolean | null; api: boolean | null }>({ site: null, api: null });
+  const checkHealth = async () => {
+    try {
+      const siteRes = await fetch('https://zhituxing.tech', { mode: 'no-cors' });
+      setHealth(prev => ({ ...prev, site: true }));
+    } catch { setHealth(prev => ({ ...prev, site: false })); }
+    try {
+      const apiRes = await fetch('/api/admin/auth');
+      setHealth(prev => ({ ...prev, api: apiRes.ok }));
+    } catch { setHealth(prev => ({ ...prev, api: false })); }
   };
 
   if (loading) {
@@ -155,6 +174,69 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </Link>
+      </div>
+
+      {/* 系统健康 & 快捷面板 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 系统健康 */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Server className="w-4 h-4 text-blue-600" />
+              系统健康
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${health.site === null ? 'bg-gray-300' : health.site ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-sm text-gray-700">生产站点</span>
+                </div>
+                <span className="text-xs text-gray-400">zhituxing.tech</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${health.api === null ? 'bg-gray-300' : health.api ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="text-sm text-gray-700">API服务</span>
+                </div>
+                <span className="text-xs text-gray-400">/api/admin/auth</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 快捷入口 */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Shield className="w-4 h-4 text-blue-600" />
+              快捷入口
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { href: '/admin/jd', icon: Briefcase, label: 'JD管理', desc: '查看审核' },
+                { href: '/admin/users', icon: Users, label: '用户管理', desc: '用户详情' },
+                { href: '/admin/content', icon: FileText, label: '内容管理', desc: '干货公告' },
+                { href: '/admin/orders', icon: Crown, label: '订单审核', desc: '会员订单' },
+                { href: '/admin/feedback', icon: MessageSquare, label: '反馈管理', desc: '用户反馈' },
+                { href: '/admin/analytics', icon: TrendingUp, label: '行为看板', desc: '数据分析' },
+                { href: '/admin/diagnostics', icon: Activity, label: '网站诊断', desc: '性能检查' },
+                { href: '/admin/settings', icon: Settings, label: '系统设置', desc: '配置管理' },
+              ].map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <div className="p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition cursor-pointer group border border-transparent hover:border-blue-200">
+                    <item.icon className="w-5 h-5 text-blue-600 mb-1.5" />
+                    <p className="text-sm font-medium text-gray-800 group-hover:text-blue-700">{item.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 图表区域 */}
