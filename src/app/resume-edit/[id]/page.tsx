@@ -33,6 +33,8 @@ const SECTION_ICONS: Record<SectionKey, React.ReactNode> = {
   education: <GraduationCap className="w-4 h-4" />,
   experience: <Briefcase className="w-4 h-4" />,
   projects: <FolderGit2 className="w-4 h-4" />,
+  skills: <Wrench className="w-4 h-4" />,
+  certificates: <FileText className="w-4 h-4" />,
   skillsCertificates: <Wrench className="w-4 h-4" />,
   selfEval: <FileText className="w-4 h-4" />,
 };
@@ -102,7 +104,7 @@ function EducationEditor({ items, onChange }: { items: EducationEntry[]; onChang
 
 /* ---- 实习/工作经历 ---- */
 function ExperienceEditor({ items, onChange }: { items: ExperienceEntry[]; onChange: (i: ExperienceEntry[]) => void }) {
-  const add = () => onChange([...items, { id: uid(), company: '', position: '', start: '', end: '', description: '' }]);
+  const add = () => onChange([...items, { id: uid(), company: '', position: '', start: '', end: '', description: '', highlights: [] }]);
   const remove = (id: string) => onChange(items.filter(i => i.id !== id));
   const update = (id: string, f: keyof ExperienceEntry, v: string) => onChange(items.map(i => i.id === id ? { ...i, [f]: v } : i));
   return (
@@ -133,7 +135,7 @@ function ExperienceEditor({ items, onChange }: { items: ExperienceEntry[]; onCha
 
 /* ---- 项目经历 ---- */
 function ProjectsEditor({ items, onChange }: { items: ProjectEntry[]; onChange: (i: ProjectEntry[]) => void }) {
-  const add = () => onChange([...items, { id: uid(), name: '', role: '', start: '', end: '', description: '' }]);
+  const add = () => onChange([...items, { id: uid(), name: '', role: '', start: '', end: '', description: '', highlights: [] }]);
   const remove = (id: string) => onChange(items.filter(i => i.id !== id));
   const update = (id: string, f: keyof ProjectEntry, v: string) => onChange(items.map(i => i.id === id ? { ...i, [f]: v } : i));
   return (
@@ -468,7 +470,7 @@ export default function ResumeEditPage() {
             </SelectTrigger>
             <SelectContent>
               {TEMPLATE_OPTIONS.map(t => (
-                <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
