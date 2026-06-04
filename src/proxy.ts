@@ -34,7 +34,7 @@ const SECURITY_HEADERS = {
   // CSP - 内容安全策略（已收紧：移除 unsafe-eval）
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://fonts.googleapis.cn https://static.cloudflareinsights.com",
+    "script-src 'self' 'unsafe-inline' https://fonts.googleapis.cn",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.cn https://fonts.gstatic.cn",
     "font-src 'self' https://fonts.gstatic.cn data:",
     "img-src 'self' data: blob: https:",
@@ -123,13 +123,22 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // 2. /admin 路由保护：检查登录 cookie
   // --------------------------------------------------------
   if (pathname.startsWith('/admin')) {
-    // 排除登录页面本身
-    if (pathname === '/admin/login') {
+    // 排除登录页面本身和登录 API
+    if (pathname === '/admin/login' || pathname.startsWith('/admin/api/auth/')) {
       return undefined;
     }
     
     const accessToken = parseAccessTokenFromCookie(request.headers);
     if (!accessToken) {
+      // API 路由返回 401 JSON（而非 307 重定向到登录页）
+      if (pathname.startsWith('/admin/api/')) {
+        const response = NextResponse.json(
+          { error: '请先登录', code: 'UNAUTHORIZED' },
+          { status: 401 }
+        );
+        return addSecurityHeaders(response);
+      }
+      // 页面路由重定向到登录页
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/admin/login';
       const response = NextResponse.redirect(loginUrl);
@@ -146,7 +155,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
       // 重定向到登录页，并带上回调 URL
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/auth';
-      loginUrl.searchParams.set('redirect', pathname + request.nextUrl.search);
+      loginUrl.searchParams.set('redirect', pathname);
       const response = NextResponse.redirect(loginUrl);
       return addSecurityHeaders(response);
     }
