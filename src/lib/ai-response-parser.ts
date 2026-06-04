@@ -5,7 +5,7 @@
 
 // ========== 类型定义 ==========
 
-export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'promotion' | 'disclaimer';
+export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'promotion' | 'disclaimer' | 'table';
 
 export interface ParsedSegment {
   type: SegmentType;
@@ -37,6 +37,11 @@ export interface ScoreItem {
   score: number;
   max?: number;
   label?: string;
+}
+
+export interface TableData {
+  headers: string[];
+  rows: string[][];
 }
 
 export interface PromotionData {
@@ -106,6 +111,7 @@ function hasStructuredContent(text: string): boolean {
     /match_score|salary_range|top_jobs|career_path|timeline|probability|dimension|competency|gap_analysis/i,
     /"(\w+)":\s*"/,                   // JSON key-value
     /\*\*\w+\*\*:/,                   // Markdown bold key
+    /^\s*\|.+\|\s*$/m,               // Markdown 表格行
   ];
   return indicators.some(p => p.test(text));
 }
@@ -401,8 +407,45 @@ function parseJSONObject(obj: Record<string, unknown>): ParsedSegment[] {
 }
 
 /** 解析纯文本（含部分结构化内容） */
+/** 把 Markdown 表格段用空行包围，便于后续按空行分段识别 */
+function isolateMarkdownTables(text: string): string {
+  const lines = text.split('\n');
+  const result: string[] = [];
+  let i = 0;
+  const isTableRow = (l: string) => {
+    const t = l.trim();
+    return t.startsWith('|') && t.endsWith('|') && t.length >= 3;
+  };
+  const isSeparator = (l: string) => /^\|[\s\-:|]+\|$/.test(l.trim());
+
+  while (i < lines.length) {
+    if (isTableRow(lines[i]) && i + 1 < lines.length && isSeparator(lines[i + 1])) {
+      // 表格起点：前面补空行
+      if (result.length > 0 && result[result.length - 1].trim() !== '') {
+        result.push('');
+      }
+      // 收集所有连续的表格行
+      while (i < lines.length && isTableRow(lines[i])) {
+        result.push(lines[i]);
+        i++;
+      }
+      // 表格结尾：后面补空行
+      if (i < lines.length && lines[i].trim() !== '') {
+        result.push('');
+      }
+    } else {
+      result.push(lines[i]);
+      i++;
+    }
+  }
+  return result.join('\n');
+}
+
 function parsePlainText(text: string): ParsedSegment[] {
   const segments: ParsedSegment[] = [];
+
+  // 预处理：把 Markdown 表格用空行隔离出来，便于按空行分段
+  text = isolateMarkdownTables(text);
 
   if (!hasStructuredContent(text)) {
     // 纯自然语言，直接返回
@@ -437,6 +480,28 @@ function parsePlainText(text: string): ParsedSegment[] {
         }
         continue;
       }
+    }
+
+    // 检测 Markdown 表格段（至少 3 行，且第 2 行是分隔行）
+    const tableLines = lines.filter(l => {
+      const t = l.trim();
+      return t.startsWith('|') && t.endsWith('|') && t.length >= 3;
+    });
+    if (
+      tableLines.length >= 3 &&
+      tableLines.length === lines.length &&
+      /^\|[\s\-:|]+\|$/.test(tableLines[1].trim())
+    ) {
+      if (currentText.trim()) {
+        segments.push({ type: 'text', data: decodeUrlStr(currentText.trim()) });
+        currentText = '';
+      }
+      const parseRow = (line: string) =>
+        line.trim().slice(1, -1).split('|').map(c => decodeUrlStr(c.trim()));
+      const headers = parseRow(tableLines[0]);
+      const rows = tableLines.slice(2).map(parseRow);
+      segments.push({ type: 'table', data: { headers, rows } });
+      continue;
     }
 
     // 检测列表段（以 - 或数字开头）
