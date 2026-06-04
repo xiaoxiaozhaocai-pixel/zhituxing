@@ -99,7 +99,7 @@ export default function ResumeOptimizePage() {
       });
       const data = await response.json();
       if (data.success) {
-        setRecentRecords(data.data.records);
+        setRecentRecords(data.data || []);
       }
     } catch (error) {
       console.error('获取记录失败:', error);
