@@ -23,7 +23,8 @@ import {
   Scale,
   FileSearch,
   Mic,
-  Calendar
+  Calendar,
+  FileText
 } from 'lucide-react';
 
 // 计算距离秋招的天数（目标日期：9月1日）
@@ -184,6 +185,13 @@ const agentFeatures = [
     description: 'HR岗位JD助手',
     link: '/assistant?bot=jobs',
     gradient: 'from-pink-500 to-rose-500',
+  },
+  {
+    icon: <FileText className="w-7 h-7" />,
+    title: 'AI简历创作',
+    description: '边聊边写，实时预览',
+    link: '/resume-builder',
+    gradient: 'from-teal-500 to-emerald-600',
   },
 ];
 
