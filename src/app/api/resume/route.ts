@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, content, isDefault } = body;
+    const { name, content, sections, template_id, isDefault } = body;
 
     // 如果设为默认，先取消其他默认
     if (isDefault) {
@@ -45,15 +45,19 @@ export async function POST(request: NextRequest) {
         .eq('user_id', userId);
     }
 
+    const insertData: Record<string, unknown> = {
+      user_id: userId,
+      name,
+      content: content || '',
+      is_default: isDefault || false,
+      created_at: new Date().toISOString(),
+    };
+    if (sections !== undefined) insertData.sections = sections;
+    if (template_id !== undefined) insertData.template_id = template_id;
+
     const { data: resume, error } = await supabase
       .from('resumes')
-      .insert({
-        user_id: userId,
-        name,
-        content,
-        is_default: isDefault || false,
-        created_at: new Date().toISOString()
-      })
+      .insert(insertData)
       .select()
       .single();
 
