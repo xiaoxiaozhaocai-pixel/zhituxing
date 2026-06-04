@@ -200,9 +200,6 @@ export default function ResumeOptimizePage() {
                 <FileText className="w-4 h-4 mr-2" />
                 新建简历
               </Button>
-              <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
-                完全免费使用
-              </Badge>
             </div>
           </div>
         </div>
@@ -511,3 +508,4 @@ export default function ResumeOptimizePage() {
     </div>
   );
 }
+
