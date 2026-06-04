@@ -12,12 +12,54 @@ import { createDeepSeekSSEStream, type ChatMessage } from '@/lib/deepseek-chat';
 
 /** 27个标准行业名 */
 export const STANDARD_INDUSTRIES = [
-  '互联网/IT', '电商', '市场营销', '人力资源', '金融', '教育培训',
-  '文化艺术', '游戏', '体育', '健身', '制造业', '建筑', '土木',
-  '旅游', '酒店', '政府', '公共管理', '医疗', '健康', '法律',
-  '咨询', '物流', '供应链', '房地产', '农业', '林业', '渔业',
-  '综合/其他',
+  '互联网/IT', '电商', '金融', '市场营销', '人力资源', '综合/其他',
+  '医疗健康', '房地产', '传媒', '公共事业/NGO', '化工/能源/环保',
+  '汽车', '法律', '制造业', '咨询', '教育', '餐饮', '物流',
+  '财务', '旅游/酒店', '农林牧渔', '新能源', '通信/硬件',
+  '建筑/土木', '体育/健身', '游戏', '文化艺术', '政府/公共管理',
+  '教育培训', '文化传媒', '医疗健康/生物制药', '房地产/建筑',
+  '教育/培训', '人力资源服务/咨询', '制造', '消费品', '快消',
+  '政府/公共事业', '酒店旅游', '物流运输', '能源/环保',
+  '农业', '企业服务/咨询', '餐饮/酒店/旅游/娱乐', '文化传媒/广告',
+  '国企/事业单位',
 ];
+
+/** 用户口语别名 → 数据库行业值映射 */
+export const INDUSTRY_ALIASES: Record<string, string> = {
+  '医疗': '医疗健康',
+  '医药': '医疗健康',
+  '健康': '医疗健康',
+  '生物制药': '医疗健康/生物制药',
+  '建筑': '建筑/土木',
+  '土木': '建筑/土木',
+  '旅游': '旅游/酒店',
+  '酒店': '旅游/酒店',
+  '政府': '政府/公共管理',
+  '公共管理': '政府/公共管理',
+  '林业': '农林牧渔',
+  '渔业': '农林牧渔',
+  '体育': '体育/健身',
+  '健身': '体育/健身',
+  '化工': '化工/能源/环保',
+  '能源': '化工/能源/环保',
+  '环保': '化工/能源/环保',
+  '通信': '通信/硬件',
+  '硬件': '通信/硬件',
+  '供应链': '物流',
+  '饮食': '餐饮',
+  '食品': '餐饮',
+  '零售': '电商',
+  '设计': '文化艺术',
+  '媒体': '传媒',
+  '广告': '文化传媒/广告',
+  '会计': '财务',
+  '国企': '国企/事业单位',
+  '事业单位': '国企/事业单位',
+  '企业服务': '企业服务/咨询',
+  '公共事业': '公共事业/NGO',
+  'NGO': '公共事业/NGO',
+  '培训': '教育培训',
+};
 
 /** 常见城市 */
 export const COMMON_CITIES = [
@@ -97,12 +139,19 @@ export function extractKeywords(message: string): ExtractedKeywords {
   const result: ExtractedKeywords = {};
   const lowerMessage = message.toLowerCase();
 
-  // 提取行业
-  for (const industry of STANDARD_INDUSTRIES) {
-    const simpleName = industry.split('/')[0];
-    if (message.includes(industry) || message.includes(simpleName)) {
+  // 提取行业：先查口语别名映射，再遍历标准行业名
+  for (const [alias, industry] of Object.entries(INDUSTRY_ALIASES)) {
+    if (message.includes(alias)) {
       result.industry = industry;
       break;
+    }
+  }
+  if (!result.industry) {
+    for (const industry of STANDARD_INDUSTRIES) {
+      if (message.includes(industry)) {
+        result.industry = industry;
+        break;
+      }
     }
   }
 
@@ -409,3 +458,4 @@ export async function queryAssessmentResults(
     limit
   );
 }
+
