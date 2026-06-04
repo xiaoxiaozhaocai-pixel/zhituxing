@@ -246,7 +246,7 @@ export default function AIResponseRenderer({ rawText, streaming = false, role = 
 
           case 'disclaimer':
             return (
-              <div key={idx} className="text-xs text-gray-400 mt-2 leading-relaxed">
+              <div key={idx} className="text-sm text-gray-500 mt-3 pt-2 border-t border-gray-100 leading-relaxed">
                 {seg.data as string}
               </div>
             );
