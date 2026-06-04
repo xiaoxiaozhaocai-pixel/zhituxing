@@ -1184,15 +1184,20 @@ function AssistantContent() {
             onScroll={handleChatScroll}
             className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[520px]"
           >
-            {/* 历史消息加载 + 清空按钮 */}
+            {/* 历史消息加载 */}
             {(messages.length - visibleCount) > 0 && (
-              <div className="flex items-center justify-between px-2 pb-2">
+              <div className="flex items-center px-2 pb-2">
                 <button
                   onClick={() => setVisibleCount(prev => prev + 30)}
                   className="text-xs text-blue-500 hover:text-blue-700 font-medium"
                 >
                   ↑ 显示更早消息（{messages.length - visibleCount}条）
                 </button>
+              </div>
+            )}
+            {/* 清空对话按钮 */}
+            {messages.length > 0 && (
+              <div className="flex items-center justify-end px-2 pb-2">
                 <button
                   onClick={() => {
                       setMessages([]);
@@ -1633,4 +1638,5 @@ function AssistantContent() {
     </div>
   );
 }
+
 
