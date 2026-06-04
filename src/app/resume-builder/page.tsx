@@ -43,7 +43,7 @@ export default function ResumeBuilderPage() {
   // 自动加载已有简历
   useEffect(() => {
     if (!user) return;
-    fetch('/api/save-resume')
+    fetch('/api/user/resume')
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
