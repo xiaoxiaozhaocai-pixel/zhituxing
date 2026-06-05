@@ -25,6 +25,58 @@ export default function FloatingAICTA() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // ── 拖拽状态 ──
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const dragRef = useRef({
+    active: false,
+    moved: false,
+    startX: 0,
+    startY: 0,
+    startOffsetX: 0,
+    startOffsetY: 0,
+  });
+
+  // 加载保存的位置
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('xiaozhi-float-pos');
+      if (saved) setOffset(JSON.parse(saved));
+    } catch { /* ignore */ }
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragRef.current = {
+      active: true,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      startOffsetX: offset.x,
+      startOffsetY: offset.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current.active) return;
+    const dx = dragRef.current.startX - e.clientX;
+    const dy = dragRef.current.startY - e.clientY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragRef.current.moved = true;
+    setOffset({
+      x: dragRef.current.startOffsetX + dx,
+      y: dragRef.current.startOffsetY + dy,
+    });
+  };
+
+  const onPointerUp = () => {
+    dragRef.current.active = false;
+    try { localStorage.setItem('xiaozhi-float-pos', JSON.stringify(offset)); } catch { /* ignore */ }
+  };
+
+  const handleFabClick = () => {
+    if (dragRef.current.moved) return;
+    setChatOpen(true);
+  };
+
   const handleSend = async () => {
     const msg = input.trim();
     if (!msg || streaming) return;
@@ -98,10 +150,14 @@ export default function FloatingAICTA() {
     return null;
   }
 
+  const btnRight = 24 + offset.x;
+  const btnBottom = 24 + offset.y;
+
   return (
     <>
       <div
-        className="fixed bottom-6 right-6 z-40"
+        className="fixed z-40"
+        style={{ right: `${btnRight}px`, bottom: `${btnBottom}px` }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -121,17 +177,38 @@ export default function FloatingAICTA() {
 
         <button
           type="button"
-          onClick={() => setChatOpen(true)}
-          className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-blue-500/40"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onClick={handleFabClick}
+          className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-blue-500/40 select-none cursor-grab active:cursor-grabbing"
+          style={{ touchAction: 'none' }}
         >
-          <MessageSquare className="w-6 h-6 text-white" />
+          <MessageSquare className="w-6 h-6 text-white pointer-events-none" />
         </button>
       </div>
 
       {chatOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white shrink-0">
-            <div className="flex items-center gap-2">
+        <div className="fixed z-50 w-96 h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style={{ right: `${btnRight}px`, bottom: `${btnBottom + 72}px` }}>
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white shrink-0 cursor-grab active:cursor-grabbing"
+            onPointerDown={(e) => {
+              const startX = e.clientX;
+              const startY = e.clientY;
+              const startOx = offset.x;
+              const startOy = offset.y;
+              const onMove = (ev: PointerEvent) => {
+                setOffset({ x: startOx + (startX - ev.clientX), y: startOy + (startY - ev.clientY) });
+              };
+              const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                try { localStorage.setItem('xiaozhi-float-pos', JSON.stringify(offset)); } catch {}
+              };
+              window.addEventListener('pointermove', onMove);
+              window.addEventListener('pointerup', onUp);
+            }}
+          >
+            <div className="flex items-center gap-2 pointer-events-none">
               <MessageSquare className="w-5 h-5" />
               <span className="font-semibold">小职</span>
               <span className="text-xs opacity-75">AI求职搭子</span>
