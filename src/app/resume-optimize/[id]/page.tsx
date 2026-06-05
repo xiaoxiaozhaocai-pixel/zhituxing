@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ArrowLeft, Copy, CheckCircle, Crown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 
 interface OptimizationDetail {
   id: string;
@@ -23,6 +24,7 @@ export default function ResumeDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { user, loading, quota } = useAuth();
+  const { isMember } = useMembership();
   const [detail, setDetail] = useState<OptimizationDetail | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -79,7 +81,7 @@ export default function ResumeDetailPage() {
     return null;
   }
 
-  const isMember = quota?.is_member;
+  const isMember = isMember;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

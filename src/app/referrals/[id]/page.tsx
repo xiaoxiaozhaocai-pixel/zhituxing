@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 import Image from 'next/image';
 import { 
   ArrowLeft, MapPin, DollarSign, Users, Clock, Verified, Star, 
@@ -38,6 +39,7 @@ export default function ReferralDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user, isAuthenticated, quota } = useAuth();
+  const { isMember } = useMembership();
   const [referral, setReferral] = useState<Referral | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
@@ -45,7 +47,7 @@ export default function ReferralDetailPage() {
   const [copied, setCopied] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
-  const isMember = quota?.is_member;
+  const isMember = isMember;
 
   useEffect(() => {
     if (params.id) {

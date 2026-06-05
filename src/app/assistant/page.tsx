@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv } from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import TTSButton from '@/components/TTSButton';
@@ -334,6 +335,7 @@ function AssistantContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
+  const { isMember } = useMembership();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -1122,7 +1124,7 @@ function AssistantContent() {
               <button
                 key={bot.id}
                 onClick={() => {
-                  if (bot.isVipOnly && !quota?.is_member) {
+                  if (bot.isVipOnly && !isMember) {
                     setQuotaFeature(bot.name);
                     setShowQuotaDialog(true);
                     return;
@@ -1132,7 +1134,7 @@ function AssistantContent() {
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
                   activeBot === bot.id
                     ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
-                    : bot.isVipOnly && !quota?.is_member
+                    : bot.isVipOnly && !isMember
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
                       : 'text-gray-600 hover:bg-white hover:shadow'
                 }`}

@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 import {
   Select,
   SelectContent,
@@ -63,6 +64,7 @@ interface ResumeItem {
 export default function ResumeOptimizePage() {
   const router = useRouter();
   const { user, loading, quota } = useAuth();
+  const { isMember } = useMembership();
   const [resumeContent, setResumeContent] = useState('');
   const [targetPosition, setTargetPosition] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -125,7 +127,7 @@ export default function ResumeOptimizePage() {
     if (!user) return;
     
     // 非会员限制
-    if (!quota?.is_member && recentRecords.length >= 3) {
+    if (!isMember && recentRecords.length >= 3) {
       setShowUpgradeDialog(true);
       return;
     }
@@ -176,7 +178,7 @@ export default function ResumeOptimizePage() {
     return null;
   }
 
-  const isMember = quota?.is_member;
+  const isMember = isMember;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

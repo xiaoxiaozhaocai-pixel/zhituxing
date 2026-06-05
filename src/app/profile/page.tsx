@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 import type { AuthUser, QuotaInfo } from '@/hooks/useAuth';
 import type { UserProfile, NotificationItem, FavoriteItem, ReportItem } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
@@ -636,7 +637,7 @@ function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | n
 
   const getMemberStatus = () => {
     if (quota?.is_lifetime_member) return { label: '终身会员', color: 'bg-gradient-to-r from-purple-500 to-pink-500' };
-    if (quota?.is_member) return { label: '月度会员', color: 'bg-gradient-to-r from-orange-500 to-yellow-500' };
+    if (isMember) return { label: '月度会员', color: 'bg-gradient-to-r from-orange-500 to-yellow-500' };
     return { label: '普通用户', color: 'bg-gray-400' };
   };
 
@@ -668,7 +669,7 @@ function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | n
         </CardContent>
       </Card>
 
-      {!quota?.is_member && !quota?.is_lifetime_member && (
+      {!isMember && !quota?.is_lifetime_member && (
         <Card className="border-2 border-orange-200 bg-orange-50">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -1220,6 +1221,7 @@ function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading, logout, quota } = useAuth();
+  const { isMember } = useMembership();
   const [activeTab, setActiveTab] = useState('messages');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [growthData, setGrowthData] = useState<{

@@ -96,22 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (data.ok && data.data?.user) {
         setUser(data.data.user);
-        // 从 /api/membership 获取会员状态填充 quota.is_member
-        // 解决全站组件依赖 quota?.is_member 但 checkAuth 置 null 的问题
-        fetch('/api/membership', { credentials: 'include' })
-          .then(r => r.json())
-          .then(d => {
-            if (d.ok) {
-              const isMember = d.data?.isMember || false;
-              setQuota(prev => {
-                if (!prev) return null;
-                return { ...prev, is_member: isMember };
-              });
-            } else {
-              setQuota(null);
-            }
-          })
-          .catch(() => setQuota(null));
+        // quota 由 /api/quota 单独提供（me 契约不含 quota，遗留待治理）
+        setQuota(null);
       } else {
         setUser(null);
         setQuota(null);
@@ -134,21 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (data.ok && data.data?.user) {
         setUser(data.data.user);
-        // 从 /api/membership 获取会员状态
-        fetch('/api/membership', { credentials: 'include' })
-          .then(r => r.json())
-          .then(d => {
-            if (d.ok) {
-              const isMember = d.data?.isMember || false;
-              setQuota(prev => {
-                if (!prev) return null;
-                return { ...prev, is_member: isMember };
-              });
-            } else {
-              setQuota(null);
-            }
-          })
-          .catch(() => setQuota(null));
+        setQuota(null);
       }
     } catch (error) {
       console.error('刷新配额失败:', error);
