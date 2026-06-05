@@ -14,9 +14,9 @@ export async function GET(request: NextRequest) {
     }
     const userId = authResult.id;
 
-    // 直接查询 user_profiles（与 login API 一致，绕过 getUserProfile）
+    // 直接查询 user_profiles
     const supabase = getSupabaseAdmin();
-    const { data: profileData } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('user_profiles')
       .select('user_type, member_expires_at')
       .eq('user_id', userId)
@@ -27,12 +27,10 @@ export async function GET(request: NextRequest) {
 
     const quota = await getUserQuotaFromDb(userId);
 
-    // 计算 is_expired（lifetime 用户永远不过期）
     const isLifetime = userType === 'lifetime';
     const isExpired = !isLifetime && memberExpiresAt
       ? new Date(memberExpiresAt) < new Date()
       : false;
-
     const isMember = userType !== 'free' && !isExpired;
     const membershipPlan = isMember ? userType : null;
 
@@ -41,7 +39,7 @@ export async function GET(request: NextRequest) {
     const remainingQuota = Math.max(0, monthlyQuota - usedQuota);
 
     return jsonOk(MembershipDataSchema, {
-      _debug: "inline-v3",
+      _debug: { userId, userType, profileData, profileError: profileError?.message || null },
       userType,
       membershipType: userType,
       membershipPlan,
