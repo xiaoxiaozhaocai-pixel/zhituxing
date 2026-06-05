@@ -1,23 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { MembershipDataSchema, type MembershipData } from '@/lib/api-contracts/membership';
 import { successResponse } from '@/lib/api-contracts/_shared';
-
-// 从 localStorage 获取当前用户 ID（仅作 cookie 不存在时的兜底；实际依赖 cookie 凭据）
-function getCurrentUserId(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      return user?.id || null;
-    }
-  } catch {
-    // ignore
-  }
-  return null;
-}
+import { useAuth } from '@/hooks/useAuth';
 
 export interface MembershipState {
   /** 'free' 或 'member'，UI 简化用 */
@@ -62,16 +48,14 @@ function applyData(data: MembershipData): MembershipState {
 
 export function MembershipProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MembershipState>(defaultState);
+  const { isAuthenticated } = useAuth();
+  const lastUserId = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
-      const userId = getCurrentUserId();
-      const headers: HeadersInit = {};
-      if (userId) headers['x-user-id'] = userId;
 
       const res = await fetch('/api/membership', {
-        headers,
         credentials: 'include',
       });
 
@@ -100,9 +84,26 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+  // 登录状态变化时重新拉取
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (isAuthenticated) {
+      refresh();
+    } else {
+      setState({ ...defaultState, loading: false });
+    }
+  }, [isAuthenticated, refresh]);
+
+  // 切回标签页时重新拉取（防后台部署更新后前端僵死）
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && isAuthenticated) {
+        refresh();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [isAuthenticated, refresh]);
 
   return (
     <MembershipContext.Provider value={{ ...state, refresh }}>

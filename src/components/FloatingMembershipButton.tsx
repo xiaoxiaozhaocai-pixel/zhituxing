@@ -5,26 +5,27 @@ import { Crown, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 
 export default function FloatingMembershipButton() {
   const pathname = usePathname();
   const { user, quota } = useAuth();
+  const { isMember } = useMembership();
   const [visible, setVisible] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
 
   useEffect(() => {
-    // 检查配额是否用完
     const checkQuota = () => {
       if (!user) {
         setVisible(false);
         return;
       }
 
-      const exhausted = !quota?.is_member && (quota?.remaining ?? 0) <= 0;
+      const exhausted = !isMember && (quota?.remaining ?? 0) <= 0;
       setQuotaExhausted(exhausted);
       
       // 如果是会员，不显示悬浮按钮
-      if (quota?.is_member) {
+      if (isMember) {
         setVisible(false);
         return;
       }
@@ -43,7 +44,7 @@ export default function FloatingMembershipButton() {
     // 每5秒检查一次
     const interval = setInterval(checkQuota, 5000);
     return () => clearInterval(interval);
-  }, [user, quota]);
+  }, [user, quota, isMember]);
 
   // 后台/个人中心页面不显示悬浮按钮
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/profile')) {

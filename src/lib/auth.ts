@@ -35,23 +35,32 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
       
       if (error || !user) {
         console.error('[auth] Token verification failed:', error?.message);
-        // Token 无效，拒绝访问
         return null;
       }
       
       // 从 user_profiles 获取用户类型
       const { data: profile } = await supabase
         .from('user_profiles')
-        .select('user_type, nickname')
+        .select('user_type, membership_type, membership_expires_at, nickname')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+      
+      const rawType = profile?.user_type || 'free';
+      const membershipExpiresAt = profile?.membership_expires_at;
+      
+      // 判断是否有效会员：非 free 且（永久会员 或 未过期）
+      const isLifetime = rawType === 'lifetime';
+      const isExpired = !isLifetime && membershipExpiresAt
+        ? new Date(membershipExpiresAt) < new Date()
+        : false;
+      const effectiveType = (rawType !== 'free' && !isExpired) ? 'member' as const : 'free' as const;
       
       return {
         id: user.id,
         email: user.email ?? null,
         phone: user.user_metadata?.phone || user.phone || null,
         nickname: profile?.nickname || user.user_metadata?.nickname || null,
-        userType: profile?.user_type === 'member' ? 'member' : 'free',
+        userType: effectiveType,
       };
     } catch (err) {
       console.error('[auth] Unexpected error:', err);
