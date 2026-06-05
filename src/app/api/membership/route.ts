@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { getUserQuotaFromDb } from '@/lib/quota';
 import { jsonOk, jsonError, ErrorCode } from '@/lib/api-contracts/_shared';
 import { MembershipDataSchema } from '@/lib/api-contracts/membership';
 
@@ -14,43 +13,52 @@ export async function GET(request: NextRequest) {
     }
     const userId = authResult.id;
 
-    // 直接查询 user_profiles
-    const supabase = getSupabaseAdmin();
-    const { data: profileData, error: profileError } = await supabase
+    // 直接内联查询，绕过 getUserProfile 和 getUserQuotaFromDb
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
-      .select('user_type, member_expires_at')
+      .select('user_type, membership_type, membership_expires_at')
       .eq('user_id', userId)
       .maybeSingle();
 
-    const userType = profileData?.user_type || 'free';
-    const memberExpiresAt = profileData?.member_expires_at || null;
+    if (profileError) {
+      console.error('[Membership] profile query error:', profileError);
+    }
 
-    const quota = await getUserQuotaFromDb(userId);
+    const userType = profile?.user_type || 'free';
+    const membershipType = profile?.membership_type || userType;
+    const membershipExpiresAt = profile?.membership_expires_at || null;
 
     const isLifetime = userType === 'lifetime';
-    const isExpired = !isLifetime && memberExpiresAt
-      ? new Date(memberExpiresAt) < new Date()
+    const isExpired = !isLifetime && membershipExpiresAt
+      ? new Date(membershipExpiresAt) < new Date()
       : false;
     const isMember = userType !== 'free' && !isExpired;
     const membershipPlan = isMember ? userType : null;
 
-    const monthlyQuota = quota.monthly_quota || 10;
-    const usedQuota = quota.used_quota || 0;
+    // 查询配额
+    const { data: quota } = await supabaseAdmin
+      .from('user_quotas')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const monthlyQuota = quota?.monthly_quota || 10;
+    const usedQuota = quota?.used_quota || 0;
     const remainingQuota = Math.max(0, monthlyQuota - usedQuota);
 
     return jsonOk(MembershipDataSchema, {
-      _debug: { userId, userType, profileData, profileError: profileError?.message || null },
       userType,
-      membershipType: userType,
+      membershipType,
       membershipPlan,
       isMember,
       isExpired,
-      membershipExpiresAt: isLifetime ? null : (memberExpiresAt ?? null),
+      membershipExpiresAt: isLifetime ? null : membershipExpiresAt,
       monthlyQuota,
       usedQuota,
       remainingQuota,
-      interviewQuota: quota.interview_quota || 3,
-      assessmentQuota: quota.assessment_quota || 1,
+      interviewQuota: quota?.interview_quota || 3,
+      assessmentQuota: quota?.assessment_quota || 1,
     });
   } catch (err) {
     console.error('Membership API error:', err);
