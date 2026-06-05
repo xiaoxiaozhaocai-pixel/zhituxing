@@ -6,3 +6,4 @@ buildfix_work/
 
 # 本地备份目录（删前快照、灾备等）
 备份/
+tsconfig.tsbuildinfo
