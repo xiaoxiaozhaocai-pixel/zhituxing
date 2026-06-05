@@ -84,9 +84,8 @@ export default function FileImportModule({
             case 'pdf':
               // PDF: 需要用 pdf-parse 解析
               try {
-                // @ts-ignore - pdf-parse模块类型问题
                 const pdfParse = await import('pdf-parse');
-                // @ts-ignore
+                // @ts-expect-error - pdf-parse ESM导出.default类型缺失
                 const parser = typeof pdfParse === 'function' ? pdfParse : pdfParse.default;
                 const pdfData = await parser(Buffer.from(content));
                 resolve(pdfData.text || '无法提取PDF文本内容');
