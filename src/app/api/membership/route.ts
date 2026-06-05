@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
     const remainingQuota = Math.max(0, monthlyQuota - usedQuota);
 
     return jsonOk(MembershipDataSchema, {
+      _debug: "inline-v3",
       userType,
       membershipType: userType,
       membershipPlan,
