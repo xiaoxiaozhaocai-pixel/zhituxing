@@ -46,8 +46,22 @@ export function useTTS(options: UseTTSOptions = {}): UseTTSReturn {
       utterance.rate = rate;
       utterance.pitch = pitch;
       utterance.volume = volume;
-      utterance.onend = () => { setSpeaking(false); setPaused(false); cleanup(); };
-      utterance.onerror = () => { setSpeaking(false); setPaused(false); cleanup(); };
+      // Chrome keep-alive: pause/resume every 5s to prevent interruption on long texts
+      let keepAliveTimer: ReturnType<typeof setInterval> | null = null;
+      if (text.length > 200) {
+        keepAliveTimer = setInterval(() => {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }, 5000);
+      }
+      utterance.onend = () => {
+        if (keepAliveTimer) clearInterval(keepAliveTimer);
+        setSpeaking(false); setPaused(false); cleanup();
+      };
+      utterance.onerror = () => {
+        if (keepAliveTimer) clearInterval(keepAliveTimer);
+        setSpeaking(false); setPaused(false); cleanup();
+      };
       utterance.onpause = () => { setPaused(true); };
       utterance.onresume = () => { setPaused(false); };
       utteranceRef.current = utterance;
