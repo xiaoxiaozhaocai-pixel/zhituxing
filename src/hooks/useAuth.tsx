@@ -102,7 +102,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .then(r => r.json())
           .then(d => {
             if (d.ok) {
-              setQuota(prev => ({ ...prev, is_member: d.data?.isMember || false }));
+              const isMember = d.data?.isMember || false;
+              setQuota(prev => {
+                if (!prev) return null;
+                return { ...prev, is_member: isMember };
+              });
             } else {
               setQuota(null);
             }
@@ -135,7 +139,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .then(r => r.json())
           .then(d => {
             if (d.ok) {
-              setQuota(prev => ({ ...prev, is_member: d.data?.isMember || false }));
+              const isMember = d.data?.isMember || false;
+              setQuota(prev => {
+                if (!prev) return null;
+                return { ...prev, is_member: isMember };
+              });
             } else {
               setQuota(null);
             }
