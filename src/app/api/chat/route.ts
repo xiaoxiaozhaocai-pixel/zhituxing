@@ -785,7 +785,7 @@ export async function POST(request: NextRequest) {
         ]);
         
         // 构建 RAG 上下文（只包含有数据的表，使用 botType 定制的标签）
-        const ragSources: { tableName: string; displayName: string; data: unknown[] }[] = [];
+        const ragSources: { tableName: string; displayName: string; data: Record<string, unknown>[] }[] = [];
         if (allowedTables.includes('job_descriptions') && jds.length > 0) {
           ragSources.push({ tableName: 'job_descriptions', displayName: displayNames['job_descriptions'] || '岗位信息', data: jds });
         }

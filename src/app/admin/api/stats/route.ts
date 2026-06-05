@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     const statusMap: Record<string, number> = {};
     (statusData || []).forEach((row: Record<string, unknown>) => {
-      const s = row.status || 'unknown';
+      const s = String(row.status || 'unknown');
       statusMap[s] = (statusMap[s] || 0) + 1;
     });
 

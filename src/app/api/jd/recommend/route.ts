@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
               jobTitle: jd.job_title || '',
               company: jd.company || '',
               matchedSkills: userSkills.filter((s: string) =>
-                (jd.hard_skills || []).concat(jd.soft_skills || []).some((js: string) =>
+                (Array.isArray(jd.hard_skills) ? jd.hard_skills : []).concat(Array.isArray(jd.soft_skills) ? jd.soft_skills : []).some((js: string) =>
                   js.toLowerCase().includes(s.toLowerCase())
                 )
               ),

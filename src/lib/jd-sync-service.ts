@@ -306,9 +306,9 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       const contentType = response.headers.get('content-type') || '';
       const text = await response.text();
       
-      let data: unknown;
+      let data: Record<string, unknown>;
       try {
-        data = JSON.parse(text);
+        data = JSON.parse(text) as Record<string, unknown>;
       } catch {
         console.log(`[${config.name}] 第${page}页 JSON解析失败`);
         result.fail_count += 10;
@@ -325,7 +325,8 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
 
       result.total_fetched += items.length;
 
-      for (const item of items) {
+      for (const rawItem of items) {
+        const item = rawItem as unknown as Record<string, string | undefined | null>;
         // 过滤极端无效数据
         if (!item.job_name || (!item.job_desc && !item.salary)) {
           result.fail_count++;
@@ -334,7 +335,7 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
 
         // 三重去重检查
         const exists = await isJobExists(
-          item.job_name + (config.id === 'ncss' ? '(校招)' : ''),
+          (item.job_name || '') + (config.id === 'ncss' ? '(校招)' : ''),
           item.company_name || '未知公司',
           normalizeCity(item.city || item.work_place || '')
         );
@@ -345,7 +346,7 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
         }
 
         // 解析薪资
-        const salary = parseSalary(item.salary || item.salary_range || item.salary_min);
+        const salary = parseSalary(item.salary || item.salary_range || item.salary_min || '');
 
         // 提取技能标签
         const skills = extractSkills(item.skills || item.skill_require || item.require || '', 5);
@@ -390,59 +391,66 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
 /**
  * 从API响应中提取岗位数据（适配不同API格式）
  */
-function extractJobItems(data: unknown, apiId: string): unknown[] {
-  if (!data) return [];
+// API响应数据递归类型（用于extractJobItems处理嵌套JSON）
+interface ApiResponseData {
+  [key: string]: unknown;
+  data?: ApiResponseData | unknown[];
+  result?: ApiResponseData | unknown[];
+  list?: unknown[];
+  jobs?: unknown[];
+}
+
+function extractJobItems(data: Record<string, unknown>, apiId: string): Record<string, unknown>[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const d = data as any;
+  if (!d) return [];
+
+  const getArr = (v: unknown): Record<string, unknown>[] =>
+    (Array.isArray(v) ? v : []) as Record<string, unknown>[];
 
   switch (apiId) {
     case 'ncss':
-      // 国家24365响应格式
-      if (data.data?.list) return data.data.list;
-      if (data.data?.jobs) return data.data.jobs;
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
+      if (d.data?.list) return getArr(d.data.list);
+      if (d.data?.jobs) return getArr(d.data.jobs);
+      if (d.data) return getArr(d.data);
       return [];
 
     case 'mohrss':
-      // 中国公共招聘网响应格式
-      if (data.data?.list) return data.data.list;
-      if (data.data?.jobs) return data.data.jobs;
-      if (data.result?.data) return data.result.data;
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
+      if (d.data?.list) return getArr(d.data.list);
+      if (d.data?.jobs) return getArr(d.data.jobs);
+      if (d.result?.data) return getArr(d.result.data);
+      if (d.data) return getArr(d.data);
       return [];
 
     case 'gxrc':
-      // 广西人才网上响应格式
-      if (data.data?.list) return data.data.list;
-      if (data.data?.jobs) return data.data.jobs;
-      if (data.result) return data.result;
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
+      if (d.data?.list) return getArr(d.data.list);
+      if (d.data?.jobs) return getArr(d.data.jobs);
+      if (d.result) return getArr(d.result);
+      if (d.data) return getArr(d.data);
       return [];
 
     case 'iguopin':
-      // 国聘网响应格式
-      if (data.data?.list) return data.data.list;
-      if (data.data?.jobs) return data.data.jobs;
-      if (data.result?.data) return data.result.data;
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
+      if (d.data?.list) return getArr(d.data.list);
+      if (d.data?.jobs) return getArr(d.data.jobs);
+      if (d.result?.data) return getArr(d.result.data);
+      if (d.data) return getArr(d.data);
       return [];
 
     case 'chinahr':
-      // 中国研究生招聘网响应格式
-      if (data.data?.list) return data.data.list;
-      if (data.data?.jobs) return data.data.jobs;
-      if (data.result) return data.result;
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
+      if (d.data?.list) return getArr(d.data.list);
+      if (d.data?.jobs) return getArr(d.data.jobs);
+      if (d.result) return getArr(d.result);
+      if (d.data) return getArr(d.data);
       return [];
 
     case 'gxedu':
-      // 广西高校毕业生就业网响应格式
-      if (data.data?.list) return data.data.list;
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
+      if (d.data?.list) return getArr(d.data.list);
+      if (d.data) return getArr(d.data);
       return [];
 
     default:
-      // 兜底处理
-      if (data.data) return Array.isArray(data.data) ? data.data : [];
-      if (data.result) return Array.isArray(data.result) ? data.result : [];
+      if (d.data) return getArr(d.data);
+      if (d.result) return getArr(d.result);
       return [];
   }
 }

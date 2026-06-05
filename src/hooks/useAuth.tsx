@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
-interface QuotaInfo {
+export interface QuotaInfo {
   career_planning: {
     remaining: number;
     unlimited: boolean;
@@ -28,11 +28,12 @@ interface QuotaInfo {
   remaining: number;
   reset_time: string;
   is_member: boolean;
+  is_lifetime_member?: boolean;
   member_type: string;
   member_expire_time: string | null;
 }
 
-interface User {
+export interface AuthUser {
   id: string;
   email: string;
   phone?: string;
@@ -45,7 +46,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -60,7 +61,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
 

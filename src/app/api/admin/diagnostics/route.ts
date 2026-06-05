@@ -139,7 +139,7 @@ async function testSSEStream(): Promise<TestResult[]> {
 // 安全检查
 async function testSecurity(): Promise<TestResult[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
-  const tests = [];
+  const tests: TestResult[] = [];
 
   // 1. SQL注入拦截测试
   try {
@@ -207,12 +207,12 @@ async function testSecurity(): Promise<TestResult[]> {
     tests.push({ 
       name: '安全响应头', 
       status: res.status, 
-      result: passed ? 'pass' : 'warn', 
+      result: (passed ? 'pass' : 'warn') as 'pass' | 'warn' | 'fail', 
       detail: `CSP:${!!hasCSP} HSTS:${!!hasHSTS} XFO:${!!hasXFO}` 
     });
   } catch (e: unknown) {
     const _e_ = e as Error;
-    tests.push({ name: '安全响应头', status: 0, result: 'fail', detail: _e_.message });
+    tests.push({ name: '安全响应头', status: 0, result: 'fail' as 'pass' | 'warn' | 'fail', detail: _e_.message });
   }
 
   return tests;
@@ -245,6 +245,7 @@ async function testDatabase(): Promise<TestResult[]> {
           table: table.name, 
           count, 
           min: table.min, 
+          status: count > 0 ? 200 : 0,
           result: passed ? 'pass' : 'fail', 
           detail: `${count}/${table.min}` 
         };
@@ -255,6 +256,7 @@ async function testDatabase(): Promise<TestResult[]> {
           table: table.name, 
           count: 0, 
           min: table.min, 
+          status: 0,
           result: 'fail', 
           detail: _e_.message 
         };

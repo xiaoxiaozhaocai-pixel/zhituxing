@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import type { UserProfile } from '@/lib/types';
+import type { AuthUser, QuotaInfo } from '@/hooks/useAuth';
+import type { UserProfile, NotificationItem, FavoriteItem, ReportItem } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
 import {
   Bell,
@@ -494,7 +495,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
 // 消息内容组件
 function MessagesPanel({ userId }: { userId: string }) {
-  const [notifications, setNotifications] = useState<Record<string, unknown>[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -621,7 +622,7 @@ function MessagesPanel({ userId }: { userId: string }) {
 }
 
 // 会员面板组件
-function MembershipPanel({ user, quota }: { user: UserProfile; quota: Record<string, unknown> }) {
+function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | null }) {
   const memberBenefits = [
     '无限次AI职业规划',
     '无限次AI模拟面试',
@@ -705,7 +706,7 @@ function MembershipPanel({ user, quota }: { user: UserProfile; quota: Record<str
 
 // 报告面板组件
 function ReportsPanel({ userId }: { userId: string }) {
-  const [reports, setReports] = useState<Record<string, unknown>[]>([]);
+  const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -792,7 +793,7 @@ function ReportsPanel({ userId }: { userId: string }) {
 
 // 收藏面板组件
 function FavoritesPanel({ userId }: { userId: string }) {
-  const [favorites, setFavorites] = useState<Record<string, unknown>[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -999,7 +1000,7 @@ function InvitePanel({ userId }: { userId: string }) {
 }
 
 // 设置面板组件
-function SettingsPanel({ user, onLogout }: { user: UserProfile; onLogout: () => void }) {
+function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => void }) {
   const [formData, setFormData] = useState({
     nickname: user?.nickname || '',
     phone: user?.phone || ''

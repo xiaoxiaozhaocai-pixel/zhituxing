@@ -115,12 +115,72 @@ export interface FixStep {
 /** 诊断测试结果 */
 export interface TestResult {
   name: string;
-  status: number;
+  status?: number;
   result: 'pass' | 'fail' | 'warn';
   detail: string;
+  table?: string;
+  count?: number;
+  min?: number;
 }
 
 /** JD 导入项 */
+
+/** 通知消息项 */
+export interface NotificationItem {
+  id: string;
+  type?: string;
+  title: string;
+  content: string;
+  data?: Record<string, unknown>;
+  is_read: boolean;
+  created_at: string;
+  user_id?: string;
+  link?: string;
+}
+
+/** 收藏项 */
+export interface FavoriteItem {
+  id: string;
+  jobTitle: string;
+  company?: string;
+  industry?: string;
+  company_type?: string;
+  location?: string;
+  salary?: string;
+}
+
+/** 报告项 */
+export interface ReportItem {
+  id: string;
+  title?: string;
+  major?: string;
+  core_job?: string;
+  city?: string;
+  create_time?: string;
+}
+
+
+/** 收藏岗位项 */
+export interface FavoriteItem {
+  id: string;
+  jobTitle?: string;
+  industry?: string;
+  company_type?: string;
+  company?: string;
+  location?: string;
+  salary?: string;
+}
+
+/** 报告项 */
+export interface ReportItem {
+  id: string;
+  title?: string;
+  major?: string;
+  core_job?: string;
+  city?: string;
+  create_time?: string;
+}
+
 export interface JdImportItem {
   job_name: string;
   company_name: string;
