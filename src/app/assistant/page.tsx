@@ -1251,6 +1251,11 @@ function AssistantContent() {
                       streaming={index === messages.length - 1 && isLoading}
                       role="assistant"
                     />
+                    {msg.content && (
+                      <div className="flex justify-end mt-1">
+                        <TTSButton text={msg.content} />
+                      </div>
+                    )}
                   )}
                   {/* 加载动画 */}
                   {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
