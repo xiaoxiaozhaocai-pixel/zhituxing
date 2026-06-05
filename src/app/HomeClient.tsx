@@ -19,7 +19,6 @@ import {
   Mic,
   FileText
 } from 'lucide-react';
-import HomeChat from '@/components/HomeChat';
 
 
 
@@ -160,10 +159,6 @@ export default function HomeClient() {
             不用焦虑，小职帮你一步步走。
           </p>
           
-          {/* 小职对话主入口 */}
-          <div className="anim-up-d3">
-            <HomeChat />
-          </div>
           
 
         </div>

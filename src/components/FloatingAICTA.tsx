@@ -18,7 +18,7 @@ interface ChatMessage {
 export default function FloatingAICTA() {
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
