@@ -88,6 +88,7 @@ function OnboardingWizard() {
   const handleSave = async (redirectToHome = true) => {
     setSaving(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const body: Record<string, any> = {};
       if (grade) body.grade = grade;
       if (major) body.major = major;

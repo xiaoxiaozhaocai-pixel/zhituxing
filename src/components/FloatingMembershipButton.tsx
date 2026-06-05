@@ -12,11 +12,6 @@ export default function FloatingMembershipButton() {
   const [visible, setVisible] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
 
-  // 后台/个人中心页面不显示悬浮按钮
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/profile')) {
-    return null;
-  }
-
   useEffect(() => {
     // 检查配额是否用完
     const checkQuota = () => {
@@ -49,6 +44,11 @@ export default function FloatingMembershipButton() {
     const interval = setInterval(checkQuota, 5000);
     return () => clearInterval(interval);
   }, [user, quota]);
+
+  // 后台/个人中心页面不显示悬浮按钮
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/profile')) {
+    return null;
+  }
 
   if (!visible || !user) return null;
 

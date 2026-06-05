@@ -516,7 +516,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                     <ul className="list-disc list-inside space-y-1">
                       <li>必填项：岗位名称、企业名称、城市（标记*的列）</li>
                       <li>企业类型仅支持：国企、民企、上市公司、外企、事业单位</li>
-                      <li>应届友好列仅支持填写"是"或"否"，默认为"是"</li>
+                      <li>应届友好列仅支持填写&ldquo;是&rdquo;或&ldquo;否&rdquo;，默认为&ldquo;是&rdquo;</li>
                       <li>薪资请填写数字（如12代表12000元/月）</li>
                     </ul>
                   </div>

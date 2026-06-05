@@ -15,14 +15,14 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
   const [hasProfile, setHasProfile] = useState(false);
   const [checkDone, setCheckDone] = useState(false);
 
+  useEffect(() => {
+    checkUserProfile();
+  }, []);
+
   // 如果是后台/onboarding/auth页面，不拦截
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) {
     return <>{children}</>;
   }
-
-  useEffect(() => {
-    checkUserProfile();
-  }, []);
 
   const checkUserProfile = async () => {
     try {

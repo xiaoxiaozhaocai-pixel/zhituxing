@@ -126,22 +126,9 @@ function SkillCategorySection({
 function ProfileInfoPanel({ userId }: { userId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profile, setProfile] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!userId) { setLoading(false); return; }
-    fetchProfile();
-  }, [userId]);
-
-  // 监听从info页保存回来的刷新信号
-  useEffect(() => {
-    if (searchParams.get('updated') === '1') {
-      fetchProfile();
-      // 清除URL参数，避免重复刷新
-      window.history.replaceState({}, '', '/profile?tab=info');
-    }
-  }, [searchParams]);
 
   const fetchProfile = async () => {
     try {
@@ -173,6 +160,21 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    fetchProfile();
+  }, [userId]);
+
+  // 监听从info页保存回来的刷新信号
+  useEffect(() => {
+    if (searchParams.get('updated') === '1') {
+      fetchProfile();
+      // 清除URL参数，避免重复刷新
+      window.history.replaceState({}, '', '/profile?tab=info');
+    }
+  }, [searchParams]);
+
 
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" /></div>;
@@ -903,17 +905,11 @@ function FavoritesPanel({ userId }: { userId: string }) {
 // 邀请面板组件
 function InvitePanel({ userId }: { userId: string }) {
   const [inviteCode, setInviteCode] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stats, setStats] = useState<any>({});
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-    fetchInviteData();
-  }, [userId]);
 
   const fetchInviteData = async () => {
     try {
@@ -929,6 +925,14 @@ function InvitePanel({ userId }: { userId: string }) {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    fetchInviteData();
+  }, [userId]);
+
 
   const handleCopyLink = () => {
     const link = `${window.location.origin}/auth?invite_code=${inviteCode}`;

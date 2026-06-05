@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
     // 统一使用 signInWithOtp 方法，更可靠
     // - 对于已注册用户：发送 Magic Link / OTP
     // - 对于新用户：如果 shouldCreateUser=false，会返回错误
-    let error;
     console.log('[send-code] 使用 signInWithOtp 方法，type:', type);
     const result = await supabase.auth.signInWithOtp({
       email,
@@ -87,7 +86,7 @@ export async function POST(request: NextRequest) {
         data: type === 'signup' ? { action: 'resend_signup' } : undefined,
       }
     });
-    error = result.error;
+    const error = result.error;
     console.log('[send-code] signInWithOtp 结果:', {
       hasError: !!error,
       errorMessage: error?.message,
