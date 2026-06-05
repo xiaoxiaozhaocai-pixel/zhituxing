@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     // 推荐逻辑：优先匹配目标岗位，其次按热门排序
     // 使用 job_descriptions 表（jd_library 可能不存在）
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (supabase as any)
+    const query = (supabase as any)
       .from('job_descriptions')
       .select(PUBLIC_JD_FIELDS)
       .or('is_synthetic.is.null,is_synthetic.eq.false')

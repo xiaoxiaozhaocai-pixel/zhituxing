@@ -166,8 +166,8 @@ export default function SkillsGraphPage() {
       // 斥力
       for (let i = 0; i < newNodes.length; i++) {
         for (let j = i + 1; j < newNodes.length; j++) {
-          const dx = newNodes[i]!!.x - newNodes[j]!.x;
-          const dy = newNodes[i]!!.y - newNodes[j]!.y;
+          const dx = newNodes[i]!.x - newNodes[j]!.x;
+          const dy = newNodes[i]!.y - newNodes[j]!.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
           const force = (800 * alpha) / (dist * dist);
           const fx = (dx / dist) * force;

@@ -124,7 +124,7 @@ async function parseGxrcDetail(url: string): Promise<Record<string, unknown>> {
     const education = eduMatch ? eduMatch[1]!.trim() : '';
 
     const respMatch = html.match(/(?:岗位职责|工作职责|职位描述|任职要求)[：:]*\s*([\s\S]{50,2000}?)(?:<\/div>|<\/p>|<\/section>|<hr|<\/dd>)/i);
-    let responsibilities = respMatch ? stripHtml(respMatch[1]!).substring(0!, 2000).trim() : '';
+    const responsibilities = respMatch ? stripHtml(respMatch[1]!).substring(0!, 2000).trim() : '';
 
     const bodyText = stripHtml(html);
     const skillKeywords = ['Python', 'Java', 'JavaScript', 'TypeScript', 'React', 'Vue',

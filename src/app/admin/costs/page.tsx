@@ -258,7 +258,7 @@ export default function AdminCostsPage() {
                 </div>
                 <p className="text-xs text-[#94A3B8] mt-2">
                   {summary?.costChange !== null
-                    ? `较前日 ${summary?.costChange! > 0 ? '+' : ''}${summary?.costChange}%`
+                    ? `较前日 ${(summary?.costChange ?? 0) > 0 ? '+' : ''}${summary?.costChange}%`
                     : '—'}
                 </p>
               </CardContent>

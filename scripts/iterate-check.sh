@@ -1,5 +1,5 @@
 #!/bin/bash
-# 职途星自动化迭代检查 v1.0
+# 职途星自动化迭代检查 v1.1
 # 用法: bash scripts/iterate-check.sh        # 全跑
 #       bash scripts/iterate-check.sh L1      # 单层
 
@@ -9,6 +9,7 @@ cd "$(dirname "$0")/.."
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 PASS=0
 FAIL=0
@@ -17,6 +18,22 @@ LOG_FILE="ITERATION_LOG.md"
 pass() { echo -e "${GREEN}PASS${NC} $1"; ((PASS++)); }
 fail() { echo -e "${RED}FAIL${NC} $1"; ((FAIL++)); }
 warn() { echo -e "${YELLOW}WARN${NC} $1"; }
+info() { echo -e "${CYAN}INFO${NC} $1"; }
+
+# ── 前置检查：工作区必须干净 ──
+check_workspace() {
+  echo ""
+  echo "======== 前置: 工作区 ========"
+  local dirty=$(git status --porcelain 2>/dev/null | grep -v "^?? .*\\.tsbuildinfo$" | head -1)
+  if [ -n "$dirty" ]; then
+    echo -e "${RED}FAIL${NC} 工作区不干净，有未提交改动："
+    git status --short | head -10
+    echo "  请先 git commit 或 git stash"
+    return 1
+  fi
+  pass "工作区干净"
+  return 0
+}
 
 # ── L1: 架构圣经 ──
 check_l1() {
@@ -85,7 +102,7 @@ check_l3() {
 
   echo -n "  3.5 user_type防篡改... "
   grep -q "user_type" src/app/api/user/profile/route.ts 2>/dev/null && \
-    warn "需检查是否可写" || pass "未暴露"
+    info "user_type字段暴露（需人工确认RPC不可写）" || pass "未暴露"
 
   $ok && return 0 || return 1
 }
@@ -105,7 +122,7 @@ check_l4() {
 
   echo -n "  4.3 drizzle-kit deps... "
   node -e "const p=require('./package.json');process.exit(p.dependencies['drizzle-kit']?0:1)" 2>/dev/null && \
-    pass "drizzle-kit在dependencies（Zeabur需要）" || { warn "drizzle-kit缺失"; ok=false; }
+    pass "drizzle-kit在dependencies（Zeabur需要）" || { fail "drizzle-kit缺失"; ok=false; }
 
   echo -n "  4.4 Suspense... "
   c=$(grep -r "Suspense" src/ --include="*.tsx" 2>/dev/null | wc -l)
@@ -148,8 +165,20 @@ check_l6() {
   if npx next build 2>&1 | grep -qE "✓ (Compiled|Generating static)"; then pass "通过"
   else fail "失败"; ok=false; fi
 
-  echo -n "  6.2 ESLint... "
-  npx next lint --max-warnings 0 2>&1 | grep -q "No ESLint" && pass "clean" || warn "有warning"
+  echo -n "  6.2 ESLint errors... "
+  local lint_out=$(npx eslint src/ --ext .ts,.tsx 2>&1)
+  local errors=$(echo "$lint_out" | grep -oP '\d+(?= errors)' | head -1 || echo "0")
+  if [ "$errors" -gt 0 ]; then
+    fail "$errors errors (阻断部署)"
+    ok=false
+  else
+    local warnings=$(echo "$lint_out" | grep -oP '\d+(?= warnings)' | head -1 || echo "0")
+    if [ "$warnings" -gt 0 ]; then
+      warn "$warnings warnings（不阻断）"
+    else
+      pass "clean"
+    fi
+  fi
 
   $ok && return 0 || return 1
 }
@@ -164,9 +193,12 @@ main() {
     *) echo "用法: $0 [L1|L2|L3|L4|L5|L6|all]"; exit 1 ;;
   esac
 
+  # 前置：工作区必须干净
+  check_workspace || exit 1
+
   echo ""
   echo "═══════════════════════════════════"
-  echo "  职途星自动化迭代管道 v1.0"
+  echo "  职途星自动化迭代管道 v1.1"
   echo "═══════════════════════════════════"
 
   check_l1 && l1="✅" || l1="❌"

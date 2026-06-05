@@ -512,7 +512,7 @@ export function calculateCompetencyPercentile(
   const medianScore =
     sorted.length % 2 !== 0
       ? sorted[mid]
-      : Math.round((sorted[mid - 1]!! + sorted[mid]!) / 2);
+      : Math.round(((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2);
 
   // 前10%门槛
   const topDecileIndex = Math.max(0, Math.ceil(sorted.length * 0.1) - 1);

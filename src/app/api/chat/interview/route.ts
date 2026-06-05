@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
           .from('resume_optimizations').select('result_data')
           .eq('user_id', userId).order('created_at', { ascending: false }).limit(1);
         if (resumes?.length && resumes[0]!.result_data) {
-          const r = typeof resumes[0]!!.result_data === 'string' ? resumes[0]!!.result_data : JSON.stringify(resumes[0]!.result_data);
+          const r = typeof resumes[0]!.result_data === 'string' ? resumes[0]!.result_data : JSON.stringify(resumes[0]!.result_data);
           userContext += `\n\n【用户简历】\n${r.slice(0, 1500)}`;
         }
       } catch { /* */ }

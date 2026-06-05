@@ -25,10 +25,6 @@ export default function FloatingAICTA() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  if (pathname?.startsWith('/profile') || pathname?.startsWith('/admin')) {
-    return null;
-  }
-
   const handleSend = async () => {
     const msg = input.trim();
     if (!msg || streaming) return;
@@ -97,6 +93,10 @@ export default function FloatingAICTA() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
   useEffect(() => { if (chatOpen) setTimeout(() => inputRef.current?.focus(), 100); }, [chatOpen]);
+
+  if (pathname?.startsWith('/profile') || pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <>

@@ -187,6 +187,7 @@ if (botType === 'competency' || msgLower.includes('胜任力')) {
  */
 async function proxySpecializedApiStream(
   apiPath: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body: Record<string, any>,
   request: NextRequest,
   effectiveConversationId: string,
@@ -709,6 +710,7 @@ export async function POST(request: NextRequest) {
       console.log(`[chat] Deep dispatch: intent=${resolvedBotType} → ${apiPath}`);
       
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const apiBody: Record<string, any> = { message, conversationId: deepConvId };
         const { stream: proxiedStream, fullResponse } = await proxySpecializedApiStream(
           apiPath!, apiBody, request, deepConvId, resolvedBotType,
@@ -843,7 +845,7 @@ export async function POST(request: NextRequest) {
           userId: userId || '',
           message,
         });
-        let cachedResponse = _cachedResponse;
+        const cachedResponse = _cachedResponse;
         
         const encoder = new TextEncoder();
         if (cachedResponse) {

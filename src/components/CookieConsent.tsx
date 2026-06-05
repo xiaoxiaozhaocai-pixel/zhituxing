@@ -154,7 +154,7 @@ const CookieConsent = () => {
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed">
                 职途星使用必要 Cookie 维持登录与安全，并希望使用分析 Cookie 帮助我们改进产品。
-                您可以选择"全部接受"或仅保留必要功能。详情请查看
+                您可以选择&ldquo;全部接受&rdquo;或仅保留必要功能。详情请查看
                 <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline mx-1">
                   《隐私政策》
                 </a>
