@@ -36,7 +36,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
 
 // API端点测试
 async function testApiEndpoints(): Promise<TestResult[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
   const tests = [
     { path: '/api/health', method: 'GET', expected: 200, name: '健康检查' },
     { path: '/api/auth/me', method: 'GET', expected: 401, name: '未登录认证' },
@@ -75,7 +75,7 @@ async function testApiEndpoints(): Promise<TestResult[]> {
 
 // 页面路由测试
 async function testPageRoutes(): Promise<TestResult[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
   const routes = [
     '/', '/login', '/register', '/jobs', '/career-planning', '/assistant',
     '/assessment', '/match', '/skill-portrait', '/skills-graph', '/guide',
@@ -100,7 +100,7 @@ async function testPageRoutes(): Promise<TestResult[]> {
 
 // SSE流测试
 async function testSSEStream(): Promise<TestResult[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
   const test = { name: '职搭子SSE流', path: '/api/partner' };
   
   try {
@@ -138,7 +138,7 @@ async function testSSEStream(): Promise<TestResult[]> {
 
 // 安全检查
 async function testSecurity(): Promise<TestResult[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
   const tests: TestResult[] = [];
 
   // 1. SQL注入拦截测试

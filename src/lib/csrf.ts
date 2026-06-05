@@ -11,7 +11,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
 
 function extractOrigin(url: string): string {
   try {

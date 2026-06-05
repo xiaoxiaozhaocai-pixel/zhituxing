@@ -55,7 +55,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ theme = 'light', className = ''
       '@type': 'ListItem',
       position: index + 1,
       name: item.label,
-      item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app'}${item.href}`,
+      item: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech'}${item.href}`,
     })),
   };
 
