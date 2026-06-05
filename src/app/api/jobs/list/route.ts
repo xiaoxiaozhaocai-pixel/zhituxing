@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin();
 
     // 从job_descriptions表获取所有唯一的job_title
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabaseAdmin as any)
       .from('job_descriptions')
       .select('job_title')

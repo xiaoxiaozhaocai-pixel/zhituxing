@@ -198,7 +198,7 @@ export function createWorkflowSSEStream(params: {
       let sseBuffer = '';
       let pendingText = '';
       let hasError = false;
-      let hasSentAnyData: { value: boolean } = { value: false };
+      const hasSentAnyData: { value: boolean } = { value: false };
 
       try {
         while (true) {
@@ -320,7 +320,7 @@ export function createCozeSSEStream(params: {
 
       let buffer = '';
       let isFirstChunk = true;
-      let hasSentAnyData: { value: boolean } = { value: false };
+      const hasSentAnyData: { value: boolean } = { value: false };
 
       try {
         while (true) {

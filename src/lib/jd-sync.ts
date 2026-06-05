@@ -26,6 +26,7 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function httpGet(url: string, parseAsText = false): Promise<any> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -77,7 +78,7 @@ async function fetchGxrcListUrls(pageNum = 1): Promise<string[]> {
   return urls;
 }
 
-async function parseGxrcDetail(url: string): Promise<Record<string, any>> {
+async function parseGxrcDetail(url: string): Promise<Record<string, unknown>> {
   try {
     const html: string = await httpGet(url, true);
 
@@ -197,7 +198,7 @@ export async function syncOfficialJobs(opts: JdSyncOptions = {}): Promise<JdSync
       const job = await parseGxrcDetail(url!)!;
 
       if (job._error) {
-        result.errors.push({ url: url!, reason: job._error });
+        result.errors.push({ url: url!, reason: String(job._error) });
         continue;
       }
       if (!job.job_title) {

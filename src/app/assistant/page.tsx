@@ -762,7 +762,7 @@ function AssistantContent() {
       let fullContent = '';
       let receivedDone = false;  // 追踪是否收到 [DONE]，用于检测流中断
       let sseBuffer = '';
-      let firstTokenTimer = setTimeout(() => {
+      const firstTokenTimer = setTimeout(() => {
         // 15秒未收到第一个token
         setMessages(prev => {
           const newMsgs = [...prev];

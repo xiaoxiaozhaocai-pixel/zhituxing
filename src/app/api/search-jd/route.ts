@@ -76,6 +76,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
   try {
     type DbResponse = { data: Record<string, unknown>[] | null; error: { message: string } | null };
     const result = await withTimeout(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any)
         .from('job_descriptions')
         .select('job_title, company, company_type, city, salary_range, industry, responsibilities, fresh_graduate_friendly')

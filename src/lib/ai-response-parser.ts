@@ -332,7 +332,7 @@ export function parseAIResponse(rawText: string): ParsedSegment[] {
 
   // Step 1: 提取<<DATA>>块
   const dataBlocks = extractDataBlocks(rawText);
-  let cleanText = stripDataMarkers(rawText);
+  const cleanText = stripDataMarkers(rawText);
 
   // Step 2: 尝试将整个文本作为JSON解析
   const fullJson = tryParseJSON(cleanText.trim());

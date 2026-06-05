@@ -247,6 +247,7 @@ export async function GET(request: NextRequest) {
     // ===== 关键词搜索：核心查询合并 =====
     if (keyword) {
       const buildBaseQuery = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let q = (supabaseAdmin as any)
           .from('job_descriptions')
           .select(LIGHT_SELECT_FIELDS)
@@ -395,6 +396,7 @@ export async function GET(request: NextRequest) {
     }
 
     // ===== 无关键词：简单筛选查询 =====
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (supabaseAdmin as any)
       .from('job_descriptions')
       .select(PUBLIC_JD_FIELDS, { count: 'exact' })

@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
 
     // 推荐逻辑：优先匹配目标岗位，其次按热门排序
     // 使用 job_descriptions 表（jd_library 可能不存在）
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (supabase as any)
       .from('job_descriptions')
       .select(PUBLIC_JD_FIELDS)
@@ -81,6 +82,7 @@ export async function GET(request: NextRequest) {
     // 如果有目标岗位，按标题匹配
     if (targetPosition) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: jds, error } = await (supabase as any)
           .from('job_descriptions')
           .select(PUBLIC_JD_FIELDS)
@@ -115,6 +117,7 @@ export async function GET(request: NextRequest) {
 
     // 回退：按创建时间排序
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: jds, error } = await (query as any).order('created_at', { ascending: false });
 
       if (error) {

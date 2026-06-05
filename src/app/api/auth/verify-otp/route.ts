@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. 如果是注册流程且传入了密码，设置密码和昵称
-    let finalSession = authData.session;
+    const finalSession = authData.session;
     let finalUser = authData.user;
     
     if (password && flowType === 'signup') {

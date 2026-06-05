@@ -6,6 +6,7 @@
 
 export const SENSITIVE_JD_FIELDS = ['source_url', 'source_platform', 'raw_jd'] as const
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObj = Record<string, any>
 
 /** 单条脱敏 */

@@ -606,7 +606,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. 用户验证，查 user_profiles 表获取 user_type
-    let userInfo = await getUserInfoFromRequest(request);
+    const userInfo = await getUserInfoFromRequest(request);
     
     // userInfo 现在通过 getUserInfoFromRequest（已修复为验证 token）获取
     // 如果 userInfo 为 null 但有 accessToken，说明用户已登录但查不到信息，允许继续
@@ -758,24 +758,28 @@ export async function POST(request: NextRequest) {
             ? querySupabase('job_descriptions', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
                 keywords.jobTitle ? { field: 'job_title', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ].filter(Boolean) as any, 10, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city')
             : [],
           
           allowedTables!.includes('career_paths')
             ? querySupabase('career_paths', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ].filter(Boolean) as any, 5, '*')
             : [],
           
           allowedTables!.includes('skill_taxonomy')
             ? querySupabase('skill_taxonomy', [
                 keywords.industry ? { field: 'domain', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ].filter(Boolean) as any, 10, 'skill_name,category,domain')
             : [],
           
           allowedTables!.includes('learning_resources')
             ? querySupabase('learning_resources', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ].filter(Boolean) as any, 5, 'title,url,type')
             : [],
           

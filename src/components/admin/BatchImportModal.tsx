@@ -162,6 +162,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName!]!;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
         // 解析数据行（跳过表头）
@@ -591,6 +592,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                             name="duplicateOption"
                             value="skip"
                             checked={duplicateOption === 'skip'}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onChange={(e) => setDuplicateOption(e.target.value as any)}
                           />
                           <span className="text-sm">跳过重复数据（默认）</span>
@@ -601,6 +603,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                             name="duplicateOption"
                             value="overwrite"
                             checked={duplicateOption === 'overwrite'}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onChange={(e) => setDuplicateOption(e.target.value as any)}
                           />
                           <span className="text-sm">覆盖重复数据</span>

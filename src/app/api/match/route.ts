@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
     // ============================================================
     // 查询匹配岗位
     // ============================================================
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: jdData, error: jdError } = await (supabase as any)
       .from('job_descriptions')
       .select('id, job_title, company, company_type, city, salary_range, education, experience, industry, hard_skills, soft_skills, tags, fresh_graduate_friendly')
@@ -182,6 +183,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 为每个匹配结果生成小职推荐语
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const matchesWithNotes = (finalMatches as any[]).map((m) => ({
       ...m,
       xiaozhi_note: generateXiaozhiNote({
@@ -229,6 +231,7 @@ export async function GET(request: NextRequest) {
 
     const DEFAULT_SKILLS = ['沟通能力', '学习能力', '团队协作', 'Excel', '数据分析', 'Python', 'SQL', '英语'];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (supabase as any)
       .from('job_descriptions')
       .select('id, job_title, company, company_type, city, salary_range, education, experience, industry, hard_skills, soft_skills, fresh_graduate_friendly')
