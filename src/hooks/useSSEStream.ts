@@ -218,7 +218,8 @@ export function useSSEStream(onError?: (error: string) => void): [SSEStreamState
         }
       }
     } catch (err: unknown) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
+      const _err_ = err as Error;
+      if (err instanceof DOMException && _err_.name === 'AbortError') {
         // 用户取消，不报错
       } else {
         const errMsg = '网络连接中断，请重试';

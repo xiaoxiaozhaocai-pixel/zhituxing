@@ -467,9 +467,10 @@ export async function GET(request: NextRequest) {
     return jsonOk(JobsListDataSchema, result, {
       headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     // 安全处理：不暴露错误详情，返回空结果（仍走契约格式）
-    console.error('[jobs] 内部错误:', error?.message);
+    console.error('[jobs] 内部错误:', _error_?.message);
     return jsonOk(JobsListDataSchema, { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 });
   }
 }

@@ -35,8 +35,9 @@ async function executeSql(sql: string): Promise<{ data?: any; error?: string }> 
 
     const data = await response.json();
     return { data };
-  } catch (e: any) {
-    return { error: e.message };
+  } catch (e: unknown) {
+    const _e_ = e as Error;
+    return { error: _e_.message };
   }
 }
 
@@ -61,8 +62,9 @@ async function runDdl(sql: string): Promise<{ success: boolean; error?: string }
 
     const text = await response.text();
     return { success: response.ok, error: response.ok ? undefined : text };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (e: unknown) {
+    const _e_ = e as Error;
+    return { success: false, error: _e_.message };
   }
 }
 
@@ -91,10 +93,11 @@ export async function GET() {
       result: data,
       supabaseUrl: SUPABASE_URL ? 'configured' : 'missing',
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const _e_ = e as Error;
     return NextResponse.json({
       error: 'Failed to check constraints',
-      details: e.message,
+      details: _e_.message,
     });
   }
 }

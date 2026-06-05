@@ -373,8 +373,9 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       result.pages_completed++;
       console.log(`[${config.name}] 第${page}/${config.pages}页完成，成功:${result.success_count}，失败:${result.fail_count}`);
 
-    } catch (error: any) {
-      console.log(`[${config.name}] 第${page}页请求异常: ${error.message}`);
+    } catch (error: unknown) {
+      const _error_ = error as Error;
+      console.log(`[${config.name}] 第${page}页请求异常: ${_error_.message}`);
       result.fail_count += 10;
     }
   }
@@ -560,14 +561,15 @@ export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncRe
         await saveSyncLog(result);
         
         console.log(`[${config.name}] 同步完成: 总计${result.total_fetched}条, 成功${result.success_count}条, 失败${result.fail_count}条`);
-      } catch (error: any) {
-        console.error(`[${config.name}] 同步异常:`, error.message);
+      } catch (error: unknown) {
+        const _error_ = error as Error;
+        console.error(`[${config.name}] 同步异常:`, _error_.message);
         const errorResult: SyncResult = {
           source_platform: config.name,
           total_fetched: 0,
           success_count: 0,
           fail_count: 0,
-          fail_reason: error.message,
+          fail_reason: _error_.message,
           pages_completed: 0,
           pages_total: config.pages
         };

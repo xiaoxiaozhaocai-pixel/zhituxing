@@ -123,8 +123,9 @@ export default function TestE2EPage() {
         }
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name !== 'AbortError') {
-        setStreamText(prev => prev + `\n\nError: ${err.message}`);
+      const _err_ = err as Error;
+      if (err instanceof Error && _err_.name !== 'AbortError') {
+        setStreamText(prev => prev + `\n\nError: ${_err_.message}`);
       }
     } finally {
       setLoading(false);

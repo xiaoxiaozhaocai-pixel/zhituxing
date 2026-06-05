@@ -29,9 +29,10 @@ export async function GET(request: NextRequest) {
       }
       
       return NextResponse.redirect(`${origin}${next}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const _err_ = err as Error;
       console.error('[auth/callback] exchangeCodeForSession exception:', err);
-      return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent(err.message || '认证失败')}`);
+      return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent(_err_.message || '认证失败')}`);
     }
   }
   
@@ -80,9 +81,10 @@ export async function GET(request: NextRequest) {
       }
       
       return NextResponse.redirect(`${origin}${next}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const _err_ = err as Error;
       console.error('[auth/callback] token_hash verification exception:', err);
-      return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent(err.message || '验证失败')}`);
+      return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent(_err_.message || '验证失败')}`);
     }
   }
   

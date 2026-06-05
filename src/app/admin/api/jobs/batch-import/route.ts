@@ -118,11 +118,12 @@ export async function POST(request: NextRequest) {
       data: result
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     console.error('批量导入出错:', error);
     return NextResponse.json({
       code: 500,
-      message: `导入失败: ${error.message}`
+      message: `导入失败: ${_error_.message}`
     }, { status: 500 });
   }
 }

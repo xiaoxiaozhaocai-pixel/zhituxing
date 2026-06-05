@@ -71,11 +71,12 @@ export async function GET() {
       results
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     console.error('[fix-skills] Error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: _error_.message,
       results
     }, { status: 500 });
   }
@@ -181,11 +182,12 @@ export async function POST() {
       results
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     console.error('[fix-skills] Error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: _error_.message,
       results
     }, { status: 500 });
   }

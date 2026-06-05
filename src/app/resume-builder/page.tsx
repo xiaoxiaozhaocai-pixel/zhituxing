@@ -183,8 +183,9 @@ export default function ResumeBuilderPage() {
       }
       
       extractResumeData(fullResponse);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
+    } catch (err: unknown) {
+      const _err_ = err as Error;
+      if (_err_.name !== 'AbortError') {
         setMessages(prev => [...prev, { role: 'assistant', content: '抱歉，出了点问题，请重试。' }]);
       }
     } finally {

@@ -89,10 +89,11 @@ VALUES ('__test__', '"string_not_array"', 'test');
         `.trim(),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: _error_.message,
     }, { status: 500 });
   }
 }

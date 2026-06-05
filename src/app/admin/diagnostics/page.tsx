@@ -61,8 +61,9 @@ export default function DiagnosticsPage() {
       } else {
         setData(result);
       }
-    } catch (e: any) {
-      setError(e.message || '获取诊断数据失败');
+    } catch (e: unknown) {
+      const _e_ = e as Error;
+      setError(_e_.message || '获取诊断数据失败');
     } finally {
       setLoading(false);
     }

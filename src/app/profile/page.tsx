@@ -1037,8 +1037,9 @@ function SettingsPanel({ user, onLogout }: { user: any; onLogout: () => void }) 
         setShowBindEmail(false);
         setNewEmail('');
       }
-    } catch (err: any) {
-      setBindMessage({ type: 'error', text: err.message || '绑定失败' });
+    } catch (err: unknown) {
+      const _err_ = err as Error;
+      setBindMessage({ type: 'error', text: _err_.message || '绑定失败' });
     } finally {
       setBindLoading(false);
     }

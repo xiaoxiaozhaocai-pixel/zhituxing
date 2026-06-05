@@ -145,7 +145,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: '未知action' }, { status: 400 });
     }
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : '查询失败';
+    const _error_ = error as Error;
+    const msg = error instanceof Error ? _error_.message : '查询失败';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
@@ -219,7 +220,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: '未知action' }, { status: 400 });
     }
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : '操作失败';
+    const _error_ = error as Error;
+    const msg = error instanceof Error ? _error_.message : '操作失败';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
@@ -270,7 +272,8 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: '未知action' }, { status: 400 });
     }
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : '更新失败';
+    const _error_ = error as Error;
+    const msg = error instanceof Error ? _error_.message : '更新失败';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
@@ -301,7 +304,8 @@ export async function DELETE(request: NextRequest) {
         return NextResponse.json({ error: '未知action' }, { status: 400 });
     }
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : '删除失败';
+    const _error_ = error as Error;
+    const msg = error instanceof Error ? _error_.message : '删除失败';
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

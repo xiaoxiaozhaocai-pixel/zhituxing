@@ -259,11 +259,12 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     console.error('Export error:', error);
     return NextResponse.json({
       code: 500,
-      message: `导出失败: ${error.message}`
+      message: `导出失败: ${_error_.message}`
     }, { status: 500 });
   }
 }

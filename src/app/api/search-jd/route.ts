@@ -104,7 +104,8 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
       is_fresh_friendly: job.fresh_graduate_friendly === true,
     }));
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const _error_ = error as Error;
+    const msg = error instanceof Error ? _error_.message : String(error);
     if (msg.includes('timeout')) {
       console.error('[Search] Database query timeout:', msg);
     } else {

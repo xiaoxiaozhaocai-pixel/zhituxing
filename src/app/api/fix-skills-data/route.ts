@@ -107,9 +107,10 @@ export async function GET() {
       summary: `发现 ${hardStringCount} 条 hard_skills 脏数据，${softStringCount} 条 soft_skills 脏数据`
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     console.error('[fix-skills-data] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: _error_.message }, { status: 500 });
   }
 }
 
@@ -315,11 +316,12 @@ ALTER TABLE job_descriptions ADD CONSTRAINT soft_skills_array_check
       results
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const _error_ = error as Error;
     console.error('[fix-skills-data] Error:', error);
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: _error_.message,
       results
     }, { status: 500 });
   }

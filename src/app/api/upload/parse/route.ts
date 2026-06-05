@@ -36,8 +36,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: '暂不支持此格式，请转为PDF或TXT后上传' }, { status: 400 });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const _err_ = err as Error;
     console.error('文件解析失败:', err);
-    return NextResponse.json({ error: '文件解析失败: ' + (err.message || '未知错误') }, { status: 500 });
+    return NextResponse.json({ error: '文件解析失败: ' + (_err_.message || '未知错误') }, { status: 500 });
   }
 }

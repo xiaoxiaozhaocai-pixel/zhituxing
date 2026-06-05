@@ -85,7 +85,8 @@ export async function GET() {
       }
     });
 
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const _error_ = error as Error;
+    return NextResponse.json({ error: _error_.message }, { status: 500 });
   }
 }

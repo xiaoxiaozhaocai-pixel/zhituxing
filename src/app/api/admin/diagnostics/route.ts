@@ -64,8 +64,9 @@ async function testApiEndpoints(): Promise<any[]> {
         // 401的收到了401也算pass
         if (test.expected === 401 && status === 401) passed = true;
         return { name: test.name, status, expected: test.expected, result: passed ? 'pass' : 'fail', detail: `HTTP ${status}` };
-      } catch (e: any) {
-        return { name: test.name, status: 0, expected: test.expected, result: 'fail', detail: e.message || '请求失败' };
+      } catch (e: unknown) {
+        const _e_ = e as Error;
+        return { name: test.name, status: 0, expected: test.expected, result: 'fail', detail: _e_.message || '请求失败' };
       }
     })
   );
@@ -88,8 +89,9 @@ async function testPageRoutes(): Promise<any[]> {
         const status = res.status;
         const passed = status === 200 || status === 301 || status === 307;
         return { name: route, status, result: passed ? 'pass' : 'fail', detail: `HTTP ${status}` };
-      } catch (e: any) {
-        return { name: route, status: 0, result: 'fail', detail: e.message || '请求失败' };
+      } catch (e: unknown) {
+        const _e_ = e as Error;
+        return { name: route, status: 0, result: 'fail', detail: _e_.message || '请求失败' };
       }
     })
   );
@@ -122,12 +124,13 @@ async function testSSEStream(): Promise<any[]> {
       result: passed ? 'pass' : 'fail', 
       detail: passed ? 'SSE流正常' : `Content-Type: ${contentType}`
     }];
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const _e_ = e as Error;
     return [{ 
       name: test.name, 
       status: 0, 
       result: 'fail', 
-      detail: e.message || 'SSE流测试失败' 
+      detail: _e_.message || 'SSE流测试失败' 
     }];
   }
 }
@@ -150,8 +153,9 @@ async function testSecurity(): Promise<any[]> {
       result: passed ? 'pass' : 'warn', 
       detail: passed ? '已拦截' : '可能未拦截' 
     });
-  } catch (e: any) {
-    tests.push({ name: 'SQL注入拦截', status: 0, result: 'fail', detail: e.message });
+  } catch (e: unknown) {
+    const _e_ = e as Error;
+    tests.push({ name: 'SQL注入拦截', status: 0, result: 'fail', detail: _e_.message });
   }
 
   // 2. 订单篡改拦截测试
@@ -170,8 +174,9 @@ async function testSecurity(): Promise<any[]> {
       result: passed ? 'pass' : 'fail', 
       detail: passed ? '已拦截' : `HTTP ${status}` 
     });
-  } catch (e: any) {
-    tests.push({ name: '订单篡改拦截', status: 0, result: 'fail', detail: e.message });
+  } catch (e: unknown) {
+    const _e_ = e as Error;
+    tests.push({ name: '订单篡改拦截', status: 0, result: 'fail', detail: _e_.message });
   }
 
   // 3. 首页品牌文案检测
@@ -185,8 +190,9 @@ async function testSecurity(): Promise<any[]> {
       result: passed ? 'pass' : 'fail', 
       detail: passed ? '品牌文案正常' : '品牌文案缺失' 
     });
-  } catch (e: any) {
-    tests.push({ name: '品牌文案检测', status: 0, result: 'fail', detail: e.message });
+  } catch (e: unknown) {
+    const _e_ = e as Error;
+    tests.push({ name: '品牌文案检测', status: 0, result: 'fail', detail: _e_.message });
   }
 
   // 4. 安全响应头检测
@@ -203,8 +209,9 @@ async function testSecurity(): Promise<any[]> {
       result: passed ? 'pass' : 'warn', 
       detail: `CSP:${!!hasCSP} HSTS:${!!hasHSTS} XFO:${!!hasXFO}` 
     });
-  } catch (e: any) {
-    tests.push({ name: '安全响应头', status: 0, result: 'fail', detail: e.message });
+  } catch (e: unknown) {
+    const _e_ = e as Error;
+    tests.push({ name: '安全响应头', status: 0, result: 'fail', detail: _e_.message });
   }
 
   return tests;
@@ -240,14 +247,15 @@ async function testDatabase(): Promise<any[]> {
           result: passed ? 'pass' : 'fail', 
           detail: `${count}/${table.min}` 
         };
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const _e_ = e as Error;
         return { 
           name: table.display, 
           table: table.name, 
           count: 0, 
           min: table.min, 
           result: 'fail', 
-          detail: e.message 
+          detail: _e_.message 
         };
       }
     })
