@@ -10,7 +10,6 @@ import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
 import { MembershipProvider } from '@/contexts/MembershipContext';
-import InspectorWrapper from '@/components/InspectorWrapper';
 import FirstVisitModal from '@/components/FirstVisitModal';
 import CookieConsent from '@/components/CookieConsent';
 import { SITE_URL } from '@/lib/config';
@@ -131,7 +130,6 @@ export default function RootLayout({
             })
           }}
         />
-        {isDev && <InspectorWrapper />}
         <Providers>
           <ToastProvider>
             <MembershipProvider>
