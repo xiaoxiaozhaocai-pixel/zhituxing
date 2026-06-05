@@ -626,6 +626,7 @@ function MessagesPanel({ userId }: { userId: string }) {
 
 // 会员面板组件
 function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | null }) {
+  const { isMember } = useMembership();
   const memberBenefits = [
     '无限次AI职业规划',
     '无限次AI模拟面试',
@@ -1221,7 +1222,6 @@ function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading, logout, quota } = useAuth();
-  const { isMember } = useMembership();
   const [activeTab, setActiveTab] = useState('messages');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [growthData, setGrowthData] = useState<{

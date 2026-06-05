@@ -47,7 +47,6 @@ export default function ReferralDetailPage() {
   const [copied, setCopied] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
-  const isMember = isMember;
 
   useEffect(() => {
     if (params.id) {

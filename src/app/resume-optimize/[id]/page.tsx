@@ -81,7 +81,6 @@ export default function ResumeDetailPage() {
     return null;
   }
 
-  const isMember = isMember;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
