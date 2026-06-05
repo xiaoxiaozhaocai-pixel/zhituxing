@@ -160,27 +160,6 @@ export interface ReportItem {
 }
 
 
-/** 收藏岗位项 */
-export interface FavoriteItem {
-  id: string;
-  jobTitle?: string;
-  industry?: string;
-  company_type?: string;
-  company?: string;
-  location?: string;
-  salary?: string;
-}
-
-/** 报告项 */
-export interface ReportItem {
-  id: string;
-  title?: string;
-  major?: string;
-  core_job?: string;
-  city?: string;
-  create_time?: string;
-}
-
 export interface JdImportItem {
   job_name: string;
   company_name: string;
