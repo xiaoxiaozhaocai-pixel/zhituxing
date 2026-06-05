@@ -103,9 +103,9 @@ check_l4() {
   c=$(grep -r "dynamic(" src/ --include="*.tsx" 2>/dev/null | wc -l)
   if [ "$c" -ge 1 ]; then pass "$c 处（合理懒加载）"; else warn "$c 处(≥1)"; ok=false; fi
 
-  echo -n "  4.3 drizzle-kit devDeps... "
-  node -e "const p=require('./package.json');process.exit(p.devDependencies['drizzle-kit']?0:1)" 2>/dev/null && \
-    pass "drizzle-kit在devDeps" || { warn "drizzle-kit应在devDependencies"; ok=false; }
+  echo -n "  4.3 drizzle-kit deps... "
+  node -e "const p=require('./package.json');process.exit(p.dependencies['drizzle-kit']?0:1)" 2>/dev/null && \
+    pass "drizzle-kit在dependencies（Zeabur需要）" || { warn "drizzle-kit缺失"; ok=false; }
 
   echo -n "  4.4 Suspense... "
   c=$(grep -r "Suspense" src/ --include="*.tsx" 2>/dev/null | wc -l)
