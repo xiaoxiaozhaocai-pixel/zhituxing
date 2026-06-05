@@ -61,6 +61,37 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000,
   },
 
+  // ============================================================
+  // 安全响应头（P1-2 修复）
+  // ============================================================
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.supabase.co https://*.zeabur.app",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://*.supabase.co https://*.zeabur.app",
+              "font-src 'self'",
+              "connect-src 'self' https://*.supabase.co https://*.zeabur.app https://api.deepseek.com wss://*.supabase.co",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
+  },
+
   async redirects() {
     return [
       {

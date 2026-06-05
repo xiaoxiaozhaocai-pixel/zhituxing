@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
@@ -75,7 +76,7 @@ export async function PUT(
       .single();
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: safeErrorMessage(error) }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, data });
@@ -101,7 +102,7 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: safeErrorMessage(error) }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

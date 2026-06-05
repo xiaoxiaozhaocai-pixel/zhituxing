@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -46,7 +47,7 @@ export async function PUT(
       .single();
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: safeErrorMessage(error) }, { status: 500 });
     }
 
     // 如果是标记为已支付，同时更新用户会员状态

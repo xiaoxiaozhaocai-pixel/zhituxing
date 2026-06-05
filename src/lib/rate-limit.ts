@@ -61,3 +61,30 @@ export async function checkRateLimit(
   bucket.timestamps.push(now);
   return { allowed: true, remaining: Math.max(0, maxRequests - bucket.timestamps.length) };
 }
+
+// P1-4 补充：同步版简易限流（用于 auth 端点等简单场景）
+const simpleRateMap = new Map<string, { count: number; resetAt: number }>();
+
+interface SimpleRateConfig {
+  maxRequests: number;
+  windowMs: number;
+  endpoint: string;
+}
+
+export function rateLimit(ip: string, config: SimpleRateConfig): { allowed: boolean; remaining: number } {
+  const key = `${config.endpoint}:${ip}`;
+  const now = Date.now();
+  const entry = simpleRateMap.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    simpleRateMap.set(key, { count: 1, resetAt: now + config.windowMs });
+    return { allowed: true, remaining: config.maxRequests - 1 };
+  }
+
+  entry.count++;
+  if (entry.count > config.maxRequests) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  return { allowed: true, remaining: config.maxRequests - entry.count };
+}

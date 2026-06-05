@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 /**
  * 统一岗位搜索API

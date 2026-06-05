@@ -1,3 +1,4 @@
+import { safeErrorMessage } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
@@ -28,7 +29,7 @@ export async function GET(
       .range(offset, offset + limit - 1);
 
     if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: safeErrorMessage(error) }, { status: 500 });
     }
 
     // 获取每个评论的回复
