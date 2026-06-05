@@ -12,6 +12,7 @@ import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/t
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
+import TTSButton from '@/components/TTSButton';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
@@ -1250,6 +1251,12 @@ function AssistantContent() {
                       streaming={index === messages.length - 1 && isLoading}
                       role="assistant"
                     />
+                  )}
+                  {/* TTS语音朗读按钮 */}
+                  {msg.content && msg.role === 'assistant' && !isLoading && (
+                    <div className="mt-1 flex justify-end">
+                      <TTSButton text={msg.content} />
+                    </div>
                   )}
                   {/* 加载动画 */}
                   {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
