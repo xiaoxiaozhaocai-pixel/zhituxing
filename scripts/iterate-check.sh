@@ -146,8 +146,17 @@ check_l5() {
   grep -q "viewport" src/app/layout.tsx 2>/dev/null && pass "已导出" || { fail "缺失"; ok=false; }
 
   echo -n "  5.4 sitemap... "
-  c=$(curl -s https://zhituxing.tech/sitemap.xml 2>/dev/null | grep -c "<loc>" || echo "0")
-  if [ "$c" -ge 10 ]; then pass "$c URLs"; else warn "$c URLs(≥10)"; ok=false; fi
+  if [ "$CI" = "true" ]; then
+    info "CI环境下跳过线上验证（检查本地文件）"
+    if grep -q "zhituxing.tech" src/app/sitemap.ts 2>/dev/null; then
+      pass "sitemap.ts 域名正确"
+    else
+      warn "sitemap.ts 域名可能错误"
+    fi
+  else
+    c=$(curl -s https://zhituxing.tech/sitemap.xml 2>/dev/null | grep -c "<loc>" || echo "0")
+    if [ "$c" -ge 10 ]; then pass "$c URLs"; else warn "$c URLs(≥10)"; ok=false; fi
+  fi
 
   echo -n "  5.5 空alt... "
   c=$(grep -rn 'alt=""' src/ --include="*.tsx" 2>/dev/null | grep -v "decoration\|presentation" | wc -l)
@@ -189,8 +198,8 @@ main() {
 
   case "$target" in
     L1|L2|L3|L4|L5|L6) check_$(echo $target | tr 'A-Z' 'a-z'); exit $? ;;
-    all) ;;
-    *) echo "用法: $0 [L1|L2|L3|L4|L5|L6|all]"; exit 1 ;;
+    all|--ci) ;;
+    *) echo "用法: $0 [L1|L2|L3|L4|L5|L6|all|--ci]"; exit 1 ;;
   esac
 
   # 前置：工作区必须干净

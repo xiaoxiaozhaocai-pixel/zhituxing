@@ -1,0 +1,39 @@
+name: 迭代管道
+
+# 每次 push main 自动跑全6层检查，FAIL 阻断部署
+on:
+  push:
+    branches: [main]
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: 迭代管道 (L1~L6)
+        run: bash scripts/iterate-check.sh --ci
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.co
+          NEXT_PUBLIC_SITE_URL: https://fake.zeabur.app
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_ENABLED: "false"
+
+      - name: 管道结果归档
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-log
+          path: ITERATION_LOG.md
