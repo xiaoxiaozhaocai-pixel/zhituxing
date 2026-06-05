@@ -21,8 +21,6 @@ const steps = [
   { step: '03', title: '学生使用', desc: '学生通过学校账号登录，即刻享受AI求职辅导。' },
 ];
 
-const partners = ['桂林电子科技大学', '桂林理工大学', '广西师范大学', '南宁学院', '广西科技大学'];
-
 export default function UniversityPage() {
   return (
     <div className="min-h-screen bg-white">
@@ -56,7 +54,7 @@ export default function UniversityPage() {
       <section className="bg-[#1E3A8A] border-y border-blue-700/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[{ value: '5+', label: '合作高校' }, { value: '20,000+', label: '服务学生' }, { value: '92%', label: '就业满意率' }, { value: '24h', label: '响应时间' }].map(s => (
+            {[{ value: 'AI原生', label: 'DeepSeek大模型驱动' }, { value: '零部署负担', label: '云端SaaS，高校无需自建' }, { value: '按需定制', label: '支持定制题库与测评维度' }, { value: '24h', label: '合作响应时间' }].map(s => (
               <div key={s.label}><div className="text-2xl md:text-3xl font-bold text-white">{s.value}</div><div className="text-sm text-blue-200/70 mt-1">{s.label}</div></div>
             ))}
           </div>
@@ -109,7 +107,7 @@ export default function UniversityPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Sparkles className="w-12 h-12 text-blue-200 mx-auto mb-6" />
           <h2 className="text-3xl md:text-4xl font-bold text-white">携手打造高校 AI 就业新生态</h2>
-          <p className="mt-4 text-lg text-blue-100/80 max-w-2xl mx-auto">已有 5+ 高校加入职途星合作计划。立即申请，成为下一个合作高校。</p>
+          <p className="mt-4 text-lg text-blue-100/80 max-w-2xl mx-auto">职途星正在寻找首批合作高校。立即申请，成为我们的合作伙伴。</p>
           <div className="mt-10">
             <Link href="/contact">
               <Button size="lg" className="bg-white text-[#1E3A8A] hover:bg-blue-50 font-semibold text-base px-10 py-6 shadow-xl shadow-blue-900/30">
@@ -122,18 +120,13 @@ export default function UniversityPage() {
 
       <section className="py-16 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="flex items-center justify-center gap-2 mb-6">
             <Users className="w-5 h-5 text-[#1E3A8A]" />
-            <span className="text-sm font-medium text-[#1E3A8A] uppercase tracking-wider">已合作高校</span>
+            <span className="text-sm font-medium text-[#1E3A8A] uppercase tracking-wider">联系我们</span>
           </div>
-          <div className="flex flex-wrap justify-center gap-6">
-            {partners.map(name => (
-              <div key={name} className="px-6 py-3 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center gap-2 text-gray-700 font-medium hover:border-[#1E3A8A]/30 hover:shadow-md transition-all">
-                <GraduationCap className="w-4 h-4 text-[#1E3A8A]" />{name}
-              </div>
-            ))}
-          </div>
-          <p className="mt-8 text-sm text-gray-400">更多高校正在加入中…</p>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            如对高校合作计划感兴趣，请通过 <Link href="/contact" className="text-[#1E3A8A] underline hover:text-blue-700">联系我们</Link> 页面提交申请，我们将在24小时内回复。
+          </p>
         </div>
       </section>
     </div>
