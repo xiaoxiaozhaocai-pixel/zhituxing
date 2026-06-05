@@ -1,6 +1,5 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { FetchClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
 
 const ALLOWED_HOSTS = [
   'zhipin.com',
@@ -31,6 +30,34 @@ function isAllowedUrl(url: string): boolean {
   }
 }
 
+function extractTitle(html: string): string {
+  const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  return match ? match[1].trim() : '';
+}
+
+function extractText(html: string): string {
+  // 移除 script/style 标签
+  const cleaned = html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, '\n')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"');
+  // 压缩空白
+  return cleaned
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .join('\n');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -42,7 +69,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate URL format
     try {
       new URL(url);
     } catch {
@@ -52,83 +78,75 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if URL is from allowed hosts
     if (!isAllowedUrl(url)) {
       return NextResponse.json({
         code: 200,
         success: true,
-        data: {
-          content: '',
-          title: '',
-          url,
-        },
+        data: { content: '', title: '', url },
         message: '暂不支持该招聘平台，建议手动粘贴岗位描述',
       });
     }
 
-    // Extract forward headers for request tracing
-    const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
-    const config = new Config({ timeout: 30000 });
-    const client = new FetchClient(config, customHeaders);
-
-    const response = await client.fetch(url);
-
-    // Check fetch status
-    if (response.status_code !== 0) {
-      return NextResponse.json({
-        code: 200,
-        success: false,
-        data: {
-          content: '',
-          title: response.title || '',
-          url,
+    try {
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
         },
-        message: '该链接无法自动解析，请手动粘贴岗位描述',
+        redirect: 'follow',
       });
-    }
 
-    // Extract text content from response
-    const textContent = response.content
-      .filter((item) => item.type === 'text')
-      .map((item) => item.text)
-      .join('\n')
-      .trim();
+      clearTimeout(timeout);
 
-    // If content is too short, return manual paste message
-    if (textContent.length < 100) {
+      if (!res.ok) {
+        return NextResponse.json({
+          code: 200,
+          success: false,
+          data: { content: '', title: '', url },
+          message: '该链接无法自动解析，请手动粘贴岗位描述',
+        });
+      }
+
+      const html = await res.text();
+      const title = extractTitle(html);
+      const textContent = extractText(html);
+
+      if (textContent.length < 100) {
+        return NextResponse.json({
+          code: 200,
+          success: true,
+          data: { content: textContent, title, url },
+          message: '该链接无法自动解析，请手动粘贴岗位描述',
+        });
+      }
+
       return NextResponse.json({
         code: 200,
         success: true,
-        data: {
-          content: textContent,
-          title: response.title || '',
-          url,
-        },
+        data: { content: textContent, title, url },
+        message: '解析成功',
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeout!);
+      return NextResponse.json({
+        code: 200,
+        success: false,
+        data: { content: '', title: '', url },
         message: '该链接无法自动解析，请手动粘贴岗位描述',
       });
     }
-
-    return NextResponse.json({
-      code: 200,
-      success: true,
-      data: {
-        content: textContent,
-        title: response.title || '',
-        url: response.url || url,
-      },
-      message: '解析成功',
-    });
   } catch (error) {
     console.error('[fetch-jd] Error:', error);
     return NextResponse.json({
       code: 200,
       success: false,
-      data: {
-        content: '',
-        title: '',
-        url: '',
-      },
+      data: { content: '', title: '', url: '' },
       message: '该链接无法自动解析，请手动粘贴岗位描述',
     });
   }
