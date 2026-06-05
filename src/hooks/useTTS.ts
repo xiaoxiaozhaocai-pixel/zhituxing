@@ -60,13 +60,9 @@ export function useTTS(options: UseTTSOptions = {}): UseTTSReturn {
         if (keepAliveTimer) clearInterval(keepAliveTimer);
         setSpeaking(false); setPaused(false); cleanup();
       };
-      utterance.onerror = (event) => {
+      utterance.onerror = () => {
         if (keepAliveTimer) clearInterval(keepAliveTimer);
-        const err = event as SpeechSynthesisErrorEvent;
-        // Ignore 'interrupted' (Chrome fires this on cancel)
-        if (err.error !== 'interrupted') {
-          setSpeaking(false); setPaused(false); cleanup();
-        }
+        setSpeaking(false); setPaused(false); cleanup();
       };
       utterance.onpause = () => { setPaused(true); };
       utterance.onresume = () => { setPaused(false); };
