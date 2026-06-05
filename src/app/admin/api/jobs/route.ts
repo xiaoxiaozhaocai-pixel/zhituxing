@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = getSupabaseAdmin();
 
 // 获取职位列表
 export async function GET(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
@@ -39,6 +42,8 @@ export async function GET(request: NextRequest) {
 
 // 更新职位状态
 export async function PUT(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
     const { id, status, adminId, adminUsername } = body;
@@ -71,6 +76,8 @@ export async function PUT(request: NextRequest) {
 
 // 删除职位
 export async function DELETE(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const searchParams = request.nextUrl.searchParams;
     const id = searchParams.get('id');

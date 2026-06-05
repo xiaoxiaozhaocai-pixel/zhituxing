@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, CheckCircle2, AlertCircle, Download } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 // 简历结构化字段
 interface ResumeSections {
@@ -89,11 +87,17 @@ export default function ResumeBuilderPage() {
     }
   };
 
-  // 导出 PDF
+  // 导出 PDF（动态导入重型库 html2canvas + jsPDF，按需加载 ~500KB）
   const handleExportPDF = async () => {
     if (!resumeRef.current) return;
     setSaveStatus('saving');
     try {
+      const [html2canvasMod, jsPDFMod] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
+      const html2canvas = html2canvasMod.default;
+      const { jsPDF } = jsPDFMod;
       const canvas = await html2canvas(resumeRef.current, {
         scale: 2,
         useCORS: true,
@@ -130,7 +134,7 @@ export default function ResumeBuilderPage() {
     const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
     if (!jsonMatch) return;
     try {
-      const data = JSON.parse(jsonMatch[1]);
+      const data = JSON.parse(jsonMatch[1]!)!;
       if (data.resume) {
         setResume(prev => ({ ...prev, ...data.resume }));
       }

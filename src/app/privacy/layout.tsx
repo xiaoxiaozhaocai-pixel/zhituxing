@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: '隐私政策 - 职途星',
   description: '职途星隐私政策，了解我们如何收集、使用和保护您的个人信息，保障您的数据安全与隐私权益。',
   alternates: {
-    canonical: 'https://zhituxing.zeabur.app/privacy',
+    canonical: `${SITE_URL}/privacy`,
   },
 };
 

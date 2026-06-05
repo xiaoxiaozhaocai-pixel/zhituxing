@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import type { SettingItem } from '@/lib/types';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = getSupabaseAdmin();
 
 // 获取系统设置
 export async function GET(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const { data: settings } = await supabase
       .from('system_settings')
@@ -30,6 +33,8 @@ export async function GET(request: NextRequest) {
 
 // 更新设置
 export async function PUT(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
     const { key, value, adminId, adminUsername } = body;

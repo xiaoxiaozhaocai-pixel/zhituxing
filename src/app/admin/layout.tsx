@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, Suspense, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 const NAV_ITEMS = [
@@ -138,9 +138,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        {/* 内容 */}
+        {/* 内容 - Suspense 边界实现流式渲染，避免阻塞导航 */}
         <div className="p-8">
-          {children}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+            </div>
+          }>
+            {children}
+          </Suspense>
         </div>
       </main>
     </div>

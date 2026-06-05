@@ -161,8 +161,8 @@ export function calculateQuizResult(answers: Record<number, string>): QuizResult
     if (!dimensions[q.dimension]) {
       dimensions[q.dimension] = { total: 0, count: 0 };
     }
-    dimensions[q.dimension].total += score;
-    dimensions[q.dimension].count += 1;
+    dimensions[q.dimension]!.total += score;
+    dimensions[q.dimension]!.count += 1;
   });
 
   // 每维度 3 题，每题最高 5 分，满分 15

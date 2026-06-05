@@ -1,38 +1,48 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
-import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 
 /**
- * 检查用户是否为admin
- * 从环境变量 ADMIN_USER_IDS 读取admin的UUID列表
+ * 检查用户是否为管理员
+ * 支持两种方式：
+ *   1. admin_token cookie（管理后台登录）
+ *   2. Supabase JWT + ADMIN_USER_IDS（平台用户中的管理员）
  */
-function isAdminUser(userId: string): boolean {
-  const adminIds = process.env.ADMIN_USER_IDS;
-  if (!adminIds) {
-    console.warn('[admin/auth] ADMIN_USER_IDS not configured');
-    return false;
-  }
-  const adminList = adminIds.split(',').map(id => id.trim().toLowerCase());
-  return adminList.includes(userId.toLowerCase());
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) {
-      return NextResponse.json({ isAdmin: false, error: '未登录' }, { status: 401 });
+    // 方式1：检查 admin_token cookie（管理后台登录）
+    const cookieHeader = request.headers.get('cookie') || '';
+    const adminTokenMatch = cookieHeader.match(/admin_token=([^;]+)/);
+    const adminToken = adminTokenMatch ? adminTokenMatch[1] : null;
+    
+    if (adminToken && process.env.ADMIN_TOKEN && adminToken === process.env.ADMIN_TOKEN) {
+      return NextResponse.json({ 
+        isAdmin: true, 
+        userId: 'admin',
+        authMethod: 'admin_token'
+      });
     }
 
-    // 直接使用UUID格式的userId，不再转Number
-    const admin = isAdminUser(userId);
-    
-    return NextResponse.json({ 
-      isAdmin: admin, 
-      userId: userId 
-    });
+    // 方式2：检查 Supabase JWT + ADMIN_USER_IDS
+    const userId = await getAuthenticatedUserId(request);
+    if (userId) {
+      const adminIds = process.env.ADMIN_USER_IDS;
+      if (adminIds) {
+        const adminList = adminIds.split(',').map(id => id.trim().toLowerCase());
+        if (adminList.includes(userId.toLowerCase())) {
+          return NextResponse.json({ 
+            isAdmin: true, 
+            userId,
+            authMethod: 'supabase_jwt'
+          });
+        }
+      }
+      return NextResponse.json({ isAdmin: false, userId, authMethod: 'supabase_jwt' });
+    }
+
+    return NextResponse.json({ isAdmin: false, error: '未登录' }, { status: 401 });
   } catch (error) {
     console.error('[admin/auth] Error:', error);
     return NextResponse.json({ isAdmin: false, error: '权限校验失败' }, { status: 500 });

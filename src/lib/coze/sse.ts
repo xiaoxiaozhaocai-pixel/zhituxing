@@ -390,7 +390,7 @@ export function createCozeSSEStream(params: {
               hasSentAnyData.value = true;
 
               if (userId) {
-                saveStructuredData(botType, userId, dataType, jsonData).catch(err =>
+                saveStructuredData(botType, userId, dataType!, jsonData).catch(err =>
                   console.error('Background save error:', err)
                 );
               }

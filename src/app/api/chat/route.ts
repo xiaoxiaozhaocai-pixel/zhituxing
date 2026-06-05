@@ -303,8 +303,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (plans && plans.length > 0 && plans[0].plan_data) {
-        const plan = plans[0].plan_data;
+      if (plans && plans.length > 0 && plans[0]!.plan_data) {
+        const plan = plans[0]!.plan_data;
         const planSummary = typeof plan === 'string' 
           ? plan 
           : JSON.stringify(plan).slice(0, 1000);
@@ -319,8 +319,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (assessments && assessments.length > 0 && assessments[0].result_data) {
-        const ass = assessments[0].result_data;
+      if (assessments && assessments.length > 0 && assessments[0]!.result_data) {
+        const ass = assessments[0]!.result_data;
         const assSummary = typeof ass === 'string'
           ? ass
           : JSON.stringify(ass).slice(0, 1000);
@@ -336,8 +336,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (resumes && resumes.length > 0 && resumes[0].result_data) {
-        const resume = resumes[0].result_data;
+      if (resumes && resumes.length > 0 && resumes[0]!.result_data) {
+        const resume = resumes[0]!.result_data;
         const resumeSummary = typeof resume === 'string' 
           ? resume 
           : JSON.stringify(resume).slice(0, 1500);
@@ -351,8 +351,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (jdMatches && jdMatches.length > 0 && jdMatches[0].match_data) {
-        const match = jdMatches[0].match_data;
+      if (jdMatches && jdMatches.length > 0 && jdMatches[0]!.match_data) {
+        const match = jdMatches[0]!.match_data;
         const matchSummary = typeof match === 'string'
           ? match
           : JSON.stringify(match).slice(0, 1000);
@@ -368,8 +368,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (assessments && assessments.length > 0 && assessments[0].result_data) {
-        const ass = assessments[0].result_data;
+      if (assessments && assessments.length > 0 && assessments[0]!.result_data) {
+        const ass = assessments[0]!.result_data;
         const assSummary = typeof ass === 'string'
           ? ass
           : JSON.stringify(ass).slice(0, 1000);
@@ -384,8 +384,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (portraits && portraits.length > 0 && portraits[0].portrait_data) {
-        const p = portraits[0].portrait_data;
+      if (portraits && portraits.length > 0 && portraits[0]!.portrait_data) {
+        const p = portraits[0]!.portrait_data;
         const pSummary = typeof p === 'string'
           ? p
           : JSON.stringify(p).slice(0, 1000);
@@ -401,8 +401,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (portraits && portraits.length > 0 && portraits[0].portrait_data) {
-        const p = portraits[0].portrait_data;
+      if (portraits && portraits.length > 0 && portraits[0]!.portrait_data) {
+        const p = portraits[0]!.portrait_data;
         const pSummary = typeof p === 'string'
           ? p
           : JSON.stringify(p).slice(0, 1000);
@@ -418,8 +418,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (assessments && assessments.length > 0 && assessments[0].result_data) {
-        const ass = assessments[0].result_data;
+      if (assessments && assessments.length > 0 && assessments[0]!.result_data) {
+        const ass = assessments[0]!.result_data;
         const assSummary = typeof ass === 'string'
           ? ass
           : JSON.stringify(ass).slice(0, 1000);
@@ -433,8 +433,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (competencies && competencies.length > 0 && competencies[0].result_data) {
-        const comp = competencies[0].result_data;
+      if (competencies && competencies.length > 0 && competencies[0]!.result_data) {
+        const comp = competencies[0]!.result_data;
         const compSummary = typeof comp === 'string'
           ? comp
           : JSON.stringify(comp).slice(0, 1000);
@@ -448,8 +448,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (plans && plans.length > 0 && plans[0].plan_data) {
-        const plan = plans[0].plan_data;
+      if (plans && plans.length > 0 && plans[0]!.plan_data) {
+        const plan = plans[0]!.plan_data;
         const planSummary = typeof plan === 'string'
           ? plan
           : JSON.stringify(plan).slice(0, 1000);
@@ -465,8 +465,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (jdMatches && jdMatches.length > 0 && jdMatches[0].match_data) {
-        const match = jdMatches[0].match_data;
+      if (jdMatches && jdMatches.length > 0 && jdMatches[0]!.match_data) {
+        const match = jdMatches[0]!.match_data;
         const matchSummary = typeof match === 'string'
           ? match
           : JSON.stringify(match).slice(0, 1000);
@@ -480,8 +480,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (portraits && portraits.length > 0 && portraits[0].portrait_data) {
-        const p = portraits[0].portrait_data;
+      if (portraits && portraits.length > 0 && portraits[0]!.portrait_data) {
+        const p = portraits[0]!.portrait_data;
         const pSummary = typeof p === 'string'
           ? p
           : JSON.stringify(p).slice(0, 1000);
@@ -498,8 +498,8 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (assessments && assessments.length > 0 && assessments[0].result_data) {
-        const ass = assessments[0].result_data;
+      if (assessments && assessments.length > 0 && assessments[0]!.result_data) {
+        const ass = assessments[0]!.result_data;
         const assSummary = typeof ass === 'string'
           ? ass
           : JSON.stringify(ass).slice(0, 800);
@@ -711,7 +711,7 @@ export async function POST(request: NextRequest) {
       try {
         const apiBody: Record<string, any> = { message, conversationId: deepConvId };
         const { stream: proxiedStream, fullResponse } = await proxySpecializedApiStream(
-          apiPath, apiBody, request, deepConvId, resolvedBotType,
+          apiPath!, apiBody, request, deepConvId, resolvedBotType,
         );
         
         // 异步保存聊天历史（不阻塞首字节）
@@ -754,52 +754,52 @@ export async function POST(request: NextRequest) {
         
         // 按配置查询数据（只查询允许的表）
         const [jds, careerPaths, skills, resources, guetKnowledge = []] = await Promise.all([
-          allowedTables.includes('job_descriptions')
+          allowedTables!.includes('job_descriptions')
             ? querySupabase('job_descriptions', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
                 keywords.jobTitle ? { field: 'job_title', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
               ].filter(Boolean) as any, 10, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city')
             : [],
           
-          allowedTables.includes('career_paths')
+          allowedTables!.includes('career_paths')
             ? querySupabase('career_paths', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
               ].filter(Boolean) as any, 5, '*')
             : [],
           
-          allowedTables.includes('skill_taxonomy')
+          allowedTables!.includes('skill_taxonomy')
             ? querySupabase('skill_taxonomy', [
                 keywords.industry ? { field: 'domain', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
               ].filter(Boolean) as any, 10, 'skill_name,category,domain')
             : [],
           
-          allowedTables.includes('learning_resources')
+          allowedTables!.includes('learning_resources')
             ? querySupabase('learning_resources', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
               ].filter(Boolean) as any, 5, 'title,url,type')
             : [],
           
-          allowedTables.includes('guet_knowledge')
+          allowedTables!.includes('guet_knowledge')
             ? querySupabase('guet_knowledge', [], 20, '*')
             : [],
         ]);
         
         // 构建 RAG 上下文（只包含有数据的表，使用 botType 定制的标签）
         const ragSources: { tableName: string; displayName: string; data: Record<string, unknown>[] }[] = [];
-        if (allowedTables.includes('job_descriptions') && jds.length > 0) {
-          ragSources.push({ tableName: 'job_descriptions', displayName: displayNames['job_descriptions'] || '岗位信息', data: jds });
+        if (allowedTables!.includes('job_descriptions') && jds.length > 0) {
+          ragSources.push({ tableName: 'job_descriptions', displayName: displayNames!['job_descriptions'] || '岗位信息', data: jds });
         }
-        if (allowedTables.includes('career_paths') && careerPaths.length > 0) {
-          ragSources.push({ tableName: 'career_paths', displayName: displayNames['career_paths'] || '职业路径', data: careerPaths });
+        if (allowedTables!.includes('career_paths') && careerPaths.length > 0) {
+          ragSources.push({ tableName: 'career_paths', displayName: displayNames!['career_paths'] || '职业路径', data: careerPaths });
         }
-        if (allowedTables.includes('skill_taxonomy') && skills.length > 0) {
-          ragSources.push({ tableName: 'skill_taxonomy', displayName: displayNames['skill_taxonomy'] || '技能分类', data: skills });
+        if (allowedTables!.includes('skill_taxonomy') && skills.length > 0) {
+          ragSources.push({ tableName: 'skill_taxonomy', displayName: displayNames!['skill_taxonomy'] || '技能分类', data: skills });
         }
-        if (allowedTables.includes('learning_resources') && resources.length > 0) {
-          ragSources.push({ tableName: 'learning_resources', displayName: displayNames['learning_resources'] || '学习资源', data: resources });
+        if (allowedTables!.includes('learning_resources') && resources.length > 0) {
+          ragSources.push({ tableName: 'learning_resources', displayName: displayNames!['learning_resources'] || '学习资源', data: resources });
         }
-        if (allowedTables.includes('guet_knowledge') && guetKnowledge.length > 0) {
-          ragSources.push({ tableName: 'guet_knowledge', displayName: displayNames['guet_knowledge'] || '桂电知识', data: guetKnowledge });
+        if (allowedTables!.includes('guet_knowledge') && guetKnowledge.length > 0) {
+          ragSources.push({ tableName: 'guet_knowledge', displayName: displayNames!['guet_knowledge'] || '桂电知识', data: guetKnowledge });
         }
         
         const ragContext = buildRAGContext(ragSources);
@@ -815,9 +815,9 @@ export async function POST(request: NextRequest) {
         // 小职调度：如果命中专业意图，用voice wrapper包装专业prompt；否则直接用chat prompt
         let basePrompt: string;
         if (effectiveBotType === 'xiaozhi' && useVoiceWrapper) {
-          basePrompt = SYSTEM_PROMPTS.xiaozhi_wrapper + (SYSTEM_PROMPTS[actualBotType] || SYSTEM_PROMPTS.career);
+          basePrompt = SYSTEM_PROMPTS.xiaozhi_wrapper! + (SYSTEM_PROMPTS[actualBotType]! || SYSTEM_PROMPTS.career!);
         } else {
-          basePrompt = SYSTEM_PROMPTS[actualBotType] || SYSTEM_PROMPTS.career;
+          basePrompt = SYSTEM_PROMPTS[actualBotType] || SYSTEM_PROMPTS.career!;
         }
         
         // ============================================================

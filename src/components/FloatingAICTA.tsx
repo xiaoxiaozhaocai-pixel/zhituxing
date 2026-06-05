@@ -87,7 +87,7 @@ export default function FloatingAICTA() {
       setMessages(prev => {
         const copy = [...prev];
         const last = copy[copy.length - 1];
-        copy[copy.length - 1] = { role: 'assistant', content: last.content || '网络出了点问题，再试试？' };
+        copy[copy.length - 1] = { role: 'assistant', content: last!.content || '网络出了点问题，再试试？' };
         return copy;
       });
     } finally {

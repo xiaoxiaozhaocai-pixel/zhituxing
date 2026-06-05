@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: '职搭子JD助手 - 全行业岗位智能查询',
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职搭子JD助手' }],
   },
   alternates: {
-    canonical: 'https://zhituxing.zeabur.app/assistant',
+    canonical: `${SITE_URL}/assistant`,
   },
 };
 

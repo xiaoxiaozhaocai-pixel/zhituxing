@@ -38,12 +38,12 @@ function parseSkillBlock(text: string): SkillItem[] {
     if (line.includes('|')) {
       const parts = line.split('|').map(p => p.trim());
       if (parts.length >= 1) {
-        const name = parts[0].replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '').trim();
+        const name = parts[0]!.replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '').trim();
         if (!name) continue;
 
         let hotness: SkillItem['hotness'] = 'normal';
         if (parts.length >= 2) {
-          const h = parts[1].toLowerCase();
+          const h = parts[1]!.toLowerCase();
           if (h === 'hot' || h.includes('热门') || h.includes('急需') || h.includes('🔥')) {
             hotness = 'hot';
           } else if (h === 'optional' || h.includes('可选') || h.includes('加分')) {
@@ -52,7 +52,7 @@ function parseSkillBlock(text: string): SkillItem[] {
         }
 
         const description = parts.length >= 3 ? parts[2] : '';
-        skills.push({ name, hotness, description });
+        skills.push({ name: name!, hotness: hotness!, description: description! });
       }
       continue;
     }
@@ -60,7 +60,7 @@ function parseSkillBlock(text: string): SkillItem[] {
     // 格式2: 🔥 技能名称 - 说明  或  - 技能名称(热门) - 说明
     const emojiMatch = line.match(/^[-*•]?\s*(🔥|⭐)?\s*(.+?)(?:\s*[-–—]\s*|\s*[（(]\s*)(.+?)(?:\s*[)）])?$/);
     if (emojiMatch) {
-      const name = emojiMatch[2].replace(/\s*[(（]热门[)）]\s*/, '').replace(/\s*[(（]可选[)）]\s*/, '').trim();
+      const name = emojiMatch[2]!.replace(/\s*[(（]热门[)）]\s*/, '').replace(/\s*[(（]可选[)）]\s*/, '').trim();
       const desc = emojiMatch[3] || '';
       let hotness: SkillItem['hotness'] = 'normal';
       if (emojiMatch[1] === '🔥' || line.includes('热门') || line.includes('急需')) {
@@ -77,8 +77,8 @@ function parseSkillBlock(text: string): SkillItem[] {
     // 格式3: 数字. 技能名称：说明  或  - 技能名称：说明
     const listMatch = line.match(/^[-*•]?\s*\d+[.)]?\s*(.+?)[：:]\s*(.+)/);
     if (listMatch) {
-      const name = listMatch[1].trim();
-      const desc = listMatch[2].trim();
+      const name = listMatch[1]!.trim();
+      const desc = listMatch[2]!.trim();
       let hotness: SkillItem['hotness'] = 'normal';
       if (line.includes('🔥') || line.includes('热门') || line.includes('急需')) hotness = 'hot';
       else if (line.includes('可选') || line.includes('加分')) hotness = 'optional';
@@ -91,7 +91,7 @@ function parseSkillBlock(text: string): SkillItem[] {
     // 格式4: 纯技能名称（可能带 emoji）
     const simpleMatch = line.match(/^[-*•]?\s*(?:\d+[.)]\s*)?(🔥|⭐)?\s*(.{2,30})/);
     if (simpleMatch && !line.startsWith('专业') && !line.startsWith('办公') && !line.startsWith('软技能')) {
-      const name = simpleMatch[2].replace(/\s*[(（].+?[)）]/, '').trim();
+      const name = simpleMatch[2]!.replace(/\s*[(（].+?[)）]/, '').trim();
       if (name && name.length >= 2 && name.length < 30) {
         let hotness: SkillItem['hotness'] = 'normal';
         if (simpleMatch[1] === '🔥' || line.includes('热门')) hotness = 'hot';

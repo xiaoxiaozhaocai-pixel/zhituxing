@@ -129,7 +129,8 @@ export async function PUT(request: NextRequest) {
     if (body.major !== undefined) updateData.major = body.major;
     if (body.grade !== undefined) updateData.grade = body.grade;
     if (body.personality_type !== undefined) updateData.personality_type = body.personality_type;
-    if (body.user_type !== undefined) updateData.user_type = body.user_type;
+        // 安全修复 P0-1：user_type 不允许用户自行修改，防止权限提升
+    // if (body.user_type !== undefined) updateData.user_type = body.user_type; // REMOVED: 安全修复
     if (body.nickname !== undefined) updateData.nickname = body.nickname;
     if (body.phone !== undefined) updateData.phone = body.phone;
     if (body.target_industry !== undefined) updateData.target_industry = body.target_industry;

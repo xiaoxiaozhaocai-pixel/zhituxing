@@ -125,8 +125,8 @@ function FunnelChart({ stages }: { stages: FunnelStage[] }) {
     <div className="space-y-3">
       {stages.map((stage, i) => {
         const widthPct = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
-        const convRate = i > 0 && stages[i - 1].count > 0
-          ? ((stage.count / stages[i - 1].count) * 100).toFixed(1)
+        const convRate = i > 0 && stages[i - 1]!.count > 0
+          ? ((stage.count / stages[i - 1]!.count) * 100).toFixed(1)
           : null;
         return (
           <div key={i}>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const supabase = getSupabaseAdmin();
 
@@ -25,13 +26,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ code: 401, message: '用户名或密码错误' }, { status: 401 });
     }
 
-    // 验证密码
-    const passwordHash = crypto
-      .createHash('sha256')
-      .update(password + (admin.salt || ''))
-      .digest('hex');
+    // 安全修复 P1-6：使用 bcrypt 验证密码（若已迁移为 bcrypt hash）
+    // 兼容旧 SHA-256 hash
+    let passwordValid = false;
+    if (admin.password_hash && admin.password_hash.startsWith('$2')) {
+      // bcrypt hash
+      passwordValid = await bcrypt.compare(password, admin.password_hash);
+    } else {
+      // 兼容旧 SHA-256 hash
+      const passwordHash = crypto
+        .createHash('sha256')
+        .update(password + (admin.salt || ''))
+        .digest('hex');
+      passwordValid = passwordHash === admin.password_hash;
+    }
 
-    if (passwordHash !== admin.password_hash) {
+    if (!passwordValid) {
       return NextResponse.json({ code: 401, message: '用户名或密码错误' }, { status: 401 });
     }
 
@@ -41,17 +51,14 @@ export async function POST(request: NextRequest) {
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', admin.id);
 
-    // 生成token
-    const token = crypto
-      .createHash('sha256')
-      .update(`${admin.id}-${Date.now()}-${Math.random()}`)
-      .digest('hex');
+    // 安全修复 P0-6：使用 httpOnly cookie 存储 admin token
+    // admin_token cookie 值与 ADMIN_TOKEN 环境变量一致，用于 API 鉴权
+    const token = process.env.ADMIN_TOKEN || crypto.randomBytes(32).toString('hex');
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       code: 200,
       message: '登录成功',
       data: {
-        token,
         admin: {
           id: admin.id,
           username: admin.username,
@@ -59,6 +66,17 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // 设置 httpOnly cookie
+    response.cookies.set('admin_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 24 * 60 * 60, // 24 小时
+    });
+
+    return response;
   } catch (error) {
     console.error('登录失败:', error);
     return NextResponse.json({ code: 500, message: '登录失败' }, { status: 500 });

@@ -156,7 +156,7 @@ async function getUserDetail(userId: number) {
   // 解析 ability_background JSON
   let abilityBackground = null;
   try {
-    abilityBackground = profile.ability_background ? JSON.parse(profile.ability_background as string) : null;
+    abilityBackground = profile!.ability_background ? JSON.parse(profile!.ability_background as string) : null;
   } catch { /* ignore */ }
 
   return NextResponse.json({

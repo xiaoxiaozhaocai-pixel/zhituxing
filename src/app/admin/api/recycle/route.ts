@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = getSupabaseAdmin();
 
 // 获取回收站列表
 export async function GET(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
@@ -39,6 +42,8 @@ export async function GET(request: NextRequest) {
 
 // 恢复或永久删除
 export async function POST(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
     const { id, action, adminId, adminUsername } = body;
@@ -103,6 +108,8 @@ export async function POST(request: NextRequest) {
 
 // 清空回收站
 export async function DELETE(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const searchParams = request.nextUrl.searchParams;
     const table = searchParams.get('table');

@@ -255,15 +255,15 @@ export default function AdminSkillsPage() {
             <g key={`edge-${i}`}>
               <line
                 x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
-                stroke={config.color} strokeWidth={1.5 + edge.weight * 2}
-                strokeDasharray={config.lineStyle || 'none'}
+                stroke={config!.color} strokeWidth={1.5 + edge.weight * 2}
+                strokeDasharray={config!.lineStyle || 'none'}
                 opacity={0.7}
               />
               <text
                 x={(src.x + tgt.x) / 2} y={(src.y + tgt.y) / 2 - 6}
-                textAnchor="middle" fill={config.color} fontSize={10}
+                textAnchor="middle" fill={config!.color} fontSize={10}
               >
-                {config.label}
+                {config!.label}
               </text>
             </g>
           );
@@ -506,7 +506,7 @@ export default function AdminSkillsPage() {
                                 <option value="career_path">职业路径</option>
                               </select>
                             ) : (
-                              <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: config.color + '15', color: config.color, border: `1px solid ${config.color}30` }}>{config.label}</span>
+                              <span className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: config!.color + '15', color: config!.color, border: `1px solid ${config!.color}30` }}>{config!.label}</span>
                             )}
                           </td>
                           <td className="py-2 px-2">

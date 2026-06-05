@@ -77,10 +77,10 @@ export default function TestE2EPage() {
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
 
-          if (line.startsWith('event:')) {
-            currentEvent = line.slice(6).trim();
-          } else if (line.startsWith('data:')) {
-            currentData = line.slice(5).trim();
+          if (line!.startsWith('event:')) {
+            currentEvent = line!.slice(6).trim();
+          } else if (line!.startsWith('data:')) {
+            currentData = line!.slice(5).trim();
           } else if (line === '' && (currentEvent || currentData)) {
             // End of SSE event
             if (currentEvent === 'structured_data' && currentData) {
@@ -245,7 +245,7 @@ export default function TestE2EPage() {
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm border p-8 text-center text-gray-400 text-sm">
-              暂无结构化数据（等待智能体返回 &lt;&lt;DATA:type=xxx&gt;&gt; 标记）
+              暂无结构化数据（等待功能返回 &lt;&lt;DATA:type=xxx&gt;&gt; 标记）
             </div>
           )}
         </div>

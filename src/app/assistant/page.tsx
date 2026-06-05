@@ -397,6 +397,7 @@ function AssistantContent() {
         if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
       };
     }
+    return;
   }, [isLoading, messages.length]);
 
   // 检查用户个人信息状态
@@ -443,11 +444,11 @@ function AssistantContent() {
     if (messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: currentBot.welcomeMessage,
+        content: currentBot!.welcomeMessage,
         timestamp: new Date()
       }]);
     }
-  }, [activeBot, currentBot.welcomeMessage]);
+  }, [activeBot, currentBot!.welcomeMessage]);
 
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
@@ -473,6 +474,7 @@ function AssistantContent() {
     if (!dispatchCard && cardVisible) {
       setCardVisible(false);
     }
+      return;
   }, [dispatchCard, cardVisible]);
 
   // 调度卡片关闭（带退场动画）
@@ -939,7 +941,7 @@ function AssistantContent() {
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
                     content: displayContent 
-                  };
+                  } as Message;
                   return newMsgs;
                 });
               } else if (parsed.type === 'done') {
@@ -976,7 +978,7 @@ function AssistantContent() {
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
                     content: displayContent 
-                  };
+                  } as Message;
                   return newMsgs;
                 });
               }
@@ -993,24 +995,24 @@ function AssistantContent() {
       const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
       if (conversationIdMatch) {
         if (isInterview) {
-          localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
+          localStorage.setItem('interviewSessionId', conversationIdMatch[1]!)!;
         } else if (isPartner) {
-          localStorage.setItem('partnerSessionId', conversationIdMatch[1]);
+          localStorage.setItem('partnerSessionId', conversationIdMatch[1]!)!;
         } else {
-          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
+          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]!)!;
         }
       }
       
       // 确保免责文案已添加
       if (fullContent && !fullContent.includes('免责声明')) {
-        const disclaimer = currentBot.welcomeMessage.split('---')[1] || '';
+        const disclaimer = currentBot!.welcomeMessage.split('---')[1] || '';
         if (disclaimer) {
           setMessages(prev => {
             const newMsgs = [...prev];
             newMsgs[newMsgs.length - 1] = { 
               ...newMsgs[newMsgs.length - 1], 
               content: fullContent + disclaimer 
-            };
+            } as Message;
             return newMsgs;
           });
         }
@@ -1165,7 +1167,7 @@ function AssistantContent() {
             <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-white">
               <p className="text-xs text-gray-500 mb-3">试试这些问题：</p>
               <div className="flex flex-wrap gap-2">
-                {currentBot.quickQuestions.map((q, i) => (
+                {currentBot!.quickQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => handleQuickQuestion(q)}
@@ -1225,19 +1227,19 @@ function AssistantContent() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     msg.role === 'user' 
-                      ? `bg-gradient-to-br ${currentBot.gradient}` 
+                      ? `bg-gradient-to-br ${currentBot!.gradient}` 
                       : 'bg-white border-2 border-gray-200'
                   }`}
                 >
                   {msg.role === 'user' 
                     ? <UserIcon className="w-5 h-5 text-white" /> 
-                    : <span className={`${currentBot.color}`}>{currentBot.icon}</span>
+                    : <span className={`${currentBot!.color}`}>{currentBot!.icon}</span>
                   }
                 </div>
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 ${
                     msg.role === 'user'
-                      ? `bg-gradient-to-br ${currentBot.gradient} text-white rounded-tr-sm`
+                      ? `bg-gradient-to-br ${currentBot!.gradient} text-white rounded-tr-sm`
                       : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
                   }`}
                 >
@@ -1513,7 +1515,7 @@ function AssistantContent() {
               </button>
               <Input
                 ref={inputRef}
-                placeholder={`问${currentBot.name}...`}
+                placeholder={`问${currentBot!.name}...`}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
@@ -1523,7 +1525,7 @@ function AssistantContent() {
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !inputValue.trim()}
-                className={`bg-gradient-to-r ${currentBot.gradient} hover:opacity-90 text-white h-12 px-6`}
+                className={`bg-gradient-to-r ${currentBot!.gradient} hover:opacity-90 text-white h-12 px-6`}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

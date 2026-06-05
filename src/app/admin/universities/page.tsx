@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import Image from 'next/image';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -244,7 +245,7 @@ export default function AdminUniversitiesPage() {
                       <TableCell className="text-[#1E293B] font-medium">
                         <div className="flex items-center gap-2">
                           {uni.logo_url ? (
-                            <img src={uni.logo_url} alt="" className="w-6 h-6 rounded object-cover" />
+                            <Image src={uni.logo_url} alt={`${uni.name}校徽`} width={24} height={24} className="rounded object-cover" unoptimized />
                           ) : (
                             <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
                               <Building2 className="h-3.5 w-3.5 text-blue-600" />
@@ -255,10 +256,10 @@ export default function AdminUniversitiesPage() {
                       </TableCell>
                       <TableCell className="text-[#64748B] font-mono text-sm">{uni.domain}</TableCell>
                       <TableCell>
-                        <Badge className={st.className}>{st.label}</Badge>
+                        <Badge className={st!.className}>{st!.label}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={pl.className}>{pl.label}</Badge>
+                        <Badge className={pl!.className}>{pl!.label}</Badge>
                       </TableCell>
                       <TableCell className="text-[#1E293B]">
                         <div className="flex items-center gap-1">

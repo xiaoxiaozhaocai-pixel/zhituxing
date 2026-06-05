@@ -145,7 +145,7 @@ function normalizeCompanyType(type: string): string {
  */
 function normalizeCity(city: string): string {
   if (!city) return '';
-  return city.replace(/省|市|自治区|壮族|回族|维吾尔|壮族自治区|回族自治区|维吾尔自治区/g, '').trim().split(',')[0];
+  return city.replace(/省|市|自治区|壮族|回族|维吾尔|壮族自治区|回族自治区|维吾尔自治区/g, '').trim().split(',')[0]!;
 }
 
 /**
@@ -161,8 +161,8 @@ function parseSalary(salaryStr: string | null): { min: number | null; max: numbe
   // 匹配格式：8000-12000 或 8k-12k 或 8000~12000
   const match = str.match(/(\d+)[k万]?\s*[-~]\s*(\d+)[k万]?/);
   if (match) {
-    let minVal = parseInt(match[1]);
-    let maxVal = parseInt(match[2]);
+    let minVal = parseInt(match[1]!)!;
+    let maxVal = parseInt(match[2]!)!;
     
     // 如果是k单位，转换为元
     if (str.includes('k')) {

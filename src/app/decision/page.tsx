@@ -105,6 +105,7 @@ export default function DecisionPage() {
         if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
       };
     }
+    return;
   }, [loading, messages.length]);
 
   // 初始化欢迎消息

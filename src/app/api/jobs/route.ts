@@ -141,8 +141,8 @@ function formatJob(job: JobRecord, relevance?: number) {
     // 尝试解析 "8-15K" "8000-15000" "8K-15K" 等格式
     const match = salaryRange.match(/(\d+(?:\.\d+)?)\s*[Kk千]?\s*[-~到]\s*(\d+(?:\.\d+)?)\s*[Kk千]?/);
     if (match) {
-      let min = parseFloat(match[1]);
-      let max = parseFloat(match[2]);
+      let min = parseFloat(match[1]!)!;
+      let max = parseFloat(match[2]!)!;
       // 如果数字较小且单位是K，则乘以1000
       if (salaryRange.toLowerCase().includes('k') || (min < 100 && max < 100)) {
         min *= 1000;

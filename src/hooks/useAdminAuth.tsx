@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 interface AdminUser {
   id: number;
@@ -12,7 +12,7 @@ interface AdminAuthContextType {
   admin: AdminUser | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -22,60 +22,64 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // 安全修复 P0-6：不再从 localStorage 读取 admin token
+  // 改用 httpOnly cookie（由服务端设置），XSS 攻击无法窃取
   useEffect(() => {
-    // 检查本地存储中的token
-    const token = localStorage.getItem('admin_token');
-    const adminData = localStorage.getItem('admin_user');
-    
-    if (token && adminData) {
+    // 检查是否已有有效会话（通过 API 验证 cookie）
+    const checkSession = async () => {
       try {
-        setAdmin(JSON.parse(adminData));
+        // 使用 /api/admin/auth 检查管理员状态
+        const response = await fetch('/api/admin/auth', {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isAdmin) {
+            setAdmin({ id: 0, username: 'admin', role: 'admin' });
+          }
+        }
       } catch {
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_user');
+        // 会话检查失败，忽略
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+    checkSession();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string) => {
     try {
       const response = await fetch('/admin/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ username, password })
       });
 
       const data = await response.json();
 
       if (data.code === 200) {
-        const adminData: AdminUser = {
-          id: data.data.id,
-          username: data.data.username,
-          role: data.data.role
-        };
-        
-        // 生成简单token
-        const token = Buffer.from(`${adminData.id}:${adminData.username}:${Date.now()}`).toString('base64');
-        
-        localStorage.setItem('admin_token', token);
-        localStorage.setItem('admin_user', JSON.stringify(adminData));
-        setAdmin(adminData);
-        
+        setAdmin(data.data.admin);
         return { success: true, message: '登录成功' };
       } else {
         return { success: false, message: data.message || '登录失败' };
       }
-    } catch (error) {
+    } catch {
       return { success: false, message: '网络错误' };
     }
-  };
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+  const logout = useCallback(async () => {
+    try {
+      await fetch('/admin/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // 忽略网络错误
+    }
     setAdmin(null);
-  };
+  }, []);
 
   return (
     <AdminAuthContext.Provider

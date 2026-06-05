@@ -1275,7 +1275,7 @@ function ProfileInfoContent() {
                 <CardContent>
                   <div className="space-y-3">
                     {aiResult.professionalSkills.filter((_, i) => {
-                      const key = `professional_${aiResult.professionalSkills[i].name}`;
+                      const key = `professional_${aiResult.professionalSkills[i]!.name}`;
                       return skillSelections[key]?.selected;
                     }).length > 0 && (
                       <div>
@@ -1300,7 +1300,7 @@ function ProfileInfoContent() {
                       </div>
                     )}
                     {aiResult.officeSkills.filter((_, i) => {
-                      const key = `office_${aiResult.officeSkills[i].name}`;
+                      const key = `office_${aiResult.officeSkills[i]!.name}`;
                       return skillSelections[key]?.selected;
                     }).length > 0 && (
                       <div>
@@ -1325,7 +1325,7 @@ function ProfileInfoContent() {
                       </div>
                     )}
                     {aiResult.softSkills.filter((_, i) => {
-                      const key = `soft_${aiResult.softSkills[i].name}`;
+                      const key = `soft_${aiResult.softSkills[i]!.name}`;
                       return skillSelections[key]?.selected;
                     }).length > 0 && (
                       <div>

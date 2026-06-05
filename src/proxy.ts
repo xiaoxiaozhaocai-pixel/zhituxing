@@ -27,6 +27,8 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   // 禁用浏览器特性
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+  // DNS 预取控制
+  'X-DNS-Prefetch-Control': 'off',
   // XSS 保护（旧浏览器兼容）
   'X-XSS-Protection': '1; mode=block',
   // HSTS（生产环境启用）
@@ -38,7 +40,7 @@ const SECURITY_HEADERS = {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.cn https://fonts.gstatic.cn",
     "font-src 'self' https://fonts.gstatic.cn data:",
     "img-src 'self' data: blob: https:",
-    "connect-src 'self' https://api.coze.cn https://api.deepseek.com",
+    "connect-src 'self' https://api.coze.cn https://api.deepseek.com https://*.supabase.co",
     "frame-ancestors 'none'",
   ].join('; '),
 };
@@ -65,7 +67,7 @@ function getRateLimitKey(req: NextRequest): string {
   const token = req.cookies.get('sb-access-token')?.value;
   if (token) {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split('.')[1] ?? ''));
       if (payload?.sub) return `user:${payload.sub}`;
     } catch {}
   }
@@ -206,6 +208,29 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
     }
   }
 
+
+  // --------------------------------------------------------
+  // 5.5 CSRF 防护：API 路由状态变更请求的 Origin 验证
+  // --------------------------------------------------------
+  if (pathname.startsWith('/api/')) {
+    const method = request.method.toUpperCase();
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
+      const allowedOrigins = [SITE_URL];
+      if (process.env.NODE_ENV !== 'production') {
+        allowedOrigins.push('http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:3000');
+      }
+      const origin = request.headers.get('origin');
+      if (origin && !allowedOrigins.some(allowed => origin === allowed)) {
+        console.warn(`[proxy CSRF] Blocked origin: ${origin} for ${pathname}`);
+        const csrfResponse = NextResponse.json(
+          { error: '跨站请求被拒绝' },
+          { status: 403 }
+        );
+        return addSecurityHeaders(csrfResponse);
+      }
+    }
+  }
   // --------------------------------------------------------
   // 6. 继续请求并添加安全头
   // --------------------------------------------------------

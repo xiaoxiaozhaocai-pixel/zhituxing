@@ -116,9 +116,9 @@ export default function OrdersPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-blue-600">¥{order.amount}</span>
-                      <Badge className={`flex items-center gap-1 ${sc.className}`}>
-                        {sc.icon}
-                        {sc.label}
+                      <Badge className={`flex items-center gap-1 ${sc!.className}`}>
+                        {sc!.icon}
+                        {sc!.label}
                       </Badge>
                     </div>
                   </CardContent>

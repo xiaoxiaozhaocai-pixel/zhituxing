@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { requireAdmin } from '@/lib/admin-auth';
 
 // 获取Supabase客户端
 function getSupabaseClient() {
@@ -165,7 +166,7 @@ async function exportOrders(supabase: SupabaseClient, dateRange?: { start: strin
 function generateCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return '';
   
-  const headers = Object.keys(data[0]);
+  const headers = Object.keys(data[0] ?? {});
   const rows = data.map(row => 
     headers.map(header => {
       const value = row[header] || '';
@@ -189,6 +190,8 @@ function generateExcel(data: Record<string, unknown>[], filename: string): { fil
 }
 
 export async function POST(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     // 验证管理员
     if (!await verifyAdmin(request)) {

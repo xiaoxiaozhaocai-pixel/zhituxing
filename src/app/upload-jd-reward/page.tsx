@@ -119,8 +119,8 @@ export default function UploadJdRewardPage() {
       let salaryMax = null;
       const salaryMatch = salary.match(/(\d+)[kK]?\s*[-~]\s*(\d+)[kK]?/);
       if (salaryMatch) {
-        salaryMin = parseInt(salaryMatch[1]) * 1000;
-        salaryMax = parseInt(salaryMatch[2]) * 1000;
+        salaryMin = parseInt(salaryMatch[1]!) * 1000;
+        salaryMax = parseInt(salaryMatch[2]!) * 1000;
       }
 
       const response = await fetch('/api/jd/submit', {

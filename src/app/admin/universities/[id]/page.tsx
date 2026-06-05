@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import Image from 'next/image';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -184,7 +185,7 @@ export default function UniversityDetailPage() {
         <CardHeader>
           <CardTitle className="text-[#1E293B] text-base flex items-center gap-3">
             {university.logo_url ? (
-              <img src={university.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              <Image src={university.logo_url} alt={`${university.name}校徽`} width={40} height={40} className="rounded-lg object-cover" unoptimized />
             ) : (
               <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-blue-600" />
@@ -202,11 +203,11 @@ export default function UniversityDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <InfoItem
               label="状态"
-              value={<Badge className={st.className}>{st.label}</Badge>}
+              value={<Badge className={st!.className}>{st!.label}</Badge>}
             />
             <InfoItem
               label="套餐"
-              value={<Badge className={pl.className}>{pl.label}</Badge>}
+              value={<Badge className={pl!.className}>{pl!.label}</Badge>}
             />
             <InfoItem
               label="学生数"
@@ -283,7 +284,7 @@ export default function UniversityDetailPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={rl.className}>{rl.label}</Badge>
+                        <Badge className={rl!.className}>{rl!.label}</Badge>
                       </TableCell>
                       <TableCell className="text-[#64748B] text-sm">
                         {admin.created_at ? new Date(admin.created_at).toLocaleDateString('zh-CN') : '-'}

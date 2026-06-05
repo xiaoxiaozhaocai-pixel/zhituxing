@@ -161,7 +161,7 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
 
   const steps = mode === 'onboarding_tour' ? ONBOARDING_TOUR_STEPS : GUIDE_STEPS;
   const step = steps[currentStep];
-  const StepIcon = step.icon;
+  const StepIcon = step!.icon;
   const isLastStep = currentStep === steps.length - 1;
   const isOnboardingTour = mode === 'onboarding_tour';
 
@@ -175,7 +175,7 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
           <X className="w-5 h-5 text-gray-500" />
         </button>
 
-        <div className={`bg-gradient-to-r ${step.color} h-32 flex items-center justify-center relative`}>
+        <div className={`bg-gradient-to-r ${step!.color} h-32 flex items-center justify-center relative`}>
           <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
             <StepIcon className="w-12 h-12 text-white" />
           </div>
@@ -198,16 +198,16 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
 
         <div className="p-6">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${step.bgColor} ${step.iconColor}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${step!.bgColor} ${step!.iconColor}`}>
               {isOnboardingTour ? `功能 ${currentStep + 1}/${steps.length}` : `步骤 ${currentStep + 1}/${steps.length}`}
             </span>
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
-            {step.title}
+            {step!.title}
           </h2>
           <p className="text-gray-500 text-center mb-8 leading-relaxed">
-            {step.description}
+            {step!.description}
           </p>
 
           <div className="space-y-3">
@@ -215,15 +215,15 @@ export default function FirstVisitModal({ onComplete }: FirstVisitModalProps) {
             {isOnboardingTour && isLastStep ? (
               <button
                 onClick={handleComplete}
-                className={`w-full py-4 bg-gradient-to-r ${step.color} text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2`}
+                className={`w-full py-4 bg-gradient-to-r ${step!.color} text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2`}
               >
                 开始使用
                 <ChevronRight className="w-5 h-5" />
               </button>
             ) : !isOnboardingTour ? (
-              <Link href={step.link} onClick={handleComplete}>
-                <button className={`w-full py-4 bg-gradient-to-r ${step.color} text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2`}>
-                  {step.linkText}
+              <Link href={step!.link} onClick={handleComplete}>
+                <button className={`w-full py-4 bg-gradient-to-r ${step!.color} text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2`}>
+                  {step!.linkText}
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </Link>

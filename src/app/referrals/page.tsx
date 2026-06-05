@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, MapPin, DollarSign, Users, Clock, Verified, Star, Crown, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface Referral {
   id: string;
@@ -225,7 +226,7 @@ export default function ReferralsPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
                         {referral.logoUrl ? (
-                          <img src={referral.logoUrl} alt={referral.company} className="w-10 h-10 rounded-lg object-cover" />
+                          <Image src={referral.logoUrl} alt={referral.company} width={40} height={40} className="rounded-lg object-cover" unoptimized />
                         ) : (
                           <span className="text-lg font-bold text-gray-600">{referral.company.charAt(0)}</span>
                         )}

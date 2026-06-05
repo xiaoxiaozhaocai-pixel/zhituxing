@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 // 获取文章列表
 export async function GET(request: NextRequest) {
@@ -55,8 +56,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 创建文章
+// 创建文章 — 需要认证
 export async function POST(request: NextRequest) {
+  // 安全修复 P0-5：添加认证检查
+  const userId = await getAuthenticatedUserId(request);
+  if (!userId) {
+    return NextResponse.json({ success: false, error: '请先登录' }, { status: 401 });
+  }
+  
   const supabase = getSupabase();
   try {
     const body = await request.json();

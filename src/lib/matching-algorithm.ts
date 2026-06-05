@@ -422,8 +422,8 @@ export function parseSalaryRange(salaryRange: string): {
 
   if (!match) return null;
 
-  let min = parseFloat(match[1]);
-  let max = parseFloat(match[2]);
+  let min = parseFloat(match[1]!)!;
+  let max = parseFloat(match[2]!)!;
 
   // 如果原始字符串含 k，单位为千
   if (/k/i.test(salaryRange)) {
@@ -512,7 +512,7 @@ export function calculateCompetencyPercentile(
   const medianScore =
     sorted.length % 2 !== 0
       ? sorted[mid]
-      : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+      : Math.round((sorted[mid - 1]!! + sorted[mid]!) / 2);
 
   // 前10%门槛
   const topDecileIndex = Math.max(0, Math.ceil(sorted.length * 0.1) - 1);
@@ -525,8 +525,8 @@ export function calculateCompetencyPercentile(
     userMatchScore,
     statistics: {
       averageScore,
-      medianScore,
-      topDecileScore,
+      medianScore: medianScore!,
+      topDecileScore: topDecileScore!,
     },
   };
 }

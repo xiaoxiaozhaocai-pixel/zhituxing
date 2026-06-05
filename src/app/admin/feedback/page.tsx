@@ -251,8 +251,8 @@ export default function AdminFeedbackPage() {
                           <Badge className={typeConfig[feedback.type]?.className || 'bg-gray-100'}>
                             {typeConfig[feedback.type]?.label || feedback.type}
                           </Badge>
-                          <Badge className={statusConfig[feedback.status].className}>
-                            {statusConfig[feedback.status].label}
+                          <Badge className={statusConfig[feedback.status]!.className}>
+                            {statusConfig[feedback.status]!.label}
                           </Badge>
                         </div>
                         <p className="text-gray-900 mb-2 line-clamp-2">{feedback.content}</p>
@@ -319,8 +319,8 @@ export default function AdminFeedbackPage() {
                 <Badge className={typeConfig[selectedFeedback.type]?.className}>
                   {typeConfig[selectedFeedback.type]?.label}
                 </Badge>
-                <Badge className={statusConfig[selectedFeedback.status].className}>
-                  {statusConfig[selectedFeedback.status].label}
+                <Badge className={statusConfig[selectedFeedback.status]!.className}>
+                  {statusConfig[selectedFeedback.status]!.label}
                 </Badge>
               </div>
 

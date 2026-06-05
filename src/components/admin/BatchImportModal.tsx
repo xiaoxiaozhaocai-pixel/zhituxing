@@ -161,7 +161,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
         const XLSX = await loadXLSX();
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+        const worksheet = workbook.Sheets[sheetName!]!;
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
 
         // 解析数据行（跳过表头）

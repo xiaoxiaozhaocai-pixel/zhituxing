@@ -297,9 +297,9 @@ export default function AssessmentPage() {
                           {rec.data.overall_score || 0}分
                         </Badge>
                         {idx > 0 && records[idx - 1]?.data?.overall_score !== undefined && rec.data.overall_score !== undefined && (
-                          rec.data.overall_score > (records[idx - 1].data.overall_score || 0)
+                          rec.data.overall_score > (records[idx - 1]!.data.overall_score || 0)
                             ? <ArrowUpRight className="w-4 h-4 text-green-500" />
-                            : rec.data.overall_score < (records[idx - 1].data.overall_score || 0)
+                            : rec.data.overall_score < (records[idx - 1]!.data.overall_score || 0)
                               ? <ArrowDownRight className="w-4 h-4 text-red-400" />
                               : <Minus className="w-4 h-4 text-gray-400" />
                         )}

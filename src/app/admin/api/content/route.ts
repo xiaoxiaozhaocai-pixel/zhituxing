@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = getSupabaseAdmin();
 
 // 获取内容列表（支持文章、公告、FAQ）
 export async function GET(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type') || 'article';
@@ -93,6 +96,8 @@ export async function GET(request: NextRequest) {
 
 // 创建内容
 export async function POST(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
     const { type, title, content, category, isPublished, isPinned, sortOrder, adminId, adminUsername } = body;
@@ -160,6 +165,8 @@ export async function POST(request: NextRequest) {
 
 // 更新内容
 export async function PUT(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
     const { type, id, title, content, category, isPublished, isPinned, sortOrder, adminId, adminUsername } = body;
@@ -228,6 +235,8 @@ export async function PUT(request: NextRequest) {
 
 // 删除内容
 export async function DELETE(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type');

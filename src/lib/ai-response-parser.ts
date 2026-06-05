@@ -78,7 +78,7 @@ function extractNumber(val: unknown): number | null {
   if (typeof val === 'number') return val;
   if (typeof val === 'string') {
     const m = val.match(/(\d+\.?\d*)/);
-    if (m) return parseFloat(m[1]);
+    if (m) return parseFloat(m[1]!)!;
   }
   return null;
 }
@@ -128,10 +128,10 @@ function extractDataBlocks(text: string): { type: string; json: unknown }[] {
   let match;
   while ((match = regex.exec(text)) !== null) {
     const type = match[1];
-    const content = match[2].trim();
+    const content = match[2]!.trim();
     const parsed = tryParseJSON(content);
     if (parsed) {
-      results.push({ type, json: parsed });
+      results.push({ type: type!, json: parsed });
     }
   }
   return results;
@@ -143,8 +143,8 @@ function parseKeyValueLines(lines: string[]): Record<string, string> {
   for (const line of lines) {
     const kvMatch = line.match(/^\s*(?:\*\*)?(\w+)(?:\*\*)?\s*[:：]\s*(.*)/);
     if (kvMatch) {
-      const key = kvMatch[1].trim();
-      const value = decodeUrlStr(kvMatch[2].trim().replace(/\*\*/g, ''));
+      const key = kvMatch[1]!.trim();
+      const value = decodeUrlStr(kvMatch[2]!.trim().replace(/\*\*/g, ''));
       result[key] = value;
     }
   }
@@ -157,7 +157,7 @@ function extractCardsFromList(items: string[]): CardItem[] {
     const decoded = decodeUrlStr(item.replace(/^\s*[-*]\s*/, '').replace(/^\s*\d+\.\s*/, '').trim());
     // 尝试提取分数
     const scoreMatch = decoded.match(/(\d+)\s*[%％分]/);
-    const score = scoreMatch ? parseInt(scoreMatch[1]) : undefined;
+    const score = scoreMatch ? parseInt(scoreMatch[1]!) : undefined;
     // 尝试提取标题和描述
     const colonIdx = decoded.indexOf('：') > -1 ? decoded.indexOf('：') : decoded.indexOf(': ');
     if (colonIdx > 0 && colonIdx < 30) {
@@ -419,22 +419,22 @@ function isolateMarkdownTables(text: string): string {
   const isSeparator = (l: string) => /^\|[\s\-:|]+\|$/.test(l.trim());
 
   while (i < lines.length) {
-    if (isTableRow(lines[i]) && i + 1 < lines.length && isSeparator(lines[i + 1])) {
+    if (isTableRow(lines[i]!) && i + 1 < lines.length && isSeparator(lines[i + 1]!)) {
       // 表格起点：前面补空行
-      if (result.length > 0 && result[result.length - 1].trim() !== '') {
+      if (result.length > 0 && result[result.length - 1]!.trim() !== '') {
         result.push('');
       }
       // 收集所有连续的表格行
-      while (i < lines.length && isTableRow(lines[i])) {
-        result.push(lines[i]);
+      while (i < lines.length && isTableRow(lines[i]!)) {
+        result.push(lines[i]!)!;
         i++;
       }
       // 表格结尾：后面补空行
-      if (i < lines.length && lines[i].trim() !== '') {
+      if (i < lines.length && lines[i]!.trim() !== '') {
         result.push('');
       }
     } else {
-      result.push(lines[i]);
+      result.push(lines[i]!)!;
       i++;
     }
   }
@@ -490,7 +490,7 @@ function parsePlainText(text: string): ParsedSegment[] {
     if (
       tableLines.length >= 3 &&
       tableLines.length === lines.length &&
-      /^\|[\s\-:|]+\|$/.test(tableLines[1].trim())
+      /^\|[\s\-:|]!+\|$/.test(tableLines[1]!.trim())
     ) {
       if (currentText.trim()) {
         segments.push({ type: 'text', data: decodeUrlStr(currentText.trim()) });
@@ -498,7 +498,7 @@ function parsePlainText(text: string): ParsedSegment[] {
       }
       const parseRow = (line: string) =>
         line.trim().slice(1, -1).split('|').map(c => decodeUrlStr(c.trim()));
-      const headers = parseRow(tableLines[0]);
+      const headers = parseRow(tableLines[0]!)!;
       const rows = tableLines.slice(2).map(parseRow);
       segments.push({ type: 'table', data: { headers, rows } });
       continue;
@@ -532,7 +532,7 @@ function parsePlainText(text: string): ParsedSegment[] {
       const kv = parseKeyValueLines(lines);
 
       // 判断是评分还是普通键值对
-      const scoreKeys = Object.keys(kv).filter(k => /\d+/.test(kv[k]));
+      const scoreKeys = Object.keys(kv).filter(k => /\d+/.test(kv[k]!))!;
       if (scoreKeys.length >= 2 && scoreKeys.length / Object.keys(kv).length > 0.4) {
         // 多数是数值 → 评分
         const scores: ScoreItem[] = [];

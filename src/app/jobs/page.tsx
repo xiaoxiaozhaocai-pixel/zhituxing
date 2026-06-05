@@ -358,7 +358,7 @@ export default function JobsPage() {
                     updated[updated.length - 1] = {
                       ...updated[updated.length - 1],
                       content: fullContent
-                    };
+                    } as ChatMessage;
                     return updated;
                   });
                 }

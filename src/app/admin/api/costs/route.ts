@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = getSupabaseAdmin();
 
@@ -20,6 +21,8 @@ interface DailyCostItem {
 }
 
 export async function GET(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const days = parseInt(request.nextUrl.searchParams.get('days') || '30');
 
@@ -95,7 +98,7 @@ export async function GET(request: NextRequest) {
       }
 
       // 取最近两天对比变化
-      const todayData = daily[daily.length - 1];
+      const todayData = daily[daily.length - 1]!;
       const yesterdayData = daily.length >= 2 ? daily[daily.length - 2] : null;
       const costChange = yesterdayData && yesterdayData.estCost > 0
         ? ((todayData.estCost - yesterdayData.estCost) / yesterdayData.estCost * 100)

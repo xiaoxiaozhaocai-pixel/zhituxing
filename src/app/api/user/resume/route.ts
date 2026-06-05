@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       result = await supabase
         .from('resumes')
         .update({ title: title || '我的简历', data: resumeData, updated_at: new Date().toISOString() })
-        .eq('id', existing[0].id)
+        .eq('id', existing[0]!.id)
         .select('id')
         .single();
     } else {

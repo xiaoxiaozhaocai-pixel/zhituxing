@@ -1288,7 +1288,7 @@ export default function SkillPortraitPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {aiResult.professionalSkills.filter((_, i) => skillSelections[`professional_${aiResult.professionalSkills[i].name}`]?.selected).length > 0 && (
+                    {aiResult.professionalSkills.filter((_, i) => skillSelections[`professional_${aiResult.professionalSkills[i]!.name}`]?.selected).length > 0 && (
                       <div>
                         <p className="text-xs font-medium text-blue-600 mb-1.5">专业核心技能</p>
                         <div className="flex flex-wrap gap-1.5">
@@ -1307,7 +1307,7 @@ export default function SkillPortraitPage() {
                         </div>
                       </div>
                     )}
-                    {aiResult.officeSkills.filter((_, i) => skillSelections[`office_${aiResult.officeSkills[i].name}`]?.selected).length > 0 && (
+                    {aiResult.officeSkills.filter((_, i) => skillSelections[`office_${aiResult.officeSkills[i]!.name}`]?.selected).length > 0 && (
                       <div>
                         <p className="text-xs font-medium text-green-600 mb-1.5">办公技能</p>
                         <div className="flex flex-wrap gap-1.5">
@@ -1326,7 +1326,7 @@ export default function SkillPortraitPage() {
                         </div>
                       </div>
                     )}
-                    {aiResult.softSkills.filter((_, i) => skillSelections[`soft_${aiResult.softSkills[i].name}`]?.selected).length > 0 && (
+                    {aiResult.softSkills.filter((_, i) => skillSelections[`soft_${aiResult.softSkills[i]!.name}`]?.selected).length > 0 && (
                       <div>
                         <p className="text-xs font-medium text-purple-600 mb-1.5">软技能</p>
                         <div className="flex flex-wrap gap-1.5">

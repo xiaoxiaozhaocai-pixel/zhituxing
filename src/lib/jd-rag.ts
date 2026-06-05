@@ -27,7 +27,7 @@ function extractKeywords(query: string): {
 
   // 提取行业关键词
   for (const ind of STANDARD_INDUSTRIES) {
-    if (query.includes(ind) || query.includes(ind.split('/')[0])) {
+    if (query.includes(ind) || query.includes(ind.split('/')[0]!)) {
       industries.push(ind);
     }
   }

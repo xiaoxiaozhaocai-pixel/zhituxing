@@ -35,7 +35,7 @@ export default function UniversityPage() {
               <GraduationCap className="w-4 h-4 mr-2" />高校合作计划
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight">
-              为高校打造的<span className="block mt-2 bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">一站式 AI 求职平台</span>
+              为高校打造的<span className="block mt-2 bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">高校AI求职解决方案</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-blue-100/90 leading-relaxed">
               融合 DeepSeek 大模型能力，为高校就业指导中心提供AI模拟面试、智能简历优化、职业测评等全链路求职辅导工具。

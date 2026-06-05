@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import NextImage from 'next/image';
 import { loadJSPDF } from '@/lib/dynamic-imports';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -222,10 +223,13 @@ export default function SharePosterGenerator({
             ) : (
               <div className="space-y-4">
                 <div className="relative mx-auto" style={{ maxWidth: '300px' }}>
-                  <img
+                  <NextImage
                     src={posterData}
                     alt="分享海报"
+                    width={300}
+                    height={533}
                     className="w-full rounded-lg shadow-lg"
+                    unoptimized
                   />
                 </div>
                 

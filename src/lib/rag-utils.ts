@@ -299,11 +299,11 @@ export function buildRAGContext(
       const item = source.data[i];
       totalItems++;
 
-      const fields = source.fields || Object.keys(item);
+      const fields = source.fields || Object.keys((item ?? {}));
       let itemText = '';
 
       for (const field of fields) {
-        const value = item[field];
+        const value = item![field];
         if (value === null || value === undefined) continue;
 
         let valueStr: string;

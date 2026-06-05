@@ -117,6 +117,7 @@ export default function CareerPlanningPage() {
         if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
       };
     }
+    return;
   }, [generating]);
 
   const fetchUserProfile = async () => {

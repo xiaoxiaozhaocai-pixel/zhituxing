@@ -255,8 +255,8 @@ export default function LearningPathPage() {
                                   const progress = skillProgress[skill];
                                   const cfg = statusConfig[progress?.status || 'not_started'];
                                   return (
-                                    <div key={j} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cfg.color}`}>
-                                      {cfg.icon}
+                                    <div key={j} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cfg!.color}`}>
+                                      {cfg!.icon}
                                       <span>{skill}</span>
                                       {progress && (
                                         <span className="text-xs opacity-60">({progress.completionPct}%)</span>
@@ -394,9 +394,9 @@ export default function LearningPathPage() {
                           <div key={name}>
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
-                                {cfg.icon}
+                                {cfg!.icon}
                                 <span className="text-sm font-medium text-gray-700">{name}</span>
-                                <Badge className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
+                                <Badge className={`text-xs ${cfg!.color}`}>{cfg!.label}</Badge>
                               </div>
                               <span className="text-sm text-gray-500">{prog.completionPct}%</span>
                             </div>

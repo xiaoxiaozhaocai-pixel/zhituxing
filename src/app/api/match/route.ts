@@ -252,8 +252,8 @@ export async function GET(request: NextRequest) {
       const s = raw.replace(/\s/g, '').toLowerCase();
       const m = s.match(/(\d+(?:\.\d+)?)[k]?[-~至到](\d+(?:\.\d+)?)[k]?/i);
       if (!m) return { min: 0, max: 0 };
-      let min = parseFloat(m[1]);
-      let max = parseFloat(m[2]);
+      let min = parseFloat(m[1]!)!;
+      let max = parseFloat(m[2]!)!;
       if (min < 1000) min = min * 1000;
       if (max < 1000) max = max * 1000;
       return { min: Math.round(min), max: Math.round(max) };

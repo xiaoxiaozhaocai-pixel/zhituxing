@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { sanitizeHtml } from '@/lib/sanitize';
+import Image from 'next/image';
 
 // 保底 markdown 渲染（不依赖外部包，避免打包/安装失败）
 function renderMarkdown(md: string): string {
@@ -307,9 +308,11 @@ export default function ArticleDetailPage() {
           {/* Cover Image */}
           {article.coverImage && (
             <div className="aspect-video bg-gray-100">
-              <img
+              <Image
                 src={article.coverImage}
                 alt={article.title}
+                width={800}
+                height={400}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -438,7 +441,7 @@ export default function ArticleDetailPage() {
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                       {comment.userAvatar ? (
-                        <img src={comment.userAvatar} alt="" className="w-full h-full rounded-full" />
+                        <Image src={comment.userAvatar} alt="用户头像" width={32} height={32} className="rounded-full" unoptimized />
                       ) : (
                         <User className="w-5 h-5 text-blue-600" />
                       )}
@@ -497,7 +500,7 @@ export default function ArticleDetailPage() {
                             <div key={reply.id} className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                                 {reply.userAvatar ? (
-                                  <img src={reply.userAvatar} alt="" className="w-full h-full rounded-full" />
+                                  <Image src={reply.userAvatar} alt="用户头像" width={32} height={32} className="rounded-full" unoptimized />
                                 ) : (
                                   <User className="w-4 h-4 text-gray-500" />
                                 )}

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
+import Image from 'next/image';
 import { 
   ArrowLeft, MapPin, DollarSign, Users, Clock, Verified, Star, 
   Crown, Lock, Send, Check, Loader2, Copy, CheckCircle
@@ -150,7 +151,7 @@ export default function ReferralDetailPage() {
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
                   {referral.logoUrl ? (
-                    <img src={referral.logoUrl} alt={referral.company} className="w-14 h-14 rounded-lg object-cover" />
+                    <Image src={referral.logoUrl} alt={referral.company} width={56} height={56} className="rounded-lg object-cover" unoptimized />
                   ) : (
                     <span className="text-2xl font-bold text-gray-600">{referral.company.charAt(0)}</span>
                   )}

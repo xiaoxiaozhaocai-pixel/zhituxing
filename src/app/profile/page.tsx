@@ -1052,7 +1052,7 @@ function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => voi
   const maskEmail = (email: string) => {
     if (!email) return '';
     const [name, domain] = email.split('@');
-    return `${name.slice(0, 2)}***@${domain}`;
+    return `${name!.slice(0, 2)}***@${domain}`;
   };
 
   return (

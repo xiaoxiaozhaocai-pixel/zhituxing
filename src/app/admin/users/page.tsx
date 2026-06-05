@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
     }));
 
     const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-    const areaPath = `${linePath} L ${points[points.length - 1].x} ${padY + innerH} L ${padX} ${padY + innerH} Z`;
+    const areaPath = `${linePath} L ${points[points.length - 1]!.x} ${padY + innerH} L ${padX} ${padY + innerH} Z`;
 
     // Y轴刻度
     const yTicks = [0, Math.round(maxCount * 0.5), maxCount];

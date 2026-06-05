@@ -51,11 +51,11 @@ function parseSalary(text: string | null): { salaryMin: number | null; salaryMax
   const t = text.replace(/,/g, '').trim();
   const rangeMatch = t.match(/(\d+)\s*[-~至到]\s*(\d+)/);
   if (rangeMatch) {
-    return { salaryMin: parseInt(rangeMatch[1]), salaryMax: parseInt(rangeMatch[2]), salaryRange: t };
+    return { salaryMin: parseInt(rangeMatch[1]!)!, salaryMax: parseInt(rangeMatch[2]!), salaryRange: t };
   }
   const singleMatch = t.match(/(\d+)/);
   if (singleMatch) {
-    const v = parseInt(singleMatch[1]);
+    const v = parseInt(singleMatch[1]!)!;
     return { salaryMin: Math.floor(v * 0.8), salaryMax: Math.floor(v * 1.2), salaryRange: t };
   }
   return { salaryMin: null, salaryMax: null, salaryRange: t || null };
@@ -82,25 +82,25 @@ async function parseGxrcDetail(url: string): Promise<Record<string, any>> {
     const html: string = await httpGet(url, true);
 
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const rawTitle = titleMatch ? stripHtml(titleMatch[1]) : '';
+    const rawTitle = titleMatch ? stripHtml(titleMatch[1]!) : '';
 
     let jobTitle = rawTitle.replace(/-广西人才网.*$/i, '').replace(/_/g, ' ').trim();
     let company = '';
     if (jobTitle.includes('_')) {
       const parts = jobTitle.split('_');
-      company = parts[parts.length - 1].trim();
+      company = parts[parts.length - 1]!.trim();
       jobTitle = parts.slice(0, -1).join('_').trim();
     }
     if (!company) {
       const cm = html.match(/<span[^>]*class="[^"]*com-name[^"]*"[^>]*>([^<]+)<\/span>/i)
         || html.match(/公司名[：:]\s*([^<>\n]{2,30})/)
         || html.match(/companyName["']?\s*[:=]\s*["']([^"']+)["']/i);
-      if (cm) company = cm[1].trim();
+      if (cm) company = cm[1]!.trim();
     }
 
     const cityMatch = html.match(/(?:地点|工作地点|地区)[：:]\s*([^,，\s]{2,6}(?:市|县|区))/)
       || html.match(/(?:地点|工作地点)[：:]\s*([^<>\n]{2,10})/);
-    const city = cityMatch ? cityMatch[1].trim() : '';
+    const city = cityMatch ? cityMatch[1]!.trim() : '';
 
     const salaryPatterns = [
       /薪资[：:]\s*([^<>\n]{3,20})/,
@@ -110,20 +110,20 @@ async function parseGxrcDetail(url: string): Promise<Record<string, any>> {
     let salaryRange: string | null = null;
     for (const p of salaryPatterns) {
       const m = html.match(p);
-      if (m) { salaryRange = m[1].trim(); break; }
+      if (m) { salaryRange = m[1]!.trim(); break; }
     }
 
     const industryMatch = html.match(/(?:行业|所属行业)[：:]\s*([^,，\s]{2,10})/);
-    const industry = industryMatch ? industryMatch[1].trim() : '';
+    const industry = industryMatch ? industryMatch[1]!.trim() : '';
 
     const expMatch = html.match(/(?:经验|工作经验)[：:]\s*([^,，\s]{1,10})/);
-    const experience = expMatch ? expMatch[1].trim() : '';
+    const experience = expMatch ? expMatch[1]!.trim() : '';
 
     const eduMatch = html.match(/(?:学历|学历要求)[：:]\s*([^,，\s]{1,10})/);
-    const education = eduMatch ? eduMatch[1].trim() : '';
+    const education = eduMatch ? eduMatch[1]!.trim() : '';
 
     const respMatch = html.match(/(?:岗位职责|工作职责|职位描述|任职要求)[：:]*\s*([\s\S]{50,2000}?)(?:<\/div>|<\/p>|<\/section>|<hr|<\/dd>)/i);
-    let responsibilities = respMatch ? stripHtml(respMatch[1]).substring(0, 2000).trim() : '';
+    let responsibilities = respMatch ? stripHtml(respMatch[1]!).substring(0!, 2000).trim() : '';
 
     const bodyText = stripHtml(html);
     const skillKeywords = ['Python', 'Java', 'JavaScript', 'TypeScript', 'React', 'Vue',
@@ -194,14 +194,14 @@ export async function syncOfficialJobs(opts: JdSyncOptions = {}): Promise<JdSync
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i];
       console.log(`[${i + 1}/${urls.length}] 解析: ${url}`);
-      const job = await parseGxrcDetail(url);
+      const job = await parseGxrcDetail(url!)!;
 
       if (job._error) {
-        result.errors.push({ url, reason: job._error });
+        result.errors.push({ url: url!, reason: job._error });
         continue;
       }
       if (!job.job_title) {
-        result.errors.push({ url, reason: '无法解析岗位名' });
+        result.errors.push({ url: url!, reason: '无法解析岗位名' });
         continue;
       }
 
@@ -241,7 +241,7 @@ export async function syncOfficialJobs(opts: JdSyncOptions = {}): Promise<JdSync
             .eq('id', existing.id);
 
           if (updateError) {
-            result.errors.push({ url, reason: `更新失败: ${updateError.message}` });
+            result.errors.push({ url: url!, reason: `更新失败: ${updateError.message}` });
           } else {
             result.updated++;
             console.log(`  ✅ 更新: ${job.job_title} @ ${job.company}`);
@@ -255,14 +255,14 @@ export async function syncOfficialJobs(opts: JdSyncOptions = {}): Promise<JdSync
             });
 
           if (insertError) {
-            result.errors.push({ url, reason: `插入失败: ${insertError.message}` });
+            result.errors.push({ url: url!, reason: `插入失败: ${insertError.message}` });
           } else {
             result.inserted++;
             console.log(`  ✅ 插入: ${job.job_title} @ ${job.company}`);
           }
         }
       } catch (e) {
-        result.errors.push({ url, reason: (e as Error).message });
+        result.errors.push({ url: url!, reason: (e as Error).message });
         console.error(`  ❌ 写入失败: ${url}:`, (e as Error).message);
       }
       await sleep(200);

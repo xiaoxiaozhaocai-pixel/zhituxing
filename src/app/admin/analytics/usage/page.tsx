@@ -185,12 +185,12 @@ export default function UsagePage() {
                     <span className="text-xl">{MODULE_ICONS[mod.module] || '📊'}</span>
                     <span className="font-medium text-[#1E293B]">{mod.label}</span>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${style.bg} ${style.text}`}>
-                    {style.label}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${style!.bg} ${style!.text}`}>
+                    {style!.label}
                   </span>
                 </div>
                 <div className="flex justify-center mb-3">
-                  <RingProgress percentage={mod.percentage} color={style.ring} />
+                  <RingProgress percentage={mod.percentage} color={style!.ring} />
                 </div>
                 <div className="flex justify-between text-xs text-[#94A3B8]">
                   <span>{mod.users} 用户</span>
@@ -202,7 +202,7 @@ export default function UsagePage() {
                     className="h-full rounded-full transition-all duration-700"
                     style={{
                       width: `${mod.percentage}%`,
-                      backgroundColor: style.ring,
+                      backgroundColor: style!.ring,
                     }}
                   />
                 </div>

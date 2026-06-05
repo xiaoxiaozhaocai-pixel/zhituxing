@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { FontPreload } from '@/components/FontPreload';
 import Navbar from '@/components/Navbar';
@@ -15,13 +15,24 @@ import FirstVisitModal from '@/components/FirstVisitModal';
 import CookieConsent from '@/components/CookieConsent';
 import { SITE_URL } from '@/lib/config';
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#2563EB' },
+    { media: '(prefers-color-scheme: dark)', color: '#1E3A8A' },
+  ],
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: '职途星 - 智能职业规划与岗位匹配平台',
+    default: '职途星 — 懂桂电学生的AI朋友 | 先想清楚再投简历',
     template: '%s | 职途星',
   },
   description:
-    '大学生求职第一站。AI职业规划、技能匹配、模拟面试一站式搞定。免费使用。',
+    '大学生求职不焦虑。小职AI陪你做职业规划、技能匹配、模拟面试。20000+真实岗位覆盖27大行业，从迷茫到清晰，免费使用。',
   keywords: [
     '职业规划',
     '岗位搜索',
@@ -32,22 +43,27 @@ export const metadata: Metadata = {
     '模拟面试',
     '能力测评',
     '职途星',
+    '桂电',
+    '桂林电子科技大学',
   ],
-  authors: [{ name: '职途星团队' }],
+  authors: [{ name: '职途星团队', url: SITE_URL }],
   generator: '职途星',
+  creator: '职途星',
+  publisher: '职途星',
   openGraph: {
-    title: '职途星 - 智能职业规划与岗位匹配平台',
+    title: '职途星 — 懂桂电学生的AI朋友',
     description:
-      '大学生求职第一站。AI职业规划、技能匹配、模拟面试一站式搞定。免费使用。',
+      '大学生求职不焦虑。小职AI陪你做职业规划、技能匹配、模拟面试。免费使用，覆盖27大行业20000+真实岗位。',
+    url: SITE_URL,
     locale: 'zh_CN',
     type: 'website',
     siteName: '职途星',
-    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - 智能职业规划与岗位匹配平台' }],
+    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - 懂桂电学生的AI求职伙伴' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: '职途星 - 智能职业规划与岗位匹配平台',
-    description: '大学生求职第一站。AI职业规划、技能匹配、模拟面试一站式搞定。免费使用。',
+    title: '职途星 — 懂桂电学生的AI朋友',
+    description: '大学生求职不焦虑。小职AI陪你做职业规划、技能匹配、模拟面试。免费使用。',
     images: ['https://s.coze.cn/image/9JW8vCo1HrY/'],
   },
   alternates: {
@@ -56,6 +72,9 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+    'max-video-preview': -1,
   },
 };
 
@@ -82,11 +101,16 @@ export default function RootLayout({
               "name": "职途星",
               "url": SITE_URL,
               "description": "懂桂电学生的AI朋友——小职，陪你走好求职每一步",
-              "logo": "https://s.coze.cn/image/9JW8vCo1HrY/"
+              "logo": "https://s.coze.cn/image/9JW8vCo1HrY/",
+              "foundingLocation": {
+                "@type": "Place",
+                "name": "桂林电子科技大学"
+              },
+              "sameAs": []
             })
           }}
         />
-        {/* WebSite JSON-LD */}
+        {/* WebSite JSON-LD with search action */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -94,7 +118,16 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               "name": "职途星",
-              "url": SITE_URL
+              "url": SITE_URL,
+              "description": "懂桂电学生的AI朋友——小职，陪你走好求职每一步",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                  "@type": "EntryPoint",
+                  "urlTemplate": `${SITE_URL}/search?q={search_term_string}`
+                },
+                "query-input": "required name=search_term_string"
+              }
             })
           }}
         />

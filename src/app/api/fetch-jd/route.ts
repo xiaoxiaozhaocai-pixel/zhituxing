@@ -23,8 +23,12 @@ const ALLOWED_HOSTS = [
 
 function isAllowedUrl(url: string): boolean {
   try {
-    const hostname = new URL(url).hostname;
-    return ALLOWED_HOSTS.some((host) => hostname.includes(host));
+    const parsed = new URL(url);
+    // 安全修复 P0-3：仅允许 https 协议，防止 SSRF
+    if (parsed.protocol !== 'https:') return false;
+    const hostname = parsed.hostname;
+    // 安全修复 P0-3：精确域名匹配，不再使用 includes（防止 evil-zhipin.com 绕过）
+    return ALLOWED_HOSTS.some((host) => hostname === host || hostname.endsWith('.' + host));
   } catch {
     return false;
   }
@@ -32,7 +36,7 @@ function isAllowedUrl(url: string): boolean {
 
 function extractTitle(html: string): string {
   const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  return match ? match[1].trim() : '';
+  return match ? match[1]!.trim() : '';
 }
 
 function extractText(html: string): string {
@@ -91,6 +95,7 @@ export async function POST(request: NextRequest) {
     const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
+      // 安全修复 P0-3：禁止跟随重定向，防止 SSRF 到内网地址
       const res = await fetch(url, {
         signal: controller.signal,
         headers: {
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest) {
           Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
         },
-        redirect: 'follow',
+        redirect: 'manual',
       });
 
       clearTimeout(timeout);
@@ -114,6 +119,15 @@ export async function POST(request: NextRequest) {
       }
 
       const html = await res.text();
+      // 安全修复 P0-3：限制响应大小，防止 OOM
+      if (html.length > 500000) {
+        return NextResponse.json({
+          code: 200,
+          success: false,
+          data: { content: '', title: '', url },
+          message: '页面内容过大，无法解析',
+        });
+      }
       const title = extractTitle(html);
       const textContent = extractText(html);
 

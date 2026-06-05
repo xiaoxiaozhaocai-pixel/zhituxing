@@ -196,11 +196,11 @@ function createDeepSeekAssessmentStream(
 
             try {
               const jsonData = JSON.parse(jsonStr);
-              sendStructuredData(controller, dataType, jsonData);
+              sendStructuredData(controller, dataType!, jsonData);
 
               // 异步保存到 Supabase
               if (userId) {
-                saveStructuredDataAssessment(userId, dataType, jsonData).catch((err) =>
+                saveStructuredDataAssessment(userId, dataType!, jsonData).catch((err) =>
                   console.error('[assessment] Background save error:', err)
                 );
               }

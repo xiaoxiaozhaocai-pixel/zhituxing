@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { requireAdmin } from '@/lib/admin-auth';
 
 const supabase = getSupabaseAdmin();
 
 // 获取同步任务状态
 export async function GET(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const { data: tasks } = await supabase
       .from('sync_tasks')
@@ -24,6 +27,8 @@ export async function GET(request: NextRequest) {
 
 // 触发同步
 export async function POST(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
     const { type, adminId, adminUsername } = body;

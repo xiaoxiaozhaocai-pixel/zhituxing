@@ -26,7 +26,7 @@ export default function QuizPage() {
   const progress = Math.round((Object.keys(answers).length / QUIZ_QUESTIONS.length) * 100);
 
   function handleAnswer(value: string) {
-    const newAnswers = { ...answers, [question.id]: value };
+    const newAnswers = { ...answers, [question!.id]: value };
     setAnswers(newAnswers);
 
     if (currentQuestion < QUIZ_QUESTIONS.length - 1) {
@@ -203,30 +203,30 @@ export default function QuizPage() {
             {/* 维度标签 */}
             <div className="mb-4">
               <Badge className="bg-blue-50 text-blue-600 border-blue-100 text-xs">
-                {DIMENSION_ICONS[question.dimension] || '📊'} {question.dimension}
+                {DIMENSION_ICONS[question!.dimension] || '📊'} {question!.dimension}
               </Badge>
             </div>
 
             {/* 题目 */}
             <h2 className="text-xl font-bold text-[#1E293B] mb-8">
-              {question.id}. {question.text}
+              {question!.id}. {question!.text}
             </h2>
 
             {/* 选项 */}
             <div className="space-y-3">
-              {question.options.map((option) => (
+              {question!.options.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleAnswer(option.value)}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 ${
-                    answers[question.id] === option.value
+                    answers[question!.id] === option.value
                       ? 'border-[#1E3A8A] bg-blue-50'
                       : 'border-[#E2E8F0] hover:border-[#1E3A8A]/50 hover:bg-blue-50/30'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                      answers[question.id] === option.value
+                      answers[question!.id] === option.value
                         ? 'bg-[#1E3A8A] text-white'
                         : 'bg-gray-100 text-[#64748B]'
                     }`}>

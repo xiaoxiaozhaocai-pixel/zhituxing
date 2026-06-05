@@ -11,7 +11,7 @@ const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS?.split(',') || [];
 function getClientIp(request: NextRequest): string {
   const xForwardedFor = request.headers.get('x-forwarded-for');
   if (xForwardedFor) {
-    return xForwardedFor.split(',')[0].trim();
+    return xForwardedFor.split(',')[0]!.trim();
   }
   const xRealIp = request.headers.get('x-real-ip');
   if (xRealIp) {

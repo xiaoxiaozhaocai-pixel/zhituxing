@@ -181,7 +181,7 @@ export default function AdminOrdersPage() {
     setLightboxOrder(order);
     setLightboxUrl('');
     if (thumbCache[order.payment_screenshot_url]) {
-      setLightboxUrl(thumbCache[order.payment_screenshot_url]);
+      setLightboxUrl(thumbCache[order.payment_screenshot_url]!)!;
       return;
     }
     setLightboxLoading(true);
@@ -382,8 +382,7 @@ export default function AdminOrdersPage() {
                         aria-label="查看截图"
                       >
                         {thumb ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={thumb} alt="付款截图" className="w-full h-full object-cover" />
+                          <Image src={thumb} alt="付款截图" fill className="object-cover" unoptimized />
                         ) : (
                           <ImageIcon className="w-6 h-6 text-gray-400" />
                         )}

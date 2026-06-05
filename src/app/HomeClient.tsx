@@ -118,39 +118,6 @@ export default function HomeClient() {
 
   return (
     <div className="min-h-screen bg-white text-[#1E293B] font-[system-ui,-apple-system,'Segoe_UI',Roboto,'Helvetica_Neue',Arial,'Noto_Sans',sans-serif] leading-relaxed">
-      {/* ====== Global Animations ====== */}
-      <style jsx global>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes glow-pulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,.35), 0 0 60px rgba(99,102,241,.15); }
-          50%      { box-shadow: 0 0 30px rgba(99,102,241,.5), 0 0 80px rgba(99,102,241,.25); }
-        }
-        .anim-up      { animation: fadeInUp .8s ease-out forwards; }
-        .anim-up-d1   { opacity:0; animation: fadeInUp .8s ease-out .15s forwards; }
-        .anim-up-d2   { opacity:0; animation: fadeInUp .8s ease-out .30s forwards; }
-        .anim-up-d3   { opacity:0; animation: fadeInUp .8s ease-out .45s forwards; }
-        .anim-up-d4   { opacity:0; animation: fadeInUp .8s ease-out .60s forwards; }
-        .glow-btn     { animation: glow-pulse 3s ease-in-out infinite; }
-
-        @keyframes shimmer {
-          0%   { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .skeleton {
-          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
-          background-size: 200% 100%;
-          animation: shimmer 1.5s ease-in-out infinite;
-          border-radius: 8px;
-        }
-        .glow-btn:hover {
-          animation: none;
-          box-shadow: 0 0 40px rgba(99,102,241,.6), 0 0 100px rgba(99,102,241,.3);
-          transform: scale(1.05);
-        }
-      `}</style>
 
       {/* ================================================
            1. HERO 区域 — 故事线的起点

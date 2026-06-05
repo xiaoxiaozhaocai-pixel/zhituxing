@@ -8,8 +8,12 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        // 不暴露 admin 路径，只禁止 api 和内部路径
-        disallow: ['/api/', '/_next/', '/auth/'],
+        disallow: ['/api/', '/_next/', '/auth/', '/admin/', '/test-e2e/', '/test-ssr/'],
+      },
+      {
+        userAgent: 'Baiduspider',
+        allow: '/',
+        disallow: ['/api/', '/_next/', '/auth/', '/admin/', '/test-e2e/', '/test-ssr/', '/profile/'],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

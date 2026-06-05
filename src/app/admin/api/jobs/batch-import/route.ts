@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import type { JdImportItem } from '@/lib/types';
+import { requireAdmin } from '@/lib/admin-auth';
 
 // 获取Supabase客户端
 function getSupabaseClient() {
@@ -20,6 +21,8 @@ async function verifyAdmin(request: NextRequest) {
 
 // 批量导入JD
 export async function POST(request: NextRequest) {
+  const _authCheck = requireAdmin(request);
+  if (_authCheck) return _authCheck;
   try {
     // 验证管理员
     if (!await verifyAdmin(request)) {

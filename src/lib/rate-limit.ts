@@ -31,7 +31,7 @@ function evictIfNeeded(): void {
   entries.sort((a, b) => a[1].lastAccess - b[1].lastAccess);
   const evictCount = Math.floor(MAX_KEYS * 0.2);
   for (let i = 0; i < evictCount; i++) {
-    buckets.delete(entries[i][0]);
+    buckets.delete(entries[i]![0]);
   }
 }
 

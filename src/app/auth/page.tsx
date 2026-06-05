@@ -316,6 +316,7 @@ function AuthContent() {
       }, 1000);
       return () => clearTimeout(timer);
     }
+    return;
   }, [resendCountdown]);
 
   // 重发验证码
@@ -395,7 +396,7 @@ function AuthContent() {
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
     const newDigits = [...otpDigits];
     for (let i = 0; i < pastedData.length; i++) {
-      newDigits[i] = pastedData[i];
+      newDigits[i] = pastedData[i]!;
     }
     setOtpDigits(newDigits);
     

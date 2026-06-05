@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import Image from 'next/image';
 
 const MEMBERSHIP_PLANS = [
   {
@@ -432,12 +433,14 @@ export default function MembershipPage() {
 
             {/* 收款码（按支付方式切换；key 强制 React 重挂载 img，避免浏览器缓存复用） */}
             <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${paymentMethod === 'wechat' ? 'border-green-300 bg-green-50/50' : 'border-blue-300 bg-blue-50/50'}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 key={paymentMethod}
                 src={paymentMethod === 'wechat' ? '/images/payment/wechat-pay.jpg' : '/images/payment/alipay-pay.jpg'}
                 alt={paymentMethod === 'wechat' ? '微信支付收款码' : '支付宝收款码'}
-                className="w-48 h-48 mx-auto rounded-lg shadow-sm mb-3 object-contain"
+                width={192}
+                height={192}
+                className="mx-auto rounded-lg shadow-sm mb-3 object-contain"
+                priority
               />
               <p className="text-sm text-gray-700 font-medium">
                 {paymentMethod === 'wechat' ? '使用微信扫一扫支付' : '使用支付宝扫一扫支付'}
@@ -471,11 +474,13 @@ export default function MembershipPage() {
                 </div>
               ) : (
                 <div className="relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
+                  <Image 
                     src={screenshotPreview} 
                     alt="付款截图预览" 
+                    width={400}
+                    height={192}
                     className="w-full max-h-48 object-contain rounded-lg border border-gray-200"
+                    unoptimized
                   />
                   <button
                     className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"

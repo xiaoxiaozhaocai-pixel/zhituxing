@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     const todayData = daily[daily.length - 1];
     const yesterdayData = daily.length >= 2 ? daily[daily.length - 2] : null;
     const costChange = yesterdayData && yesterdayData.estCost > 0
-      ? ((todayData.estCost - yesterdayData.estCost) / yesterdayData.estCost * 100)
+      ? ((todayData!.estCost - yesterdayData.estCost) / yesterdayData.estCost * 100)
       : null;
 
     const monthlyProjection = days > 0 ? Math.round((totalCost / days) * 30 * 100) / 100 : 0;
