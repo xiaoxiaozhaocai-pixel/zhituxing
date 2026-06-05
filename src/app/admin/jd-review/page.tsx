@@ -29,7 +29,7 @@ interface Submission {
   jd_content: string;
   status: number;
   reject_reason: string | null;
-  auto_review_result: any;
+  auto_review_result: unknown;
   created_at: string;
   review_time: string | null;
   username: string;

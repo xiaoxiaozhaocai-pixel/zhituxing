@@ -99,7 +99,7 @@ export default function JobsPage() {
       const url = modal.mode === 'create' ? '/admin/api/jobs' : '/admin/api/jobs';
       const method = modal.mode === 'create' ? 'POST' : 'PUT';
       
-      const body: any = {
+      const body: Record<string, unknown> = {
         ...form,
         salary_min: parseInt(form.salary_min) || 0,
         salary_max: parseInt(form.salary_max) || 0,

@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-async function executeSql(sql: string): Promise<{ data?: any; error?: string }> {
+async function executeSql(sql: string): Promise<{ data?: unknown; error?: string }> {
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return { error: 'Missing Supabase credentials' };
   }
@@ -103,7 +103,7 @@ export async function GET() {
 }
 
 export async function POST() {
-  const results: any[] = [];
+  const results: string[] = [];
   
   // 约束 SQL
   const constraints = [

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import type { FixStep } from '@/lib/types';
 
 /**
  * 修复 skills 数据格式 + 添加约束
@@ -10,7 +11,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
  */
 
 // 简单的 SQL 执行函数（通过 Supabase REST API）
-async function executeSql(supabase: any, sql: string): Promise<{ data: any; error: any }> {
+async function executeSql(supabase: Record<string, unknown>, sql: string): Promise<{ data: unknown; error: unknown }> {
   // 使用 Supabase 的 rpc 功能执行原生 SQL
   // 注意：需要先在 Supabase 中创建 exec_sql 函数
   // 或者使用直接查询的方式
@@ -43,8 +44,8 @@ export async function GET() {
     let softArrayCount = 0;
     let softNullCount = 0;
     
-    const hardStringSamples: any[] = [];
-    const softStringSamples: any[] = [];
+    const hardStringSamples: { id: string; value: string; type: string }[] = [];
+    const softStringSamples: { id: string; value: string; type: string }[] = [];
     
     for (const record of allRecords || []) {
       const hard = record.hard_skills;
@@ -116,7 +117,7 @@ export async function GET() {
 
 export async function POST() {
   const supabase = getSupabaseAdmin();
-  const results: any = { steps: [] };
+  const results: { steps: FixStep[]; constraint_sql?: string } = { steps: [] };
   
   try {
     // ============================================================
@@ -140,7 +141,7 @@ export async function POST() {
     // ============================================================
     console.log('[fix-skills-data] Step 2: 修复 hard_skills...');
     
-    const hardToFix: any[] = [];
+    const hardToFix: { id: string; fixed: string[] }[] = [];
     for (const record of allRecords || []) {
       const hard = record.hard_skills;
       
@@ -205,7 +206,7 @@ export async function POST() {
     // ============================================================
     console.log('[fix-skills-data] Step 3: 修复 soft_skills...');
     
-    const softToFix: any[] = [];
+    const softToFix: { id: string; fixed: string[] }[] = [];
     for (const record of allRecords || []) {
       const soft = record.soft_skills;
       

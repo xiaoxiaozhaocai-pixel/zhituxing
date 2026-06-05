@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 const NAV_ITEMS = [
   { href: '/admin/jd', label: 'JD管理', icon: '📋' },
   { href: '/admin/users', label: '用户看板', icon: '👥' },
+  { href: '/admin/universities', label: '高校管理', icon: '🏫' },
   { href: '/admin/skills', label: '技能管理', icon: '🔗' },
   { href: '/admin/analytics', label: '行为看板', icon: '📊' },
   { href: '/admin/analytics/usage', label: '使用率分析', icon: '📈' },
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
 const PAGE_TITLES: Record<string, string> = {
   '/admin/jd': 'JD数据管理',
   '/admin/users': '用户数据看板',
+  '/admin/universities': '高校管理',
   '/admin/skills': '技能关系图管理',
   '/admin/analytics': '行为数据看板',
   '/admin/analytics/usage': '使用率分析',

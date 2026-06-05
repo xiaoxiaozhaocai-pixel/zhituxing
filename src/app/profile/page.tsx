@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import type { UserProfile } from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
 import {
   Bell,
@@ -330,8 +331,8 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
           <div className="space-y-3">
             {[
               { key: 'gpa', label: 'GPA', icon: Bookmark, color: 'text-orange-600' },
-              { key: 'target_industry', label: '意向行业', icon: Target, color: 'text-blue-600', format: (v: any) => Array.isArray(v) ? v.join('、') : v },
-              { key: 'target_cities', label: '意向城市', icon: MapPin, color: 'text-green-600', format: (v: any) => Array.isArray(v) ? v.join('、') : v },
+              { key: 'target_industry', label: '意向行业', icon: Target, color: 'text-blue-600', format: (v: string | string[]) => Array.isArray(v) ? v.join('、') : v },
+              { key: 'target_cities', label: '意向城市', icon: MapPin, color: 'text-green-600', format: (v: string | string[]) => Array.isArray(v) ? v.join('、') : v },
               { key: 'economic_pressure', label: '家庭经济', icon: DollarSign, color: 'text-red-500' },
               { key: 'career_tendency', label: '学术vs实践', icon: Brain, color: 'text-purple-600' },
             ].map(field => {
@@ -493,7 +494,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
 // 消息内容组件
 function MessagesPanel({ userId }: { userId: string }) {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -620,7 +621,7 @@ function MessagesPanel({ userId }: { userId: string }) {
 }
 
 // 会员面板组件
-function MembershipPanel({ user, quota }: { user: any; quota: any }) {
+function MembershipPanel({ user, quota }: { user: UserProfile; quota: Record<string, unknown> }) {
   const memberBenefits = [
     '无限次AI职业规划',
     '无限次AI模拟面试',
@@ -704,7 +705,7 @@ function MembershipPanel({ user, quota }: { user: any; quota: any }) {
 
 // 报告面板组件
 function ReportsPanel({ userId }: { userId: string }) {
-  const [reports, setReports] = useState<any[]>([]);
+  const [reports, setReports] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -791,7 +792,7 @@ function ReportsPanel({ userId }: { userId: string }) {
 
 // 收藏面板组件
 function FavoritesPanel({ userId }: { userId: string }) {
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -998,7 +999,7 @@ function InvitePanel({ userId }: { userId: string }) {
 }
 
 // 设置面板组件
-function SettingsPanel({ user, onLogout }: { user: any; onLogout: () => void }) {
+function SettingsPanel({ user, onLogout }: { user: UserProfile; onLogout: () => void }) {
   const [formData, setFormData] = useState({
     nickname: user?.nickname || '',
     phone: user?.phone || ''

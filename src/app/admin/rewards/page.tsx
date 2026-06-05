@@ -47,7 +47,7 @@ const rewardTypeColors: Record<string, string> = {
   jd_submit: 'bg-green-100 text-green-700'
 };
 
-const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
   success: { label: '成功', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   failed: { label: '失败', color: 'bg-red-100 text-red-700', icon: XCircle },
   pending: { label: '待处理', color: 'bg-yellow-100 text-yellow-700', icon: Clock }

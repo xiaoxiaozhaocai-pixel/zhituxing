@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import type { FixStep } from '@/lib/types';
 
 /**
  * 数据修复脚本：修复 hard_skills 和 soft_skills 的 JSON 字符串格式问题
@@ -11,7 +12,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET() {
   const supabase = getSupabaseAdmin();
-  const results: any = {};
+  const results: Record<string, unknown> = {};
 
   try {
     // Step 1: 检查脏数据量
@@ -87,7 +88,7 @@ export async function GET() {
  */
 export async function POST() {
   const supabase = getSupabaseAdmin();
-  const results: any = { steps: [] };
+  const results: { steps: FixStep[] } = { steps: [] };
 
   try {
     // 查询所有需要修复的记录
@@ -103,7 +104,7 @@ export async function POST() {
       results.steps.push({ step: 'query_hard', error: hardQueryError.message });
     } else {
       // 筛选出 JSON 字符串格式的记录
-      const toFix: any[] = [];
+      const toFix: { id: string; fixed: string[] }[] = [];
       for (const record of hardStringRecords || []) {
         const val = record.hard_skills;
         // 检查是否为 JSON 字符串格式
@@ -145,7 +146,7 @@ export async function POST() {
     if (softQueryError) {
       results.steps.push({ step: 'query_soft', error: softQueryError.message });
     } else {
-      const toFix: any[] = [];
+      const toFix: { id: string; fixed: string[] }[] = [];
       for (const record of softStringRecords || []) {
         const val = record.soft_skills;
         if (typeof val === 'string' && val.startsWith('"[')) {

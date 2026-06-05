@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-let cache: { data: any; timestamp: number } | null = null
+let cache: { data: Record<string, unknown>; timestamp: number } | null = null
 const CACHE_DURATION = 3600 * 1000
 
 function groupExperience(raw: Record<string, number>): { label: string; value: string; count: number }[] {
@@ -50,8 +50,8 @@ export async function GET() {
       return NextResponse.json(cache.data, { headers: { 'Cache-Control': 'public, max-age=3600' } })
     }
     const headers = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
-    const fetchAll = async (select: string): Promise<any[]> => {
-      const all: any[] = []
+    const fetchAll = async (select: string): Promise<Record<string, string | null>[]> => {
+      const all: Record<string, string | null>[] = []
       for (let offset = 0; offset < 20000; offset += 1000) {
         const res = await fetch(SUPABASE_URL + '/rest/v1/job_descriptions?select=' + select + '&limit=1000&offset=' + offset, { headers })
         if (!res.ok) throw new Error('Supabase query failed: ' + res.status)

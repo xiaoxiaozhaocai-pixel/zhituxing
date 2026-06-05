@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import type { SettingItem } from '@/lib/types';
 
 const supabase = getSupabaseAdmin();
 
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
       .order('key');
 
     // 转换为对象格式
-    const settingsObj = (settings || []).reduce((acc: Record<string, any>, item: any) => {
+    const settingsObj = (settings || []).reduce((acc: Record<string, string>, item: SettingItem) => {
       acc[item.key] = item.value;
       return acc;
     }, {});

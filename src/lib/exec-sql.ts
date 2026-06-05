@@ -8,7 +8,7 @@
  * PostgreSQL参数安全转义
  * 将参数值转换为安全的SQL字面量
  */
-export function escapeParam(value: any): string {
+export function escapeParam(value: unknown): string {
   if (value === null || value === undefined) {
     return 'NULL';
   }
@@ -39,7 +39,7 @@ export function escapeParam(value: any): string {
 }
 
 // 执行SQL查询（支持参数化）
-export async function execSql(template: string, ...params: any[]): Promise<unknown[]> {
+export async function execSql(template: string, ...params: unknown[]): Promise<unknown[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

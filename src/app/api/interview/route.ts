@@ -28,6 +28,7 @@ import {
   createDeepSeekRAGStream,
   PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
+import type { ChatMessage } from '@/lib/types';
 import {
   type InterviewStyle,
   INTERVIEW_STYLES,
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest) {
         }
         
         // 构建 DeepSeek 消息
-        const history = (body.history || []).filter((m: any) => m.role !== 'system');
+        const history = (body.history || []).filter((m: ChatMessage) => m.role !== 'system');
         
         // 风格切换或本尊点评时，在前面加提示
         const effectiveMessage = styleSwitchNotice ? styleSwitchNotice + message : message;

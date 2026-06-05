@@ -306,7 +306,7 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       const contentType = response.headers.get('content-type') || '';
       const text = await response.text();
       
-      let data: any;
+      let data: unknown;
       try {
         data = JSON.parse(text);
       } catch {
@@ -390,7 +390,7 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
 /**
  * 从API响应中提取岗位数据（适配不同API格式）
  */
-function extractJobItems(data: any, apiId: string): any[] {
+function extractJobItems(data: unknown, apiId: string): unknown[] {
   if (!data) return [];
 
   switch (apiId) {

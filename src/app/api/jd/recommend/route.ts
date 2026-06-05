@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { sanitizeJDList } from '@/lib/jd-sanitizer';
+import type { JobRecord } from '@/lib/types';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 import { generateXiaozhiNote } from '@/lib/xiaozhi-recommend';
 
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
           .limit(limit);
 
         if (!error && jds && jds.length > 0) {
-          const jdsWithNotes = jds.map((jd: any) => ({
+          const jdsWithNotes = jds.map((jd: JobRecord) => ({
             ...jd,
             xiaozhi_note: generateXiaozhiNote({
               matchScore: 75,

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       .select('status');
 
     const statusMap: Record<string, number> = {};
-    (statusData || []).forEach((row: any) => {
+    (statusData || []).forEach((row: Record<string, unknown>) => {
       const s = row.status || 'unknown';
       statusMap[s] = (statusMap[s] || 0) + 1;
     });

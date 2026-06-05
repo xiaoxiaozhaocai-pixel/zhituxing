@@ -187,7 +187,7 @@ async function getUserList(searchParams: URLSearchParams) {
   const offset = (page - 1) * pageSize;
 
   // 构建参数数组和WHERE条件
-  const params: any[] = [];
+  const params: string[] = [];
   const conditions: string[] = [];
   
   if (keyword) {

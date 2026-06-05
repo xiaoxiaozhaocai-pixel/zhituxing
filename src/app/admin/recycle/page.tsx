@@ -21,14 +21,14 @@ interface RecycleItem {
   id: string;
   original_table: string;
   original_id: number;
-  deleted_data: any;
+  deleted_data: unknown;
   deleted_by: string;
   reason: string;
   deleted_at: string;
   expire_at: string;
 }
 
-const tableIcons: Record<string, any> = {
+const tableIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   jobs: Database,
   articles: FileText,
   announcements: Bell

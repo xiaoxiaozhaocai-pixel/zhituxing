@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
+import type { JdImportItem } from '@/lib/types';
 
 // 获取Supabase客户端
 function getSupabaseClient() {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     };
 
     // 批量插入数据（字段名映射到 job_descriptions 表的实际列名）
-    const jobsToInsert = jobs.map((job: any, index: number) => ({
+    const jobsToInsert = jobs.map((job: JdImportItem, _index: number) => ({
       job_title: job.job_name,
       company: job.company_name,
       city: job.city,

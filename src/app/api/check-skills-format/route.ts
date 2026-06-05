@@ -7,7 +7,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
  */
 export async function GET() {
   const supabase = getSupabaseAdmin();
-  const results: any = {};
+  const results: Record<string, unknown> = {};
 
   try {
     // 获取样本数据
@@ -29,8 +29,8 @@ export async function GET() {
     let softStringCount = 0;
     let softJsonStringCount = 0;
     
-    const hardStringSamples: any[] = [];
-    const softStringSamples: any[] = [];
+    const hardStringSamples: { id: string; value: string }[] = [];
+    const softStringSamples: { id: string; value: string }[] = [];
 
     for (const record of samples || []) {
       const hard = record.hard_skills;

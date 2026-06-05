@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 // 获取Supabase客户端
 function getSupabaseClient() {
@@ -18,7 +18,7 @@ async function verifyAdmin(request: NextRequest) {
 }
 
 // 导出用户数据
-async function exportUsers(supabase: any, dateRange?: { start: string; end: string }) {
+async function exportUsers(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
     .from('users')
     .select('id, username, phone, created_at, is_member, is_lifetime_member, member_expire_time, profile_completed')
@@ -35,7 +35,7 @@ async function exportUsers(supabase: any, dateRange?: { start: string; end: stri
   
   if (error) throw error;
   
-  return (data || []).map((user: any) => ({
+  return (data || []).map((user: Record<string, unknown>) => ({
     '用户ID': user.id,
     '用户名': user.username || '-',
     '手机号': user.phone || '-',
@@ -47,7 +47,7 @@ async function exportUsers(supabase: any, dateRange?: { start: string; end: stri
 }
 
 // 导出会员数据
-async function exportMembers(supabase: any, dateRange?: { start: string; end: string }) {
+async function exportMembers(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
     .from('users')
     .select('id, username, phone, is_member, is_lifetime_member, member_expire_time, created_at')
@@ -65,7 +65,7 @@ async function exportMembers(supabase: any, dateRange?: { start: string; end: st
   
   if (error) throw error;
   
-  return (data || []).map((user: any) => ({
+  return (data || []).map((user: Record<string, unknown>) => ({
     '用户ID': user.id,
     '用户名': user.username || '-',
     '手机号': user.phone || '-',
@@ -77,7 +77,7 @@ async function exportMembers(supabase: any, dateRange?: { start: string; end: st
 }
 
 // 导出岗位数据
-async function exportJobs(supabase: any, dateRange?: { start: string; end: string }) {
+async function exportJobs(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
     .from('job_descriptions')
     .select('id, job_title, company, city, salary_range, source_platform, created_at')
@@ -94,7 +94,7 @@ async function exportJobs(supabase: any, dateRange?: { start: string; end: strin
   
   if (error) throw error;
   
-  return (data || []).map((job: any) => ({
+  return (data || []).map((job: Record<string, unknown>) => ({
     'ID': job.id,
     '岗位名称': job.job_title,
     '公司名称': job.company,
@@ -106,7 +106,7 @@ async function exportJobs(supabase: any, dateRange?: { start: string; end: strin
 }
 
 // 导出文章数据
-async function exportArticles(supabase: any, dateRange?: { start: string; end: string }) {
+async function exportArticles(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
     .from('articles')
     .select('id, title, category, tags, views, created_at')
@@ -123,7 +123,7 @@ async function exportArticles(supabase: any, dateRange?: { start: string; end: s
   
   if (error) throw error;
   
-  return (data || []).map((article: any) => ({
+  return (data || []).map((article: Record<string, unknown>) => ({
     'ID': article.id,
     '标题': article.title,
     '分类': article.category || '-',
@@ -134,7 +134,7 @@ async function exportArticles(supabase: any, dateRange?: { start: string; end: s
 }
 
 // 导出订单数据
-async function exportOrders(supabase: any, dateRange?: { start: string; end: string }) {
+async function exportOrders(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
     .from('orders')
     .select('id, user_id, product_type, amount, status, created_at')
@@ -151,7 +151,7 @@ async function exportOrders(supabase: any, dateRange?: { start: string; end: str
   
   if (error) throw error;
   
-  return (data || []).map((order: any) => ({
+  return (data || []).map((order: Record<string, unknown>) => ({
     '订单号': order.id,
     '用户ID': order.user_id,
     '商品类型': order.product_type === 'monthly' ? '月度会员' : order.product_type === 'lifetime' ? '终身会员' : order.product_type,
@@ -162,7 +162,7 @@ async function exportOrders(supabase: any, dateRange?: { start: string; end: str
 }
 
 // 生成CSV内容
-function generateCSV(data: any[]): string {
+function generateCSV(data: Record<string, unknown>[]): string {
   if (data.length === 0) return '';
   
   const headers = Object.keys(data[0]);
@@ -181,7 +181,7 @@ function generateCSV(data: any[]): string {
 }
 
 // 生成Excel文件（简化的xlsx格式，这里用CSV代替）
-function generateExcel(data: any[], filename: string): { filename: string; content: string } {
+function generateExcel(data: Record<string, unknown>[], filename: string): { filename: string; content: string } {
   return {
     filename: `${filename}.csv`,
     content: generateCSV(data)

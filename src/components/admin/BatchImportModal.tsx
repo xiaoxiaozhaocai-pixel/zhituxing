@@ -204,7 +204,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       const res = await fetch('/admin/api/jobs?pageSize=10000');
       const result = await res.json();
       if (result.code === 200) {
-        existingJobs = result.data.list.map((j: any) => ({
+        existingJobs = result.data.list.map((j: { job_name: string; company_name: string; city: string }) => ({
           job_name: j.job_name,
           company_name: j.company_name,
           city: j.city

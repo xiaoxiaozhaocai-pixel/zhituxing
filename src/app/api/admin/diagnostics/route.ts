@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql } from '@/lib/exec-sql';
+import type { TestResult } from '@/lib/types';
 
 // 管理员权限校验
 async function checkAdmin(request: NextRequest): Promise<string | null> {
@@ -34,7 +35,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
 }
 
 // API端点测试
-async function testApiEndpoints(): Promise<any[]> {
+async function testApiEndpoints(): Promise<TestResult[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
   const tests = [
     { path: '/api/health', method: 'GET', expected: 200, name: '健康检查' },
@@ -73,7 +74,7 @@ async function testApiEndpoints(): Promise<any[]> {
 }
 
 // 页面路由测试
-async function testPageRoutes(): Promise<any[]> {
+async function testPageRoutes(): Promise<TestResult[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
   const routes = [
     '/', '/login', '/register', '/jobs', '/career-planning', '/assistant',
@@ -98,7 +99,7 @@ async function testPageRoutes(): Promise<any[]> {
 }
 
 // SSE流测试
-async function testSSEStream(): Promise<any[]> {
+async function testSSEStream(): Promise<TestResult[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
   const test = { name: '职搭子SSE流', path: '/api/partner' };
   
@@ -136,7 +137,7 @@ async function testSSEStream(): Promise<any[]> {
 }
 
 // 安全检查
-async function testSecurity(): Promise<any[]> {
+async function testSecurity(): Promise<TestResult[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.zeabur.app';
   const tests = [];
 
@@ -218,7 +219,7 @@ async function testSecurity(): Promise<any[]> {
 }
 
 // 数据库状态检查
-async function testDatabase(): Promise<any[]> {
+async function testDatabase(): Promise<TestResult[]> {
   const tables = [
     { name: 'public.job_descriptions', min: 1000, display: '岗位数据' },
     { name: 'public.skill_taxonomy', min: 100, display: '技能分类' },
@@ -280,7 +281,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 统计各分类结果
-    const countResults = (items: any[]) => {
+    const countResults = (items: TestResult[]) => {
       const pass = items.filter(i => i.result === 'pass').length;
       const fail = items.filter(i => i.result === 'fail').length;
       const warn = items.filter(i => i.result === 'warn').length;

@@ -168,7 +168,7 @@ export async function compressConversation(
     const botType = existing?.bot_type || null;
 
     // 构建对话文本
-    const conversationText = (messages as any[])
+    const conversationText = (messages as Record<string, unknown>[])
       .map(m => `${m.role}: ${m.content}`)
       .join('\n');
 
@@ -218,7 +218,7 @@ export async function compressConversation(
     if (upsertError) throw upsertError;
 
     // 标记消息已压缩
-    const messageIds = (messages as any[]).map(m => m.id);
+    const messageIds = (messages as Record<string, unknown>[]).map(m => m.id);
     const { error: updateError } = await supabase
       .from('chat_history')
       .update({ is_compressed: true })

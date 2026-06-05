@@ -23,7 +23,7 @@ type ExportType = 'users' | 'members' | 'jobs' | 'articles' | 'orders' | 'all';
 interface ExportOption {
   type: ExportType;
   label: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   description: string;
   fields: string[];
 }

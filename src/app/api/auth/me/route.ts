@@ -4,6 +4,7 @@ import {
   setAuthCookies,
 } from '@/lib/auth-cookies';
 import { tryRefreshSession } from '@/lib/auth-refresh';
+import type { User } from '@/lib/types';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { MeDataSchema, type MeData } from '@/lib/api-contracts/auth';
 
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    let user: any = null;
+    let user: User | null = null;
     let refreshed: {
       accessToken: string;
       refreshToken: string;

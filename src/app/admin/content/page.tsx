@@ -86,7 +86,7 @@ export default function ContentPage() {
       const url = modal.mode === 'create' ? '/admin/api/content' : '/admin/api/content';
       const method = modal.mode === 'create' ? 'POST' : 'PUT';
       
-      const body: any = {
+      const body: Record<string, unknown> = {
         type: activeType,
         title: form.title,
         content: form.content,

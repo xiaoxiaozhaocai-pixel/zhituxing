@@ -1,3 +1,4 @@
+import type { User } from '@supabase/supabase-js';
 /**
  * Auth Refresh - 用 refresh_token 续期 Supabase 会话
  *
@@ -15,7 +16,7 @@ export type RefreshedSession = {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
-  user: any;
+  user: User;
 };
 
 export async function tryRefreshSession(

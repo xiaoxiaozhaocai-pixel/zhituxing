@@ -60,6 +60,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
     { path: '/admin/rewards', icon: Gift, label: '奖励发放' },
     { path: '/admin/notifications', icon: Mail, label: '站内信' },
     { path: '/admin/users', icon: Users, label: '用户管理' },
+    { path: '/admin/universities', icon: Users, label: '高校管理' },
     { path: '/admin/recycle', icon: Trash2, label: '回收站' },
     { path: '/admin/content', icon: FileText, label: '内容管理' },
     { path: '/admin/export', icon: Download, label: '数据导出' },

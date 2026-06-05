@@ -7,55 +7,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Compass, 
-  Target, 
   TrendingUp, 
-  MessageSquare, 
   Briefcase, 
-  GraduationCap,
   Brain,
-  Users,
-  Zap,
   CheckCircle2,
   ArrowRight,
   Sparkles,
   Building2,
-  MapPin,
   Scale,
   FileSearch,
   Mic,
-  Calendar,
   FileText
 } from 'lucide-react';
+import HomeChat from '@/components/HomeChat';
 
-// 计算距离秋招的天数（目标日期：9月1日）
-function getDaysToAutumnRecruit(): { days: number; color: string; text: string } {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  
-  // 秋招目标日期：每年9月1日
-  let targetDate = new Date(currentYear, 8, 1); // 月份从0开始，8表示9月
-  
-  // 如果已经过了今年的9月1日，则计算明年的
-  if (now > targetDate) {
-    targetDate = new Date(currentYear + 1, 8, 1);
-  }
-  
-  const diffTime = targetDate.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  let color = 'text-gray-500';
-  let text = '准备时间充裕';
-  
-  if (diffDays <= 60) {
-    color = 'text-red-500';
-    text = '时间紧迫，立即行动';
-  } else if (diffDays <= 90) {
-    color = 'text-orange-500';
-    text = '进入冲刺阶段';
-  }
-  
-  return { days: diffDays, color, text };
-}
+
 
 // 痛点共鸣数据
 const painPoints = [
@@ -142,58 +108,6 @@ const trustData = [
 ];
 
 // 6个智能体功能卡片
-const agentFeatures = [
-  {
-    icon: <Compass className="w-8 h-8" />,
-    title: '小职 · AI职业规划师',
-    description: '苏格拉底式引导，帮你找到方向',
-    link: '/assistant?bot=career',
-    gradient: 'from-violet-500 to-purple-600',
-    isHero: true, // 主角，卡片更大
-  },
-  {
-    icon: <Scale className="w-7 h-7" />,
-    title: '考研就业决策',
-    description: '数据推演，帮你做选择',
-    link: '/assistant?bot=decision',
-    gradient: 'from-blue-500 to-indigo-600',
-  },
-  {
-    icon: <Target className="w-7 h-7" />,
-    title: '能力测评',
-    description: '专业技能量化评估',
-    link: '/assessment',
-    gradient: 'from-emerald-500 to-teal-600',
-  },
-  {
-    icon: <Briefcase className="w-7 h-7" />,
-    title: '岗位匹配',
-    description: '基于技能精准推荐',
-    link: '/match',
-    gradient: 'from-blue-500 to-cyan-500',
-  },
-{
-    icon: <Mic className="w-7 h-7" />,
-    title: 'AI模拟面试',
-    description: '真实场景模拟练习',
-    link: '/assistant?bot=interview',
-    gradient: 'from-orange-500 to-amber-500',
-  },
-  {
-    icon: <Users className="w-7 h-7" />,
-    title: '职搭子',
-    description: 'HR岗位JD助手',
-    link: '/assistant?bot=jobs',
-    gradient: 'from-pink-500 to-rose-500',
-  },
-  {
-    icon: <FileText className="w-7 h-7" />,
-    title: 'AI简历创作',
-    description: '边聊边写，实时预览',
-    link: '/resume-builder',
-    gradient: 'from-teal-500 to-emerald-600',
-  },
-];
 
 export default function HomeClient() {
   const router = useRouter();
@@ -279,32 +193,12 @@ export default function HomeClient() {
             不用焦虑，小职帮你一步步走。
           </p>
           
-          {/* CTA 按钮 */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 anim-up-d3">
-            <Link href="/assistant?bot=xiaozhi">
-              <button className="glow-btn bg-gradient-to-r from-violet-600 via-purple-500 to-indigo-600 text-white text-sm sm:text-lg px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all duration-300 shadow-xl flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                找小职聊天
-              </button>
-            </Link>
-            <Link href="/jobs">
-              <button className="px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-xl font-medium border-2 border-[#E2E8F0] text-[#1E293B] hover:border-violet-300 hover:bg-violet-50 transition-all duration-300 flex items-center gap-2">
-                <Briefcase className="w-4 h-4" />
-                浏览岗位百科
-              </button>
-            </Link>
+          {/* 小职对话主入口 */}
+          <div className="anim-up-d3">
+            <HomeChat />
           </div>
           
-          {/* 秋招倒计时 */}
-          {(() => {
-            const { days, color, text } = getDaysToAutumnRecruit();
-            return (
-              <p className={`mt-6 text-sm ${color} anim-up-d4 flex items-center justify-center gap-1.5`}>
-                <Calendar className="w-4 h-4" />
-                距离{new Date().getMonth() >= 8 ? '明年' : ''}秋招还有 <strong className="font-bold">{days}</strong> 天，你的准备进度如何？
-              </p>
-            );
-          })()}
+
         </div>
       </section>
 
@@ -439,61 +333,6 @@ export default function HomeClient() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================
-           6. 功能卡片区 — 6个智能体
-      ================================================ */}
-      <section className="py-16 md:py-20 bg-[#F8FAFC]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl md:text-2xl font-bold text-[#1E293B] mb-4 text-center">
-            你的AI助手团队
-          </h2>
-          <p className="text-[#64748B] text-center mb-10">
-            覆盖求职每一步，每个环节都有AI帮手
-          </p>
-          
-          {/* 功能卡片网格 — 主角更大 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {agentFeatures.map((item, i) => (
-              <div
-                key={i}
-                className={`bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-500 group ${
-                  item.isHero ? 'md:col-span-1 lg:row-span-1' : ''
-                } ${item.isHero ? 'ring-2 ring-violet-200 ring-offset-2' : ''}`}
-              >
-                {/* 主角标识 */}
-                {item.isHero && (
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" />
-                      核心推荐
-                    </span>
-                  </div>
-                )}
-                
-                {/* 图标 */}
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  {item.icon}
-                </div>
-                
-                {/* 内容 */}
-                <h3 className={`font-bold mb-2 ${item.isHero ? 'text-xl' : 'text-lg'} text-[#1E293B]`}>
-                  {item.title}
-                </h3>
-                <p className="text-[#64748B] text-sm mb-4 leading-relaxed">{item.description}</p>
-                
-                {/* 按钮 */}
-                <Link href={item.link}>
-                  <button className={`w-full py-2.5 rounded-xl bg-gradient-to-r ${item.gradient} text-white font-medium hover:opacity-90 transition-opacity duration-300 shadow-sm flex items-center justify-center gap-2`}>
-                    立即体验
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </Link>
-              </div>
-            ))}
           </div>
         </div>
       </section>

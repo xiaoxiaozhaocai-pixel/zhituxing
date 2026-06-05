@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createDeepSeekSSEStream } from '@/lib/deepseek-chat';
 import { searchRelevantJDs, buildJDAssistantPrompt } from '@/lib/jd-rag';
+import type { ChatMessage } from '@/lib/types';
 
 // 流式对话
 export async function POST(request: NextRequest) {
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
     const { message, messages } = body;
 
     // 参数校验
-    const lastUserMsg = messages?.filter((m: any) => m.role === 'user').pop()?.content || message || '';
+    const lastUserMsg = messages?.filter((m: ChatMessage) => m.role === 'user').pop()?.content || message || '';
     if (!lastUserMsg) {
       return NextResponse.json(
         { code: 400, message: '消息内容不能为空' },
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
       // 构建DeepSeek消息列表
       const chatMessages = [
         { role: 'system' as const, content: systemPrompt },
-        ...(messages || []).filter((m: any) => m.role !== 'system')
+        ...(messages || []).filter((m: ChatMessage) => m.role !== 'system')
       ];
       
       // 返回DeepSeek SSE流

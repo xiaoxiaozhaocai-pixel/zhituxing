@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sanitizeJDList } from '@/lib/jd-sanitizer';
+import type { CacheEntry, JobRecord, ChatMessage } from '@/lib/types';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { JobsListDataSchema, type JobsListData } from '@/lib/api-contracts/jobs';
@@ -10,10 +11,10 @@ import { JobsListDataSchema, type JobsListData } from '@/lib/api-contracts/jobs'
 // ============================================================
 // 内存缓存 - Edge Runtime 下为 best-effort（同实例命中时更快）
 // ============================================================
-const searchCache = new Map<string, { data: any; timestamp: number }>();
+const searchCache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000; // 5分钟
 
-function getCachedResult(key: string): any | null {
+function getCachedResult(key: string): unknown | null {
   const cached = searchCache.get(key);
   if (!cached) return null;
   if (Date.now() - cached.timestamp > CACHE_TTL) {
@@ -23,7 +24,7 @@ function getCachedResult(key: string): any | null {
   return cached.data;
 }
 
-function setCachedResult(key: string, data: any): void {
+function setCachedResult(key: string, data: unknown): void {
   // 防止缓存无限增长，超过200条时清理最旧的
   if (searchCache.size > 200) {
     const oldest = [...searchCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
@@ -66,7 +67,7 @@ const INDUSTRY_SYNONYMS: Record<string, string[]> = {
  * - 双重转义JSON：'"[\"Python\"]"'
  * - null/undefined
  */
-function safeToArray(val: any): string[] {
+function safeToArray(val: unknown): string[] {
   // null/undefined
   if (val == null) return [];
   
@@ -103,7 +104,7 @@ function safeToArray(val: any): string[] {
 /**
  * 尝试解析 JSON 字符串（支持多层转义）
  */
-function tryParseJson(str: string): any {
+function tryParseJson(str: string): unknown {
   try {
     let result = JSON.parse(str);
     // 处理双重转义：解析结果仍是字符串
@@ -124,7 +125,7 @@ function tryParseJson(str: string): any {
 const LIGHT_SELECT_FIELDS = 'id,job_title,industry,city,salary_range,hard_skills,soft_skills,education,experience,created_at,fresh_graduate_friendly,graduate_friendly_level,core_duty_module,major_require,bonus_skill_cert,post_category,competency_weights';
 
 // 格式化单条职位数据
-function formatJob(job: any, relevance?: number) {
+function formatJob(job: JobRecord, relevance?: number) {
   const hardSkills = safeToArray(job.hard_skills);
   const softSkills = safeToArray(job.soft_skills);
   
@@ -304,7 +305,7 @@ export async function GET(request: NextRequest) {
       
       // 合并结果并去重
       const seenIds = new Set<string>();
-      const uniqueResults: any[] = [];
+      const uniqueResults: JobRecord[] = [];
       
       for (const result of results) {
         const data = result.data || [];
@@ -428,14 +429,14 @@ export async function GET(request: NextRequest) {
       return jsonError('INTERNAL_ERROR', '查询失败');
     }
     
-    const formattedData = (data as any)?.map((job: any) => formatJob(job)) || [];
+    const formattedData = (data as JobRecord[])?.map((job: JobRecord) => formatJob(job)) || [];
     
     // ============================================================
     // 安全处理：未登录用户过滤敏感字段
     // ============================================================
     const safeData = isAuthenticated 
       ? formattedData 
-      : formattedData.map((job: any) => ({
+      : formattedData.map((job) => ({
           id: job.id,
           name: job.name,
           industry: job.industry,
