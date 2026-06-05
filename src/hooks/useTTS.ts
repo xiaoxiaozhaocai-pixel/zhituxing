@@ -30,6 +30,7 @@ export function useTTS(options: UseTTSOptions = {}): UseTTSReturn {
   const [speaking, setSpeaking] = useState(false);
   const [paused, setPaused] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const currentTextRef = useRef<string>('');
 
   const cleanup = useCallback(() => {
     if (utteranceRef.current) {
@@ -46,21 +47,14 @@ export function useTTS(options: UseTTSOptions = {}): UseTTSReturn {
       if (!supported) return;
       window.speechSynthesis.cancel();
       cleanup();
+      currentTextRef.current = text;
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
       utterance.rate = rate;
       utterance.pitch = pitch;
       utterance.volume = volume;
       utterance.onend = () => { setSpeaking(false); setPaused(false); cleanup(); };
-      utterance.onerror = (e) => {
-        // 'interrupted' is expected on cancel(), not a real error
-        if (e.error !== 'interrupted') {
-          console.warn('[TTS] Speech error:', e.error);
-        }
-        setSpeaking(false);
-        setPaused(false);
-        cleanup();
-      };
+      utterance.onerror = () => { setSpeaking(false); setPaused(false); cleanup(); };
       utterance.onpause = () => { setPaused(true); };
       utterance.onresume = () => { setPaused(false); };
       utteranceRef.current = utterance;
@@ -103,10 +97,10 @@ export function useTTS(options: UseTTSOptions = {}): UseTTSReturn {
 
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined') {
+      if (utteranceRef.current && typeof window !== 'undefined') {
         window.speechSynthesis.cancel();
+        cleanup();
       }
-      cleanup();
     };
   }, [cleanup]);
 
