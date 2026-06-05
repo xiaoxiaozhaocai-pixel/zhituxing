@@ -60,7 +60,7 @@ const ONBOARDING_TOUR_STEPS = [
   },
   {
     id: 'agent-cards',
-    title: '智能体卡片区',
+    title: '功能导航区',
     description: '6个AI助手覆盖求职全流程',
     icon: Bot,
     color: 'from-violet-500 to-purple-600',

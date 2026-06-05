@@ -228,7 +228,7 @@ const bots: BotConfig[] = [
 ✨ **我能帮你：**
 • 🤔 聊聊桂电的校园生活、专业选择、就业方向
 • 🎯 帮你分析适合什么岗位、考研还是就业
-• 🔗 调度职途星其他智能体帮你解决具体问题
+• 🔗 调度职途星其他能力帮你解决具体问题
 • 📊 结合真实数据给你靠谱建议
 • 💬 就是单纯想找人说说话也行~
 
@@ -1109,11 +1109,11 @@ function AssistantContent() {
             AI职业助手
           </h1>
           <p className="text-gray-600 text-sm">
-            七大智能体协同服务，助你求职无忧
+            小职全方位服务，助你求职无忧
           </p>
         </div>
 
-        {/* 智能体Tab选择器 */}
+        {/* 功能Tab选择器 */}
         <div className="bot-tabs mb-4">
           <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
             {bots.map((bot) => (

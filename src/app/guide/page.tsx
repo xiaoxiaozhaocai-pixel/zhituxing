@@ -109,7 +109,7 @@ export default function GuidePage() {
             职途星使用流程
           </h1>
           <p className="text-lg text-blue-100 mb-2">
-            从注册到拿到offer，一站式求职服务
+            从注册到拿到offer，AI朋友全程陪伴
           </p>
           <p className="text-blue-200">
             只需5步，开启你的职业规划之旅
@@ -177,7 +177,7 @@ export default function GuidePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">AI智能</h3>
-                  <p className="text-sm text-gray-600">7大AI智能体矩阵，全方位助你求职</p>
+                  <p className="text-sm text-gray-600">7大核心能力，全方位助你求职</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

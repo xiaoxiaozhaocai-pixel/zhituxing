@@ -81,7 +81,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "职途星",
               "url": SITE_URL,
-              "description": "AI职业规划与模拟面试平台，大学生一站式求职服务",
+              "description": "懂桂电学生的AI朋友——小职，陪你走好求职每一步",
               "logo": "https://s.coze.cn/image/9JW8vCo1HrY/"
             })
           }}

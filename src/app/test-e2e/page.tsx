@@ -185,7 +185,7 @@ export default function TestE2EPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">智能体类型</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">测试类型</label>
               <select
                 value={botType}
                 onChange={e => setBotType(e.target.value as BotType)}

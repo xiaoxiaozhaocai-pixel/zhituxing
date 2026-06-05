@@ -102,7 +102,7 @@ const trustData = [
   {
     icon: <Brain className="w-6 h-6" />,
     value: '6大',
-    label: 'AI智能体',
+    label: '更多功能',
     description: '全链路覆盖求职旅程',
   },
 ];
@@ -374,7 +374,7 @@ export default function HomeClient() {
             "@type": "Organization",
             "name": "职途星",
             "url": SITE_URL,
-            "description": "AI职业规划与模拟面试平台，为大学生提供一站式求职服务"
+            "description": "懂桂电学生的AI朋友——小职，陪你走好求职每一步"
           })
         }}
       />
