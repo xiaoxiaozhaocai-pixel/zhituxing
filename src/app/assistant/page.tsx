@@ -385,6 +385,15 @@ function AssistantContent() {
       const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency', 'xiaozhi'];
       if (validBots.includes(bot)) {
         setActiveBot(bot);
+        // 立即用新 bot 的欢迎消息覆盖初始 jobs 欢迎消息（避免 useEffect 因 messages 非空不再刷新）
+        const targetBot = bots.find(b => b.id === bot);
+        if (targetBot) {
+          setMessages([{
+            role: 'assistant',
+            content: targetBot.welcomeMessage,
+            timestamp: new Date()
+          }]);
+        }
       }
     }
     const query = searchParams.get('query');
@@ -1002,7 +1011,7 @@ function AssistantContent() {
         </div>
 
         {/* 聊天区域 */}
-        <Card className="border-2 overflow-hidden flex flex-col max-h-[calc(100vh-16rem)]" style={{
+        <Card className="border-2 overflow-hidden flex flex-col h-[calc(100vh-14rem)] min-h-[500px]" style={{
           borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
         }}>
           {/* 快捷问题 */}
@@ -1028,7 +1037,7 @@ function AssistantContent() {
           <div 
             ref={chatContainerRef}
             onScroll={handleChatScroll}
-            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[calc(100vh-24rem)] min-h-[400px] max-h-[70vh]"
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white min-h-[200px]"
           >
             {messages.map((msg, index) => (
               <div
