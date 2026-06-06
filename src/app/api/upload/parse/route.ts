@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -17,7 +19,7 @@ export async function POST(request: NextRequest) {
     const fileName = file.name.toLowerCase();
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // PDF — 动态导入避免生产环境加载失败
+    // PDF
     if (fileName.endsWith('.pdf')) {
       try {
         const { PDFParse } = await import('pdf-parse');
@@ -29,13 +31,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'PDF无法提取文本，可能是扫描件或图片型PDF' }, { status: 422 });
         }
         return NextResponse.json({ text, pages: textResult.total });
-      } catch (e) {
-        console.error('[upload/parse] PDF parse failed:', e);
-        return NextResponse.json({ error: 'PDF解析失败，请尝试复制文本后粘贴' }, { status: 422 });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error('[upload/parse] PDF error:', msg);
+        return NextResponse.json({ error: `PDF解析失败: ${msg}` }, { status: 422 });
       }
     }
 
-    // DOCX — 动态导入 mammoth
+    // DOCX
     if (fileName.endsWith('.docx')) {
       try {
         const mammoth = await import('mammoth');
@@ -45,13 +48,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'DOCX文件无法提取文本，文件可能为空或损坏' }, { status: 422 });
         }
         return NextResponse.json({ text, pages: 1 });
-      } catch (e) {
-        console.error('[upload/parse] DOCX parse failed:', e);
-        return NextResponse.json({ error: 'DOCX解析失败，请尝试转为PDF或TXT后上传' }, { status: 422 });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error('[upload/parse] DOCX error:', msg);
+        return NextResponse.json({ error: `DOCX解析失败: ${msg}` }, { status: 422 });
       }
     }
 
-    // DOC（旧格式兼容）
+    // DOC
     if (fileName.endsWith('.doc')) {
       const raw = buffer.toString('utf-8');
       const text = raw.replace(/[^\x20-\x7E\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\n\r]/g, ' ').slice(0, 10000).trim();
@@ -61,7 +65,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ text, pages: 1 });
     }
 
-    // TXT — 不需要任何第三方依赖
+    // TXT
     if (fileName.endsWith('.txt')) {
       const text = buffer.toString('utf-8').slice(0, 10000);
       return NextResponse.json({ text, pages: 1 });
@@ -69,8 +73,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: '暂不支持此格式，支持：PDF、DOCX、DOC、TXT' }, { status: 400 });
   } catch (err: unknown) {
-    const _err_ = err as Error;
-    console.error('文件解析失败:', err);
-    return NextResponse.json({ error: '文件解析失败: ' + (_err_.message || '未知错误') }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[upload/parse] route error:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
