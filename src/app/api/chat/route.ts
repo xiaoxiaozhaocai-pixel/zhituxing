@@ -144,25 +144,9 @@ function getFallbackResponse(botType?: string, message?: string): string {
     if (botType === 'xiaozhi' || msgLower.includes('小职')) {
     return `嗨～我是小职，你的AI求职伙伴！✨
 
-我可以陪你聊天、帮你改简历、模拟面试、做职业规划、评估胜任力……
+我可以陪你聊天、帮你改简历、模拟面试、做职业规划、做能力诊断……
 
 💬 有什么想聊的？或者直接告诉我你需要什么帮助～`;
-  }
-
-if (botType === 'competency' || msgLower.includes('胜任力')) {
-    return `您好！我是胜任力评估助手（会员专属）。
-
-请告诉我：
-
-🎯 **目标岗位**和**个人背景**
-
-📊 **我能帮您评估：**
-• 岗位胜任力模型匹配
-• 核心能力差距分析
-• 可视化胜任力雷达图
-• 针对性提升建议
-
-请提供信息，开始胜任力评估！`;
   }
 
   return `👋 你好呀！我是小职，你的AI求职伙伴～
@@ -294,40 +278,7 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
     // 全智能体调用链：每条链 = 当前 botType ← 上游产物
     // ================================================================
 
-    if (botType === 'competency') {
-      // 胜任力评估 ← 职业规划 + 能力测评
-      const { data: plans } = await supabase
-        .from('career_plans')
-        .select('plan_data, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      
-      if (plans && plans.length > 0 && plans[0]!.plan_data) {
-        const plan = plans[0]!.plan_data;
-        const planSummary = typeof plan === 'string' 
-          ? plan 
-          : JSON.stringify(plan).slice(0, 1000);
-        parts.push(`【上游职业规划结果】\n${planSummary}`);
-      }
-
-      // 胜任力 ← 能力测评
-      const { data: assessments } = await supabase
-        .from('assessment_results')
-        .select('result_data, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      
-      if (assessments && assessments.length > 0 && assessments[0]!.result_data) {
-        const ass = assessments[0]!.result_data;
-        const assSummary = typeof ass === 'string'
-          ? ass
-          : JSON.stringify(ass).slice(0, 1000);
-        parts.push(`【上游能力测评结果】\n${assSummary}`);
-      }
-
-    } else if (botType === 'interview') {
+    if (botType === 'interview') {
       // 模拟面试 ← 简历优化 + JD分析
       const { data: resumes } = await supabase
         .from('resume_optimizations')
@@ -410,7 +361,7 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
       }
 
     } else if (botType === 'decision') {
-      // 考研就业决策 ← 能力测评 + 胜任力评估 + 职业规划
+      // 考研就业决策 ← 能力测评 + 能力诊断 + 职业规划
       const { data: assessments } = await supabase
         .from('assessment_results')
         .select('result_data, created_at')
@@ -664,7 +615,7 @@ export async function POST(request: NextRequest) {
         ['decision', ['考研', '考研vs就业', '纠结', '犹豫', '选择', '考研还是', '读研', '考公', '考编', '要不要']],
         ['career', ['规划', '职业规划', '方向', '前景', '迷茫', '适合', '发展', '路径', '成长', '晋升']],
         ['assessment', ['测评', '评估', '测试', '水平', '能力', '做题', '题目', '考核', '测一下', '水平测试']],
-        ['competency', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
+        ['career', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
         ['jobs', ['岗位', '招聘', '职位', '求职', '找工作', '薪资', '工资', 'JD', '人资', 'hr', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招']],
       ];
       
