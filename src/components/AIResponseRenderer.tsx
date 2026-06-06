@@ -156,13 +156,21 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
   // 计算饼图扇区（按分数占比，分数越高扇区越大）
   const cx = 70, cy = 70, r = 60, rInner = 36;
 
+  // 权重数据：优先使用显式权重，否则按分数占比计算
+  const hasWeights = scores.some(s => s.weight !== undefined);
+  const weights = scores.map((_, idx) => {
+    if (hasWeights) return scores[idx].weight ?? 0;
+    return normalized[idx]; // fallback: use score as weight
+  });
+  const weightSum = weights.reduce((a, b) => a + b, 0);
+
   const sectors = scores.map((item, idx) => {
-    const value = normalized[idx];
-    const ratio = sum > 0 ? value / sum : 1 / scores.length;
+    const rawWeight = weights[idx];
+    const ratio = weightSum > 0 ? rawWeight / weightSum : 1 / scores.length;
     const angle = ratio * Math.PI * 2;
     // 起始角 = -π/2 + 前面所有扇区累计占比 * 2π（纯函数式，避免可变累加器以兼容 React Compiler）
-    const cumBefore = normalized.slice(0, idx).reduce((a, b) => a + b, 0);
-    const startRatio = sum > 0 ? cumBefore / sum : idx / scores.length;
+    const cumBefore = weights.slice(0, idx).reduce((a, b) => a + b, 0);
+    const startRatio = weightSum > 0 ? cumBefore / weightSum : idx / scores.length;
     const startAngle = -Math.PI / 2 + startRatio * Math.PI * 2;
     const endAngle = startAngle + angle;
 
@@ -188,9 +196,9 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
       d,
       color: palette[idx % palette.length],
       name: item.name,
-      score: Math.round(value),
+      score: Math.round(normalized[idx]),
       max: item.max,
-      weight: Math.round(ratio * 100),
+      weight: hasWeights ? rawWeight : Math.round(ratio * 100),
     };
   });
 
@@ -233,7 +241,9 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
                   s.score >= 60 ? 'text-blue-600' :
                   'text-orange-500'
                 }`}>{s.score}{s.max ? `/${s.max}` : ''}</span>
-                <span className="text-gray-400 text-[10px] tabular-nums whitespace-nowrap">权重{s.weight}%</span>
+                <span className="text-gray-400 text-[10px] tabular-nums whitespace-nowrap">
+                  权重{hasWeights ? weights[i] : s.weight}%
+                </span>
               </div>
             ))}
           </div>
