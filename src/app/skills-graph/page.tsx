@@ -77,6 +77,10 @@ export default function SkillsGraphPage() {
   const [simEdges, setSimEdges] = useState<SimEdge[]>([]);
   const animRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragState = useRef<{ node: string; startX: number; startY: number; nodeX: number; nodeY: number } | null>(null);
+  const panState = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+  const [searchFlash, setSearchFlash] = useState(false);
 
   // 埋点：页面浏览
   usePageView('skills_graph');
@@ -272,6 +276,9 @@ export default function SkillsGraphPage() {
     if (searchSkill.trim()) {
       fetchRelations(searchSkill.trim());
       setSelectedNode(null);
+      // 搜索定位动画
+      setSearchFlash(true);
+      setTimeout(() => setSearchFlash(false), 1200);
     }
   };
 
@@ -420,9 +427,49 @@ export default function SkillsGraphPage() {
                 </CardHeader>
                 <CardContent ref={containerRef} className="overflow-auto" style={{ minHeight: 500 }}>
                   <svg
+                    ref={svgRef}
                     viewBox="0 0 800 500"
-                    className="w-full"
+                    className="w-full select-none"
                     style={{ transform: `scale(${zoom})`, transformOrigin: 'center', transition: 'transform 0.3s' }}
+                    onWheel={(e) => {
+                      e.preventDefault();
+                      setZoom((z) => Math.max(0.4, Math.min(2.5, z + (e.deltaY > 0 ? -0.1 : 0.1))));
+                    }}
+                    onMouseDown={(e) => {
+                      if (e.target === svgRef.current || (e.target as Element).tagName === 'svg') {
+                        panState.current = { startX: e.clientX, startY: e.clientY, panX: panOffset.x, panY: panOffset.y };
+                      }
+                    }}
+                    onMouseMove={(e) => {
+                      // 节点拖拽
+                      if (dragState.current) {
+                        const dx = (e.clientX - dragState.current.startX) / zoom;
+                        const dy = (e.clientY - dragState.current.startY) / zoom;
+                        setSimNodes((prev) => prev.map((n) =>
+                          n.name === dragState.current!.node
+                            ? { ...n, x: Math.max(50, Math.min(750, dragState.current!.nodeX + dx)), y: Math.max(50, Math.min(450, dragState.current!.nodeY + dy)) }
+                            : n
+                        ));
+                        setDragNode(dragState.current.node);
+                      }
+                      // 画布平移
+                      if (panState.current) {
+                        const dx = e.clientX - panState.current.startX;
+                        const dy = e.clientY - panState.current.startY;
+                        setPanOffset({ x: panState.current.panX + dx, y: panState.current.panY + dy });
+                      }
+                    }}
+                    onMouseUp={() => {
+                      dragState.current = null;
+                      panState.current = null;
+                      setDragNode(null);
+                    }}
+                    onMouseLeave={() => {
+                      dragState.current = null;
+                      panState.current = null;
+                      setDragNode(null);
+                      setHoveredNode(null);
+                    }}
                   >
                     {/* 边 */}
                     {filteredSimEdges.map((edge, i) => {
@@ -430,13 +477,16 @@ export default function SkillsGraphPage() {
                       const tgt = simNodes.find((n) => n.name === edge.target);
                       if (!src || !tgt) return null;
                       const isHighlighted = selectedNode && (edge.source === selectedNode || edge.target === selectedNode);
+                      const isHoverRelated = hoveredNode && (edge.source === hoveredNode || edge.target === hoveredNode);
+                      const isEdgeDimmed = (hoveredNode || selectedNode) && !isHighlighted && !isHoverRelated;
+                      const edgeWidth = Math.max(1, Math.min(4, 1 + edge.weight * 1.5));
                       return (
                         <g key={i}>
                           <line
                             x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
                             stroke={relationColors[edge.type] || '#999'}
-                            strokeWidth={isHighlighted ? 2.5 : 1.5}
-                            strokeOpacity={isHighlighted ? 1 : (selectedNode ? 0.15 : 0.5)}
+                            strokeWidth={isHighlighted || isHoverRelated ? edgeWidth + 1 : edgeWidth}
+                            strokeOpacity={isEdgeDimmed ? 0.08 : (isHighlighted || isHoverRelated ? 1 : 0.45)}
                             strokeDasharray={edge.type === 'prerequisite' ? '6,3' : edge.type === 'similar' ? '3,3' : 'none'}
                           />
                           {edge.type === 'prerequisite' && (
@@ -454,7 +504,7 @@ export default function SkillsGraphPage() {
                                 return `${px},${py} ${px - ax * s - ay * s},${py - ay * s + ax * s} ${px - ax * s + ay * s},${py - ay * s - ax * s}`;
                               })()}
                               fill={relationColors[edge.type]}
-                              fillOpacity={isHighlighted ? 1 : (selectedNode ? 0.15 : 0.5)}
+                              fillOpacity={isEdgeDimmed ? 0.08 : (isHighlighted || isHoverRelated ? 1 : 0.45)}
                             />
                           )}
                         </g>
@@ -472,18 +522,42 @@ export default function SkillsGraphPage() {
                           )
                         : true;
                       const isSearchMatch = searchSkill && node.name.toLowerCase().includes(searchSkill.toLowerCase());
+                      const needsFlash = isSearchMatch && searchFlash;
 
+                      const isHovered = hoveredNode === node.name;
+                      const isDimmed = (hoveredNode || selectedNode) && !isConnected && !isSelected && !isHovered;
                       return (
                         <g
                           key={node.name}
                           onClick={() => setSelectedNode(isSelected ? null : node.name)}
-                          className="cursor-pointer"
+                          onMouseEnter={() => setHoveredNode(node.name)}
+                          onMouseLeave={() => setHoveredNode(null)}
+                          onMouseDown={(e) => {
+                            if (e.button !== 0) return;
+                            e.stopPropagation();
+                            dragState.current = { node: node.name, startX: e.clientX, startY: e.clientY, nodeX: node.x, nodeY: node.y };
+                          }}
+                          style={{
+                            cursor: dragNode === node.name ? 'grabbing' : 'pointer',
+                            opacity: isDimmed ? 0.15 : 1,
+                            transition: 'opacity 0.2s',
+                          }}
                         >
+{needsFlash && (
+                            <circle
+                              cx={node.x} cy={node.y} r={r + 12}
+                              fill="none"
+                              stroke="#7C3AED"
+                              strokeWidth={2}
+                              className="animate-ping"
+                              style={{ animationDuration: '1s', animationIterationCount: '1', opacity: 0 }}
+                            />
+                          )}
                           <circle
                             cx={node.x} cy={node.y} r={r}
-                            fill={isSelected ? '#4F46E5' : isSearchMatch ? '#7C3AED' : isConnected ? '#EEF2FF' : '#F9FAFB'}
-                            stroke={isSelected ? '#4338CA' : isSearchMatch ? '#7C3AED' : isConnected ? '#A5B4FC' : '#E5E7EB'}
-                            strokeWidth={isSelected ? 3 : isSearchMatch ? 2.5 : 1.5}
+                            fill={isSelected ? '#4F46E5' : isSearchMatch ? '#7C3AED' : isHovered ? '#6366F1' : isConnected ? '#EEF2FF' : '#F9FAFB'}
+                            stroke={isSelected ? '#4338CA' : isSearchMatch ? '#7C3AED' : isHovered ? '#4F46E5' : isConnected ? '#A5B4FC' : '#E5E7EB'}
+                            strokeWidth={isSelected || isHovered ? 3 : isSearchMatch ? 2.5 : 1.5}
                             style={{ transition: 'fill 0.2s, stroke 0.2s' }}
                           />
                           <text
@@ -491,7 +565,7 @@ export default function SkillsGraphPage() {
                             textAnchor="middle"
                             dominantBaseline="middle"
                             className="text-[10px] font-medium pointer-events-none"
-                            fill={isSelected || isSearchMatch ? '#fff' : '#374151'}
+                            fill={isSelected || isSearchMatch || isHovered ? '#fff' : '#374151'}
                           >
                             {node.name.length > 6 ? node.name.slice(0, 6) + '..' : node.name}
                           </text>
