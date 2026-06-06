@@ -1,8 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -55,7 +53,7 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -64,15 +62,15 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: #165DFF;
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.965 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: #666666;
-  --accent: oklch(0.97 0 0);
+  --muted: oklch(0.965 0 0);
+  --muted-foreground: #6B7280;
+  --accent: oklch(0.965 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
   --ring: #165DFF;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -83,44 +81,10 @@
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: #165DFF;
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: oklch(0.965 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-border: oklch(0.92 0 0);
   --sidebar-ring: #165DFF;
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
@@ -133,127 +97,239 @@
 }
 
 body {
-  @apply font-sans;
+  @apply font-sans antialiased;
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 全局交互优化样式 */
+/* ============================================================
+   2026 设计系统 — 职途星 Design Tokens & Utilities
+   ============================================================ */
 
-/* 链接hover效果 */
+/* ----- 滚动条美化 ----- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ----- 链接 ----- */
 a {
-  @apply transition-colors duration-300;
+  transition: color 0.2s ease;
 }
 a:hover:not(.no-underline) {
-  @apply text-[#165DFF] underline underline-offset-2;
+  color: #165DFF;
 }
 
-/* 按钮统一hover效果 */
-.btn-hover-effect {
-  @apply transition-all duration-300;
-}
-.btn-hover-effect:hover {
-  @apply shadow-lg -translate-y-0.5;
+/* ----- 输入框聚焦 ----- */
+input:focus, textarea:focus, select:focus {
+  ring: 2px solid rgba(22,93,255,0.25);
+  border-color: #165DFF;
 }
 
-/* 卡片统一hover效果 */
-.card-hover-effect {
-  @apply transition-all duration-300;
-}
-.card-hover-effect:hover {
-  @apply shadow-[0_8px_24px_rgba(22,93,255,0.12)] -translate-y-1;
-}
-
-/* 输入框聚焦状态 */
-input:focus,
-textarea:focus,
-select:focus {
-  @apply ring-2 ring-[#165DFF]/30 border-[#165DFF];
-}
-
-/* 页面过渡动画 */
-.page-enter {
-  @apply opacity-0;
-}
-.page-enter-active {
-  @apply opacity-100 transition-opacity duration-300;
-}
-
-/* 滚动条美化 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full;
-}
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
-}
-
-/* Section 间距工具类 */
-.section-padding {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
-}
-
-.section-padding-sm {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .section-padding {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
-  }
-
-  .section-padding-sm {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-  }
-}
-
-/* 按钮最小触摸区域 */
-@media (max-width: 768px) {
-  button,
-  a,
-  [role="button"] {
-    min-height: 44px;
-  }
-}
-
-/* ===== 无障碍修复: focus-visible 焦点样式 (WCAG 2.1 AA) =====
- * P3-15: 仅对可交互元素加焦点样式，避免 * 通配符污染容器
- * P3-14: 移除非法 CSS 规则 (role/aria-* 应在 JSX 中处理，不是 CSS 属性)
- */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[role="button"]:focus-visible,
-[role="menuitem"]:focus-visible,
-[role="tab"]:focus-visible,
-[tabindex]:focus-visible {
+/* ----- 焦点可见（WCAG 2.1 AA） ----- */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible,
+[role="button"]:focus-visible, [role="menuitem"]:focus-visible,
+[role="tab"]:focus-visible, [tabindex]:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
 }
 
-/* 小职悬浮窗呼吸动画 */
+/* ============================================================
+   Section 间距
+   ============================================================ */
+.section-padding { padding: 6rem 0; }
+.section-padding-sm { padding: 4rem 0; }
+@media (max-width: 768px) {
+  .section-padding { padding: 3.5rem 0; }
+  .section-padding-sm { padding: 2.5rem 0; }
+  button, a, [role="button"] { min-height: 44px; }
+}
+
+/* ============================================================
+   玻璃态 (Glassmorphism 2026)
+   ============================================================ */
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.glass-strong {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.glass-card {
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+/* ============================================================
+   有机装饰形状 (Organic Blobs)
+   ============================================================ */
+.blob-primary {
+  border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%;
+  background: radial-gradient(circle at 30% 30%, rgba(22,93,255,0.15), rgba(22,93,255,0.03));
+  filter: blur(60px);
+}
+.blob-accent {
+  border-radius: 40% 60% 45% 55% / 60% 40% 55% 45%;
+  background: radial-gradient(circle at 60% 40%, rgba(139,92,246,0.12), rgba(139,92,246,0.02));
+  filter: blur(64px);
+}
+.blob-warm {
+  border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,125,0,0.08), rgba(255,125,0,0.01));
+  filter: blur(56px);
+}
+
+/* ============================================================
+   Bento Grid 卡片容器
+   ============================================================ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+.bento-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.bento-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(22,93,255,0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  border-color: rgba(22,93,255,0.15);
+}
+.bento-card:hover::before { opacity: 1; }
+.bento-card.bento-featured {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+@media (max-width: 768px) {
+  .bento-card.bento-featured {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* ============================================================
+   微交互动画
+   ============================================================ */
+
+/* 悬浮上移 */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -8px rgba(0,0,0,0.08);
+}
+
+/* 渐变按钮 */
+.btn-gradient {
+  background: linear-gradient(135deg, #165DFF 0%, #3D7FFF 100%);
+  color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(22,93,255,0.25);
+}
+.btn-gradient:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(22,93,255,0.35);
+}
+.btn-gradient:active { transform: translateY(0); }
+
+/* 会员按钮 */
+.btn-member {
+  background: linear-gradient(135deg, #FF7D00 0%, #FF9A00 100%);
+  color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(255,125,0,0.25);
+}
+.btn-member:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(255,125,0,0.35);
+}
+
+/* 淡入上移动画 */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.anim-up { animation: fade-in-up 0.6s ease forwards; }
+.anim-fade { animation: fade-in 0.5s ease forwards; }
+.anim-scale { animation: scale-in 0.4s ease forwards; }
+.anim-up-d1 { animation: fade-in-up 0.6s ease 0.1s forwards; opacity: 0; }
+.anim-up-d2 { animation: fade-in-up 0.6s ease 0.2s forwards; opacity: 0; }
+.anim-up-d3 { animation: fade-in-up 0.6s ease 0.3s forwards; opacity: 0; }
+.anim-up-d4 { animation: fade-in-up 0.6s ease 0.4s forwards; opacity: 0; }
+.anim-up-d5 { animation: fade-in-up 0.6s ease 0.5s forwards; opacity: 0; }
+
+/* 小职呼吸动画 */
 @keyframes pulse-ring {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(22, 93, 255, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 14px rgba(22, 93, 255, 0);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22,93,255,0.45); }
+  50% { box-shadow: 0 0 0 16px rgba(22,93,255,0); }
 }
-
 @utility animate-pulse-ring {
   animation: pulse-ring 2.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   渐变文字工具类
+   ============================================================ */
+.text-gradient {
+  background: linear-gradient(135deg, #165DFF 0%, #6366F1 50%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-warm {
+  background: linear-gradient(135deg, #FF7D00 0%, #F97316 50%, #EF4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 标题字间距 */
+.heading-tight { letter-spacing: -0.025em; }
+.heading-display { letter-spacing: -0.035em; font-weight: 800; }
+
+/* ============================================================
+   装饰分割线
+   ============================================================ */
+.divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(22,93,255,0.12), transparent);
+}
+.divider-fade {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(22,93,255,0.08), rgba(22,93,255,0.02));
 }
