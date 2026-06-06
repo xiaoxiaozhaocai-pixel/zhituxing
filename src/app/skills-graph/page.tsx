@@ -515,10 +515,11 @@ export default function SkillsGraphPage() {
                     {simNodes.map((node) => {
                       const r = getNodeRadius(node);
                       const isSelected = selectedNode === node.name;
-                      const isConnected = selectedNode
+                      const relevantNode = selectedNode || hoveredNode;
+                      const isConnected = relevantNode
                         ? edges.some((e) =>
-                            (e.sourceSkill === selectedNode && e.targetSkill === node.name) ||
-                            (e.targetSkill === selectedNode && e.sourceSkill === node.name)
+                            (e.sourceSkill === relevantNode && e.targetSkill === node.name) ||
+                            (e.targetSkill === relevantNode && e.sourceSkill === node.name)
                           )
                         : true;
                       const isSearchMatch = searchSkill && node.name.toLowerCase().includes(searchSkill.toLowerCase());
@@ -550,7 +551,7 @@ export default function SkillsGraphPage() {
                               stroke="#7C3AED"
                               strokeWidth={2}
                               className="animate-ping"
-                              style={{ animationDuration: '1s', animationIterationCount: '1', opacity: 0 }}
+                              style={{ animationDuration: '1s', animationIterationCount: '1' }}
                             />
                           )}
                           <circle
