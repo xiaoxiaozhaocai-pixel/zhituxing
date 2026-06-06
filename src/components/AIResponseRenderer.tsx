@@ -480,7 +480,31 @@ interface AIResponseRendererProps {
 export default function AIResponseRenderer({ rawText, streaming = false, role = 'assistant' }: AIResponseRendererProps) {
   const segments = useMemo(() => {
     if (role === 'user') return [{ type: 'text' as const, data: rawText }];
-    return parseAIResponse(rawText);
+    const parsed = parseAIResponse(rawText);
+
+    // 兜底：有 scores 但没 radar → 从 scores 自动生成雷达图
+    const hasRadar = parsed.some(s => s.type === 'radar');
+    const scoresSeg = parsed.find(s => s.type === 'scores');
+    if (!hasRadar && scoresSeg) {
+      const scores = scoresSeg.data as ScoreItem[];
+      if (scores.length >= 2) {
+        const dims = scores.map(s => ({
+          name: s.name,
+          score: s.max ? Math.round((s.score / s.max) * 100) : s.score,
+          max: 100,
+          weight: s.weight,
+        }));
+        const overallScore = Math.round(dims.reduce((a, d) => a + d.score, 0) / dims.length);
+        // 找到 scores segment 的索引，在其前面插入 radar
+        const idx = parsed.indexOf(scoresSeg);
+        parsed.splice(idx, 0, {
+          type: 'radar' as const,
+          data: { dimensions: dims, overallScore, summary: '由胜任力评分自动生成的能力雷达图' } as RadarData,
+        });
+      }
+    }
+
+    return parsed;
   }, [rawText, role]);
 
   return (
