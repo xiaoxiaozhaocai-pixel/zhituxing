@@ -163,9 +163,9 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
         const wb = new ExcelJS.Workbook();
         await wb.xlsx.load(data as ArrayBuffer);
         const ws = wb.worksheets[0];
-        const jsonData: any[][] = [];
+        const jsonData: unknown[][] = [];
         ws.eachRow((row) => {
-          const values: any[] = [];
+          const values: unknown[] = [];
           row.eachCell((cell) => values.push(cell.value));
           jsonData.push(values);
         });
