@@ -140,38 +140,137 @@ function TagGroupRenderer({ groups }: { groups: TagGroup[] }) {
   );
 }
 
-/** 多维评分渲染 */
+/** 多维评分渲染 — 饼图 + 详细进度条 */
 function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
+  // 计算每个维度归一化到0-100的实际分数
+  const normalized = scores.map(item => {
+    const v = item.max ? (item.score / item.max) * 100 : item.score;
+    return Math.max(0, Math.min(v, 100));
+  });
+  const sum = normalized.reduce((a, b) => a + b, 0);
+  // 平均分作为综合评分
+  const avg = scores.length > 0 ? Math.round(sum / scores.length) : 0;
+  // 蓝白主色系 + 暖色点缀（符合品牌）
+  const palette = ['#165DFF', '#36BFFA', '#7B61FF', '#FF9F1C', '#10B981', '#06B6D4', '#F472B6'];
+
+  // 计算饼图扇区（按分数占比，分数越高扇区越大）
+  const cx = 70, cy = 70, r = 60, rInner = 36;
+
+  const sectors = scores.map((item, idx) => {
+    const value = normalized[idx];
+    const ratio = sum > 0 ? value / sum : 1 / scores.length;
+    const angle = ratio * Math.PI * 2;
+    // 起始角 = -π/2 + 前面所有扇区累计占比 * 2π（纯函数式，避免可变累加器以兼容 React Compiler）
+    const cumBefore = normalized.slice(0, idx).reduce((a, b) => a + b, 0);
+    const startRatio = sum > 0 ? cumBefore / sum : idx / scores.length;
+    const startAngle = -Math.PI / 2 + startRatio * Math.PI * 2;
+    const endAngle = startAngle + angle;
+
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const x3 = cx + rInner * Math.cos(endAngle);
+    const y3 = cy + rInner * Math.sin(endAngle);
+    const x4 = cx + rInner * Math.cos(startAngle);
+    const y4 = cy + rInner * Math.sin(startAngle);
+    const largeArc = angle > Math.PI ? 1 : 0;
+
+    // 单扇区或环：完整圆需特殊处理
+    let d: string;
+    if (scores.length === 1 || ratio >= 0.999) {
+      d = `M ${cx - r} ${cy} A ${r} ${r} 0 1 1 ${cx + r} ${cy} A ${r} ${r} 0 1 1 ${cx - r} ${cy} M ${cx - rInner} ${cy} A ${rInner} ${rInner} 0 1 0 ${cx + rInner} ${cy} A ${rInner} ${rInner} 0 1 0 ${cx - rInner} ${cy} Z`;
+    } else {
+      d = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+    }
+
+    return {
+      d,
+      color: palette[idx % palette.length],
+      name: item.name,
+      score: Math.round(value),
+      max: item.max,
+      weight: Math.round(ratio * 100),
+    };
+  });
+
   return (
-    <div className="mt-3 space-y-3">
-      {scores.map((item, idx) => {
-        const pct = item.max ? (item.score / item.max) * 100 : item.score;
-        const clamped = Math.min(pct, 100);
-        return (
-          <div key={idx}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm text-gray-700">{item.name}</span>
-              <span className={`text-sm font-semibold ${
-                clamped >= 80 ? 'text-green-600' :
-                clamped >= 60 ? 'text-blue-600' :
-                'text-orange-500'
-              }`}>
-                {Math.round(clamped)}{item.max ? `/${item.max}` : '%'}
-              </span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-700 ${
-                  clamped >= 80 ? 'bg-green-500' :
-                  clamped >= 60 ? 'bg-blue-500' :
-                  'bg-orange-400'
-                }`}
-                style={{ width: `${clamped}%` }}
-              />
+    <div className="mt-3">
+      {/* 饼图 + 图例 卡片 */}
+      <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50/30 rounded-xl p-4 mb-3 border border-blue-100">
+        <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap">
+          {/* SVG 甜甜圈 */}
+          <div className="relative flex-shrink-0">
+            <svg viewBox="0 0 140 140" className="w-32 h-32 sm:w-36 sm:h-36">
+              {sectors.map((s, i) => (
+                <path
+                  key={i}
+                  d={s.d}
+                  fill={s.color}
+                  opacity={0.92}
+                  stroke="white"
+                  strokeWidth={1}
+                />
+              ))}
+            </svg>
+            {/* 中心总分 */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-2xl font-bold text-gray-800 leading-none">{avg}</span>
+              <span className="text-[10px] text-gray-500 mt-1">综合评分</span>
             </div>
           </div>
-        );
-      })}
+          {/* 图例 */}
+          <div className="flex-1 space-y-1.5 min-w-[180px]">
+            {sectors.map((s, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                <span
+                  className="w-3 h-3 rounded-sm flex-shrink-0"
+                  style={{ background: s.color }}
+                />
+                <span className="text-gray-700 flex-1 truncate" title={s.name}>{s.name}</span>
+                <span className={`font-semibold tabular-nums ${
+                  s.score >= 80 ? 'text-green-600' :
+                  s.score >= 60 ? 'text-blue-600' :
+                  'text-orange-500'
+                }`}>{s.score}{s.max ? `/${s.max}` : ''}</span>
+                <span className="text-gray-400 text-[10px] tabular-nums whitespace-nowrap">权重{s.weight}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 详细进度条（保留作为细节展示） */}
+      <div className="space-y-2.5">
+        {scores.map((item, idx) => {
+          const pct = item.max ? (item.score / item.max) * 100 : item.score;
+          const clamped = Math.min(pct, 100);
+          return (
+            <div key={idx}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm text-gray-700">{item.name}</span>
+                <span className={`text-sm font-semibold ${
+                  clamped >= 80 ? 'text-green-600' :
+                  clamped >= 60 ? 'text-blue-600' :
+                  'text-orange-500'
+                }`}>
+                  {Math.round(clamped)}{item.max ? `/${item.max}` : '%'}
+                </span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    clamped >= 80 ? 'bg-green-500' :
+                    clamped >= 60 ? 'bg-blue-500' :
+                    'bg-orange-400'
+                  }`}
+                  style={{ width: `${clamped}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
