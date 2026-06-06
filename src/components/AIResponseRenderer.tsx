@@ -225,13 +225,13 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
             {/* 中心总分 */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className="text-2xl font-bold text-gray-800 leading-none">{avg}</span>
-              <span className="text-[10px] text-gray-500 mt-1">综合评分</span>
+              <span className="text-xs text-gray-500 mt-1">综合评分</span>
             </div>
           </div>
           {/* 图例 */}
           <div className="flex-1 space-y-1.5 min-w-[180px]">
             {sectors.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs">
+              <div key={i} className="flex items-center gap-2 text-sm">
                 <span
                   className="w-3 h-3 rounded-sm flex-shrink-0"
                   style={{ background: s.color }}
@@ -338,7 +338,7 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
             {/* 中心总分 */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
               <span className="text-2xl font-bold text-gray-800 leading-none">{overallScore ?? avgScore}</span>
-              <span className="text-[10px] text-gray-500 mt-1">综合评分</span>
+              <span className="text-xs text-gray-500 mt-1">综合评分</span>
             </div>
           </div>
           {/* 图例 */}
@@ -346,7 +346,7 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
             {dimensions.map((d, i) => {
               const pct = Math.round((d.score / d.max) * 100);
               return (
-                <div key={i} className="flex items-center gap-2 text-xs">
+                <div key={i} className="flex items-center gap-2 text-sm">
                   <span
                     className="w-3 h-3 rounded-sm flex-shrink-0"
                     style={{ background: palette[i % palette.length] }}
