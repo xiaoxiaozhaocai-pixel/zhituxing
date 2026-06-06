@@ -1,8 +1,5 @@
 'use client';
 
-// 强制动态渲染，避免 ISR 缓存导致 "This page couldn't load" 间歇性崩溃
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -11,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2, Mail, Eye, EyeOff, Pencil, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+// fix: OTP verify → setLoginSuccess → trigger redirect useEffect
 
 // 步骤状态
 type Step = 'input' | 'password' | 'otp';
@@ -298,6 +296,7 @@ function AuthContent() {
       
       if (data.success) {
         setSuccess('验证成功，正在跳转...');
+        setLoginSuccess(true);
       } else {
         setError(getFriendlyError(data.error || data.message));
       }
@@ -316,7 +315,6 @@ function AuthContent() {
       }, 1000);
       return () => clearTimeout(timer);
     }
-    return;
   }, [resendCountdown]);
 
   // 重发验证码
@@ -373,6 +371,7 @@ function AuthContent() {
             const result = await verifyOtp(email, otpValue);
             if (result.success) {
               setSuccess('验证成功，正在跳转...');
+              setLoginSuccess(true);
             } else {
               setError(getFriendlyError(result.message));
             }
@@ -396,7 +395,7 @@ function AuthContent() {
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
     const newDigits = [...otpDigits];
     for (let i = 0; i < pastedData.length; i++) {
-      newDigits[i] = pastedData[i]!;
+      newDigits[i] = pastedData[i];
     }
     setOtpDigits(newDigits);
     
