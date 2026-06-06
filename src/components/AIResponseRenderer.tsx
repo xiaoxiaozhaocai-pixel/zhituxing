@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type PromotionData, type TableData } from '@/lib/ai-response-parser';
+import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type RadarData, type PromotionData, type TableData } from '@/lib/ai-response-parser';
 import { Lock, ChevronRight, CheckCircle, AlertTriangle, Flame, Clock, Award, TrendingUp } from 'lucide-react';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 // ========== 子组件 ==========
 
@@ -285,6 +286,128 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
   );
 }
 
+
+/** 雷达图渲染 */
+function RadarChartRenderer({ data }: { data: RadarData }) {
+  const { dimensions, overallScore, summary } = data;
+  if (!dimensions || dimensions.length === 0) return null;
+
+  const chartData = dimensions.map(d => ({
+    dimension: d.name,
+    score: Math.min(d.score, d.max),
+    fullMark: d.max,
+    weight: d.weight,
+  }));
+
+  const avgScore = dimensions.length > 0
+    ? Math.round(dimensions.reduce((s, d) => s + (d.score / d.max) * 100, 0) / dimensions.length)
+    : 0;
+
+  const palette = ['#165DFF', '#36BFFA', '#7B61FF', '#FF9F1C', '#10B981', '#06B6D4'];
+
+  return (
+    <div className="mt-3">
+      {/* 雷达图卡片 */}
+      <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50/30 rounded-xl p-4 mb-3 border border-blue-100">
+        <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+          {/* 雷达图 */}
+          <div className="relative flex-shrink-0 w-full md:w-64 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
+                <PolarGrid stroke="#e2e8f0" />
+                <PolarAngleAxis
+                  dataKey="dimension"
+                  tick={{ fontSize: 12, fill: '#475569' }}
+                />
+                <PolarRadiusAxis
+                  angle={30}
+                  domain={[0, 100]}
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  axisLine={false}
+                />
+                <Radar
+                  name="你的能力"
+                  dataKey="score"
+                  stroke="#165DFF"
+                  fill="#165DFF"
+                  fillOpacity={0.25}
+                  strokeWidth={2}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+            {/* 中心总分 */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+              <span className="text-2xl font-bold text-gray-800 leading-none">{overallScore ?? avgScore}</span>
+              <span className="text-[10px] text-gray-500 mt-1">综合评分</span>
+            </div>
+          </div>
+          {/* 图例 */}
+          <div className="flex-1 space-y-1.5 min-w-[180px]">
+            {dimensions.map((d, i) => {
+              const pct = Math.round((d.score / d.max) * 100);
+              return (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span
+                    className="w-3 h-3 rounded-sm flex-shrink-0"
+                    style={{ background: palette[i % palette.length] }}
+                  />
+                  <span className="text-gray-700 flex-1 truncate" title={d.name}>{d.name}</span>
+                  <span className={`font-semibold tabular-nums ${
+                    pct >= 80 ? 'text-green-600' :
+                    pct >= 60 ? 'text-blue-600' :
+                    'text-orange-500'
+                  }`}>{d.score}/{d.max}</span>
+                  {d.weight != null && (
+                    <span className="text-gray-400 text-[10px] tabular-nums whitespace-nowrap">权重{d.weight}%</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 汇总文字 + 详细进度条 */}
+      {summary && (
+        <div className="text-sm text-gray-600 mb-3 leading-relaxed bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+          {summary}
+        </div>
+      )}
+
+      <div className="space-y-2.5">
+        {dimensions.map((d, i) => {
+          const pct = Math.min((d.score / d.max) * 100, 100);
+          return (
+            <div key={i}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm text-gray-700">{d.name}</span>
+                <span className={`text-sm font-semibold ${
+                  pct >= 80 ? 'text-green-600' :
+                  pct >= 60 ? 'text-blue-600' :
+                  'text-orange-500'
+                }`}>
+                  {Math.round(pct)}%
+                </span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    pct >= 80 ? 'bg-green-500' :
+                    pct >= 60 ? 'bg-blue-500' :
+                    'bg-orange-400'
+                  }`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** 会员推广渲染 */
 /** 会员推广渲染 */
 function TableRenderer({ data }: { data: TableData }) {
   if (!data?.headers?.length) return null;
@@ -385,6 +508,9 @@ export default function AIResponseRenderer({ rawText, streaming = false, role = 
 
           case 'scores':
             return <ScoreListRenderer key={idx} scores={seg.data as ScoreItem[]} />;
+
+          case 'radar':
+            return <RadarChartRenderer key={idx} data={seg.data as RadarData} />;
 
           case 'promotion':
             return <PromotionRenderer key={idx} data={seg.data as PromotionData} />;

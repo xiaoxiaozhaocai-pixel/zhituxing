@@ -83,13 +83,18 @@ const interviewWelcome = `👋你好！我是职途星AI面试官，将为你还
 3. 该岗位的完整官方JD
 4. 你的个人求职简历`;
 
-const careerWelcome = `👋 你好！我是「职途星——你的AI职业生涯规划助手」，专为大学生打造的个性化职业规划工具，所有建议均基于全行业真实招聘数据。
-✨ 我能帮你做什么：
-🎯 岗位匹配：告诉我你的专业、年级和兴趣，推荐最适合你的3-5个岗位
-📈 成长路径：根据目标岗位，定制大一到大四的分阶段成长计划
-✅ 成功率测算：评估你应聘目标岗位的匹配度，给出针对性提升建议
-📝 求职指导：解答简历、面试、校招等通用求职问题
-💡 请告诉我你的专业、年级和求职意向，我来为你生成专属规划！`;
+const careerWelcome = `👋 你好！我是「职途星——能力诊断+成长规划助手」，将胜任力评估与职业规划深度融合，所有建议均基于全行业真实招聘数据。
+
+✨ **第一步：能力诊断**
+📊 胜任力雷达图：从硬技能、软技能、经验匹配、教育背景四个维度精准评估你的当前能力
+🔍 短板定位：自动识别你的能力薄弱环节，给出量化匹配度分数
+
+✨ **第二步：成长规划**
+🎯 岗位匹配：根据诊断结果推荐最适合你的3-5个目标岗位
+📈 成长路径：基于能力短板，定制分阶段成长计划与月度里程碑
+✅ 进度追踪：定期回顾能力变化，动态调整规划方向
+
+💡 两个功能已深度融合——诊断完成自动生成成长方案，请告诉我你的专业、年级和求职意向！`;
 
 const decisionWelcome = `👋 你好！我是「职途星——考研就业决策助手」，专为大三、大四学生打造的升学就业对比工具。
 ✨ 我能帮你做什么：
@@ -137,17 +142,17 @@ const bots: BotConfig[] = [
   },
   {
     id: 'career',
-    name: 'AI职业规划',
-    description: '制定专属成长路径',
+    name: '能力诊断+成长规划',
+    description: '诊断短板 + 定制成长路径',
     icon: <Sparkles className="w-5 h-5" />,
     color: 'text-[#722ED1]',
     gradient: 'from-purple-500 to-purple-600',
     welcomeMessage: careerWelcome + disclaimerText,
     quickQuestions: [
+      '生成我的胜任力诊断报告',
       '计算机专业职业规划',
-      '如何制定成长路径？',
-      '如何提升职场竞争力',
-      '职业发展路径建议'
+      '我的能力短板在哪里？',
+      '如何提升职场竞争力'
     ]
   },
   {
@@ -196,22 +201,7 @@ const bots: BotConfig[] = [
       '专业能力评估报告'
     ]
   },
-  {
-    id: 'competency',
-    name: '胜任力评估',
-    description: '仅限会员使用',
-    icon: <Crown className="w-5 h-5" />,
-    color: 'text-gray-600',
-    gradient: 'from-gray-500 to-gray-600',
-    welcomeMessage: competencyWelcome + disclaimerText,
-    quickQuestions: [
-      '查看我的胜任力雷达图',
-      '能力提升建议',
-      '成长轨迹追踪',
-      '本月能力评估'
-    ],
-    isVipOnly: true
-  },
+
   {
     id: 'xiaozhi',
     name: '小职',
@@ -382,7 +372,7 @@ function AssistantContent() {
   useEffect(() => {
     const bot = searchParams.get('bot');
     if (bot && !pendingQuery) {
-      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency', 'xiaozhi'];
+      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'xiaozhi'];
       if (validBots.includes(bot)) {
         setActiveBot(bot);
         // 立即用新 bot 的欢迎消息覆盖初始 jobs 欢迎消息（避免 useEffect 因 messages 非空不再刷新）

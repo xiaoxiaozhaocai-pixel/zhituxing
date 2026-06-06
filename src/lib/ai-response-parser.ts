@@ -5,7 +5,7 @@
 
 // ========== 类型定义 ==========
 
-export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'promotion' | 'disclaimer' | 'table';
+export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'radar' | 'promotion' | 'disclaimer' | 'table';
 
 export interface ParsedSegment {
   type: SegmentType;
@@ -39,6 +39,12 @@ export interface ScoreItem {
   label?: string;
   /** 该维度在岗位胜任力中的推荐权重（百分比，如35表示35%） */
   weight?: number;
+}
+
+export interface RadarData {
+  dimensions: { name: string; score: number; max: number; weight?: number }[];
+  overallScore?: number;
+  summary?: string;
 }
 
 export interface TableData {

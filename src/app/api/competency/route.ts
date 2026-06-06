@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 /**
  * 胜任力评估AI智能体流式API
  * 使用Coze Workflow stream_run API，通过SSE协议返回流式响应
- * 会员专属功能 — free用户提示升级
+ * 能力诊断功能 — 与职业规划合并后免费开放
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -54,18 +54,6 @@ export async function POST(request: NextRequest) {
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
-
-    // 胜任力评估是会员专属功能
-    if (userType !== 'member') {
-      const fallback = getCompetencyFallback(major || '', grade || '');
-      return new Response(createTextStream(fallback), {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
-    }
 
     // === DeepSeek + RAG 分支 ===
     if (USE_DEEPSEEK) {
