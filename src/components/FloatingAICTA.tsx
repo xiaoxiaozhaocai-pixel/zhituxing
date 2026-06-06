@@ -248,6 +248,7 @@ export default function FloatingAICTA() {
             </div>
             <button
               onClick={() => setChatOpen(false)}
+              onPointerDown={(e) => e.stopPropagation()}
               className="hover:bg-white/20 rounded-lg p-1.5 transition"
             >
               <X className="w-4 h-4" />
