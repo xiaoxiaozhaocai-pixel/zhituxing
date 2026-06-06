@@ -34,7 +34,7 @@ export default function FloatingAICTA() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 对话窗口状态
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [streaming, setStreaming] = useState(false);
