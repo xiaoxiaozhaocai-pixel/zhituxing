@@ -20,7 +20,7 @@ import {
   Edit3,
   RefreshCw
 } from 'lucide-react';
-import { loadXLSX } from '@/lib/dynamic-imports';
+import { loadExcelJS } from '@/lib/dynamic-imports';
 
 interface JDRow {
   id: string;
@@ -104,12 +104,13 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       ['HRBP（校招）', '腾讯', '深圳', '12', '20', '互联网', '上市公司', '负责校园招聘...', '是'],
       ['产品经理', '阿里巴巴', '杭州', '15', '30', '互联网', '上市公司', '负责产品规划...', '是'],
     ];
-    // 动态加载xlsx（~300KB，按需加载）
-    const XLSX = await loadXLSX();
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'JD导入模板');
-    XLSX.writeFile(wb, 'JD批量导入模板.xlsx');
+    // 动态加载exceljs（按需加载）
+    const { ExcelJS, downloadBuffer } = await loadExcelJS();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('JD导入模板');
+    wsData.forEach((row: string[]) => ws.addRow(row));
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadBuffer(buffer as ArrayBuffer, 'JD批量导入模板.xlsx');
   };
 
   // 处理文件上传
@@ -157,13 +158,17 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
     reader.onload = async (e) => {
       try {
         const data = e.target?.result;
-        // 动态加载xlsx（~300KB，按需加载）
-        const XLSX = await loadXLSX();
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName!]!;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+        // 动态加载exceljs（按需加载）
+        const { ExcelJS } = await loadExcelJS();
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(data as ArrayBuffer);
+        const ws = wb.worksheets[0];
+        const jsonData: any[][] = [];
+        ws.eachRow((row) => {
+          const values: any[] = [];
+          row.eachCell((cell) => values.push(cell.value));
+          jsonData.push(values);
+        });
 
         // 解析数据行（跳过表头）
         const rows: JDRow[] = jsonData.slice(1).map((row, index) => ({
@@ -425,12 +430,13 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       ['行号', '错误原因'],
       ...importResult.errors.map(e => [e.rowIndex, e.error])
     ];
-    // 动态加载xlsx（~300KB，按需加载）
-    const XLSX = await loadXLSX();
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '导入错误报告');
-    XLSX.writeFile(wb, '导入错误报告.xlsx');
+    // 动态加载exceljs（按需加载）
+    const { ExcelJS, downloadBuffer } = await loadExcelJS();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('导入错误报告');
+    wsData.forEach((row: (string | number)[]) => ws.addRow(row));
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadBuffer(buffer as ArrayBuffer, '导入错误报告.xlsx');
   };
 
   if (!show) return null;
