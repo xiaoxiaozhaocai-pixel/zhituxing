@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { requireAdmin } from '@/lib/admin-auth';
+
 
 const supabase = getSupabaseAdmin();
 

@@ -1,4 +1,4 @@
-import { safeErrorMessage } from '@/lib/api-error';
+
 export const dynamic = 'force-dynamic';
 /**
  * 统一岗位搜索API
@@ -69,7 +69,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
   let supabase;
   try {
     supabase = getSupabaseAdmin();
-  } catch (e) {
+  } catch (__e) {
     console.warn('[Search] Skipping database search: Supabase not configured');
     return [];
   }

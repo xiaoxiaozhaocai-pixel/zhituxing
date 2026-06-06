@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, AlertCircle, CheckCircle, Upload } from 'lucide-react';
+import {Loader2, FileText, AlertCircle, CheckCircle} from 'lucide-react';
 
 interface FileImportModuleProps {
   onContentExtracted: (content: string) => void;

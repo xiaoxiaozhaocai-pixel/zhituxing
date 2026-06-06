@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type RadarData, type PromotionData, type TableData } from '@/lib/ai-response-parser';
-import { Lock, ChevronRight, CheckCircle, AlertTriangle, Flame, Clock, Award, TrendingUp } from 'lucide-react';
+import {Lock, ChevronRight, CheckCircle, AlertTriangle, Award, TrendingUp} from 'lucide-react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 // ========== 子组件 ==========

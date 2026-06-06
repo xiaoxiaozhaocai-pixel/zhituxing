@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Label } from '@/components/ui/label';
 import {
   Command,
@@ -517,7 +517,7 @@ function SelectCombobox({ options, value, onChange, placeholder = '请选择...'
 
 // ==================== 技能选择项组件 ====================
 
-function SkillSelectItem({ skill, category, selected, level, onToggle, onLevelChange }: {
+function SkillSelectItem({ skill, _category, selected, level, onToggle, onLevelChange }: {
   skill: SkillItem; category: string; selected: boolean; level: ProficiencyLevel;
   onToggle: () => void; onLevelChange: (lvl: ProficiencyLevel) => void;
 }) {

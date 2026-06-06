@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
 import type { AuthUser, QuotaInfo } from '@/hooks/useAuth';
-import type { UserProfile, NotificationItem, FavoriteItem, ReportItem } from '@/lib/types';
+import type {NotificationItem, FavoriteItem, ReportItem} from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
 import {
   Bell,

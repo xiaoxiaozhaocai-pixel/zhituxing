@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, ArrowLeft, Plus, Edit, Trash2, Eye, Search, CheckCircle } from 'lucide-react';
+import {Loader2, ArrowLeft, Plus, Edit, Trash2, Eye, Search} from 'lucide-react';
 
 interface Referral {
   id: string;

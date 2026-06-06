@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, Target, Briefcase, BookOpen, ChevronRight, ChevronLeft, X, Compass, Bot, Search, CheckCircle2 } from 'lucide-react';
+import {Target, Briefcase, BookOpen, ChevronRight, ChevronLeft, X, Compass, Bot, Search, CheckCircle2} from 'lucide-react';
 
 interface FirstVisitModalProps {
   onComplete?: () => void;

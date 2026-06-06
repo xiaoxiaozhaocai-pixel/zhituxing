@@ -17,7 +17,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  Building2, ArrowLeft, Users, GraduationCap, Globe, Plus, Trash2, Shield, Mail, Loader2, ExternalLink
+  Building2, ArrowLeft, Users, GraduationCap, Globe, Plus, Trash2, _Shield, Mail, Loader2, ExternalLink
 } from 'lucide-react';
 
 // ============ 类型 ============

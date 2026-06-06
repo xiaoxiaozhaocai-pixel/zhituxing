@@ -131,7 +131,7 @@ ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS graduation_year VARCHAR(20);
 }
 
 // GET 方法：检查当前列状态
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(

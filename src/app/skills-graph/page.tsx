@@ -150,7 +150,7 @@ export default function SkillsGraphPage() {
     if (nodes.length === 0) return;
 
     const W = 800, H = 500;
-    const newNodes: SimNode[] = nodes.map((n, i) => ({
+    const newNodes: SimNode[] = nodes.map((n, _i) => ({
       name: n.name,
       x: W / 2 + (Math.random() - 0.5) * 200,
       y: H / 2 + (Math.random() - 0.5) * 200,

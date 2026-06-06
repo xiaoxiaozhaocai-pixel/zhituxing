@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  ChevronRight, ChevronLeft, Check, GraduationCap,
+  ChevronRight, _ChevronLeft, Check, GraduationCap,
   BookOpen, MapPin, DollarSign, Sparkles, Target,
-  Brain, Loader2, X, ChevronDown, ChevronUp,
+  Brain, Loader2, _X, ChevronDown, ChevronUp,
 } from 'lucide-react';
 
 const GRADE_OPTIONS = [

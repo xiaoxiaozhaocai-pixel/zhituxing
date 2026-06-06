@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback, Suspense } from 'react';
+import {useState, useEffect, useMemo, useCallback, Suspense} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -424,7 +424,7 @@ function ProfileInfoContent() {
             }
           }
         }
-      } catch (error) {
+      } catch (__error) {
         console.log('获取岗位列表失败，使用默认选项');
       }
     };

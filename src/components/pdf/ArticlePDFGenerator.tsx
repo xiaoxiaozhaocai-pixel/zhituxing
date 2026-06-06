@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { loadJSPDF, loadHtml2Canvas } from '@/lib/dynamic-imports';
 import { Button } from '@/components/ui/button';
-import { Loader2, Download, FileText } from 'lucide-react';
+import {Loader2, FileText} from 'lucide-react';
 
 interface ArticlePDFGeneratorProps {
   articleId: string;

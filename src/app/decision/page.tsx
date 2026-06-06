@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import Link from 'next/link';
+
 import { useAuth } from '@/hooks/useAuth';
-import { Send, Loader2, GraduationCap, Briefcase, TrendingUp, Target, Sparkles, Share2, Download, Crown, AlertCircle, Copy, Check } from 'lucide-react';
+import {Send, Loader2, Target, Share2, Download, Crown, Copy, Check} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
@@ -35,7 +35,7 @@ const quickQuestions = [
   '生成我的考研备考计划'
 ];
 
-const sharePrompt = (inviteCode: string) => `
+const sharePrompt = (_inviteCode: string) => `
 ---
 🎉 **分享这份报告给同学，双方都能获得奖励！**
 

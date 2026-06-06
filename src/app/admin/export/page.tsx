@@ -104,7 +104,7 @@ export default function ExportPage() {
         message: result.message,
         files: result.data?.files
       });
-    } catch (error) {
+    } catch (__error) {
       setExportResult({
         success: false,
         message: '导出失败，请稍后重试'

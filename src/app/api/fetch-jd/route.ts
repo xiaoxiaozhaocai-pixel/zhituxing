@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
         data: { content: textContent, title, url },
         message: '解析成功',
       });
-    } catch (fetchErr) {
+    } catch (__fetchErr) {
       clearTimeout(timeout!);
       return NextResponse.json({
         code: 200,

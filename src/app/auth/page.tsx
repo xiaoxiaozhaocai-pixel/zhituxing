@@ -217,7 +217,7 @@ function AuthContent() {
       } else {
         setError(getFriendlyError(result.message));
       }
-    } catch (err) {
+    } catch (__err) {
       setError('登录失败，请稍后重试');
     }
     
@@ -250,7 +250,7 @@ function AuthContent() {
       } else {
         setError(data.error || '发送验证码失败');
       }
-    } catch (err) {
+    } catch (__err) {
       setError('发送验证码失败，请稍后重试');
     }
     
@@ -300,7 +300,7 @@ function AuthContent() {
       } else {
         setError(getFriendlyError(data.error || data.message));
       }
-    } catch (err) {
+    } catch (__err) {
       setError('验证失败，请稍后重试');
     }
     
@@ -338,7 +338,7 @@ function AuthContent() {
       } else {
         setError(data.error || '发送失败');
       }
-    } catch (err) {
+    } catch (__err) {
       setError('发送失败，请稍后重试');
     }
     
@@ -375,7 +375,7 @@ function AuthContent() {
             } else {
               setError(getFriendlyError(result.message));
             }
-          } catch (err) {
+          } catch (__err) {
             setError('验证失败，请稍后重试');
           }
           setLoading(false);

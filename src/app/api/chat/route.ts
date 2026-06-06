@@ -924,7 +924,7 @@ export async function POST(request: NextRequest) {
                   });
                   controller.enqueue(encoder.encode('data: ' + degradeMsg + '\n\n'));
                   controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-                } catch (e) { /* best effort */ }
+                } catch (__e) { /* best effort */ }
               }
             } finally {
               clearTimeout(timeoutId);

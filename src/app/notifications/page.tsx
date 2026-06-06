@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Bell, Check, Trash2, Loader2, X } from 'lucide-react';
+import {Bell, Check, Loader2} from 'lucide-react';
 
 interface Notification {
   id: string;

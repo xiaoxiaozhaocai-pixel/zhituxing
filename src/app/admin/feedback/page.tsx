@@ -7,9 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, ArrowLeft, Search, MessageSquare, CheckCircle, RefreshCw, Send } from 'lucide-react';
+import {Loader2, ArrowLeft, Search, RefreshCw, Send} from 'lucide-react';
 
 interface Feedback {
   id: string;

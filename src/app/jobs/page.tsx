@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Separator } from '@/components/ui/separator';
 import {
-  Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
+  Send, Loader2, _MessageSquare, Briefcase, _PlusCircle, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
-  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
+  User, ArrowRight, RefreshCw, _Link2, _X, _AlertCircle, Link as LinkIcon, _CheckCircle,
   MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp, ExternalLink
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';

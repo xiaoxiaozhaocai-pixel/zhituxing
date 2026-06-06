@@ -3,7 +3,7 @@
 // 目标：节省约73% token 消耗
 
 import { getSupabaseAdmin } from '@/lib/supabase';
-import crypto from 'crypto';
+
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';

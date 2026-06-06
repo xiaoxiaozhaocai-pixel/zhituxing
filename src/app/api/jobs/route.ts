@@ -1,9 +1,9 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-import { NextRequest, NextResponse } from 'next/server';
+import {NextRequest} from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { sanitizeJDList } from '@/lib/jd-sanitizer';
-import type { CacheEntry, JobRecord, ChatMessage } from '@/lib/types';
+
+import type {CacheEntry, JobRecord} from '@/lib/types';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { JobsListDataSchema, type JobsListData } from '@/lib/api-contracts/jobs';

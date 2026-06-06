@@ -11,7 +11,7 @@ function getSupabaseClient() {
 }
 
 // 简单的管理员验证
-async function verifyAdmin(request: NextRequest) {
+async function verifyAdmin(_request: NextRequest) {
   const cookieStore = await cookies();
   const adminToken = cookieStore.get('admin_token')?.value;
   const expectedToken = process.env.ADMIN_TOKEN || 'admin_token_for_zhituxing';

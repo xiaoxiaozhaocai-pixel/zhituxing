@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { 
-  Sparkles, Target, Users, Shield, GraduationCap, 
+  Sparkles, Target, _Users, Shield, GraduationCap, 
   Briefcase, MessageSquare, TrendingUp, Heart,
   ArrowRight, MapPin
 } from 'lucide-react';
