@@ -91,9 +91,11 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  silent: true,
+  silent: !process.env.CI,
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  tunnelRoute: '/sentry-tunnel',
   widenClientFileUpload: true,
   sourcemaps: { disable: process.env.NODE_ENV !== 'production' },
 });
