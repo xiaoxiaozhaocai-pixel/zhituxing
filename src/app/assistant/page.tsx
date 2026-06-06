@@ -644,7 +644,7 @@ function AssistantContent() {
       const decoder = new TextDecoder();
       let fullContent = '';
       let sseBuffer = '';
-      let firstTokenTimer = setTimeout(() => {
+      const firstTokenTimer = setTimeout(() => {
         // 15秒未收到第一个token
         setMessages(prev => {
           const newMsgs = [...prev];
@@ -957,7 +957,7 @@ function AssistantContent() {
           </p>
         </div>
 
-        {/* 智能体Tab选择器 */}
+        {/* 功能Tab选择器 */}
         <div className="bot-tabs mb-4">
           <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
             {bots.map((bot) => (

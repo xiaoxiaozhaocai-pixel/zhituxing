@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const rawData = await res.json();
 
     // 转换 snake_case → camelCase + 映射 relation_type
-    const data = (rawData || []).map((r: any) => ({
+    const data = (rawData || []).map((r: { id: number; source_skill: string; target_skill: string; relation_type: string; weight: number; co_occur_count: number; confidence: number; evidence_jd_count: number }) => ({
       id: r.id,
       sourceSkill: r.source_skill,
       targetSkill: r.target_skill,
