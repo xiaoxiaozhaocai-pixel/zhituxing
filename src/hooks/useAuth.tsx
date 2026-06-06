@@ -85,6 +85,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+
+/** 从 membership 信息构建 QuotaInfo */
+function buildQuotaFromMembership(m: { isMember: boolean; type: string; expiresAt: string | null } | null | undefined): QuotaInfo {
+  const isMember = m?.isMember ?? false;
+  const isLifetime = m?.type === 'lifetime';
+  return {
+    career_planning: { remaining: isMember ? -1 : 3, unlimited: isMember },
+    interview: { remaining: isMember ? -1 : 3, unlimited: isMember },
+    assessment: { remaining: isMember ? -1 : 1, unlimited: isMember },
+    competency: { is_member_only: true, requires_report: true },
+    decision: { remaining: isMember ? -1 : 3, unlimited: isMember },
+    remaining: isMember ? -1 : 3,
+    reset_time: new Date(Date.now() + 86400000).toISOString(),
+    is_member: isMember,
+    is_lifetime_member: isLifetime,
+    member_type: m?.type || 'free',
+    member_expire_time: m?.expiresAt ?? null,
+  };
+}
+
   const checkAuth = async () => {
     try {
       // 安全修复：不再从 localStorage 读取用户信息
@@ -96,8 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (data.ok && data.data?.user) {
         setUser(data.data.user);
-        // quota 由 /api/quota 单独提供（me 契约不含 quota，遗留待治理）
-        setQuota(null);
+        setQuota(buildQuotaFromMembership(data.data.user.membership));
       } else {
         setUser(null);
         setQuota(null);
@@ -120,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (data.ok && data.data?.user) {
         setUser(data.data.user);
-        setQuota(null);
+        setQuota(buildQuotaFromMembership(data.data.user.membership));
       }
     } catch (error) {
       console.error('刷新配额失败:', error);
