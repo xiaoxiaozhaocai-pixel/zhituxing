@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFParse } from 'pdf-parse';
-import mammoth from 'mammoth';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -32,14 +31,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ text, pages: pageCount });
     }
 
-    // DOCX
+    // DOCX — 动态导入，避免生产环境顶层 import 失败影响其他格式
     if (fileName.endsWith('.docx')) {
-      const result = await mammoth.extractRawText({ buffer });
-      const text = result.value.slice(0, 10000).trim();
-      if (!text) {
-        return NextResponse.json({ error: 'DOCX文件无法提取文本，文件可能为空或损坏' }, { status: 422 });
+      try {
+        const mammoth = await import('mammoth');
+        const result = await mammoth.extractRawText({ buffer });
+        const text = result.value.slice(0, 10000).trim();
+        if (!text) {
+          return NextResponse.json({ error: 'DOCX文件无法提取文本，文件可能为空或损坏' }, { status: 422 });
+        }
+        return NextResponse.json({ text, pages: 1 });
+      } catch (e) {
+        console.error('[upload/parse] mammoth failed:', e);
+        return NextResponse.json({ error: 'DOCX解析失败，请尝试转为PDF后上传' }, { status: 422 });
       }
-      return NextResponse.json({ text, pages: 1 });
     }
 
     // DOC（旧格式兼容）
