@@ -6,12 +6,8 @@ export default function SentryExamplePage() {
   const [result, setResult] = useState<string | null>(null);
 
   const triggerFrontendError = () => {
-    try {
-      // @ts-expect-error - 故意调用不存在的函数来触发 Sentry 错误上报
-      myUndefinedFunction();
-    } catch (e) {
-      setResult('前端错误已触发，查看 Sentry Issues');
-    }
+    // @ts-expect-error - 故意调用不存在函数触发 Sentry
+    myUndefinedFunction();
   };
 
   const triggerApiError = async () => {
