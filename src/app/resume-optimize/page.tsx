@@ -6,17 +6,12 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus, Zap, TrendingUp, Eye, PenTool, MessageSquare } from 'lucide-react';
+import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus, Upload, Zap, TrendingUp, Eye, PenTool, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import {
   Dialog,
   DialogContent,
@@ -66,6 +61,8 @@ export default function ResumeOptimizePage() {
   const { isMember } = useMembership();
   const [resumeContent, setResumeContent] = useState('');
   const [targetPosition, setTargetPosition] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationResult, setOptimizationResult] = useState<{
     id: string;
@@ -117,6 +114,43 @@ export default function ResumeOptimizePage() {
       }
     } catch (error) {
       console.error('获取简历列表失败:', error);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setUploadError('文件不能超过10MB');
+      return;
+    }
+    
+    const allowed = ['.pdf', '.docx', '.doc', '.txt'];
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowed.includes(ext)) {
+      setUploadError('支持 PDF、DOCX、DOC、TXT 格式');
+      return;
+    }
+    
+    setIsUploading(true);
+    setUploadError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload/parse', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadError(data.error || '解析失败');
+      } else {
+        setResumeContent(data.text);
+      }
+    } catch {
+      setUploadError('上传失败，请检查网络');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -280,47 +314,83 @@ export default function ResumeOptimizePage() {
                   开始优化
                 </CardTitle>
                 <CardDescription className="text-sm text-[#888]">
-                  粘贴简历文本，选择目标岗位，AI 即刻分析
+                  上传或粘贴简历，选择目标岗位，AI 即刻分析
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pb-6">
+                {/* 简历内容 */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-[#333]">
-                      简历内容
-                    </label>
-                    <span className="text-xs text-[#aaa]">{resumeContent.length} 字</span>
+                    <label className="text-sm font-medium text-[#333]">简历内容</label>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-[#aaa]">{resumeContent.length} 字</span>
+                      <label className="flex items-center gap-1.5 text-xs text-[#165DFF] hover:text-[#3D7FFF] cursor-pointer transition-colors font-medium">
+                        <Upload className="w-3.5 h-3.5" />
+                        {isUploading ? '解析中...' : '上传简历文件'}
+                        <input
+                          type="file"
+                          accept=".pdf,.docx,.doc,.txt"
+                          onChange={handleFileUpload}
+                          disabled={isUploading}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
                   </div>
+                  {uploadError && (
+                    <div className="mb-2 text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{uploadError}</div>
+                  )}
+                  {isUploading && (
+                    <div className="mb-2 flex items-center gap-2 text-xs text-[#165DFF] bg-blue-50 px-3 py-2 rounded-lg">
+                      <Loader2 className="w-3 h-3 animate-spin" /> 正在解析简历文件...
+                    </div>
+                  )}
                   <Textarea
-                    placeholder="将简历全文粘贴到此处…&#10;&#10;📌 个人信息  📌 教育背景  📌 实习经历  📌 项目经历  📌 技能证书"
+                    placeholder="上传 PDF/Word 简历自动解析，或直接粘贴文本…&#10;&#10;📌 个人信息  📌 教育背景  📌 实习经历  📌 项目经历  📌 技能证书"
                     className="min-h-[220px] resize-y text-sm leading-relaxed border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/10 rounded-xl transition-all"
                     value={resumeContent}
-                    onChange={(e) => setResumeContent(e.target.value)}
+                    onChange={(e) => { setResumeContent(e.target.value); setUploadError(''); }}
                   />
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Select value={targetPosition} onValueChange={setTargetPosition}>
-                    <SelectTrigger className="sm:w-[220px] rounded-xl border-gray-200 focus:ring-2 focus:ring-[#165DFF]/10 h-11">
-                      <SelectValue placeholder="🎯 选择目标岗位" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {positions.map((p) => (
-                        <SelectItem key={p} value={p}>{p}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF] hover:to-[#165DFF] text-white font-semibold shadow-lg shadow-[#165DFF]/25 hover:shadow-xl hover:shadow-[#165DFF]/30 transition-all duration-300 rounded-xl h-11 px-6"
-                    disabled={!resumeContent.trim() || !targetPosition || isOptimizing}
-                    onClick={handleOptimize}
-                  >
-                    {isOptimizing ? (
-                      <><Loader2 className="w-4 h-4 animate-spin mr-2" /> 分析优化中…</>
-                    ) : (
-                      <><Sparkles className="w-4 h-4 mr-2" /> 立即优化</>
-                    )}
-                  </Button>
+                {/* 目标岗位：快捷选择 + 自由输入 */}
+                <div>
+                  <label className="text-sm font-medium text-[#333] mb-2 block">目标岗位</label>
+                  <div className="flex flex-wrap gap-2 mb-2.5">
+                    {positions.slice(0, 9).map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setTargetPosition(p)}
+                        className={`px-3 py-1.5 text-xs rounded-full border transition-all duration-200 ${
+                          targetPosition === p
+                            ? 'bg-[#165DFF] text-white border-[#165DFF] shadow-sm'
+                            : 'bg-white text-[#666] border-gray-200 hover:border-[#165DFF]/50 hover:text-[#165DFF]'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <Input
+                    placeholder="或直接输入，如：前端开发实习生、产品助理..."
+                    value={targetPosition}
+                    onChange={(e) => setTargetPosition(e.target.value)}
+                    className="rounded-xl border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/10 h-11"
+                  />
                 </div>
+
+                {/* 操作按钮 */}
+                <Button
+                  className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF] hover:to-[#165DFF] text-white font-semibold shadow-lg shadow-[#165DFF]/25 hover:shadow-xl hover:shadow-[#165DFF]/30 transition-all duration-300 rounded-xl h-11"
+                  disabled={!resumeContent.trim() || !targetPosition.trim() || isOptimizing}
+                  onClick={handleOptimize}
+                >
+                  {isOptimizing ? (
+                    <><Loader2 className="w-4 h-4 animate-spin mr-2" /> 分析优化中…</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 mr-2" /> 立即优化</>
+                  )}
+                </Button>
                 {!isMember && (
                   <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FFF7ED] rounded-xl border border-[#FF7D00]/15">
                     <Crown className="w-4 h-4 text-[#FF7D00] shrink-0" />
