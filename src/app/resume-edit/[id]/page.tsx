@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Save, ArrowLeft, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, FileText, CheckCircle2, AlertCircle, Sparkles, Lightbulb, AlertTriangle, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ResumeSection {
@@ -47,6 +47,20 @@ export default function ResumeEditPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  // AI 评分状态
+  const [scoreLoading, setScoreLoading] = useState(false);
+  const [overallScore, setOverallScore] = useState(0);
+  const [scoreDimensions, setScoreDimensions] = useState<{ name: string; score: number; maxScore: number }[]>([]);
+  const [scoreSummary, setScoreSummary] = useState('');
+  const [scoreExpanded, setScoreExpanded] = useState(false);
+
+  // AI 逐段分析
+  const [analyzing, setAnalyzing] = useState('');
+  const [analysis, setAnalysis] = useState<{
+    score: number; strengths: string[]; weaknesses: string[]; suggestions: string[]; rewritten: string;
+  } | null>(null);
+  const [analysisError, setAnalysisError] = useState('');
+  const [appliedRewrite, setAppliedRewrite] = useState(false);
 
   // 表单状态
   const [resumeName, setResumeName] = useState('');
@@ -132,6 +146,75 @@ export default function ResumeEditPage() {
       setSaving(false);
     }
   }, [resumeName, content, basicName, phone, email, school, major, graduation, skillsText, resumeId, resume]);
+
+
+  // AI 综合评分
+  const fetchScore = useCallback(async () => {
+    if (!resume) return;
+    setScoreLoading(true);
+    try {
+      const sections = {
+        basic: { name: basicName, school, major, graduation },
+        education: resume.sections?.education || [],
+        experience: resume.sections?.experience || [],
+        projects: resume.sections?.projects || [],
+        skills: skillsText.split(/[、,，]/).map((s: string) => s.trim()).filter(Boolean),
+        content,
+      };
+      const resp = await fetch('/api/resume/score', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeData: sections }),
+      });
+      const data = await resp.json();
+      if (!data.error) {
+        setOverallScore(data.overallScore || 0);
+        setScoreDimensions(data.dimensions || []);
+        setScoreSummary(data.summary || '');
+      }
+    } catch { /* silent */ }
+    finally { setScoreLoading(false); }
+  }, [resume, basicName, school, major, graduation, skillsText, content]);
+
+  useEffect(() => {
+    if (resume && !scoreLoading && overallScore === 0) fetchScore();
+  }, [resume]); // eslint-disable-line
+
+  // AI 逐段分析
+  const analyzeSection = async (type: string, label: string) => {
+    setAnalyzing(label);
+    setAnalysis(null);
+    setAnalysisError('');
+    setAppliedRewrite(false);
+    let text = '';
+    if (type === 'skills') text = skillsText;
+    else if (type === 'content') text = content;
+    else {
+      const arr = resume?.sections?.[type as keyof typeof resume.sections] as Array<Record<string,unknown>> | undefined;
+      if (arr?.length) text = arr.map((item: Record<string,unknown>) =>
+        `${item.school || item.company || ''} ${item.major || item.role || ''} ${item.time || ''} ${Array.isArray(item.description) ? (item.description as string[]).join('；') : ''}`
+      ).join('\n');
+    }
+    if (!text.trim()) { setAnalysisError('该部分暂无内容'); setAnalyzing(''); return; }
+    try {
+      const resp = await fetch('/api/resume/analyze-section', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionType: type, sectionText: text, resumeContext: content?.slice(0, 500) || '' }),
+      });
+      const data = await resp.json();
+      if (data.error) setAnalysisError(data.error);
+      else setAnalysis(data);
+    } catch { setAnalysisError('分析失败，请重试'); }
+    finally { setAnalyzing(''); }
+  };
+
+  const applyRewrite = () => {
+    if (!analysis?.rewritten) return;
+    if (analyzing === '技能标签') setSkillsText(analysis.rewritten);
+    else if (analyzing === '简历正文') setContent(analysis.rewritten);
+    else setContent((prev: string) => prev + '\n\n【AI 优化】' + analysis.rewritten);
+    setAppliedRewrite(true);
+    setTimeout(() => fetchScore(), 1000);
+  };
 
   if (authLoading || loading) {
     return (
@@ -297,6 +380,125 @@ export default function ResumeEditPage() {
 
           {/* ========== 右侧预览 (58%) ========== */}
           <div className="flex-1 min-w-0 space-y-4">
+            {/* AI 综合评分条 */}
+            {(overallScore > 0 || scoreLoading) && (
+              <div className={`rounded-xl border transition-all duration-300 ${
+                scoreLoading ? 'bg-[#f0f5ff] border-[#165DFF]/15' :
+                overallScore >= 80 ? 'bg-green-50 border-green-200' :
+                overallScore >= 60 ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'
+              }`}>
+                {scoreLoading ? (
+                  <div className="flex items-center gap-3 px-4 py-2.5">
+                    <Sparkles className="h-4 w-4 text-[#165DFF]/60 animate-pulse" />
+                    <span className="text-xs text-[#165DFF]/60">AI 正在分析…</span>
+                  </div>
+                ) : (
+                  <>
+                    <button onClick={() => setScoreExpanded(!scoreExpanded)} className="w-full flex items-center gap-3 px-4 py-2.5 cursor-pointer">
+                      <Sparkles className="h-4 w-4 text-[#165DFF] shrink-0" />
+                      <span className={`text-xl font-bold shrink-0 ${overallScore >= 80 ? 'text-green-600' : overallScore >= 60 ? 'text-[#FF7D00]' : 'text-red-500'}`}>{overallScore}</span>
+                      <span className="text-xs text-[#666] truncate text-left flex-1">{scoreSummary}</span>
+                      <button onClick={(e) => { e.stopPropagation(); fetchScore(); }} className="text-xs text-[#165DFF] font-medium shrink-0">刷新</button>
+                      {scoreExpanded ? <ChevronUp className="h-3.5 w-3.5 text-[#aaa] shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 text-[#aaa] shrink-0" />}
+                    </button>
+                    {scoreExpanded && (
+                      <div className="px-4 pb-3 space-y-2">
+                        {scoreDimensions.map((dim: { name: string; score: number; maxScore: number }) => {
+                          const pct = Math.round((dim.score / dim.maxScore) * 100);
+                          return (
+                            <div key={dim.name} className="flex items-center gap-2">
+                              <span className="text-xs text-[#666] w-20 shrink-0">{dim.name}</span>
+                              <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full ${pct >= 80 ? 'bg-green-500' : pct >= 60 ? 'bg-[#FF7D00]' : 'bg-red-400'}`} style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="text-xs font-medium w-6 text-right">{dim.score}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* AI 逐段分析面板 */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 bg-gradient-to-r from-[#f0f5ff]/60 to-white">
+                <Sparkles className="h-4 w-4 text-[#165DFF]" />
+                <span className="text-sm font-bold text-[#1a1a1a]">小职 AI 分析</span>
+                <Badge className="bg-[#165DFF]/8 text-[#165DFF] border-0 text-[10px] ml-auto">逐段精准反馈</Badge>
+              </div>
+              <div className="p-3 grid grid-cols-2 gap-1.5">
+                {[
+                  ['education', '🎓 教育经历'],
+                  ['experience', '💼 实习经历'],
+                  ['projects', '🚀 项目经历'],
+                  ['skills', '🛠️ 技能标签'],
+                  ['content', '📝 简历正文'],
+                ].map(([type, label]) => (
+                  <button key={type} onClick={() => analyzeSection(type, label.split(' ')[1])} disabled={!!analyzing}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      analyzing === label.split(' ')[1] ? 'bg-[#165DFF]/10 text-[#165DFF]' : 'text-[#666] hover:bg-gray-50 hover:text-[#1a1a1a]'
+                    }`}>
+                    <span>{label}</span>
+                    {analyzing === label.split(' ')[1] && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-gray-50">
+                {analysisError && <div className="p-4 text-center"><p className="text-xs text-[#999]">{analysisError}</p></div>}
+                {!analyzing && !analysis && !analysisError && (
+                  <div className="p-6 text-center">
+                    <Lightbulb className="h-8 w-8 text-gray-200 mx-auto mb-2" />
+                    <p className="text-xs text-[#bbb]">点击上方模块，逐段获取 AI 分析建议</p>
+                  </div>
+                )}
+                {analysis && (
+                  <div className="p-3 space-y-3">
+                    <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-gray-50">
+                      <span className="text-2xl font-bold text-[#165DFF]">{analysis.score}</span>
+                      <span className="text-xs text-[#999]">/ 10 分</span>
+                      <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full" style={{ width: `${analysis.score * 10}%` }} />
+                      </div>
+                    </div>
+                    {analysis.strengths.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-semibold text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> 亮点</span>
+                        {analysis.strengths.map((s: string, i: number) => <p key={i} className="text-xs text-[#555] pl-5">• {s}</p>)}
+                      </div>
+                    )}
+                    {analysis.weaknesses.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-semibold text-[#FF7D00] flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> 待改进</span>
+                        {analysis.weaknesses.map((w: string, i: number) => <p key={i} className="text-xs text-[#555] pl-5">• {w}</p>)}
+                      </div>
+                    )}
+                    {analysis.suggestions.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-semibold text-[#165DFF] flex items-center gap-1"><Lightbulb className="h-3 w-3" /> 建议</span>
+                        {analysis.suggestions.map((sg: string, i: number) => <p key={i} className="text-xs text-[#555] pl-5">• {sg}</p>)}
+                      </div>
+                    )}
+                    {analysis.rewritten && (
+                      <div className="space-y-2 pt-1">
+                        <span className="text-[11px] font-semibold flex items-center gap-1"><ArrowRight className="h-3 w-3" /> AI 改写</span>
+                        <div className="p-2.5 bg-[#f0fdf4] border border-green-200 rounded-lg">
+                          <p className="text-xs leading-relaxed whitespace-pre-wrap">{analysis.rewritten}</p>
+                        </div>
+                        <Button onClick={applyRewrite} disabled={appliedRewrite} size="sm"
+                          className="w-full text-xs h-8 rounded-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF] hover:to-[#165DFF] text-white font-semibold">
+                          {appliedRewrite ? <><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> 已应用</> : <><Sparkles className="h-3.5 w-3.5 mr-1" /> 一键应用改写</>}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            
             {/* 模板选择器 */}
             <div className="flex items-center gap-3 mb-1">
               <span className="text-xs font-semibold text-[#888] uppercase tracking-wide">模板风格</span>
