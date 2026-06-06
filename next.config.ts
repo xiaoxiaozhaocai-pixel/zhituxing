@@ -92,8 +92,8 @@ const nextConfig: NextConfig = {
 
 export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  org: process.env.SENTRY_ORG || 'zhituxing',
+  project: process.env.SENTRY_PROJECT || 'javascript-nextjs',
   authToken: process.env.SENTRY_AUTH_TOKEN,
   tunnelRoute: '/sentry-tunnel',
   widenClientFileUpload: true,
