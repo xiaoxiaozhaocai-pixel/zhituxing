@@ -225,7 +225,7 @@ export default function SkillsGraphPage() {
           node.vx *= decay;
           node.vy *= decay;
           node.x += node.vx;
-          node.y += node.y;
+          node.y += node.vy;
           // 边界约束（留更大边距）
           node.x = Math.max(50, Math.min(W - 50, node.x));
           node.y = Math.max(50, Math.min(H - 50, node.y));
