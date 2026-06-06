@@ -10,10 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv } from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
-import { useMembership } from '@/contexts/MembershipContext';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
-import TTSButton from '@/components/TTSButton';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
@@ -43,7 +41,6 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  interrupted?: boolean;  // 流中断标记
 }
 
 /** 过滤文本中残留的 <<DATA:type=xxx>>...<<END>> 标记（安全网） */
@@ -229,7 +226,7 @@ const bots: BotConfig[] = [
 ✨ **我能帮你：**
 • 🤔 聊聊桂电的校园生活、专业选择、就业方向
 • 🎯 帮你分析适合什么岗位、考研还是就业
-• 🔗 调度职途星其他能力帮你解决具体问题
+• 🔗 调度职途星其他智能体帮你解决具体问题
 • 📊 结合真实数据给你靠谱建议
 • 💬 就是单纯想找人说说话也行~
 
@@ -263,41 +260,6 @@ function AssistantContent() {
   const searchParams = useSearchParams();
   const [activeBot, setActiveBot] = useState('jobs');
   const [messages, setMessages] = useState<Message[]>([]);
-  // 按智能体缓存对话历史（key=botId）
-  const conversationCacheRef = useRef<Record<string, Message[]>>({});
-  // 初始化：从 localStorage 恢复所有对话
-  const conversationsInitialized = useRef(false);
-  useEffect(() => {
-    if (conversationsInitialized.current) return;
-    conversationsInitialized.current = true;
-    try {
-      const saved = localStorage.getItem('zhituxing_conversations');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        conversationCacheRef.current = parsed;
-        // 恢复当前 activeBot 的对话
-        const currentMsgs = parsed[activeBot];
-        if (currentMsgs?.length) {
-          setMessages(currentMsgs);
-          setVisibleCount(Math.max(MESSAGE_WINDOW, currentMsgs.length));
-        }
-      }
-    } catch {}
-  }, [activeBot]);
-
-  // 每次 messages 变化时，同步到 cache 和 localStorage
-  useEffect(() => {
-    if (!conversationsInitialized.current) return;
-    conversationCacheRef.current = {
-      ...conversationCacheRef.current,
-      [activeBot]: messages,
-    };
-    try {
-      localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
-    } catch {}
-  }, [messages, activeBot]);
-  const MESSAGE_WINDOW = 30;
-  const [visibleCount, setVisibleCount] = useState(MESSAGE_WINDOW);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
@@ -316,32 +278,14 @@ function AssistantContent() {
   
   // 文件上传状态
   const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
-  
-  // 小职调度卡片状态（Step2: dispatch event → action card）
-  const [dispatchCard, setDispatchCard] = useState<{
-    intent: string;
-    title: string;
-    description: string;
-    actionLabel: string;
-    tabId: string;
-    url?: string;  // 优先跳转到独立页面（如 /resume），无则切换 tab
-  } | null>(null);
-  
-  // 调度卡片动画 & 跳转状态
-  const [cardVisible, setCardVisible] = useState(false);
-  const [cardLeaving, setCardLeaving] = useState(false);
-  const [cardNavigating, setCardNavigating] = useState(false);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
-  const { isMember } = useMembership();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isUserNearBottomRef = useRef(true);
-  const scrollAnimRef = useRef<number | null>(null);
   
   // 待发送的 query 参数（从 URL 解析）
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
@@ -383,24 +327,6 @@ function AssistantContent() {
       });
     }
   }, [messages, scrollToBottom]);
-
-  // SSE流式输出时持续滚动到底部（流式内容更新不触发messages数组变化）
-  useEffect(() => {
-    if (isLoading && messages.length > 1) {
-      const scrollLoop = () => {
-        const container = chatContainerRef.current;
-        if (container && isUserNearBottomRef.current) {
-          container.scrollTop = container.scrollHeight;
-        }
-        scrollAnimRef.current = requestAnimationFrame(scrollLoop);
-      };
-      scrollAnimRef.current = requestAnimationFrame(scrollLoop);
-      return () => {
-        if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
-      };
-    }
-    return;
-  }, [isLoading, messages.length]);
 
   // 检查用户个人信息状态
   useEffect(() => {
@@ -446,11 +372,11 @@ function AssistantContent() {
     if (messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: currentBot!.welcomeMessage,
+        content: currentBot.welcomeMessage,
         timestamp: new Date()
       }]);
     }
-  }, [activeBot, currentBot!.welcomeMessage]);
+  }, [activeBot, currentBot.welcomeMessage]);
 
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
@@ -466,28 +392,6 @@ function AssistantContent() {
       setPendingQuery(query);
     }
   }, [searchParams, pendingQuery]);
-
-  // 调度卡片入场/退场动画
-  useEffect(() => {
-    if (dispatchCard && !cardVisible) {
-      const raf = requestAnimationFrame(() => setCardVisible(true));
-      return () => cancelAnimationFrame(raf);
-    }
-    if (!dispatchCard && cardVisible) {
-      setCardVisible(false);
-    }
-      return;
-  }, [dispatchCard, cardVisible]);
-
-  // 调度卡片关闭（带退场动画）
-  const dismissCard = useCallback(() => {
-    setCardLeaving(true);
-    setTimeout(() => {
-      setDispatchCard(null);
-      setCardLeaving(false);
-      setCardNavigating(false);
-    }, 200);
-  }, []);
 
   // 解析JD链接
   const handleFetchJd = async (url: string) => {
@@ -553,44 +457,22 @@ function AssistantContent() {
     }
     
     try {
-      // TXT：客户端直接读取
-      if (fileExt === '.txt') {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const content = (event.target?.result as string).slice(0, 5000);
-          setUploadedFile({ name: file.name, content });
-          toast.success(`已上传：${file.name}`);
-        };
-        reader.onerror = () => toast.error('文件读取失败');
+      // 读取文件内容
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setUploadedFile({ name: file.name, content: content.slice(0, 5000) }); // 限制内容长度
+        toast.success(`已上传：${file.name}`);
+      };
+      reader.onerror = () => {
+        toast.error('文件读取失败');
+      };
+      
+      // 根据文件类型选择读取方式
+      if (['.txt'].includes(fileExt)) {
         reader.readAsText(file);
-      } else if (fileExt === '.pdf') {
-        // PDF：调用服务端解析
-        setIsLoading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-          const res = await fetch('/api/upload/parse', { method: 'POST', body: formData });
-          const result = await res.json();
-          if (!res.ok) {
-            toast.error(result.error || 'PDF解析失败');
-          } else {
-            setUploadedFile({ name: file.name, content: result.text.slice(0, 5000) });
-            toast.success(`已解析PDF（${result.pages || '?'}页）`);
-          }
-        } catch {
-          toast.error('PDF解析请求失败，请检查网络');
-        } finally {
-          setIsLoading(false);
-        }
       } else {
-        // DOCX/其他：前端文本兜底
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const content = (event.target?.result as string).slice(0, 5000);
-          setUploadedFile({ name: file.name, content });
-          toast.success(`已上传：${file.name}`);
-        };
-        reader.onerror = () => toast.error('文件读取失败');
+        // PDF/DOCX 等，尝试作为文本读取（可能乱码，但能提取部分内容）
         reader.readAsText(file);
       }
     } catch {
@@ -762,9 +644,8 @@ function AssistantContent() {
 
       const decoder = new TextDecoder();
       let fullContent = '';
-      let receivedDone = false;  // 追踪是否收到 [DONE]，用于检测流中断
       let sseBuffer = '';
-      const firstTokenTimer = setTimeout(() => {
+      let firstTokenTimer = setTimeout(() => {
         // 15秒未收到第一个token
         setMessages(prev => {
           const newMsgs = [...prev];
@@ -864,41 +745,8 @@ function AssistantContent() {
               continue;
             }
 
-            // dispatch 事件 — 小职调度卡片（Step2: 展示能力跳转卡片）
-            if (eventType === 'dispatch') {
-              try {
-                const parsed = JSON.parse(dataLine);
-                if (parsed.intent && parsed.title) {
-                  setDispatchCard({
-                    intent: parsed.intent,
-                    title: parsed.title,
-                    description: parsed.description || '',
-                    actionLabel: parsed.actionLabel || '去看看',
-                    tabId: parsed.tabId || 'jobs',
-                    url: parsed.url || undefined,
-                  });
-                  console.log('[chat] Dispatch card received:', parsed.intent, parsed.url ? `→ ${parsed.url}` : '');
-                }
-              } catch {
-                // 忽略解析错误
-              }
-              continue;
-            }
-
-            // save_result 事件 — 后端确认消息已持久化
-            if (eventType === 'save_result') {
-              try {
-                const parsed = JSON.parse(dataLine);
-                console.log('[chat] Save result:', parsed.result, 'convId:', parsed.convId);
-              } catch {
-                // 忽略
-              }
-              continue;
-            }
-
             // 检查 [DONE] 标记
             if (dataLine === '[DONE]') {
-              receivedDone = true;
               clearTimeout(firstTokenTimer);
               clearTimeout(timeoutTimer);
               break;
@@ -943,7 +791,7 @@ function AssistantContent() {
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
                     content: displayContent 
-                  } as Message;
+                  };
                   return newMsgs;
                 });
               } else if (parsed.type === 'done') {
@@ -980,7 +828,7 @@ function AssistantContent() {
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
                     content: displayContent 
-                  } as Message;
+                  };
                   return newMsgs;
                 });
               }
@@ -997,24 +845,24 @@ function AssistantContent() {
       const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
       if (conversationIdMatch) {
         if (isInterview) {
-          localStorage.setItem('interviewSessionId', conversationIdMatch[1]!)!;
+          localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
         } else if (isPartner) {
-          localStorage.setItem('partnerSessionId', conversationIdMatch[1]!)!;
+          localStorage.setItem('partnerSessionId', conversationIdMatch[1]);
         } else {
-          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]!)!;
+          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
         }
       }
       
       // 确保免责文案已添加
       if (fullContent && !fullContent.includes('免责声明')) {
-        const disclaimer = currentBot!.welcomeMessage.split('---')[1] || '';
+        const disclaimer = currentBot.welcomeMessage.split('---')[1] || '';
         if (disclaimer) {
           setMessages(prev => {
             const newMsgs = [...prev];
             newMsgs[newMsgs.length - 1] = { 
               ...newMsgs[newMsgs.length - 1], 
               content: fullContent + disclaimer 
-            } as Message;
+            };
             return newMsgs;
           });
         }
@@ -1057,23 +905,10 @@ function AssistantContent() {
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
-    if (botId === activeBot) return;
-    // 保存当前智能体的对话到缓存
-    conversationCacheRef.current = {
-      ...conversationCacheRef.current,
-      [activeBot]: messages,
-    };
-    try {
-      localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
-    } catch {}
-    // 切换到新智能体
+    // 先清除当前 activeBot 的 conversationId，再切换到新的 botId
     localStorage.removeItem(`conversationId_${activeBot}`);
     setActiveBot(botId);
-    // 恢复目标智能体的历史对话
-    const cached = conversationCacheRef.current[botId] || [];
-    setMessages(cached);
-    setVisibleCount(Math.max(MESSAGE_WINDOW, cached.length));
-    setDispatchCard(null);
+    setMessages([]);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
@@ -1113,18 +948,18 @@ function AssistantContent() {
             AI职业助手
           </h1>
           <p className="text-gray-600 text-sm">
-            小职全方位服务，助你求职无忧
+            七大智能体协同服务，助你求职无忧
           </p>
         </div>
 
-        {/* 功能Tab选择器 */}
+        {/* 智能体Tab选择器 */}
         <div className="bot-tabs mb-4">
           <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
             {bots.map((bot) => (
               <button
                 key={bot.id}
                 onClick={() => {
-                  if (bot.isVipOnly && !isMember) {
+                  if (bot.isVipOnly && !quota?.is_member) {
                     setQuotaFeature(bot.name);
                     setShowQuotaDialog(true);
                     return;
@@ -1134,7 +969,7 @@ function AssistantContent() {
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
                   activeBot === bot.id
                     ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
-                    : bot.isVipOnly && !isMember
+                    : bot.isVipOnly && !quota?.is_member
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
                       : 'text-gray-600 hover:bg-white hover:shadow'
                 }`}
@@ -1161,7 +996,7 @@ function AssistantContent() {
         </div>
 
         {/* 聊天区域 */}
-        <Card className="border-2 overflow-hidden flex flex-col" style={{
+        <Card className="border-2 overflow-hidden flex flex-col max-h-[calc(100vh-16rem)]" style={{
           borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
         }}>
           {/* 快捷问题 */}
@@ -1169,7 +1004,7 @@ function AssistantContent() {
             <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-white">
               <p className="text-xs text-gray-500 mb-3">试试这些问题：</p>
               <div className="flex flex-wrap gap-2">
-                {currentBot!.quickQuestions.map((q, i) => (
+                {currentBot.quickQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => handleQuickQuestion(q)}
@@ -1187,41 +1022,9 @@ function AssistantContent() {
           <div 
             ref={chatContainerRef}
             onScroll={handleChatScroll}
-            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[520px]"
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[calc(100vh-24rem)] min-h-[400px] max-h-[70vh]"
           >
-            {/* 历史消息加载 */}
-            {(messages.length - visibleCount) > 0 && (
-              <div className="flex items-center px-2 pb-2">
-                <button
-                  onClick={() => setVisibleCount(prev => prev + 30)}
-                  className="text-xs text-blue-500 hover:text-blue-700 font-medium"
-                >
-                  ↑ 显示更早消息（{messages.length - visibleCount}条）
-                </button>
-              </div>
-            )}
-            {/* 清空对话按钮 */}
-            {messages.length > 0 && (
-              <div className="flex items-center justify-end px-2 pb-2">
-                <button
-                  onClick={() => {
-                      setMessages([]);
-                      setVisibleCount(30);
-                      conversationCacheRef.current = {
-                        ...conversationCacheRef.current,
-                        [activeBot]: [],
-                      };
-                      try {
-                        localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
-                      } catch {}
-                    }}
-                  className="text-xs text-gray-400 hover:text-gray-600"
-                >
-                  清空对话
-                </button>
-              </div>
-            )}
-            {messages.slice(-visibleCount).map((msg, index) => (
+            {messages.map((msg, index) => (
               <div
                 key={index}
                 className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
@@ -1229,19 +1032,19 @@ function AssistantContent() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     msg.role === 'user' 
-                      ? `bg-gradient-to-br ${currentBot!.gradient}` 
+                      ? `bg-gradient-to-br ${currentBot.gradient}` 
                       : 'bg-white border-2 border-gray-200'
                   }`}
                 >
                   {msg.role === 'user' 
                     ? <UserIcon className="w-5 h-5 text-white" /> 
-                    : <span className={`${currentBot!.color}`}>{currentBot!.icon}</span>
+                    : <span className={`${currentBot.color}`}>{currentBot.icon}</span>
                   }
                 </div>
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 ${
                     msg.role === 'user'
-                      ? `bg-gradient-to-br ${currentBot!.gradient} text-white rounded-tr-sm`
+                      ? `bg-gradient-to-br ${currentBot.gradient} text-white rounded-tr-sm`
                       : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
                   }`}
                 >
@@ -1255,12 +1058,6 @@ function AssistantContent() {
                       streaming={index === messages.length - 1 && isLoading}
                       role="assistant"
                     />
-                  )}
-                  {/* TTS语音朗读按钮 */}
-                  {msg.content && msg.role === 'assistant' && !isLoading && (
-                    <div className="mt-1 flex justify-end">
-                      <TTSButton text={msg.content} />
-                    </div>
                   )}
                   {/* 加载动画 */}
                   {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
@@ -1281,24 +1078,6 @@ function AssistantContent() {
                     >
                       重新生成
                     </button>
-                  )}
-                  {/* 流中断提示 + 重试 */}
-                  {msg.interrupted && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-xs text-amber-600">⚠️ 连接中断，回复可能不完整</span>
-                      <button
-                        onClick={() => {
-                          // 重新发送上一条用户消息
-                          const prevUserMsg = messages[index - 1];
-                          if (prevUserMsg?.role === 'user') {
-                            sendMessage(prevUserMsg.content);
-                          }
-                        }}
-                        className="px-3 py-1 bg-amber-50 text-amber-700 text-xs rounded-lg hover:bg-amber-100 transition-colors border border-amber-200"
-                      >
-                        重新生成
-                      </button>
-                    </div>
                   )}
                 </div>
               </div>
@@ -1401,62 +1180,6 @@ function AssistantContent() {
             </div>
           )}
 
-          {/* 小职调度卡片（Step2: 检测到意图后展示跳转卡片） */}
-          {dispatchCard && activeBot === 'xiaozhi' && (
-            <div className={`px-4 pb-3 transition-all duration-300 ease-out ${
-              cardVisible && !cardLeaving
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-3'
-            }`}>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-blue-900 text-sm mb-1">
-                      {dispatchCard.title}
-                    </h4>
-                    <p className="text-blue-700 text-xs leading-relaxed">
-                      {dispatchCard.description}
-                    </p>
-                  </div>
-                  <button
-                    onClick={dismissCard}
-                    disabled={cardNavigating}
-                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors disabled:opacity-30"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => {
-                      setCardNavigating(true);
-                      if (dispatchCard.url) {
-                        router.push(dispatchCard.url);
-                      } else {
-                        handleTabChange(dispatchCard.tabId);
-                      }
-                    }}
-                    disabled={cardNavigating}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {cardNavigating ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> 跳转中…</>
-                    ) : (
-                      dispatchCard.actionLabel
-                    )}
-                  </button>
-                  <button
-                    onClick={dismissCard}
-                    disabled={cardNavigating}
-                    className="px-4 py-2 text-blue-500 text-sm font-medium hover:text-blue-700 transition-colors disabled:opacity-30"
-                  >
-                    先不了
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* 输入框 */}
           <div className="p-4 border-t bg-white">
             {/* 个人信息状态提示 */}
@@ -1517,7 +1240,7 @@ function AssistantContent() {
               </button>
               <Input
                 ref={inputRef}
-                placeholder={`问${currentBot!.name}...`}
+                placeholder={`问${currentBot.name}...`}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
@@ -1527,7 +1250,7 @@ function AssistantContent() {
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !inputValue.trim()}
-                className={`bg-gradient-to-r ${currentBot!.gradient} hover:opacity-90 text-white h-12 px-6`}
+                className={`bg-gradient-to-r ${currentBot.gradient} hover:opacity-90 text-white h-12 px-6`}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -1649,5 +1372,3 @@ function AssistantContent() {
     </div>
   );
 }
-
-
