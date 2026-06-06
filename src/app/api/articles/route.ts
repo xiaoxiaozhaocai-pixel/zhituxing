@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     // 性能优化：列表页只 select 需要的字段，砍掉 content（平均 2.3KB/篇）减少传输量
     let query = supabase
       .from('articles')
-      .select('id,title,summary,category,tags,views,is_featured,author,created_at')
+      .select('id,title,summary,category,tags,views,is_featured,author,created_at', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
