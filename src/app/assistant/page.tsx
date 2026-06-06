@@ -908,7 +908,13 @@ function AssistantContent() {
     // 先清除当前 activeBot 的 conversationId，再切换到新的 botId
     localStorage.removeItem(`conversationId_${activeBot}`);
     setActiveBot(botId);
-    setMessages([]);
+    // 立即插入新 bot 的欢迎消息（避免点击同一 tab 时 useEffect 不触发导致白屏）
+    const newBot = bots.find(b => b.id === botId) || bots[0];
+    setMessages([{
+      role: 'assistant',
+      content: newBot.welcomeMessage,
+      timestamp: new Date()
+    }]);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
