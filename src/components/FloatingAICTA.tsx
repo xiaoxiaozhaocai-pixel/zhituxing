@@ -54,7 +54,7 @@ export default function FloatingAICTA() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ── 会员引导 ──
-  const { user, quota } = useAuth();
+  const { user, quota, loading } = useAuth();
   const { isMember } = useMembership();
   const [showMembership, setShowMembership] = useState(false);
   const [quotaExhausted, setQuotaExhausted] = useState(false);
@@ -143,6 +143,11 @@ export default function FloatingAICTA() {
       });
 
       if (!res.ok || !res.body) {
+        if (res.status === 401) {
+          setMessages(prev => [...prev, { role: 'assistant', content: '请先登录后再使用小职～\n\n👉 点击页面右上角登录按钮' }]);
+          setStreaming(false);
+          return;
+        }
         setMessages(prev => [...prev, { role: 'assistant', content: '小职暂时无法回复，请稍后再试～' }]);
         setStreaming(false);
         return;
@@ -337,6 +342,11 @@ export default function FloatingAICTA() {
 
           {/* 输入区 */}
           <div className="px-3 py-2.5 border-t border-[#E2E8F0] bg-white shrink-0">
+            {!user && !loading ? (
+              <Link href="/login" className="flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium text-white bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full hover:shadow-lg transition-shadow">
+                登录后使用小职 →
+              </Link>
+            ) : (
             <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -354,6 +364,7 @@ export default function FloatingAICTA() {
                 {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>
             </form>
+            )}
           </div>
         </div>
       )}
