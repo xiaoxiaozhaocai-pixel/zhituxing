@@ -801,6 +801,11 @@ export async function POST(request: NextRequest) {
           basePrompt = SYSTEM_PROMPTS[actualBotType] || SYSTEM_PROMPTS.career!;
         }
         
+        // 注入用户上下文到 system prompt（所有智能体共享）
+        if (userContext) {
+          basePrompt = `【用户背景信息 — 平台自动注入，请直接使用，不要重新询问】\n${userContext}\n\n---\n\n${basePrompt}`;
+        }
+        
         // ============================================================
         // 三层混合上下文压缩 + AI 缓存查询（提取至 chat-context.ts）
         // ============================================================
