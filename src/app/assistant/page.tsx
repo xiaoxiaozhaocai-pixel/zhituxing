@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv} from 'lucide-react';
+import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown} from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -258,6 +258,7 @@ function AssistantContent() {
   const [jdUrl, setJdUrl] = useState('');
   const [jdText, setJdText] = useState('');
   const [jdLoading, setJdLoading] = useState(false);
+  const [tabsCollapsed, setTabsCollapsed] = useState(false);
   const [jdError, setJdError] = useState('');
   
   // 登录弹窗状态
@@ -957,51 +958,102 @@ function AssistantContent() {
           </p>
         </div>
 
-        {/* 功能Tab选择器 */}
+        {/* 功能Tab选择器 — 可折叠 */}
         <div className="bot-tabs mb-4">
-          <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
-            {bots.map((bot) => (
-              <button
-                key={bot.id}
-                onClick={() => {
-                  if (bot.isVipOnly && !quota?.is_member) {
-                    setQuotaFeature(bot.name);
-                    setShowQuotaDialog(true);
-                    return;
-                  }
-                  handleTabChange(bot.id);
-                }}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
-                  activeBot === bot.id
-                    ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
-                    : bot.isVipOnly && !quota?.is_member
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
-                      : 'text-gray-600 hover:bg-white hover:shadow'
-                }`}
-              >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                  activeBot === bot.id ? 'bg-white/20' : bot.isVipOnly ? 'bg-gray-300' : 'bg-gray-200'
-                }`}>
-                  {bot.icon}
-                </div>
-                <div className="text-left">
-                  <div className={`font-semibold text-xs ${activeBot === bot.id ? 'text-white' : 'text-gray-900'}`}>
+          {/* 折叠按钮 */}
+          <button
+            onClick={() => setTabsCollapsed(!tabsCollapsed)}
+            className="w-full flex items-center justify-center gap-1 py-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-1"
+          >
+            {tabsCollapsed ? (
+              <><ChevronDown className="w-3.5 h-3.5" /><span>展开智能体列表</span></>
+            ) : (
+              <><ChevronUp className="w-3.5 h-3.5" /><span>收起智能体列表</span></>
+            )}
+          </button>
+          
+          {/* 展开模式：完整Tab */}
+          {!tabsCollapsed && (
+            <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
+              {bots.map((bot) => (
+                <button
+                  key={bot.id}
+                  onClick={() => {
+                    if (bot.isVipOnly && !quota?.is_member) {
+                      setQuotaFeature(bot.name);
+                      setShowQuotaDialog(true);
+                      return;
+                    }
+                    handleTabChange(bot.id);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
+                    activeBot === bot.id
+                      ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
+                      : bot.isVipOnly && !quota?.is_member
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                        : 'text-gray-600 hover:bg-white hover:shadow'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    activeBot === bot.id ? 'bg-white/20' : bot.isVipOnly ? 'bg-gray-300' : 'bg-gray-200'
+                  }`}>
+                    {bot.icon}
+                  </div>
+                  <div className="text-left">
+                    <div className={`font-semibold text-xs ${activeBot === bot.id ? 'text-white' : 'text-gray-900'}`}>
+                      {bot.name}
+                      {bot.isVipOnly && (
+                        <span className="ml-1 text-[10px] px-1 py-0.5 bg-[#FF7D00] text-white rounded">VIP</span>
+                      )}
+                    </div>
+                    <div className={`text-[10px] ${activeBot === bot.id ? 'text-white/80' : 'text-gray-500'} hidden md:block`}>
+                      {bot.description}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 折叠模式：紧凑图标栏 */}
+          {tabsCollapsed && (
+            <div className="flex gap-1.5 p-1.5 bg-gray-100 rounded-xl overflow-x-auto">
+              {bots.map((bot) => (
+                <button
+                  key={bot.id}
+                  onClick={() => {
+                    if (bot.isVipOnly && !quota?.is_member) {
+                      setQuotaFeature(bot.name);
+                      setShowQuotaDialog(true);
+                      return;
+                    }
+                    handleTabChange(bot.id);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 flex-shrink-0 ${
+                    activeBot === bot.id
+                      ? `bg-gradient-to-r ${bot.gradient} text-white shadow`
+                      : bot.isVipOnly && !quota?.is_member
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                        : 'text-gray-600 hover:bg-white hover:shadow'
+                  }`}
+                  title={bot.description}
+                >
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
+                    activeBot === bot.id ? 'bg-white/20' : bot.isVipOnly ? 'bg-gray-300' : 'bg-gray-200'
+                  }`}>
+                    {bot.icon}
+                  </div>
+                  <span className={`text-xs font-medium whitespace-nowrap ${activeBot === bot.id ? 'text-white' : 'text-gray-700'}`}>
                     {bot.name}
-                    {bot.isVipOnly && (
-                      <span className="ml-1 text-[10px] px-1 py-0.5 bg-[#FF7D00] text-white rounded">VIP</span>
-                    )}
-                  </div>
-                  <div className={`text-[10px] ${activeBot === bot.id ? 'text-white/80' : 'text-gray-500'} hidden md:block`}>
-                    {bot.description}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 聊天区域 */}
-        <Card className="border-2 overflow-hidden flex flex-col h-[calc(100vh-18rem)] min-h-[500px] max-h-[calc(100vh-12rem)] mb-6" style={{
+        <Card className={`border-2 overflow-hidden flex flex-col mb-6 transition-all duration-300 ${tabsCollapsed ? "h-[calc(100vh-14rem)] max-h-[calc(100vh-8rem)]" : "h-[calc(100vh-18rem)] max-h-[calc(100vh-12rem)]"} min-h-[500px]`} style={{
           borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
         }}>
           {/* 快捷问题 */}
