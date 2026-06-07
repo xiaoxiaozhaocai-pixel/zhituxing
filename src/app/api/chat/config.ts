@@ -30,7 +30,7 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     title: '🎯 检测到你在关心岗位匹配度',
     description: '要不要做个胜任力评估？可视化雷达图帮你看到差距。',
     actionLabel: '查看胜任力评估',
-    tabId: 'competency',
+    tabId: 'career',
   },
   jobs: {
     title: '💼 检测到你在找岗位信息',
