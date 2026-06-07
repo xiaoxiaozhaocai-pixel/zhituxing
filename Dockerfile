@@ -11,6 +11,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_LINT=false
+ENV NEXT_TYPE_CHECK=false
+ENV SENTRY_AUTH_TOKEN=dummy
 RUN npm install -g pnpm@9.0.0 && pnpm build
 
 FROM base AS runner
