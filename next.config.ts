@@ -90,12 +90,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+const sentryConfig = {
   silent: !process.env.CI,
   org: process.env.SENTRY_ORG || 'zhituxing',
   project: process.env.SENTRY_PROJECT || 'javascript-nextjs',
   authToken: process.env.SENTRY_AUTH_TOKEN,
   tunnelRoute: '/sentry-tunnel',
   widenClientFileUpload: true,
-  sourcemaps: { disable: process.env.NODE_ENV !== 'production' },
-});
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+};
+
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(nextConfig, sentryConfig)
+  : nextConfig;
