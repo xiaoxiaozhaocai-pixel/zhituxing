@@ -1001,7 +1001,7 @@ function AssistantContent() {
         </div>
 
         {/* 聊天区域 */}
-        <Card className="border-2 overflow-hidden flex flex-col h-[calc(100vh-14rem)] min-h-[500px]" style={{
+        <Card className="border-2 overflow-hidden flex flex-col h-[calc(100vh-18rem)] min-h-[500px] max-h-[calc(100vh-12rem)] mb-6" style={{
           borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
         }}>
           {/* 快捷问题 */}

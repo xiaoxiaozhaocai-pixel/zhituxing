@@ -4,6 +4,56 @@ import { useMemo } from 'react';
 import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type RadarData, type PromotionData, type TableData } from '@/lib/ai-response-parser';
 import {Lock, ChevronRight, CheckCircle, AlertTriangle, Award, TrendingUp} from 'lucide-react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// ========== Markdown 渲染组件 ==========
+// 用于 text 段：支持 **加粗** / 表格 / 列表 / 链接 等 Markdown 语法
+// 单个 \n 强制换行（替换为两空格+换行），保留 AI 输出的视觉换行
+function MarkdownText({ text }: { text: string }) {
+  // 单换行 → markdown 强制换行（两个空格+\n）；连续空行（段落分隔）保留
+  const normalized = text.replace(/\r\n/g, '\n').replace(/([^\n])\n(?!\n)/g, '$1  \n');
+  return (
+    <div className="text-sm leading-relaxed text-gray-800">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ node, ...props }) => <p className="my-2 first:mt-0 last:mb-0" {...props} />,
+          strong: ({ node, ...props }) => <strong className="font-semibold text-gray-900" {...props} />,
+          em: ({ node, ...props }) => <em className="italic" {...props} />,
+          h1: ({ node, ...props }) => <h1 className="text-lg font-bold text-gray-900 mt-3 mb-2" {...props} />,
+          h2: ({ node, ...props }) => <h2 className="text-base font-bold text-gray-900 mt-3 mb-2" {...props} />,
+          h3: ({ node, ...props }) => <h3 className="text-sm font-bold text-gray-900 mt-2 mb-1.5" {...props} />,
+          h4: ({ node, ...props }) => <h4 className="text-sm font-semibold text-gray-900 mt-2 mb-1" {...props} />,
+          table: ({ node, ...props }) => (
+            <div className="overflow-x-auto my-3 rounded-lg border border-gray-200">
+              <table className="min-w-full text-sm border-collapse" {...props} />
+            </div>
+          ),
+          thead: ({ node, ...props }) => <thead className="bg-gray-50" {...props} />,
+          th: ({ node, ...props }) => <th className="px-3 py-2 text-left font-semibold text-gray-700 border-b border-gray-200" {...props} />,
+          td: ({ node, ...props }) => <td className="px-3 py-2 text-gray-700 border-b border-gray-100 align-top" {...props} />,
+          ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1 my-2" {...props} />,
+          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-1 my-2" {...props} />,
+          li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
+          a: ({ node, ...props }) => <a className="text-blue-600 underline hover:text-blue-700" target="_blank" rel="noopener noreferrer" {...props} />,
+          code: ({ node, className, ...props }) => {
+            const isBlock = className?.includes('language-');
+            if (isBlock) {
+              return <code className={`block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs ${className || ''}`} {...props} />;
+            }
+            return <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono" {...props} />;
+          },
+          pre: ({ node, ...props }) => <pre className="my-2" {...props} />,
+          blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-blue-200 pl-3 my-2 text-gray-600 italic" {...props} />,
+          hr: () => <hr className="my-3 border-gray-200" />,
+        }}
+      >
+        {normalized}
+      </ReactMarkdown>
+    </div>
+  );
+}
 
 // ========== 子组件 ==========
 
@@ -22,7 +72,7 @@ function CardListRenderer({ cards }: { cards: CardItem[] }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 {card.isBest && <Award className="w-4 h-4 text-amber-500 flex-shrink-0" />}
-                <h4 className="font-semibold text-gray-900 truncate">{card.title}</h4>
+                <h4 className="font-semibold text-gray-900 break-words">{card.title}</h4>
               </div>
               {card.subtitle && (
                 <p className="text-sm text-gray-500 mt-0.5">{card.subtitle}</p>
@@ -513,8 +563,8 @@ export default function AIResponseRenderer({ rawText, streaming = false, role = 
         switch (seg.type) {
           case 'text':
             return (
-              <div key={idx} className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
-                {seg.data as string}
+              <div key={idx} className="relative">
+                <MarkdownText text={seg.data as string} />
                 {streaming && idx === segments.length - 1 && (
                   <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-0.5 align-middle" />
                 )}
