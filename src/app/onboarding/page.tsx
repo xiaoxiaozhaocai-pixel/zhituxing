@@ -7,11 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import {
-  ChevronRight, ChevronLeft, Check, GraduationCap,
-  BookOpen, MapPin, DollarSign, Sparkles, Target,
-  Brain, Loader2, X, ChevronDown, ChevronUp,
-} from 'lucide-react';
+import { ChevronRight, Check, GraduationCap, MapPin, DollarSign, Sparkles, Target,
+  Brain, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 
 const GRADE_OPTIONS = [
   { value: '大一', label: '大一' },

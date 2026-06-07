@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { 
-  Users, 
+import { Users, 
   Briefcase, 
   Crown, 
   Clock,
@@ -18,9 +17,7 @@ import {
   Shield,
   MessageSquare,
   Settings,
-  Activity,
-  ChevronRight
-} from 'lucide-react';
+  Activity } from 'lucide-react';
 
 interface Stats {
   overview: {

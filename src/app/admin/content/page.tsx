@@ -7,20 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import FileImportModule from '@/components/admin/FileImportModule';
-import {
-  FileText,
+import { FileText,
   Megaphone,
   HelpCircle,
   Plus,
   Pencil,
   Trash2,
   Loader2,
-  Search,
   Pin,
   Eye,
   EyeOff,
-  X
-} from 'lucide-react';
+  X } from 'lucide-react';
 
 type ContentType = 'article' | 'announcement' | 'faq';
 

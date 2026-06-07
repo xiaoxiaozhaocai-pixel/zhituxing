@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  Sparkles, 
+import { Sparkles, 
   Loader2, 
   AlertCircle,
   Download,
@@ -15,15 +14,13 @@ import {
   ChevronDown,
   ChevronUp,
   Briefcase,
-  GraduationCap,
   MapPin,
   TrendingUp,
   Calendar,
   ArrowLeft,
   Target,
   BookOpen,
-  MessageSquare
-} from 'lucide-react';
+  MessageSquare } from 'lucide-react';
 
 // 报告数据接口
 interface ReportData {

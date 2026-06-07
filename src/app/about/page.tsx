@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { 
-  Sparkles, Target, Users, Shield, GraduationCap, 
+import { Sparkles, Target, Shield, GraduationCap, 
   Briefcase, MessageSquare, TrendingUp, Heart,
-  ArrowRight, MapPin
-} from 'lucide-react';
+  ArrowRight, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 

@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutGrid,
+import { LayoutGrid,
   Database,
   Crown,
   BookOpen,
@@ -16,9 +15,7 @@ import {
   ChevronRight,
   Phone,
   Mail,
-  Copy,
-  Check
-} from 'lucide-react';
+  Check } from 'lucide-react';
 
 const faqCategories = [
   { id: 'platform', label: '平台功能', icon: <LayoutGrid className="w-5 h-5" /> },

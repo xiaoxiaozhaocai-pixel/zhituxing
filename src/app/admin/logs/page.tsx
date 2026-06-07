@@ -5,14 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  FileText,
-  Loader2,
-  Search,
+import { Loader2,
   Filter,
   Clock,
-  User
-} from 'lucide-react';
+  User } from 'lucide-react';
 
 interface LogItem {
   id: string;

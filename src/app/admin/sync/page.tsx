@@ -5,18 +5,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import {
-  RefreshCw,
-  CheckCircle,
-  XCircle,
+import { RefreshCw,
   Loader2,
-  Clock,
   Database,
   TrendingUp,
   AlertCircle,
   ChevronDown,
-  ChevronUp
-} from 'lucide-react';
+  ChevronUp } from 'lucide-react';
 
 interface SyncLog {
   id: string;

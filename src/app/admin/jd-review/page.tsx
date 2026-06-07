@@ -6,18 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { 
-  Search, 
+import { Search, 
   CheckCircle, 
   XCircle, 
-  Clock, 
   Eye,
   Loader2,
   ChevronLeft,
   ChevronRight,
-  Filter,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw } from 'lucide-react';
 
 interface Submission {
   id: number;

@@ -5,10 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  X,
+import { X,
   Upload,
-  FileSpreadsheet,
   CheckCircle,
   XCircle,
   AlertTriangle,
@@ -18,8 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw } from 'lucide-react';
 import { loadExcelJS } from '@/lib/dynamic-imports';
 
 interface JDRow {

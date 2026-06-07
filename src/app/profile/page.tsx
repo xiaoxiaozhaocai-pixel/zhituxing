@@ -12,8 +12,7 @@ import { useMembership } from '@/contexts/MembershipContext';
 import type { AuthUser, QuotaInfo } from '@/hooks/useAuth';
 import type {NotificationItem, FavoriteItem, ReportItem} from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
-import {
-  Bell,
+import { Bell,
   Crown,
   FileText,
   Heart,
@@ -26,24 +25,20 @@ import {
   DollarSign,
   Trash2,
   CheckCircle,
-  Share2,
   Copy,
   Gift,
   Calendar,
   Sparkles,
-  X,
   AlertCircle,
   Pencil,
   Smartphone,
   Mail,
-  Check,
   Bookmark,
   Target,
   Briefcase,
   Brain,
   ArrowRight,
-  FolderOpen,
-} from 'lucide-react';
+  FolderOpen } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 import GrowthCompanionCard from '@/components/GrowthCompanionCard';
 import GrowthTimeline from '@/components/GrowthTimeline';

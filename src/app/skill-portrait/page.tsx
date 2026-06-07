@@ -23,8 +23,7 @@ import {
 } from '@/components/ui/popover';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
-import {
-  ChevronLeft,
+import { ChevronLeft,
   ChevronRight,
   Check,
   ChevronsUpDown,
@@ -35,16 +34,13 @@ import {
   Target,
   User,
   Briefcase,
-  MapPin,
   GraduationCap,
   Lightbulb,
   AlertCircle,
   Lock,
   LogIn,
   Calendar,
-  TrendingUp,
-  AlertTriangle,
-} from 'lucide-react';
+  AlertTriangle } from 'lucide-react';
 import {
   parseSkillPortrait,
   convertToSaveFormat,

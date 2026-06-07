@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  RefreshCw, 
+import { RefreshCw, 
   Loader2, 
   CheckCircle, 
   XCircle, 
@@ -18,9 +17,7 @@ import {
   BarChart3,
   ChevronDown,
   ChevronUp,
-  Trash2,
-  Play
-} from 'lucide-react';
+  Play } from 'lucide-react';
 
 // 平台配置
 const PLATFORMS = [
