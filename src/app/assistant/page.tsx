@@ -969,9 +969,9 @@ function AssistantContent() {
             className="w-full flex items-center justify-center gap-1 py-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-1"
           >
             {tabsCollapsed ? (
-              <><ChevronDown className="w-3.5 h-3.5" /><span>展开智能体列表</span></>
+              <><ChevronDown className="w-3.5 h-3.5" /><span>展开功能列表</span></>
             ) : (
-              <><ChevronUp className="w-3.5 h-3.5" /><span>收起智能体列表</span></>
+              <><ChevronUp className="w-3.5 h-3.5" /><span>收起功能列表</span></>
             )}
           </button>
           
