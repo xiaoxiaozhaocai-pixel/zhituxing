@@ -61,16 +61,9 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
 };
 
 // ============================================================
-// 深度调度：意图 → 独立 API 路由映射（有 SSE 流式 API 的才映射）
-// 无独立 SSE API 的意图（decision/jobs/resume/skill）保持 prompt-based
+// 深度调度已整合：所有智能体统一走 /api/chat DeepSeek+RAG 路径
+// 不再转发到独立 API，userContext 在 route.ts 统一注入，避免散落
 // ============================================================
-export const DISPATCH_API_MAP: Record<string, string> = {
-  interview: '/api/interview',
-  career: '/api/career-planning/stream',
-  assessment: '/api/assessment',
-  competency: '/api/competency',
-  course: '/api/courses',
-};
 
 // ============================================================
 // RAG 表查询配置（按 botType 分表）
@@ -100,6 +93,7 @@ export const ROLE_REINFORCEMENTS: Record<string, string> = {
   assessment: '\n【角色重申】你只负责技能测评和出题评分，不做职业规划。职业规划请咨询职业规划师。',
   competency: '\n【角色重申】你只负责胜任力评估和差距分析，不做职业规划。职业规划请咨询职业规划师。',
   xiaozhi: '',
+  course: '\n【角色重申】你只负责互动课程教学，不做职业规划或面试模拟。',
   resume: '\n【角色重申】你只负责简历优化和JD对标，不做职业规划或面试模拟。',
   skill: '\n【角色重申】你只负责技能梳理和差距分析，不做职业规划或面试模拟。',
 };
@@ -114,6 +108,7 @@ export const RAG_DISPLAY_NAMES: Record<string, Record<string, string>> = {
   career: { job_descriptions: '目标岗位', career_paths: '职业发展路径', skill_taxonomy: '技能要求', learning_resources: '学习资源' },
   assessment: { skill_taxonomy: '技能测评题库' },
   competency: { job_descriptions: '目标岗位要求', skill_taxonomy: '技能差距参考' },
+  course: { learning_resources: '学习资源', skill_taxonomy: '技能分类', career_paths: '发展路径' },
   xiaozhi_chat: { guet_knowledge: '桂电知识' },
   xiaozhi: { guet_knowledge: '桂电知识', job_descriptions: '岗位信息', career_paths: '职业发展路径', skill_taxonomy: '技能要求', learning_resources: '学习资源' },
   resume: { job_descriptions: '岗位JD参考', skill_taxonomy: '技能关键词' },

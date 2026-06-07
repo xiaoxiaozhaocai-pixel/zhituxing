@@ -38,7 +38,7 @@ import {
   needsCompression,
 } from '@/lib/context-compression';
 
-import { DISPATCH_CARDS, DISPATCH_API_MAP, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAMES } from './config';
+import { DISPATCH_CARDS, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAMES } from './config';
 import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES } from './prompts';
 import { prepareChatContext } from './chat-context';
 import { saveChatHistory } from './chat-history';
@@ -162,99 +162,6 @@ function getFallbackResponse(botType?: string, message?: string): string {
 📚 覆盖互联网/金融/制造/教育/医疗等15+主流行业
 
 请告诉我您的需求！`;
-}
-
-/**
- * 代理转发到专业智能体 API，注入 dispatch + conversation_id 事件
- * 同时收集 fullResponse 用于聊天历史存储
- */
-async function proxySpecializedApiStream(
-  apiPath: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body: Record<string, any>,
-  request: NextRequest,
-  effectiveConversationId: string,
-  resolvedBotType: string,
-): Promise<{ stream: ReadableStream; fullResponse: string }> {
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
-  
-  // 构建内部 API URL
-  const url = new URL(apiPath, request.url);
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  const cookie = request.headers.get('cookie');
-  if (cookie) headers['Cookie'] = cookie;
-  
-  console.log(`[chat] Forwarding to specialized API: ${url.toString()}`);
-  
-  const apiResponse = await fetch(url.toString(), {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  });
-  
-  if (!apiResponse.ok || !apiResponse.body) {
-    throw new Error(`Specialized API ${apiPath} returned ${apiResponse.status}`);
-  }
-  
-  let fullResponse = '';
-  const reader = apiResponse.body.getReader();
-  
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          
-          for (const line of lines) {
-            // 过滤专业 API 自己的结束标记 {type:'done'} 和 [DONE]
-            if (line.includes('[DONE]') || line.includes('"type":"done"')) continue;
-            
-            // 收集 fullResponse
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
-                const content = data?.content || data?.choices?.[0]?.delta?.content;
-                if (content) fullResponse += content;
-              } catch { /* non-JSON SSE data */ }
-            }
-            
-            if (line.trim()) {
-              controller.enqueue(encoder.encode(line + '\n'));
-            }
-          }
-        }
-        
-        // 流结束 — 注入 conversation_id
-        const convEvent = `event: conversation_id\ndata: ${JSON.stringify({ conversation_id: effectiveConversationId })}\n\n`;
-        controller.enqueue(encoder.encode(convEvent));
-        
-        // 注入 dispatch 事件
-        const card = DISPATCH_CARDS[resolvedBotType];
-        if (card) {
-          const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
-            intent: resolvedBotType,
-            ...card,
-          })}\n\n`;
-          controller.enqueue(encoder.encode(dispatchEvent));
-          console.log(`[xiaozhi] Dispatch event sent (deep): intent=${resolvedBotType}`);
-        }
-        
-        // [DONE]
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      } catch (err) {
-        console.error('[chat] Proxy stream error:', err);
-        controller.error(err);
-      }
-    }
-  });
-  
-  return { stream, fullResponse };
 }
 
 // SSE 流式响应头
@@ -640,7 +547,8 @@ export async function POST(request: NextRequest) {
         ['decision', ['考研', '考研vs就业', '纠结', '犹豫', '选择', '考研还是', '读研', '考公', '考编', '要不要']],
         ['career', ['规划', '职业规划', '方向', '前景', '迷茫', '适合', '发展', '路径', '成长', '晋升']],
         ['assessment', ['测评', '评估', '测试', '水平', '能力', '做题', '题目', '考核', '测一下', '水平测试']],
-        ['career', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
+        ['competency', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
+        ['course', ['课程', '教我', '上课', '讲一下', '教一下', '咋学', '怎么学', '入门教程']],
         ['jobs', ['岗位', '招聘', '职位', '求职', '找工作', '薪资', '工资', 'JD', '人资', 'hr', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招']],
       ];
       
@@ -675,47 +583,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================
-    // 深度调度：命中专业意图且有独立SSE API时，转发到专业智能体
-    // 被代理的 API 自己处理 RAG + Specialized Prompt，不再走下方 DeepSeek 通用路径
+    // 统一 DeepSeek + RAG 路径 — 所有智能体走这一条链路
+    // userContext 已在上面统一注入，不再需要独立 API 转发
     // ============================================================
-    if (effectiveBotType === 'xiaozhi' && useVoiceWrapper && DISPATCH_API_MAP[resolvedBotType]) {
-      const deepConvId = conversationId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      const apiPath = DISPATCH_API_MAP[resolvedBotType];
-      
-      console.log(`[chat] Deep dispatch: intent=${resolvedBotType} → ${apiPath}`);
-      
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const apiBody: Record<string, any> = { message, conversationId: deepConvId };
-        const { stream: proxiedStream, fullResponse } = await proxySpecializedApiStream(
-          apiPath!, apiBody, request, deepConvId, resolvedBotType,
-        );
-        
-        // 异步保存聊天历史（不阻塞首字节）
-        if (fullResponse && userId) {
-          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-          const esc = (s: string) => (s || '').replace(/'/g, "''");
-          const insertSql = `
-            INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES
-            ('${esc(deepConvId)}', '${esc(userId)}', 'user', '${esc(message)}', '${esc(effectiveBotType)}'),
-            ('${esc(deepConvId)}', '${esc(userId)}', 'assistant', '${esc(fullResponse)}', '${esc(effectiveBotType)}');
-          `;
-          fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
-            method: 'POST',
-            headers: { 'apikey': supabaseKey || '', 'Authorization': `Bearer ${supabaseKey || ''}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sql: insertSql }),
-          }).catch(e => console.error('[chat] Deep dispatch history save error:', e));
-        }
-        
-        return new Response(proxiedStream, { headers: SSE_HEADERS });
-      } catch (err) {
-        console.error('[chat] Deep dispatch failed, falling back to prompt-based:', err);
-        // 回退到下方通用 DeepSeek + RAG 路径
-        useVoiceWrapper = false;
-        resolvedBotType = 'xiaozhi_chat';
-      }
-    }
 
     if (USE_DEEPSEEK) {
       try {
