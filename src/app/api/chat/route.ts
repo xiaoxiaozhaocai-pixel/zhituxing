@@ -588,12 +588,12 @@ export async function POST(request: NextRequest) {
         try {
           const supabase = getSupabaseAdmin();
           const { data: job } = await supabase
-            .from('jobs')
+            .from('job_descriptions')
             .select('*')
             .eq('id', jobId)
             .single();
           if (job) {
-            contextParts.push(`\n【待分析岗位信息】\n岗位名称：${job.name || ''}\n公司/行业：${job.industry || ''}\n城市：${job.city || ''}\n薪资：${job.salary || ''}\n技能要求：${Array.isArray(job.skills) ? job.skills.join('、') : (job.skills || '')}\n学历要求：${job.education || ''}\n经验要求：${job.experience || ''}\n是否应届友好：${job.isFreshFriendly ? '是' : '否'}\n岗位描述：\n${(job.jdContent || job.raw_jd || '').slice(0, 3000)}\n---`);
+            contextParts.push(`\n【待分析岗位信息】\n岗位名称：${job.job_title || ''}\n行业：${job.industry || ''}\n城市：${job.city || ''}\n薪资：${job.salary_range || ''}\n学历要求：${job.education || ''}\n经验要求：${job.experience || ''}\n是否应届友好：${job.fresh_graduate_friendly ? '是' : '否'}\n技能要求：${Array.isArray(job.hard_skills) ? job.hard_skills.join('、') : ''}\n软技能要求：${Array.isArray(job.soft_skills) ? job.soft_skills.join('、') : ''}\n岗位职责：\n${(job.responsibilities || job.raw_jd || '').slice(0, 3000)}\n---`);
           }
         } catch (e) {
           console.error('[chat] 获取岗位数据失败:', e);
