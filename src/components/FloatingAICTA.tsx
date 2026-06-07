@@ -109,7 +109,7 @@ export default function FloatingAICTA() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, bot_type: 'xiaozhi' }),
+        body: JSON.stringify({ message: msg, botType: 'xiaozhi' }),
         signal: AbortSignal.timeout(60000),
       });
 
