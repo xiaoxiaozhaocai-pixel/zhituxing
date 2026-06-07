@@ -12,7 +12,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV SENTRY_AUTH_TOKEN=dummy
-RUN corepack enable pnpm && corepack prepare pnpm@9.15.4 --activate && NEXT_LINT=false pnpm build
+RUN NEXT_LINT=false node node_modules/next/dist/bin/next build
 
 FROM base AS runner
 WORKDIR /app
