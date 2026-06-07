@@ -25,8 +25,17 @@ export interface AuthUser {
  * 开发环境允许 x-user-id fallback（仅用于开发测试）
  */
 export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUser | null> {
-  // 1. 尝试从 cookie 获取并验证 token
-  const accessToken = parseAccessTokenFromCookie(request.headers);
+  // 1. 优先从 Authorization: Bearer header 提取 accessToken
+  let accessToken: string | null = null;
+  const authHeader = request.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    accessToken = authHeader.slice(7);
+  }
+
+  // 2. header 不存在时，回退到 cookie 读取逻辑
+  if (!accessToken) {
+    accessToken = parseAccessTokenFromCookie(request.headers);
+  }
   
   if (accessToken) {
     try {
