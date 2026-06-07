@@ -1,56 +1,257 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, Fragment } from 'react';
+import type { ReactNode } from 'react';
 import { parseAIResponse, stripDataMarkers, type ParsedSegment, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type RadarData, type PromotionData, type TableData } from '@/lib/ai-response-parser';
 import {Lock, ChevronRight, CheckCircle, AlertTriangle, Award, TrendingUp} from 'lucide-react';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
-// ========== Markdown 渲染组件 ==========
-// 用于 text 段：支持 **加粗** / 表格 / 列表 / 链接 等 Markdown 语法
-// 单个 \n 强制换行（替换为两空格+换行），保留 AI 输出的视觉换行
+// ========== 轻量 Markdown 渲染（无外部依赖） ==========
+// 覆盖 AI 输出常见语法：**加粗** / *斜体* / `code` / [text](url) / 表格 / 有序无序列表 / 标题 / 引用 / 分隔线
+// 不引入 react-markdown 是为了避免修改 pnpm-lock.yaml；如未来要支持完整 CommonMark，再迁移
+
+// 行内 markdown 解析：把一行字符串转成带 <strong>/<em>/<code>/<a> 的 React 节点数组
+function renderInline(text: string, keyPrefix = ''): ReactNode[] {
+  const parts: ReactNode[] = [];
+  // 复合正则：**bold** | *italic* | `code` | [text](url)
+  // 注意：**...** 必须在 *...* 之前匹配
+  const regex = /\*\*([^*\n]+?)\*\*|\*([^*\n]+?)\*|`([^`\n]+?)`|\[([^\]\n]+?)\]\(([^)\s]+?)\)/g;
+  let lastIdx = 0;
+  let m: RegExpExecArray | null;
+  let k = 0;
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > lastIdx) parts.push(text.slice(lastIdx, m.index));
+    const key = `${keyPrefix}-${k++}`;
+    if (m[1] !== undefined) {
+      parts.push(<strong key={key} className="font-semibold text-gray-900">{m[1]}</strong>);
+    } else if (m[2] !== undefined) {
+      parts.push(<em key={key} className="italic">{m[2]}</em>);
+    } else if (m[3] !== undefined) {
+      parts.push(<code key={key} className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono">{m[3]}</code>);
+    } else if (m[4] !== undefined && m[5] !== undefined) {
+      parts.push(
+        <a key={key} href={m[5]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700">{m[4]}</a>
+      );
+    }
+    lastIdx = m.index + m[0].length;
+  }
+  if (lastIdx < text.length) parts.push(text.slice(lastIdx));
+  return parts;
+}
+
+// 行内 + 行内换行：把多行段落（含 \n）转成节点，单个 \n 渲染为 <br/>
+function renderInlineMultiline(text: string, keyPrefix = ''): ReactNode[] {
+  const lines = text.split('\n');
+  const out: ReactNode[] = [];
+  lines.forEach((ln, i) => {
+    out.push(<Fragment key={`${keyPrefix}-ln-${i}`}>{renderInline(ln, `${keyPrefix}-ln-${i}`)}</Fragment>);
+    if (i < lines.length - 1) out.push(<br key={`${keyPrefix}-br-${i}`} />);
+  });
+  return out;
+}
+
+type Block =
+  | { type: 'heading'; level: 1 | 2 | 3 | 4; text: string }
+  | { type: 'paragraph'; text: string }
+  | { type: 'ul'; items: string[] }
+  | { type: 'ol'; items: string[] }
+  | { type: 'table'; header: string[]; rows: string[][] }
+  | { type: 'blockquote'; text: string }
+  | { type: 'hr' }
+  | { type: 'codeblock'; code: string; lang?: string };
+
+// 把 markdown 文本切成块
+function parseBlocks(src: string): Block[] {
+  const text = src.replace(/\r\n/g, '\n');
+  const lines = text.split('\n');
+  const blocks: Block[] = [];
+  let i = 0;
+
+  const isTableSep = (s: string) => /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(s);
+  const splitRow = (s: string) => {
+    let t = s.trim();
+    if (t.startsWith('|')) t = t.slice(1);
+    if (t.endsWith('|')) t = t.slice(0, -1);
+    return t.split('|').map(c => c.trim());
+  };
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // 空行
+    if (line.trim() === '') { i++; continue; }
+
+    // 代码块 ```
+    if (/^```/.test(line.trim())) {
+      const lang = line.trim().slice(3).trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i].trim())) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length) i++; // 跳过结束 ```
+      blocks.push({ type: 'codeblock', code: codeLines.join('\n'), lang });
+      continue;
+    }
+
+    // 分隔线
+    if (/^\s*(-\s*){3,}$/.test(line) || /^\s*(\*\s*){3,}$/.test(line) || /^\s*(_\s*){3,}$/.test(line)) {
+      blocks.push({ type: 'hr' });
+      i++;
+      continue;
+    }
+
+    // 标题
+    const h = /^(#{1,4})\s+(.*)$/.exec(line);
+    if (h) {
+      blocks.push({ type: 'heading', level: h[1].length as 1 | 2 | 3 | 4, text: h[2].trim() });
+      i++;
+      continue;
+    }
+
+    // 引用
+    if (/^\s*>\s?/.test(line)) {
+      const bq: string[] = [];
+      while (i < lines.length && /^\s*>\s?/.test(lines[i])) {
+        bq.push(lines[i].replace(/^\s*>\s?/, ''));
+        i++;
+      }
+      blocks.push({ type: 'blockquote', text: bq.join('\n') });
+      continue;
+    }
+
+    // 表格（当前行像 | a | b | 且下一行是分隔符）
+    if (/\|/.test(line) && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+      const header = splitRow(line);
+      i += 2;
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].trim() !== '' && /\|/.test(lines[i])) {
+        rows.push(splitRow(lines[i]));
+        i++;
+      }
+      blocks.push({ type: 'table', header, rows });
+      continue;
+    }
+
+    // 无序列表
+    if (/^\s*[-*+]\s+/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*[-*+]\s+/, ''));
+        i++;
+      }
+      blocks.push({ type: 'ul', items });
+      continue;
+    }
+
+    // 有序列表
+    if (/^\s*\d+\.\s+/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*\d+\.\s+/, ''));
+        i++;
+      }
+      blocks.push({ type: 'ol', items });
+      continue;
+    }
+
+    // 段落：连续非空、非块级标识行
+    const para: string[] = [line];
+    i++;
+    while (
+      i < lines.length &&
+      lines[i].trim() !== '' &&
+      !/^(#{1,4})\s+/.test(lines[i]) &&
+      !/^\s*[-*+]\s+/.test(lines[i]) &&
+      !/^\s*\d+\.\s+/.test(lines[i]) &&
+      !/^\s*>\s?/.test(lines[i]) &&
+      !/^```/.test(lines[i].trim()) &&
+      !(/\|/.test(lines[i]) && i + 1 < lines.length && isTableSep(lines[i + 1])) &&
+      !/^\s*(-\s*){3,}$/.test(lines[i])
+    ) {
+      para.push(lines[i]);
+      i++;
+    }
+    blocks.push({ type: 'paragraph', text: para.join('\n') });
+  }
+
+  return blocks;
+}
+
 function MarkdownText({ text }: { text: string }) {
-  // 单换行 → markdown 强制换行（两个空格+\n）；连续空行（段落分隔）保留
-  const normalized = text.replace(/\r\n/g, '\n').replace(/([^\n])\n(?!\n)/g, '$1  \n');
+  const blocks = useMemo(() => parseBlocks(text), [text]);
   return (
     <div className="text-sm leading-relaxed text-gray-800">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          p: ({ node, ...props }) => <p className="my-2 first:mt-0 last:mb-0" {...props} />,
-          strong: ({ node, ...props }) => <strong className="font-semibold text-gray-900" {...props} />,
-          em: ({ node, ...props }) => <em className="italic" {...props} />,
-          h1: ({ node, ...props }) => <h1 className="text-lg font-bold text-gray-900 mt-3 mb-2" {...props} />,
-          h2: ({ node, ...props }) => <h2 className="text-base font-bold text-gray-900 mt-3 mb-2" {...props} />,
-          h3: ({ node, ...props }) => <h3 className="text-sm font-bold text-gray-900 mt-2 mb-1.5" {...props} />,
-          h4: ({ node, ...props }) => <h4 className="text-sm font-semibold text-gray-900 mt-2 mb-1" {...props} />,
-          table: ({ node, ...props }) => (
-            <div className="overflow-x-auto my-3 rounded-lg border border-gray-200">
-              <table className="min-w-full text-sm border-collapse" {...props} />
-            </div>
-          ),
-          thead: ({ node, ...props }) => <thead className="bg-gray-50" {...props} />,
-          th: ({ node, ...props }) => <th className="px-3 py-2 text-left font-semibold text-gray-700 border-b border-gray-200" {...props} />,
-          td: ({ node, ...props }) => <td className="px-3 py-2 text-gray-700 border-b border-gray-100 align-top" {...props} />,
-          ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1 my-2" {...props} />,
-          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-1 my-2" {...props} />,
-          li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
-          a: ({ node, ...props }) => <a className="text-blue-600 underline hover:text-blue-700" target="_blank" rel="noopener noreferrer" {...props} />,
-          code: ({ node, className, ...props }) => {
-            const isBlock = className?.includes('language-');
-            if (isBlock) {
-              return <code className={`block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs ${className || ''}`} {...props} />;
-            }
-            return <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono" {...props} />;
-          },
-          pre: ({ node, ...props }) => <pre className="my-2" {...props} />,
-          blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-blue-200 pl-3 my-2 text-gray-600 italic" {...props} />,
-          hr: () => <hr className="my-3 border-gray-200" />,
-        }}
-      >
-        {normalized}
-      </ReactMarkdown>
+      {blocks.map((b, idx) => {
+        const k = `b-${idx}`;
+        switch (b.type) {
+          case 'heading': {
+            const cls = b.level === 1 ? 'text-lg font-bold text-gray-900 mt-3 mb-2'
+              : b.level === 2 ? 'text-base font-bold text-gray-900 mt-3 mb-2'
+              : b.level === 3 ? 'text-sm font-bold text-gray-900 mt-2 mb-1.5'
+              : 'text-sm font-semibold text-gray-900 mt-2 mb-1';
+            const content = renderInline(b.text, k);
+            if (b.level === 1) return <h1 key={k} className={cls}>{content}</h1>;
+            if (b.level === 2) return <h2 key={k} className={cls}>{content}</h2>;
+            if (b.level === 3) return <h3 key={k} className={cls}>{content}</h3>;
+            return <h4 key={k} className={cls}>{content}</h4>;
+          }
+          case 'paragraph':
+            return <p key={k} className="my-2 first:mt-0 last:mb-0">{renderInlineMultiline(b.text, k)}</p>;
+          case 'ul':
+            return (
+              <ul key={k} className="list-disc pl-5 space-y-1 my-2">
+                {b.items.map((it, i) => <li key={i} className="leading-relaxed">{renderInline(it, `${k}-${i}`)}</li>)}
+              </ul>
+            );
+          case 'ol':
+            return (
+              <ol key={k} className="list-decimal pl-5 space-y-1 my-2">
+                {b.items.map((it, i) => <li key={i} className="leading-relaxed">{renderInline(it, `${k}-${i}`)}</li>)}
+              </ol>
+            );
+          case 'table':
+            return (
+              <div key={k} className="overflow-x-auto my-3 rounded-lg border border-gray-200">
+                <table className="min-w-full text-sm border-collapse">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      {b.header.map((h, i) => (
+                        <th key={i} className="px-3 py-2 text-left font-semibold text-gray-700 border-b border-gray-200">{renderInline(h, `${k}-h-${i}`)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {b.rows.map((row, ri) => (
+                      <tr key={ri}>
+                        {row.map((c, ci) => (
+                          <td key={ci} className="px-3 py-2 text-gray-700 border-b border-gray-100 align-top">{renderInline(c, `${k}-${ri}-${ci}`)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          case 'blockquote':
+            return (
+              <blockquote key={k} className="border-l-4 border-blue-200 pl-3 my-2 text-gray-600 italic">
+                {renderInlineMultiline(b.text, k)}
+              </blockquote>
+            );
+          case 'hr':
+            return <hr key={k} className="my-3 border-gray-200" />;
+          case 'codeblock':
+            return (
+              <pre key={k} className="my-2">
+                <code className="block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs whitespace-pre">{b.code}</code>
+              </pre>
+            );
+          default:
+            return null;
+        }
+      })}
     </div>
   );
 }
