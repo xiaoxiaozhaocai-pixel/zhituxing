@@ -381,7 +381,13 @@ export async function POST(request: NextRequest) {
     // ============================================================
     // 使用统一的认证函数，不再信任 x-user-id header
     // 漏洞修复：之前允许 x-user-id 绕过登录检查是严重的安全漏洞
-    const accessToken = parseAccessTokenFromCookie(request.headers) || request.cookies.get('sb-access-token')?.value || null;
+    const authBearer = request.headers.get('authorization')?.startsWith('Bearer ')
+      ? request.headers.get('authorization')!.slice(7)
+      : null;
+    const accessToken = authBearer
+      || parseAccessTokenFromCookie(request.headers)
+      || request.cookies.get('sb-access-token')?.value
+      || null;
     
     if (!accessToken) {
       return jsonError(ErrorCode.UNAUTHORIZED, '请先登录');
