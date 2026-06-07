@@ -21,11 +21,6 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
     checkUserProfile();
   }, []);
 
-  // Skip on admin/onboarding/auth pages
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) {
-    return <>{children}</>;
-  }
-
   const checkUserProfile = async () => {
     try {
       const onboardingDone = localStorage.getItem('onboarding_done');
@@ -65,6 +60,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
 
   // Guide bar visibility logic (merged from ProfileGuideBar)
   useEffect(() => {
+    if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) return;
     if (!checkDone) return;
     if (hasProfile) return;
     
@@ -76,7 +72,13 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
     
     localStorage.setItem('has_visited', 'true');
     setShowGuideBar(true);
-  }, [checkDone, hasProfile]);
+  }, [checkDone, hasProfile, pathname]);
+
+
+  // Skip on admin/onboarding/auth pages
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) {
+    return <>{children}</>;
+  }
 
   const handleDismissGuide = () => {
     setShowGuideBar(false);

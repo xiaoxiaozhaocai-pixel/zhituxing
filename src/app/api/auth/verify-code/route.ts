@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       if (createError) {
         // 可能 fakeEmail 已有（之前创建过），尝试查找
         const { data: listData } = await supabase.auth.admin.listUsers();
-        const found = listData?.users?.find((u: any) => u.email === fakeEmail || u.phone === phone);
+        const found = listData?.users?.find((u) => u.email === fakeEmail || u.phone === phone);
         if (found) {
           userId = found.id;
           nickname = found.user_metadata?.nickname || `用户${phone.slice(-4)}`;

@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
     // 🧪 测试模式：DEV_OTP_BYPASS + 旁路验证码 88888888
     const isBypass = process.env.DEV_OTP_BYPASS === 'true' && token === '88888888';
     
-    let authData: { user: any; session: any } | null = null;
-    let finalUser: any = null;
+    let authData: { user: Record<string, unknown>; session: Record<string, unknown> } | null = null;
+    let finalUser: Record<string, unknown> | null = null;
 
     if (isBypass) {
       console.log('[verify-otp] 🧪 测试模式旁路验证:', { email, flowType });
