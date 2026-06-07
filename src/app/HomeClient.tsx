@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Compass, TrendingUp, Briefcase, Brain, CheckCircle2, ArrowRight,
-  Sparkles, Building2, _FileSearch, Mic, Search, Shield, Zap, FileText,
+  Sparkles, Building2, FileSearch, Mic, Search, Shield, Zap, FileText,
   MessageSquare
 } from 'lucide-react';
 

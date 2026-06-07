@@ -11,9 +11,9 @@ import { Badge } from '@/components/ui/badge';
 
 import { Separator } from '@/components/ui/separator';
 import {
-  Send, Loader2, _MessageSquare, Briefcase, _PlusCircle, Sparkles,
+  Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
-  User, ArrowRight, RefreshCw, _Link2, _X, _AlertCircle, Link as LinkIcon, _CheckCircle,
+  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle2,
   MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp, ExternalLink
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';

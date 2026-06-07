@@ -171,22 +171,25 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
         });
 
         // 解析数据行（跳过表头）
-        const rows: JDRow[] = jsonData.slice(1).map((row, index) => ({
-          id: `row_${index}_${Date.now()}`,
-          rowIndex: index + 2, // Excel行号从2开始（1是表头）
-          jobName: row[0] || '',
-          companyName: row[1] || '',
-          city: row[2] || '',
-          salaryMin: String(row[3] || ''),
-          salaryMax: String(row[4] || ''),
-          industry: row[5] || '',
-          companyType: row[6] || '',
-          jobDesc: row[7] || '',
-          isFreshFriendly: row[8] || '是',
-          status: 'pending' as const,
-          errors: [],
-          isSelected: true,
-        })).filter(row => row.jobName || row.companyName || row.city);
+        const rows: JDRow[] = jsonData.slice(1).map((row, index) => {
+          const s = (v: unknown) => String(v ?? '');
+          return {
+            id: `row_${index}_${Date.now()}`,
+            rowIndex: index + 2,
+            jobName: s(row[0]),
+            companyName: s(row[1]),
+            city: s(row[2]),
+            salaryMin: s(row[3]),
+            salaryMax: s(row[4]),
+            industry: s(row[5]),
+            companyType: s(row[6]),
+            jobDesc: s(row[7]),
+            isFreshFriendly: s(row[8]) || '是',
+            status: 'pending' as const,
+            errors: [],
+            isSelected: true,
+          };
+        }).filter(row => row.jobName || row.companyName || row.city);
 
         // 进入步骤2进行校验
         setData(rows);
