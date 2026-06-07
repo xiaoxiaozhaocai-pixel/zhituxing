@@ -483,7 +483,7 @@ export async function POST(request: NextRequest) {
     // 契约化：用 zod 校验请求体
     const parsed = await parseRequestBody(request, ChatRequestSchema);
     if (!parsed.ok) return parsed.response;
-    const { message, botType } = parsed.data;
+    const { message, botType, jobId } = parsed.data;
     // conversationId 允许 null（前端会显式传 null），统一收敛成 undefined
     const conversationId = parsed.data.conversationId ?? undefined;
 
@@ -568,19 +568,44 @@ export async function POST(request: NextRequest) {
       console.log('[chat] User info not found but token exists, treating as free user');
     }
 
-    // 获取用户个人信息上下文
+    // ============================================================
+    // 获取用户个人信息上下文 + 上游智能体产物（仅首次消息注入，避免重复）
+    // 首次消息判断：无 conversationId 即新会话
+    // ============================================================
     let userContext = '';
-    if (userId) {
-      userContext = await getUserProfileContext(userId);
+    if (userId && !conversationId) {
+      const profileCtx = await getUserProfileContext(userId);
       
-      // ============================================================
-      // 智能体调用链：下游自动消费上游产物
-      // 根据当前 botType，自动查询相关的上游智能体产物并注入上下文
-      // ============================================================
+      // 上游智能体调用链
       const upstreamArtifacts = await getUpstreamArtifacts(userId, effectiveBotType);
-      if (upstreamArtifacts) {
-        userContext += '\n\n' + upstreamArtifacts;
+      
+      const contextParts: string[] = [];
+      if (profileCtx) contextParts.push(profileCtx);
+      if (upstreamArtifacts) contextParts.push(upstreamArtifacts);
+      
+      // 岗位百科深度优化：携带岗位数据
+      if (jobId) {
+        try {
+          const supabase = getSupabaseAdmin();
+          const { data: job } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('id', jobId)
+            .single();
+          if (job) {
+            contextParts.push(`\n【待分析岗位信息】\n岗位名称：${job.name || ''}\n公司/行业：${job.industry || ''}\n城市：${job.city || ''}\n薪资：${job.salary || ''}\n技能要求：${Array.isArray(job.skills) ? job.skills.join('、') : (job.skills || '')}\n学历要求：${job.education || ''}\n经验要求：${job.experience || ''}\n是否应届友好：${job.isFreshFriendly ? '是' : '否'}\n岗位描述：\n${(job.jdContent || job.raw_jd || '').slice(0, 3000)}\n---`);
+          }
+        } catch (e) {
+          console.error('[chat] 获取岗位数据失败:', e);
+        }
       }
+      
+      if (contextParts.length > 0) {
+        userContext = `【系统指令：以下是你需要了解的背景信息，请务必基于这些信息回答用户问题，不要重复询问用户已知的个人信息和前置分析结论】\n\n${contextParts.join('\n')}\n\n---\n`;
+      }
+    } else if (userId && conversationId) {
+      // 后续消息：不重复注入用户画像和上游产物，减少 token 消耗和干扰
+      console.log('[chat] 已有 conversationId，跳过上下文注入');
     }
 
     // 检查配额（仅当 userId 存在时）

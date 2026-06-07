@@ -18,7 +18,10 @@ export async function callWorkflowStreamApi(params: {
     throw new Error(`No workflow config found for botType: ${params.botType}`);
   }
 
-  const finalMessage = (params.userContext || '') + params.message;
+  // 将 userContext 结构化注入消息（仅含上下文时包裹，否则直接传原始消息）
+  const finalMessage = params.userContext
+    ? `${params.userContext}\n【用户最新消息】\n${params.message}`
+    : params.message;
   const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
 
   const controller = new AbortController();
@@ -89,7 +92,10 @@ export async function callCozeStreamApi(params: {
   conversationId?: string;
   userContext?: string;
 }): Promise<Response> {
-  const finalMessage = (params.userContext || '') + params.message;
+  // 将 userContext 结构化注入消息（仅含上下文时包裹，否则直接传原始消息）
+  const finalMessage = params.userContext
+    ? `${params.userContext}\n【用户最新消息】\n${params.message}`
+    : params.message;
 
   return fetch('https://api.coze.cn/v3/chat', {
     method: 'POST',

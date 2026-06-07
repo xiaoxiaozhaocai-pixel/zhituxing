@@ -280,6 +280,8 @@ function AssistantContent() {
   
   // 待发送的 query 参数（从 URL 解析）
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
+  // 待发送的 jobId（岗位百科深度优化跳转携带）
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null);
 
   // SSE流式解析hook
   const [streamState, streamActions] = useSSEStream();
@@ -391,7 +393,11 @@ function AssistantContent() {
     if (query && !pendingQuery) {
       setPendingQuery(query);
     }
-  }, [searchParams, pendingQuery]);
+    const jobId = searchParams.get('jobId');
+    if (jobId && !pendingJobId) {
+      setPendingJobId(jobId);
+    }
+  }, [searchParams, pendingQuery, pendingJobId]);
 
   // 解析JD链接
   const handleFetchJd = async (url: string) => {
@@ -575,10 +581,14 @@ function AssistantContent() {
       let apiUrl = '/api/chat';
       // 使用 null 替代 undefined，避免 JSON.stringify 丢失字段
       const storedConvId = localStorage.getItem(`conversationId_${activeBot}`);
+      // 岗位百科深度优化跳转：携带 jobId（仅首条消息，发后清空）
+      const jobIdToSend = pendingJobId;
+      if (jobIdToSend) setPendingJobId(null);
       let requestBody: object = {
         message: messageText,
         botType: activeBot,
-        conversationId: storedConvId || null
+        conversationId: storedConvId || null,
+        jobId: jobIdToSend || null,
       };
       
       if (isInterview) {
