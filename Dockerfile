@@ -11,7 +11,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm install -g pnpm@9.0.0 && pnpm build
+RUN npm install -g pnpm@9.0.0
+RUN echo "=== Node: $(node -v) / pnpm: $(pnpm -v) ==="
+RUN echo "=== deps check: $(ls node_modules/.pnpm | wc -l) packages ==="
+RUN pnpm build 2>&1 | tee /tmp/build.log || (echo "=== BUILD FAILED, last 100 lines ===" && tail -100 /tmp/build.log && exit 1)
 
 FROM base AS runner
 WORKDIR /app
