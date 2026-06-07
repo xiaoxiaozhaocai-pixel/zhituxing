@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, Compass, Mic, Send, X, Loader2 } from 'lucide-react';
+import { MessageSquare, Compass, Mic, Send, X, Loader2, Crown } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 
 const STORAGE_KEY_POS = 'xiaozhi-float-pos';
 const STORAGE_KEY_VISITED = 'xiaozhi-visited';
@@ -25,6 +27,8 @@ const quickActions = [
   { label: '职业规划', icon: Compass, href: '/assistant?bot=career' },
   { label: '模拟面试', icon: Mic, href: '/assistant?bot=interview' },
 ];
+
+const membershipAction = { label: '开通会员', icon: Crown, href: '/membership' };
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -48,6 +52,22 @@ export default function FloatingAICTA() {
   const [streaming, setStreaming] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ── 会员引导 ──
+  const { user, quota } = useAuth();
+  const { isMember } = useMembership();
+  const [showMembership, setShowMembership] = useState(false);
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
+
+  useEffect(() => {
+    if (!user || isMember) { setShowMembership(false); return; }
+    if (typeof window !== 'undefined' && window.location.pathname === '/membership') {
+      setShowMembership(false); return;
+    }
+    const exhausted = (quota?.remaining ?? 0) <= 0;
+    setQuotaExhausted(exhausted);
+    setShowMembership(true);
+  }, [user, quota, isMember]);
 
   // 初始化位置 + 首次访问判断
   useEffect(() => {
@@ -186,7 +206,7 @@ export default function FloatingAICTA() {
       {/* FAB + 快捷面板 */}
       <div
         ref={containerRef}
-        className="fixed z-40 select-none"
+        className="fixed z-40 select-none group"
         style={{ left: position.x, top: position.y, touchAction: 'none' }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -195,11 +215,15 @@ export default function FloatingAICTA() {
       >
         {/* 快捷面板 */}
         <div className={`absolute right-full mr-3 bottom-0 flex items-center gap-2 transition-all duration-300 ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-          {quickActions.map((action) => {
+          {[...quickActions, ...(showMembership ? [membershipAction] : [])].map((action) => {
             const Icon = action.icon;
             return (
               <Link key={action.href} href={action.href}>
-                <div className="flex items-center gap-1.5 glass-card text-[#165DFF] text-sm px-3 py-2 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap cursor-pointer">
+                <div className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap cursor-pointer ${
+                  action === membershipAction
+                    ? 'bg-gradient-to-r from-[#FF7D00] to-amber-500 text-white'
+                    : 'glass-card text-[#165DFF]'
+                }`}>
                   <Icon className="w-4 h-4" />
                   <span className="font-medium">{action.label}</span>
                 </div>
@@ -212,9 +236,31 @@ export default function FloatingAICTA() {
         <button
           type="button"
           onClick={handleFabClick}
-          className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg btn-gradient transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-[#165DFF]/40 select-none animate-pulse-ring ${dragging ? 'cursor-grabbing scale-110' : showFirstVisit ? 'cursor-pointer' : 'cursor-grab'}`}
+          className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl select-none ${
+            showMembership
+              ? 'bg-gradient-to-r from-[#FF7D00] to-amber-500 hover:shadow-[#FF7D00]/40'
+              : 'btn-gradient hover:shadow-[#165DFF]/40'
+          } ${dragging ? 'cursor-grabbing scale-110' : showFirstVisit ? 'cursor-pointer' : 'cursor-grab'} ${
+            quotaExhausted && showMembership ? 'animate-pulse' : 'animate-pulse-ring'
+          }`}
         >
-          <MessageSquare className="w-6 h-6 text-white pointer-events-none" />
+          {showMembership ? (
+            <Crown className="w-6 h-6 text-white pointer-events-none" />
+          ) : (
+            <MessageSquare className="w-6 h-6 text-white pointer-events-none" />
+          )}
+          {quotaExhausted && showMembership && (
+            <span className="absolute inset-0 rounded-full animate-ping bg-[#FF7D00] opacity-20" />
+          )}
+          {/* 会员提示 */}
+          {showMembership && (
+            <div className="absolute right-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+              <div className="bg-[#1E293B] text-white text-sm px-3.5 py-2.5 rounded-xl shadow-xl">
+                <div className="font-semibold">开通会员</div>
+                <div className="text-xs text-[#94A3B8] mt-0.5">无限次AI服务</div>
+              </div>
+            </div>
+          )}
         </button>
       </div>
 
@@ -314,4 +360,5 @@ export default function FloatingAICTA() {
     </>
   );
 }
+
 
