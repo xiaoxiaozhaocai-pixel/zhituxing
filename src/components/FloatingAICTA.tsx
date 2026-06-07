@@ -12,6 +12,14 @@ const CHAT_PANEL_H = 520;
 const FAB_SIZE = 56;
 const GAP = 16;
 
+function clampPosition(x: number, y: number): { x: number; y: number } {
+  if (typeof window === 'undefined') return { x, y };
+  return {
+    x: Math.max(0, Math.min(x, window.innerWidth - FAB_SIZE)),
+    y: Math.max(0, Math.min(y, window.innerHeight - FAB_SIZE)),
+  };
+}
+
 const quickActions = [
   { label: '找小职聊聊', icon: MessageSquare, href: '/assistant?bot=xiaozhi' },
   { label: '职业规划', icon: Compass, href: '/assistant?bot=career' },
@@ -48,7 +56,8 @@ export default function FloatingAICTA() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          setPosition(parsed);
+          // 验证保存的位置仍在当前窗口范围内
+          setPosition(clampPosition(parsed.x, parsed.y));
           return;
         }
       }
@@ -81,7 +90,7 @@ export default function FloatingAICTA() {
     const dx = Math.abs(newX - (position?.x ?? 0));
     const dy = Math.abs(newY - (position?.y ?? 0));
     if (dx > 2 || dy > 2) dragMoved.current = true;
-    if (dragMoved.current) setPosition({ x: newX, y: newY });
+    if (dragMoved.current) setPosition(clampPosition(newX, newY));
   }, [dragging, position]);
 
   const handlePointerUp = useCallback(() => {
@@ -230,7 +239,7 @@ export default function FloatingAICTA() {
               const startPy = position.y;
               e.currentTarget.setPointerCapture(e.pointerId);
               const onMove = (ev: PointerEvent) => {
-                setPosition({ x: startPx + (ev.clientX - startX), y: startPy + (ev.clientY - startY) });
+                setPosition(clampPosition(startPx + (ev.clientX - startX), startPy + (ev.clientY - startY)));
               };
               const onUp = () => {
                 window.removeEventListener('pointermove', onMove);
@@ -305,3 +314,4 @@ export default function FloatingAICTA() {
     </>
   );
 }
+
