@@ -933,7 +933,7 @@ function AssistantContent() {
     <div className="min-h-screen bg-gray-50">
       {/* 职业规划免费提示 */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
-        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-purple-700">
               AI职业规划永久免费
@@ -950,7 +950,7 @@ function AssistantContent() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* 页面标题 */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">

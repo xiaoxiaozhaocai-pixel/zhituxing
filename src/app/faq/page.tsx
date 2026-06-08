@@ -211,7 +211,7 @@ export default function FaqPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Category Tabs */}
         <div className="flex flex-wrap gap-3 mb-8">
           <button

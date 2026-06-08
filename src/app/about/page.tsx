@@ -72,7 +72,7 @@ export default function AboutPage() {
       </div>
 
       {/* Story */}
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">我们的故事</h2>
           <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
