@@ -67,7 +67,7 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-// eslint-disable-next-line
+{/* eslint-disable-next-line */}
       fetchAssessment();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -127,7 +127,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
     }
 
     setFile(selectedFile);
-// eslint-disable-next-line
+{/* eslint-disable-next-line */}
     parseFile(selectedFile);
   };
 
