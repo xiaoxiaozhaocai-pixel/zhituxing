@@ -42,6 +42,7 @@ import { DISPATCH_CARDS, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAME
 import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES } from './prompts';
 import { prepareChatContext } from './chat-context';
 import { saveChatHistory } from './chat-history';
+import { runGuetFlywheel } from './guet-flywheel';
 
 
 export const runtime = 'nodejs';
@@ -637,7 +638,9 @@ export async function POST(request: NextRequest) {
             : [],
           
           allowedTables!.includes('guet_knowledge')
-            ? querySupabase('guet_knowledge', [], 20, '*')
+            ? querySupabase('guet_knowledge',
+                keywords.keywords?.length ? keywords.keywords.slice(0, 3).map(kw => ({ field: 'content', operator: 'ilike' as const, value: kw })) : [],
+                keywords.keywords?.length ? 10 : 20, '*')
             : [],
         ]);
         
@@ -816,6 +819,13 @@ export async function POST(request: NextRequest) {
               // 发送保存结果事件
               const saveEvent = `event: save_result\ndata: ${JSON.stringify({ result: saveResult, convId: effectiveConversationId })}\n\n`;
               controller.enqueue(encoder.encode(saveEvent));
+
+              // 桂电知识飞轮：fire-and-forget（不阻塞响应）
+              runGuetFlywheel({
+                userMessage: message,
+                assistantResponse: fullResponse,
+                botType: effectiveBotType || '',
+              }).catch(e => console.error('[chat] Flywheel error:', e));
             } catch (err) {
               console.error('[chat] Stream wrapper error:', err);
               // 超时时发送友好降级消息
