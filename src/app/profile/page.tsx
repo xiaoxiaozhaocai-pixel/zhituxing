@@ -356,7 +356,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
             })}
           </div>
           <div className="mt-4 pt-3 border-t">
-            <Link href="/onboarding">
+            <Link href="/guide">
               <Button variant="outline" size="sm" className="w-full text-xs">
                 补充更多信息
               </Button>

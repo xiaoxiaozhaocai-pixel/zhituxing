@@ -45,7 +45,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
         if (has) {
           localStorage.setItem('onboarding_done', 'true');
         } else {
-          router.push('/onboarding');
+          router.push('/guide');
         }
       } else {
         setHasProfile(true);
@@ -60,7 +60,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
 
   // Guide bar visibility logic (merged from ProfileGuideBar)
   useEffect(() => {
-    if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) return;
+    if (pathname?.startsWith('/admin') || pathname?.startsWith('/guide') || pathname?.startsWith('/auth')) return;
     if (!checkDone) return;
     if (hasProfile) return;
     
@@ -75,8 +75,8 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
   }, [checkDone, hasProfile, pathname]);
 
 
-  // Skip on admin/onboarding/auth pages
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/auth')) {
+  // Skip on admin/guide/auth pages
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/guide') || pathname?.startsWith('/auth')) {
     return <>{children}</>;
   }
 

@@ -21,7 +21,6 @@ const faqCategories = [
   { id: 'platform', label: '平台功能', icon: <LayoutGrid className="w-5 h-5" /> },
   { id: 'data', label: '数据相关', icon: <Database className="w-5 h-5" /> },
   { id: 'membership', label: '会员服务', icon: <Crown className="w-5 h-5" /> },
-  { id: 'guide', label: '使用指南', icon: <BookOpen className="w-5 h-5" /> },
   { id: 'privacy', label: '隐私安全', icon: <Shield className="w-5 h-5" /> }
 ];
 
@@ -116,37 +115,37 @@ const faqs = [
   },
   // 使用指南
   {
-    category: 'guide',
+category: 'platform',
     question: '如何注册职途星账号？',
     answer: '点击首页的「注册」按钮，输入邮箱并设置密码，完成邮箱验证后即可注册。注册后即可使用各项免费功能（职业规划无限次、模拟面试3次、能力测评1次、考研决策3次）。'
   },
   {
-    category: 'guide',
+category: 'platform',
     question: '如何修改个人信息？',
     answer: '登录后进入个人中心，点击编辑资料即可修改昵称、专业、年级、意向城市等信息，修改后立即生效。'
   },
   {
-    category: 'guide',
+category: 'platform',
     question: '忘记密码怎么办？',
     answer: '在登录页面点击「忘记密码」，输入注册时的邮箱，接收验证码后即可重置新密码。'
   },
   {
-    category: 'guide',
+category: 'platform',
     question: '收不到验证码怎么办？',
     answer: '1. 检查手机信号是否正常；2. 确认短信拦截箱是否有拦截记录；3. 尝试重新获取验证码；4. 如仍有问题，可联系客服微信：zhituxing_kefu'
   },
   {
-    category: 'guide',
+category: 'platform',
     question: '每月免费次数用完了怎么办？',
     answer: '有三种方式：1. 邀请好友注册并完成首次AI提问，双方各获得3次免费AI次数+7天会员；2. 开通会员享受无限次使用；3. 关注平台活动，获取额外赠送次数。'
   },
   {
-    category: 'guide',
+category: 'platform',
     question: '如何邀请好友？',
     answer: '登录后进入「个人中心」→「我的邀请」，复制你的专属邀请链接或邀请码发送给好友，好友通过你的链接注册并完成首次AI提问后，双方即可获得奖励。'
   },
   {
-    category: 'guide',
+category: 'platform',
     question: '邀请好友的奖励怎么领取？',
     answer: '奖励会自动发放。当好友通过你的邀请链接注册并完成首次AI提问后，系统会自动将3次免费AI次数和7天会员时长添加到你的账户，无需手动领取。'
   },
