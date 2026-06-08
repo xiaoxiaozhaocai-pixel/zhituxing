@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -551,6 +551,7 @@ export default function ResumeEditorPage() {
     } finally {
       setSending(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatMessages, sending, resume]);
 
   const saveDraft = useCallback(() => {

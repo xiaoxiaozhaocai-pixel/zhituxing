@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -190,6 +190,7 @@ export default function FileImportModule({
     if (file) {
       handleFile(file);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 点击选择

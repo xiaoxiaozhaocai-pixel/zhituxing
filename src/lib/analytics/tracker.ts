@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AnalyticsTracker — 统一行为埋点工具
  *
  * 特性：
@@ -230,5 +230,6 @@ export function usePageView(pageName: string, extra?: Record<string, unknown>): 
       referrer: typeof document !== 'undefined' ? document.referrer : '',
       ...extra,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageName]);
 }

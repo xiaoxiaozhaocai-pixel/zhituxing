@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useState } from 'react';
 import { loadJSPDF, loadHtml2Canvas } from '@/lib/dynamic-imports';
@@ -149,6 +149,7 @@ export default function ArticlePDFGenerator({
     } finally {
       setGenerating(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId, articleTitle, articleContent, articleCategory, isMember]);
 
   return (

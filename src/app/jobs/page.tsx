@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -178,6 +178,7 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, filters, searchQuery]);
 
   useEffect(() => {
@@ -226,6 +227,7 @@ export default function JobsPage() {
         }
       ]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAssistant]);
 
   // 滚动到底部

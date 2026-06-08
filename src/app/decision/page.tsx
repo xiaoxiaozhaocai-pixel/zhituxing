@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
@@ -116,6 +116,7 @@ export default function DecisionPage() {
         content: decisionWelcome
       }]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {

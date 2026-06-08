@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -136,6 +136,7 @@ export default function AdminSkillsPage() {
 
   useEffect(() => { fetchTaxonomy(); }, [fetchTaxonomy]);
   useEffect(() => { fetchRelations(); }, [fetchRelations]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchStats(); }, []);
 
   // ============ CRUD操作 ============

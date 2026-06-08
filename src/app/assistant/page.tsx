@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -933,6 +933,7 @@ function AssistantContent() {
         sendMessage(queryToSend);
       }, 500);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
