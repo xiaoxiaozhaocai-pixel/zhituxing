@@ -140,7 +140,7 @@ export async function GET(_request: NextRequest) {
     );
 
     // 查询 user_profiles 表的所有列
-    const { data: allColumns, _error } = await supabase
+    const { data: allColumns, error: _error } = await supabase
       .from('information_schema.columns')
       .select('column_name, data_type, column_default')
       .eq('table_name', 'user_profiles')

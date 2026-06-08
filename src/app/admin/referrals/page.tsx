@@ -27,7 +27,7 @@ interface Referral {
 }
 
 export default function AdminReferralsPage() {
-  const { _user, isAuthenticated } = useAuth();
+  const { user: _user, isAuthenticated } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');

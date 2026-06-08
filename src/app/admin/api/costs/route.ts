@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       let totalChats = 0;
       let totalTokens = 0;
       let prevDayCost = -1;
-      const _prevDayTokens = 0;
+      let _prevDayTokens = 0;
 
       const sorted = Array.from(dayMap.entries()).sort(([a], [b]) => a.localeCompare(b));
       for (const [date, counts] of sorted) {

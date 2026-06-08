@@ -14,7 +14,6 @@ import {
   extractKeywords,
   querySupabase,
   buildRAGContext,
-  _createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
 
 const supabase = getSupabaseAdmin();
