@@ -1,12 +1,12 @@
 /**
  * Embedding 工具模块
  * 
- * 封装 DeepSeek Embedding API 调用，提供带缓存和降级的获取接口
+ * 封装 SiliconFlow BAAI/bge-large-zh-v1.5 Embedding API 调用，提供带缓存和降级的获取接口
  */
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
-const DEEPSEEK_EMBEDDING_URL = 'https://api.deepseek.com/v1/embeddings';
-const DEEPSEEK_EMBEDDING_MODEL = 'deepseek-embedding';
+const SF_API_KEY = process.env.SILICONFLOW_API_KEY || '';
+const SF_EMBEDDING_URL = 'https://api.siliconflow.cn/v1/embeddings';
+const SF_EMBEDDING_MODEL = 'BAAI/bge-large-zh-v1.5';
 
 // 内存 LRU 缓存（避免短时间内重复请求相同文本的embedding）
 const cache = new Map<string, { embedding: number[]; ts: number }>();
@@ -23,21 +23,24 @@ export async function getEmbedding(text: string): Promise<number[]> {
   }
 
   // 调用 API
-  if (!DEEPSEEK_API_KEY) {
-    console.warn('[embedding] DEEPSEEK_API_KEY not configured');
+  if (!SF_API_KEY) {
+    console.warn('[embedding] SILICONFLOW_API_KEY not configured, falling back to keyword search');
     return [];
   }
 
+  // 截断过长的文本（bge 上限 ~512 tokens）
+  const input = text.length > 400 ? text.slice(0, 400) : text;
+
   try {
-    const response = await fetch(DEEPSEEK_EMBEDDING_URL, {
+    const response = await fetch(SF_EMBEDDING_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        'Authorization': `Bearer ${SF_API_KEY}`,
       },
       body: JSON.stringify({
-        model: DEEPSEEK_EMBEDDING_MODEL,
-        input: text,
+        model: SF_EMBEDDING_MODEL,
+        input: input,
       }),
       signal: AbortSignal.timeout(10000), // 10s 超时
     });
@@ -53,7 +56,6 @@ export async function getEmbedding(text: string): Promise<number[]> {
     // 写入缓存
     if (embedding.length > 0) {
       if (cache.size >= MAX_CACHE_SIZE) {
-        // 简单淘汰：删最早的一个
         const firstKey = cache.keys().next().value;
         if (firstKey) cache.delete(firstKey);
       }
@@ -69,5 +71,5 @@ export async function getEmbedding(text: string): Promise<number[]> {
 
 /** 检查 embedding 是否可用 */
 export function isEmbeddingAvailable(): boolean {
-  return !!DEEPSEEK_API_KEY;
+  return !!SF_API_KEY;
 }

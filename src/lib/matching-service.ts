@@ -2,7 +2,7 @@
  * 匹配服务 — P1 匹配层核心
  * 
  * 取代旧 GET/POST /api/match 的虚假打分，接入：
- * 1. pgvector 语义搜索（DeepSeek Embedding）
+ * 1. pgvector 语义搜索（SiliconFlow BAAI/bge-large-zh-v1.5）
  * 2. matching-algorithm.ts 真实多维度打分
  * 3. 多维加权（技能35%+学历15%+专业15%+地点15%+经验10%+薪资10%）
  */
