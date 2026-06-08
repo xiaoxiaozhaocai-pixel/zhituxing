@@ -251,9 +251,12 @@ async function keywordFallback(
   if (skillsText) {
     const keywords = skillsText.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
     if (keywords.length > 0) {
-      const filters = keywords.map(kw => 
-        `hard_skills::text.ilike.%${kw}%,soft_skills::text.ilike.%${kw}%,job_title.ilike.%${kw}%`
-      ).join(',');
+      // Supabase .or() 语法: 逗号分隔多个条件，用 .ilike.%value% 做模糊匹配
+      const filters = keywords.flatMap(kw => [
+        `hard_skills.ilike.%${kw}%`,
+        `soft_skills.ilike.%${kw}%`,
+        `job_title.ilike.%${kw}%`
+      ]).join(',');
       query = query.or(filters);
     }
   }
