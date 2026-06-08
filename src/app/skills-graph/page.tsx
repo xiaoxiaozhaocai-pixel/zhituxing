@@ -269,6 +269,7 @@ export default function SkillsGraphPage() {
 
     setSimNodes(newNodes);
     setSimEdges(newEdges);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges, activeTypes, layoutMode]);

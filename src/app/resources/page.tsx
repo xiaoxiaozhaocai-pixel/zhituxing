@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -35,6 +35,7 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     fetchArticles();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory]);
 
   const fetchArticles = async () => {

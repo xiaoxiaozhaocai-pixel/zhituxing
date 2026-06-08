@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -147,6 +147,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       setFile(droppedFile);
       parseFile(droppedFile);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 解析文件

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -19,6 +19,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
 
   useEffect(() => {
     checkUserProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkUserProfile = async () => {

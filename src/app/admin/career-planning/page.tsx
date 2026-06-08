@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -50,6 +50,7 @@ export default function AdminCareerPlanningPage() {
     if (user) {
       fetchReports();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage, searchParams]);
 
   const fetchReports = async () => {

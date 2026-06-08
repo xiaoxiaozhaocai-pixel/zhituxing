@@ -504,6 +504,7 @@ function MessagesPanel({ userId }: { userId: string }) {
       return;
     }
     fetchNotifications();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchNotifications = async () => {
@@ -716,6 +717,7 @@ function ReportsPanel({ userId }: { userId: string }) {
       return;
     }
     fetchReports();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchReports = async () => {
@@ -803,6 +805,7 @@ function FavoritesPanel({ userId }: { userId: string }) {
       return;
     }
     fetchFavorites();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchFavorites = async () => {

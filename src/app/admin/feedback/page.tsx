@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -56,6 +56,7 @@ export default function AdminFeedbackPage() {
     if (isAuthenticated) {
       fetchFeedbacks();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, statusFilter, page]);
 
   const fetchFeedbacks = async () => {

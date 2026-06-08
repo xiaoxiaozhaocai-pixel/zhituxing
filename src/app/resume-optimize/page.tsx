@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -84,6 +84,7 @@ export default function ResumeOptimizePage() {
       fetchRecentRecords();
       fetchMyResumes();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchRecentRecords = async () => {

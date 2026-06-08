@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -57,6 +57,7 @@ export default function HistoryPage() {
     if (user) {
       fetchHistories();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, activeTab]);
 
   const fetchHistories = async () => {

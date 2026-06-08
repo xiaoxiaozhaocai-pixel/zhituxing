@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -53,6 +53,7 @@ export default function MyReportsPage() {
     if (user) {
       fetchReports();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentPage]);
 
   const fetchReports = async () => {
