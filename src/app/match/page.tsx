@@ -549,7 +549,7 @@ export default function MatchPage() {
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">解锁反向匹配</h3>
                 <p className="text-gray-500 text-sm mb-4">完成技能画像后，发现你被低估的好机会</p>
-                <Link href="/assessment">
+                <Link href="/growth">
                   <Button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700">
                     去完善技能画像
                   </Button>

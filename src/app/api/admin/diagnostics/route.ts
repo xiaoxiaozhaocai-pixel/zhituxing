@@ -77,8 +77,8 @@ async function testApiEndpoints(): Promise<TestResult[]> {
 async function testPageRoutes(): Promise<TestResult[]> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhituxing.tech';
   const routes = [
-    '/', '/login', '/register', '/jobs', '/career-planning', '/assistant',
-    '/assessment', '/match', '/skill-portrait', '/skills-graph', '/guide',
+    '/', '/login', '/register', '/jobs', '/growth', '/assistant',
+    '/match', '/skill-portrait', '/skills-graph', '/guide',
     '/faq', '/learning-path', '/membership', '/resources', '/contact',
     '/privacy', '/terms', '/feedback', '/search'
   ];

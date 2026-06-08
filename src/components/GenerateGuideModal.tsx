@@ -42,7 +42,7 @@ export default function GenerateGuideModal({ show, onClose, onContinue }: Genera
 
           {/* 按钮 */}
           <div className="space-y-3">
-            <Link href="/profile/info?from=/career-planning" onClick={onClose}>
+            <Link href="/profile/info?from=/growth" onClick={onClose}>
               <button className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-500/30">
                 完善信息后生成
               </button>

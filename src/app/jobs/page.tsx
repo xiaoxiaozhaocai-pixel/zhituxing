@@ -502,7 +502,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
           <span className="flex items-center gap-1">
             完善信息，精准度提升100%
           </span>
-          <Link href="/career-planning" className="underline hover:text-purple-200 font-medium flex items-center gap-1 ml-2">
+          <Link href="/growth" className="underline hover:text-purple-200 font-medium flex items-center gap-1 ml-2">
             生成规划 →
           </Link>
           <span className="text-purple-200">|</span>

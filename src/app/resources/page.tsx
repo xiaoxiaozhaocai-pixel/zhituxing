@@ -145,7 +145,7 @@ export default function ResourcesPage() {
             完善信息
           </Link>
           <span className="text-gray-300">|</span>
-          <Link href="/career-planning" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
+          <Link href="/growth" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
             立即生成
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -235,7 +235,7 @@ export default function ResourcesPage() {
             <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 mb-2">暂无相关资源</p>
             <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">换个分类看看，或生成职业规划获取个性化推荐</p>
-            <Link href="/career-planning">
+            <Link href="/growth">
               <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg px-6 py-5">
                 <Sparkles className="w-4 h-4 mr-2" />
                 去生成职业规划

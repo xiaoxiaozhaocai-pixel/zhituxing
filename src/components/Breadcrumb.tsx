@@ -13,8 +13,9 @@ interface BreadcrumbProps {
 const routeLabels: Record<string, string> = {
   '/': '首页',
   '/jobs': '职位',
-  '/career-planning': '职业规划',
-  '/assessment': '能力评估',
+  '/career-planning': '职业规划（已迁移）',
+  '/assessment': '能力评估（已迁移）',
+  '/growth': '我的成长',
   '/profile': '个人中心',
   '/profile/info': '个人信息',
   '/profile/invite': '邀请好友',

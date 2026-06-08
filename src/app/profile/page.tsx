@@ -750,7 +750,7 @@ function ReportsPanel({ userId }: { userId: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">我的报告</h2>
-        <Link href="/career-planning">
+        <Link href="/growth">
           <Button variant="outline" size="sm">生成新报告</Button>
         </Link>
       </div>
@@ -760,7 +760,7 @@ function ReportsPanel({ userId }: { userId: string }) {
           <CardContent className="py-12 text-center">
             <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 mb-4">还没有生成过职业规划报告</p>
-            <Link href="/career-planning">
+            <Link href="/growth">
               <Button className="bg-[#722ED1] hover:bg-[#6019c4]">去生成报告</Button>
             </Link>
           </CardContent>

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Compass, TrendingUp, Briefcase, Brain, CheckCircle2, ArrowRight,
+import { Compass, TrendingUp, Briefcase, CheckCircle2, ArrowRight,
   Sparkles, Building2, Mic, Search, Shield, Zap, FileText,
   MessageSquare } from 'lucide-react';
 
@@ -32,11 +32,11 @@ const painPoints = [
 
 const featureCards = [
   {
-    icon: <Compass className="w-5 h-5" />,
-    title: 'AI职业规划',
-    desc: '对话式诊断，找到你的方向',
-    href: '/career-planning',
-    grad: 'from-violet-500 to-purple-600',
+    icon: <TrendingUp className="w-5 h-5" />,
+    title: '我的成长',
+    desc: '职业规划、测评、评估一站查看',
+    href: '/growth',
+    grad: 'from-blue-500 to-cyan-500',
     featured: true,
   },
   {
@@ -52,13 +52,6 @@ const featureCards = [
     desc: '2万+真实岗位，27大行业',
     href: '/jobs',
     grad: 'from-emerald-500 to-teal-600',
-  },
-  {
-    icon: <Brain className="w-5 h-5" />,
-    title: '能力测评',
-    desc: '了解自己的技能短板',
-    href: '/assessment',
-    grad: 'from-orange-500 to-amber-500',
   },
   {
     icon: <Mic className="w-5 h-5" />,

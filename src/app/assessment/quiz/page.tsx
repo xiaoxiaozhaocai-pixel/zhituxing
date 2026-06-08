@@ -163,7 +163,7 @@ export default function QuizPage() {
               <RefreshCw className="w-4 h-4" />
               重新测评
             </Button>
-            <Link href="/assessment">
+            <Link href="/growth">
               <Button variant="outline" className="gap-2">
                 <BarChart3 className="w-4 h-4" />
                 查看历史测评

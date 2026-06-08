@@ -118,7 +118,7 @@ export default function MyReportsPage() {
               查看和管理您的职业规划报告
             </p>
           </div>
-          <Link href="/career-planning">
+          <Link href="/growth">
             <Button className="bg-[#722ED1] hover:bg-[#722ED1]/90">
               <Plus className="w-4 h-4 mr-2" />
               生成新规划
@@ -155,7 +155,7 @@ export default function MyReportsPage() {
                     <p className="text-gray-500 mb-8 max-w-md mx-auto">
                       30秒生成专属职业规划，基于你的专业、年级和兴趣，精准匹配最适合你的岗位
                     </p>
-                    <Link href="/career-planning">
+                    <Link href="/growth">
                       <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white px-8 py-6 text-lg font-bold shadow-lg shadow-purple-500/30">
                         <Sparkles className="w-5 h-5 mr-2" />
                         立即生成我的规划

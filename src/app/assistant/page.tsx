@@ -1216,7 +1216,7 @@ function AssistantContent() {
               无限次生成完整报告
             </span>
           </div>
-          <Link href="/career-planning" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
+          <Link href="/growth" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
             立即生成
             <ArrowRight className="w-4 h-4" />
           </Link>

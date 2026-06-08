@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, BarChart3, Route, Network, FileText, ChevronDown, Building2 } from 'lucide-react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, Route, Network, FileText, ChevronDown, Building2, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -12,13 +12,12 @@ const mainNavItems = [
   { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
   { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
   { name: 'AI助手', href: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
+  { name: '我的成长', href: '/growth', icon: <TrendingUp className="w-4 h-4" /> },
   { name: '简历优化', href: '/resume-optimize', icon: <FileText className="w-4 h-4" /> },
 ];
 
 const moreNavItems = [
   { name: '岗位匹配', href: '/match', icon: <Target className="w-4 h-4" /> },
-  { name: '能力测评', href: '/assessment', icon: <BarChart3 className="w-4 h-4" /> },
-  { name: 'AI职业规划', href: '/career-planning', icon: <Sparkles className="w-4 h-4" /> },
   { name: '技能画像', href: '/skill-portrait', icon: <Target className="w-4 h-4" /> },
   { name: '学习路径', href: '/learning-path', icon: <Route className="w-4 h-4" /> },
   { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-4 h-4" /> },

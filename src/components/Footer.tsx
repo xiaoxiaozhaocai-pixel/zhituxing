@@ -41,9 +41,8 @@ export default function Footer() {
             <h4 className="text-xs font-semibold text-white/50 uppercase tracking-widest mb-5">产品</h4>
             <ul className="space-y-3">
               {[
-                { name: 'AI职业规划', href: '/career-planning' },
+                { name: '我的成长', href: '/growth' },
                 { name: '岗位匹配', href: '/match' },
-                { name: '能力测评', href: '/assessment' },
                 { name: '简历优化', href: '/resume-optimize' },
                 { name: '技能图谱', href: '/skills-graph' },
               ].map((l) => (
