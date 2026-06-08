@@ -82,8 +82,8 @@ export interface MatchRequest {
 // ============================================================
 
 const WEIGHTS = {
-  skill: 0.35,
-  education: 0.15,
+  skill: 0.40,    // ↑ 从 0.35 提升：技能是核心区分维度
+  education: 0.10, // ↓ 从 0.15：无画像时默认值缺乏区分度
   major: 0.15,
   location: 0.15,
   experience: 0.10,

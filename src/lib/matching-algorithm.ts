@@ -166,11 +166,14 @@ export function calculateSkillMatch(
     }
   }
 
-  const matchScore = Math.round((matchedSkills.length / jobSkills.length) * 100);
+  // sqrt 平滑：避免少量匹配时分数过低（如 2/7 → 53 而非 29）
+  const ratio = matchedSkills.length / jobSkills.length;
+  const smoothedRatio = Math.sqrt(ratio);
+  const matchScore = Math.round(smoothedRatio * 100);
 
   const weightedScore =
     weighted && weightedDenominator > 0
-      ? Math.round((weightedNumerator / weightedDenominator) * 100)
+      ? Math.round(Math.sqrt(weightedNumerator / weightedDenominator) * 100)
       : undefined;
 
   return {
@@ -563,8 +566,11 @@ function findMatchingSkill(
   }
 
   // 2. 包含匹配（如 "Java" 匹配 "java开发"）
+  // 最短字符数阈值：避免 "ql"⊂"sql" 等短词误匹配
   for (const [key, skill] of userSkillMap) {
-    if (key.includes(normalizedReq) || normalizedReq.includes(key)) {
+    const shorter = key.length < normalizedReq.length ? key : normalizedReq;
+    // 短词（≤2字符）不触发包含匹配，避免 "ql"⊂"sql"、"c"⊂"c++" 误匹配
+    if (shorter.length > 2 && (key.includes(normalizedReq) || normalizedReq.includes(key))) {
       return skill;
     }
   }
