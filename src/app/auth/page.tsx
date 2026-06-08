@@ -98,8 +98,11 @@ function AuthContent() {
       const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
         ? redirectTo
         : '/';
-      router.push(safeRedirect);
-      router.refresh();
+      // 延迟 300ms 确保 Set-Cookie 被浏览器处理完毕
+      setTimeout(() => {
+        router.push(safeRedirect);
+        router.refresh();
+      }, 300);
     }
   }, [user, loginSuccess, router, redirectTo]);
 
