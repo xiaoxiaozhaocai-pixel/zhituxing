@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {useState, useEffect, useMemo, useCallback, Suspense} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -114,6 +114,7 @@ function Combobox({ options, value, onChange, placeholder = '请选择或输入.
         <button
           role="combobox"
           aria-expanded={open}
+          aria-controls="skills-listbox"
           className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-left hover:border-[#165DFF] focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition-colors bg-white"
         >
           <span className={value ? 'text-gray-900' : 'text-gray-400'}>
@@ -174,6 +175,7 @@ function SelectCombobox({ options, value, onChange, placeholder = '请选择...'
       <PopoverTrigger asChild>
         <button
           role="combobox"
+          aria-controls="levels-listbox"
           aria-expanded={open}
           className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-left hover:border-[#165DFF] focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition-colors bg-white"
         >
