@@ -34,7 +34,7 @@ BEGIN
     jd.education,
     jd.experience,
     jd.responsibilities,
-    jd.skills,
+    COALESCE(jd.hard_skills::text, '') || ' ' || COALESCE(jd.soft_skills::text, '') AS skills,
     1 - (jd.embedding <=> query_embedding) AS similarity
   FROM job_descriptions jd
   WHERE jd.status = 'parsed'
