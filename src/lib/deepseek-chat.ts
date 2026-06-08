@@ -138,12 +138,13 @@ export async function deepSeekChat(
  */
 export function createDeepSeekSSEStream(options: DeepSeekStreamOptions): ReadableStream {
   const encoder = new TextEncoder();
+  const { returnUsage, ...streamOptions } = options;
 
   return new ReadableStream({
     async start(controller) {
       try {
         await deepSeekChat({
-          ...options,
+          ...streamOptions,
           onChunk: (chunk) => {
             // 输出 Coze 兼容格式 {type:'text',content}，与 createCozeSSEStream 对齐
             // 前端按 parsed.type 解析，OpenAI 风格的 choices/delta 会被前端忽略

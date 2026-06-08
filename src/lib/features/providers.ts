@@ -13,9 +13,9 @@ interface CacheEntry {
 }
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
-const flagCache = new Map<FeatureFlag, CacheEntry>();
+const flagCache = new Map<string, CacheEntry>();
 
-function getCached(flag: FeatureFlag): boolean | undefined {
+function getCached(flag: string): boolean | undefined {
   const entry = flagCache.get(flag);
   if (entry && Date.now() < entry.expiresAt) {
     return entry.value;
@@ -24,14 +24,14 @@ function getCached(flag: FeatureFlag): boolean | undefined {
   return undefined;
 }
 
-function setCache(flag: FeatureFlag, value: boolean) {
+function setCache(flag: string, value: boolean) {
   flagCache.set(flag, { value, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
 // ============================================================
 // 环境变量读取（服务端 + 客户端）
 // ============================================================
-function getEnvOverride(flag: FeatureFlag): boolean | undefined {
+function getEnvOverride(flag: string): boolean | undefined {
   const config = FLAG_CONFIGS[flag];
   const envValue = typeof process !== 'undefined' ? process.env[config.envKey] : undefined;
   if (envValue !== undefined) {
@@ -43,7 +43,7 @@ function getEnvOverride(flag: FeatureFlag): boolean | undefined {
 // ============================================================
 // Supabase site_config 表读取
 // ============================================================
-async function getSupabaseValue(flag: FeatureFlag): Promise<boolean | undefined> {
+async function getSupabaseValue(flag: string): Promise<boolean | undefined> {
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -67,7 +67,7 @@ async function getSupabaseValue(flag: FeatureFlag): Promise<boolean | undefined>
  * 异步获取 Feature Flag 状态（服务端使用）
  * 优先级：环境变量 > 缓存 > Supabase site_config > 代码默认值
  */
-export async function isFeatureEnabled(flag: FeatureFlag): Promise<boolean> {
+export async function isFeatureEnabled(flag: string): Promise<boolean> {
   // 1. 环境变量（最高优先级）
   const envOverride = getEnvOverride(flag);
   if (envOverride !== undefined) return envOverride;
@@ -91,7 +91,7 @@ export async function isFeatureEnabled(flag: FeatureFlag): Promise<boolean> {
  * 同步获取 Feature Flag 状态（客户端/纯前端使用）
  * 仅读取环境变量和默认值，不查 Supabase
  */
-export function getClientFlag(flag: FeatureFlag): boolean {
+export function getClientFlag(flag: string): boolean {
   const envOverride = getEnvOverride(flag);
   if (envOverride !== undefined) return envOverride;
   return FLAG_CONFIGS[flag].defaultValue;
@@ -100,9 +100,9 @@ export function getClientFlag(flag: FeatureFlag): boolean {
 /**
  * 获取所有 Feature Flag 状态
  */
-export async function getAllFlags(): Promise<Record<FeatureFlag, boolean>> {
+export async function getAllFlags(): Promise<Record<string, boolean>> {
   const entries = await Promise.all(
-    Object.values(FeatureFlag).map(async (flag) => [flag, await isFeatureEnabled(flag)])
+    Object.keys(FLAG_CONFIGS).map(async (flag) => [flag, await isFeatureEnabled(flag)])
   );
-  return Object.fromEntries(entries) as Record<FeatureFlag, boolean>;
+  return Object.fromEntries(entries) as Record<string, boolean>;
 }

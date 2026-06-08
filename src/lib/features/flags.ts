@@ -169,3 +169,12 @@ export function getEnabledFlags(): FeatureFlag[] {
 }
 
 export default FEATURE_FLAGS;
+
+// FLAG_CONFIGS: 兼容 providers.ts 的环境变量覆盖配置
+export const FLAG_CONFIGS: Record<string, { envKey: string; defaultValue: boolean }> = 
+  Object.fromEntries(
+    Object.entries(FEATURE_FLAGS).map(([key, flag]) => [
+      key,
+      { envKey: `NEXT_PUBLIC_FLAG_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`, defaultValue: flag.enabled }
+    ])
+  );
