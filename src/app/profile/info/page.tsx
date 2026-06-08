@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback, Suspense } from 'react';
+import {useState, useEffect, useMemo, useCallback, Suspense} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,12 +22,10 @@ import {
 } from '@/components/ui/popover';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
-import {
-  ChevronLeft,
+import { ChevronLeft,
   ChevronRight,
   Check,
   ChevronsUpDown,
-  X,
   Loader2,
   Save,
   Sparkles,
@@ -35,14 +33,11 @@ import {
   Target,
   User,
   Briefcase,
-  MapPin,
   GraduationCap,
   Lightbulb,
-  AlertCircle,
-} from 'lucide-react';
+  AlertCircle } from 'lucide-react';
 import {
   parseSkillPortrait,
-  groupSkillsByCategory,
   convertToSaveFormat,
   PROFICIENCY_CONFIG,
   type SkillPortraitResult,
@@ -388,7 +383,7 @@ function ProfileInfoContent() {
   const { showToast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [_loading, _setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
   // 表单数据
@@ -424,7 +419,7 @@ function ProfileInfoContent() {
             }
           }
         }
-      } catch (error) {
+      } catch {
         console.log('获取岗位列表失败，使用默认选项');
       }
     };

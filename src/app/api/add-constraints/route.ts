@@ -6,7 +6,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 // 直接调用 Supabase REST API
-async function supabaseRpc(sql: string) {
+async function _supabaseRpc(sql: string) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/exec_sql`, {
     method: 'POST',
     headers: {
@@ -20,7 +20,7 @@ async function supabaseRpc(sql: string) {
 }
 
 // 直接执行 SQL（通过 Supabase 的 SQL endpoint）
-async function executeSql(sql: string) {
+async function _executeSql(sql: string) {
   // Supabase 提供了一个 SQL 执行端点
   const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
     method: 'POST',
@@ -40,7 +40,7 @@ async function executeSql(sql: string) {
 export async function GET() {
   try {
     // 方案1：创建约束函数并调用
-    const createFunctionSql = `
+    const _createFunctionSql = `
       CREATE OR REPLACE FUNCTION add_skills_constraints_v2()
       RETURNS TEXT
       LANGUAGE plpgsql

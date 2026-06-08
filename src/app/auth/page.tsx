@@ -1,8 +1,5 @@
 'use client';
 
-// 强制动态渲染，避免 ISR 缓存导致 "This page couldn't load" 间歇性崩溃
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -11,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2, Mail, Eye, EyeOff, Pencil, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+// fix: OTP verify → setLoginSuccess → trigger redirect useEffect
 
 // 步骤状态
 type Step = 'input' | 'password' | 'otp';
@@ -39,7 +37,7 @@ const getFriendlyError = (error: string): string => {
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, login, register, verifyOtp } = useAuth();
+  const { user, login, verifyOtp } = useAuth();
   
   // 步骤状态
   const [step, setStep] = useState<Step>('input');
@@ -55,7 +53,7 @@ function AuthContent() {
   
   // 注册相关
   const [nickname, setNickname] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
+  const [_inviteCode, setInviteCode] = useState('');
   
   // OTP相关
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
@@ -100,8 +98,11 @@ function AuthContent() {
       const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
         ? redirectTo
         : '/';
-      router.push(safeRedirect);
-      router.refresh();
+      // 延迟 300ms 确保 Set-Cookie 被浏览器处理完毕
+      setTimeout(() => {
+        router.push(safeRedirect);
+        router.refresh();
+      }, 300);
     }
   }, [user, loginSuccess, router, redirectTo]);
 
@@ -219,7 +220,7 @@ function AuthContent() {
       } else {
         setError(getFriendlyError(result.message));
       }
-    } catch (err) {
+    } catch {
       setError('登录失败，请稍后重试');
     }
     
@@ -246,13 +247,37 @@ function AuthContent() {
       const data = await response.json();
       
       if (data.success) {
-        setSuccess('验证码已发送到您的邮箱，请查收');
-        setStep('otp'); // 进入OTP验证步骤
-        setResendCountdown(60); // 启动60秒倒计时
+        // 🧪 测试模式：旁路验证码，自动完成 OTP 验证，无需用户输入
+        if (data.devBypassCode) {
+          setSuccess('测试模式：正在自动完成注册...');
+          const verifyRes = await fetch('/api/auth/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              token: data.devBypassCode,
+              type: 'magiclink',
+              flowType: 'signup',
+              password,
+              nickname: nickname || undefined
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            setSuccess('注册成功，正在跳转...');
+            setLoginSuccess(true);
+          } else {
+            setError(getFriendlyError(verifyData.error || '注册失败'));
+          }
+        } else {
+          setSuccess('验证码已发送到您的邮箱，请查收');
+          setStep('otp'); // 进入OTP验证步骤
+          setResendCountdown(60); // 启动60秒倒计时
+        }
       } else {
         setError(data.error || '发送验证码失败');
       }
-    } catch (err) {
+    } catch {
       setError('发送验证码失败，请稍后重试');
     }
     
@@ -298,10 +323,11 @@ function AuthContent() {
       
       if (data.success) {
         setSuccess('验证成功，正在跳转...');
+        setLoginSuccess(true);
       } else {
         setError(getFriendlyError(data.error || data.message));
       }
-    } catch (err) {
+    } catch {
       setError('验证失败，请稍后重试');
     }
     
@@ -316,7 +342,6 @@ function AuthContent() {
       }, 1000);
       return () => clearTimeout(timer);
     }
-    return;
   }, [resendCountdown]);
 
   // 重发验证码
@@ -340,7 +365,7 @@ function AuthContent() {
       } else {
         setError(data.error || '发送失败');
       }
-    } catch (err) {
+    } catch {
       setError('发送失败，请稍后重试');
     }
     
@@ -373,10 +398,11 @@ function AuthContent() {
             const result = await verifyOtp(email, otpValue);
             if (result.success) {
               setSuccess('验证成功，正在跳转...');
+              setLoginSuccess(true);
             } else {
               setError(getFriendlyError(result.message));
             }
-          } catch (err) {
+          } catch {
             setError('验证失败，请稍后重试');
           }
           setLoading(false);
@@ -396,7 +422,7 @@ function AuthContent() {
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
     const newDigits = [...otpDigits];
     for (let i = 0; i < pastedData.length; i++) {
-      newDigits[i] = pastedData[i]!;
+      newDigits[i] = pastedData[i];
     }
     setOtpDigits(newDigits);
     

@@ -67,12 +67,20 @@ export default function SkillsGraphPage() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set(activeRelations));
   const [zoom, setZoom] = useState(1);
+  const [layoutMode, setLayoutMode] = useState<'force' | 'circular' | 'hierarchy'>('force');
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [dragNode, setDragNode] = useState<string | null>(null);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
   // 力导向模拟状态
   const [simNodes, setSimNodes] = useState<SimNode[]>([]);
   const [simEdges, setSimEdges] = useState<SimEdge[]>([]);
   const animRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragState = useRef<{ node: string; startX: number; startY: number; nodeX: number; nodeY: number } | null>(null);
+  const panState = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+  const [searchFlash, setSearchFlash] = useState(false);
 
   // 埋点：页面浏览
   usePageView('skills_graph');
@@ -142,7 +150,7 @@ export default function SkillsGraphPage() {
     if (nodes.length === 0) return;
 
     const W = 800, H = 500;
-    const newNodes: SimNode[] = nodes.map((n, i) => ({
+    const newNodes: SimNode[] = nodes.map((n, _i) => ({
       name: n.name,
       x: W / 2 + (Math.random() - 0.5) * 200,
       y: H / 2 + (Math.random() - 0.5) * 200,
@@ -159,67 +167,118 @@ export default function SkillsGraphPage() {
       weight: e.weight,
     }));
 
-    // 简单力模拟迭代
-    const iterations = 120;
-    for (let iter = 0; iter < iterations; iter++) {
-      const alpha = 1 - iter / iterations;
-      // 斥力
-      for (let i = 0; i < newNodes.length; i++) {
-        for (let j = i + 1; j < newNodes.length; j++) {
-          const dx = newNodes[i]!.x - newNodes[j]!.x;
-          const dy = newNodes[i]!.y - newNodes[j]!.y;
+    // 根据布局模式计算节点位置
+    if (layoutMode === 'force') {
+      // 改进版力导向：300次迭代、自适应冷却、更大斥力
+      const iterations = 300;
+      const idealEdgeLen = 150;
+      for (let iter = 0; iter < iterations; iter++) {
+        // 自适应冷却：前期高速探索，后期精细调整
+        const progress = iter / iterations;
+        const alpha = progress < 0.4
+          ? 1 - progress * 0.5          // 0-40%: 1→0.8 快速扩散
+          : (1 - progress) * 0.5 / 0.6; // 40-100%: 0.5→0 精细收敛
+
+        // 斥力：节点间（加大到2000）
+        for (let i = 0; i < newNodes.length; i++) {
+          for (let j = i + 1; j < newNodes.length; j++) {
+            const a = newNodes[i]!, b = newNodes[j]!;
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const minDist = getNodeRadius(a) + getNodeRadius(b) + 16;
+            if (dist < minDist * 2) {
+              const force = (2000 * alpha) / Math.max(dist * dist, minDist * minDist);
+              const fx = (dx / dist) * force;
+              const fy = (dy / dist) * force;
+              a.vx += fx; a.vy += fy;
+              b.vx -= fx; b.vy -= fy;
+            }
+          }
+        }
+
+        // 引力：边（多级弹力）
+        for (const edge of newEdges) {
+          const src = newNodes.find((n) => n.name === edge.source);
+          const tgt = newNodes.find((n) => n.name === edge.target);
+          if (!src || !tgt) continue;
+          const dx = tgt.x - src.x;
+          const dy = tgt.y - src.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const force = (800 * alpha) / (dist * dist);
+          const targetLen = idealEdgeLen / Math.sqrt(edge.weight);
+          const force = (dist - targetLen) * 0.02 * alpha * edge.weight;
           const fx = (dx / dist) * force;
           const fy = (dy / dist) * force;
-          newNodes[i]!.vx += fx;
-          newNodes[i]!.vy += fy;
-          newNodes[j]!.vx -= fx;
-          newNodes[j]!.vy -= fy;
+          src.vx += fx; src.vy += fy;
+          tgt.vx -= fx; tgt.vy -= fy;
+        }
+
+        // 中心引力（加强）
+        for (const node of newNodes) {
+          node.vx += (W / 2 - node.x) * 0.003 * alpha;
+          node.vy += (H / 2 - node.y) * 0.003 * alpha;
+        }
+
+        // 速度衰减 + 位置更新
+        const decay = 0.65 + progress * 0.2; // 0.65→0.85 逐步放松阻尼
+        for (const node of newNodes) {
+          node.vx *= decay;
+          node.vy *= decay;
+          node.x += node.vx;
+          node.y += node.vy;
+          // 边界约束（留更大边距）
+          node.x = Math.max(50, Math.min(W - 50, node.x));
+          node.y = Math.max(50, Math.min(H - 50, node.y));
         }
       }
-      // 引力（边）
-      for (const edge of newEdges) {
-        const src = newNodes.find((n) => n.name === edge.source);
-        const tgt = newNodes.find((n) => n.name === edge.target);
-        if (!src || !tgt) continue;
-        const dx = tgt.x - src.x;
-        const dy = tgt.y - src.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const force = (dist - 120) * 0.03 * alpha * edge.weight;
-        const fx = (dx / dist) * force;
-        const fy = (dy / dist) * force;
-        src.vx += fx;
-        src.vy += fy;
-        tgt.vx -= fx;
-        tgt.vy -= fy;
-      }
-      // 中心引力
-      for (const node of newNodes) {
-        node.vx += (W / 2 - node.x) * 0.001 * alpha;
-        node.vy += (H / 2 - node.y) * 0.001 * alpha;
-      }
-      // 应用速度
-      for (const node of newNodes) {
-        node.vx *= 0.6;
-        node.vy *= 0.6;
-        node.x += node.vx;
-        node.y += node.vy;
-        node.x = Math.max(40, Math.min(W - 40, node.x));
-        node.y = Math.max(40, Math.min(H - 40, node.y));
-      }
+    } else if (layoutMode === 'circular') {
+      // 环形布局
+      const cx = W / 2, cy = H / 2;
+      const radius = Math.min(W, H) * 0.35;
+      const sorted = [...newNodes].sort((a, b) => b.relatedCount - a.relatedCount);
+      sorted.forEach((node, i) => {
+        const angle = (2 * Math.PI * i) / sorted.length - Math.PI / 2;
+        node.x = cx + radius * Math.cos(angle);
+        node.y = cy + radius * Math.sin(angle);
+        node.vx = 0; node.vy = 0;
+      });
+    } else if (layoutMode === 'hierarchy') {
+      // 层次聚类布局：按 relatedCount 分3层
+      const maxRel = Math.max(...newNodes.map(n => n.relatedCount), 1);
+      const layers: SimNode[][] = [[], [], []];
+      newNodes.forEach(node => {
+        const tier = node.relatedCount >= maxRel * 0.66 ? 0
+                   : node.relatedCount >= maxRel * 0.33 ? 1 : 2;
+        layers[tier]!.push(node);
+      });
+      const layerConfigs = [
+        { y: 100, xGap: W / (layers[0]!.length + 1) },
+        { y: 280, xGap: W / (layers[1]!.length + 1) },
+        { y: 420, xGap: W / (layers[2]!.length + 1) },
+      ];
+      layers.forEach((layer, li) => {
+        const cfg = layerConfigs[li]!;
+        layer.forEach((node, ni) => {
+          node.x = cfg.xGap * (ni + 1);
+          node.y = cfg.y;
+          node.vx = 0; node.vy = 0;
+        });
+      });
     }
 
     setSimNodes(newNodes);
     setSimEdges(newEdges);
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges, activeTypes]);
+  }, [nodes, edges, activeTypes, layoutMode]);
 
   const handleSearch = () => {
     if (searchSkill.trim()) {
       fetchRelations(searchSkill.trim());
       setSelectedNode(null);
+      // 搜索定位动画
+      setSearchFlash(true);
+      setTimeout(() => setSearchFlash(false), 1200);
     }
   };
 
@@ -246,7 +305,12 @@ export default function SkillsGraphPage() {
     ? edges.filter((e) => e.sourceSkill === selectedNode || e.targetSkill === selectedNode)
     : [];
 
-  const getNodeRadius = (n: SimNode) => Math.max(16, Math.min(32, 12 + n.relatedCount * 4));
+  // 节点半径按关联数缩放，范围18-40
+  const getNodeRadius = (n: SimNode) => {
+    const maxRel = Math.max(...simNodes.map(s => s.relatedCount), 1);
+    const ratio = n.relatedCount / maxRel;
+    return 18 + ratio * 22;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-24 pb-16">
@@ -337,7 +401,22 @@ export default function SkillsGraphPage() {
               <Card className="border-indigo-100 overflow-hidden">
                 <CardHeader className="pb-2 flex-row items-center justify-between">
                   <CardTitle className="text-indigo-700 text-base">技能关系网络</CardTitle>
-                  <div className="flex gap-1">
+                  <div className="flex items-center gap-2">
+                    <div className="flex rounded-lg border border-gray-200 p-0.5 mr-1">
+                      {(['force', 'circular', 'hierarchy'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          onClick={() => setLayoutMode(mode)}
+                          className={`px-2.5 py-1 text-xs rounded-md transition-all ${
+                            layoutMode === mode
+                              ? 'bg-indigo-500 text-white shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          {mode === 'force' ? '力导向' : mode === 'circular' ? '环形' : '层次'}
+                        </button>
+                      ))}
+                    </div>
                     <Button variant="ghost" size="sm" onClick={() => setZoom((z) => Math.min(2, z + 0.15))}>
                       <ZoomIn className="w-4 h-4" />
                     </Button>
@@ -348,9 +427,49 @@ export default function SkillsGraphPage() {
                 </CardHeader>
                 <CardContent ref={containerRef} className="overflow-auto" style={{ minHeight: 500 }}>
                   <svg
+                    ref={svgRef}
                     viewBox="0 0 800 500"
-                    className="w-full"
+                    className="w-full select-none"
                     style={{ transform: `scale(${zoom})`, transformOrigin: 'center', transition: 'transform 0.3s' }}
+                    onWheel={(e) => {
+                      e.preventDefault();
+                      setZoom((z) => Math.max(0.4, Math.min(2.5, z + (e.deltaY > 0 ? -0.1 : 0.1))));
+                    }}
+                    onMouseDown={(e) => {
+                      if (e.target === svgRef.current || (e.target as Element).tagName === 'svg') {
+                        panState.current = { startX: e.clientX, startY: e.clientY, panX: panOffset.x, panY: panOffset.y };
+                      }
+                    }}
+                    onMouseMove={(e) => {
+                      // 节点拖拽
+                      if (dragState.current) {
+                        const dx = (e.clientX - dragState.current.startX) / zoom;
+                        const dy = (e.clientY - dragState.current.startY) / zoom;
+                        setSimNodes((prev) => prev.map((n) =>
+                          n.name === dragState.current!.node
+                            ? { ...n, x: Math.max(50, Math.min(750, dragState.current!.nodeX + dx)), y: Math.max(50, Math.min(450, dragState.current!.nodeY + dy)) }
+                            : n
+                        ));
+                        setDragNode(dragState.current.node);
+                      }
+                      // 画布平移
+                      if (panState.current) {
+                        const dx = e.clientX - panState.current.startX;
+                        const dy = e.clientY - panState.current.startY;
+                        setPanOffset({ x: panState.current.panX + dx, y: panState.current.panY + dy });
+                      }
+                    }}
+                    onMouseUp={() => {
+                      dragState.current = null;
+                      panState.current = null;
+                      setDragNode(null);
+                    }}
+                    onMouseLeave={() => {
+                      dragState.current = null;
+                      panState.current = null;
+                      setDragNode(null);
+                      setHoveredNode(null);
+                    }}
                   >
                     {/* 边 */}
                     {filteredSimEdges.map((edge, i) => {
@@ -358,13 +477,16 @@ export default function SkillsGraphPage() {
                       const tgt = simNodes.find((n) => n.name === edge.target);
                       if (!src || !tgt) return null;
                       const isHighlighted = selectedNode && (edge.source === selectedNode || edge.target === selectedNode);
+                      const isHoverRelated = hoveredNode && (edge.source === hoveredNode || edge.target === hoveredNode);
+                      const isEdgeDimmed = (hoveredNode || selectedNode) && !isHighlighted && !isHoverRelated;
+                      const edgeWidth = Math.max(1, Math.min(4, 1 + edge.weight * 1.5));
                       return (
                         <g key={i}>
                           <line
                             x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
                             stroke={relationColors[edge.type] || '#999'}
-                            strokeWidth={isHighlighted ? 2.5 : 1.5}
-                            strokeOpacity={isHighlighted ? 1 : (selectedNode ? 0.15 : 0.5)}
+                            strokeWidth={isHighlighted || isHoverRelated ? edgeWidth + 1 : edgeWidth}
+                            strokeOpacity={isEdgeDimmed ? 0.08 : (isHighlighted || isHoverRelated ? 1 : 0.45)}
                             strokeDasharray={edge.type === 'prerequisite' ? '6,3' : edge.type === 'similar' ? '3,3' : 'none'}
                           />
                           {edge.type === 'prerequisite' && (
@@ -382,7 +504,7 @@ export default function SkillsGraphPage() {
                                 return `${px},${py} ${px - ax * s - ay * s},${py - ay * s + ax * s} ${px - ax * s + ay * s},${py - ay * s - ax * s}`;
                               })()}
                               fill={relationColors[edge.type]}
-                              fillOpacity={isHighlighted ? 1 : (selectedNode ? 0.15 : 0.5)}
+                              fillOpacity={isEdgeDimmed ? 0.08 : (isHighlighted || isHoverRelated ? 1 : 0.45)}
                             />
                           )}
                         </g>
@@ -393,25 +515,50 @@ export default function SkillsGraphPage() {
                     {simNodes.map((node) => {
                       const r = getNodeRadius(node);
                       const isSelected = selectedNode === node.name;
-                      const isConnected = selectedNode
+                      const relevantNode = selectedNode || hoveredNode;
+                      const isConnected = relevantNode
                         ? edges.some((e) =>
-                            (e.sourceSkill === selectedNode && e.targetSkill === node.name) ||
-                            (e.targetSkill === selectedNode && e.sourceSkill === node.name)
+                            (e.sourceSkill === relevantNode && e.targetSkill === node.name) ||
+                            (e.targetSkill === relevantNode && e.sourceSkill === node.name)
                           )
                         : true;
                       const isSearchMatch = searchSkill && node.name.toLowerCase().includes(searchSkill.toLowerCase());
+                      const needsFlash = isSearchMatch && searchFlash;
 
+                      const isHovered = hoveredNode === node.name;
+                      const isDimmed = (hoveredNode || selectedNode) && !isConnected && !isSelected && !isHovered;
                       return (
                         <g
                           key={node.name}
                           onClick={() => setSelectedNode(isSelected ? null : node.name)}
-                          className="cursor-pointer"
+                          onMouseEnter={() => setHoveredNode(node.name)}
+                          onMouseLeave={() => setHoveredNode(null)}
+                          onMouseDown={(e) => {
+                            if (e.button !== 0) return;
+                            e.stopPropagation();
+                            dragState.current = { node: node.name, startX: e.clientX, startY: e.clientY, nodeX: node.x, nodeY: node.y };
+                          }}
+                          style={{
+                            cursor: dragNode === node.name ? 'grabbing' : 'pointer',
+                            opacity: isDimmed ? 0.15 : 1,
+                            transition: 'opacity 0.2s',
+                          }}
                         >
+{needsFlash && (
+                            <circle
+                              cx={node.x} cy={node.y} r={r + 12}
+                              fill="none"
+                              stroke="#7C3AED"
+                              strokeWidth={2}
+                              className="animate-ping"
+                              style={{ animationDuration: '1s', animationIterationCount: '1' }}
+                            />
+                          )}
                           <circle
                             cx={node.x} cy={node.y} r={r}
-                            fill={isSelected ? '#4F46E5' : isSearchMatch ? '#7C3AED' : isConnected ? '#EEF2FF' : '#F9FAFB'}
-                            stroke={isSelected ? '#4338CA' : isSearchMatch ? '#7C3AED' : isConnected ? '#A5B4FC' : '#E5E7EB'}
-                            strokeWidth={isSelected ? 3 : isSearchMatch ? 2.5 : 1.5}
+                            fill={isSelected ? '#4F46E5' : isSearchMatch ? '#7C3AED' : isHovered ? '#6366F1' : isConnected ? '#EEF2FF' : '#F9FAFB'}
+                            stroke={isSelected ? '#4338CA' : isSearchMatch ? '#7C3AED' : isHovered ? '#4F46E5' : isConnected ? '#A5B4FC' : '#E5E7EB'}
+                            strokeWidth={isSelected || isHovered ? 3 : isSearchMatch ? 2.5 : 1.5}
                             style={{ transition: 'fill 0.2s, stroke 0.2s' }}
                           />
                           <text
@@ -419,7 +566,7 @@ export default function SkillsGraphPage() {
                             textAnchor="middle"
                             dominantBaseline="middle"
                             className="text-[10px] font-medium pointer-events-none"
-                            fill={isSelected || isSearchMatch ? '#fff' : '#374151'}
+                            fill={isSelected || isSearchMatch || isHovered ? '#fff' : '#374151'}
                           >
                             {node.name.length > 6 ? node.name.slice(0, 6) + '..' : node.name}
                           </text>

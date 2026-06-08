@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { syncAllPlatforms, syncSinglePlatform, getLastSyncStatus, getJobsStats, getPlatformStats } from '@/lib/jd-sync-service';
+import {syncAllPlatforms, getLastSyncStatus, getJobsStats, getPlatformStats} from '@/lib/jd-sync-service';
 
 // 触发全量同步
 export async function POST(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 获取同步状态和统计
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const lastSync = await getLastSyncStatus();
     const jobsStats = await getJobsStats();

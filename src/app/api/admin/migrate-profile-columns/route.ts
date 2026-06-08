@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
           console.log(`[migrate] RPC failed for ${migration.column}, trying alternative...`);
           
           // 检查列是否已存在
-          const checkSql = `SELECT column_name FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='${migration.column}';`;
+          const _checkSql = `SELECT column_name FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='${migration.column}';`;
           const { data: existingColumns, error: checkError } = await supabase
             .from('information_schema.columns')
             .select('column_name')
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证列是否添加成功
-    const { data: columns, error: verifyError } = await supabase
+    const { data: columns, error: _verifyError } = await supabase
       .from('information_schema.columns')
       .select('column_name, data_type')
       .eq('table_name', 'user_profiles')
@@ -131,7 +131,7 @@ ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS graduation_year VARCHAR(20);
 }
 
 // GET 方法：检查当前列状态
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     );
 
     // 查询 user_profiles 表的所有列
-    const { data: allColumns, error } = await supabase
+    const { data: allColumns, error: _error } = await supabase
       .from('information_schema.columns')
       .select('column_name, data_type, column_default')
       .eq('table_name', 'user_profiles')

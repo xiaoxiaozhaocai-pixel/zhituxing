@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, ArrowLeft, Plus, Edit, Trash2, Eye, Search, CheckCircle } from 'lucide-react';
+import {Loader2, ArrowLeft, Plus, Edit, Trash2, Eye, Search} from 'lucide-react';
 
 interface Referral {
   id: string;
@@ -27,7 +27,7 @@ interface Referral {
 }
 
 export default function AdminReferralsPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user: _user, isAuthenticated } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   if (_authCheck) return _authCheck;
   try {
     // 用户统计（user_profiles）
-    const { count: totalUsers, data: users } = await supabase
+    const { count: totalUsers, data: _users } = await supabase
       .from('user_profiles')
       .select('user_id, created_at, membership_type', { count: 'exact' });
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .from('job_descriptions')
       .select('id', { count: 'exact', head: true });
 
-    const { count: pendingJds } = await supabase
+    const { count: _pendingJds } = await supabase
       .from('job_descriptions')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending');

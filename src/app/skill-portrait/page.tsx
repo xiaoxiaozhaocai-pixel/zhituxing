@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Label } from '@/components/ui/label';
 import {
   Command,
@@ -23,8 +23,7 @@ import {
 } from '@/components/ui/popover';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
-import {
-  ChevronLeft,
+import { ChevronLeft,
   ChevronRight,
   Check,
   ChevronsUpDown,
@@ -35,16 +34,13 @@ import {
   Target,
   User,
   Briefcase,
-  MapPin,
   GraduationCap,
   Lightbulb,
   AlertCircle,
   Lock,
   LogIn,
   Calendar,
-  TrendingUp,
-  AlertTriangle,
-} from 'lucide-react';
+  AlertTriangle } from 'lucide-react';
 import {
   parseSkillPortrait,
   convertToSaveFormat,
@@ -178,7 +174,7 @@ function AutumnRecruitProgressBar() {
 
 // 技能等级转数字（用于计算差距）
 const levelToNumber: Record<ProficiencyLevel, number> = { '了解': 1, '熟悉': 2, '熟练': 3, '精通': 4 };
-const numberToLevel = ['-', '了解', '熟悉', '熟练', '精通'];
+const _numberToLevel = ['-', '了解', '熟悉', '熟练', '精通'];
 
 // 目标岗位差距分析组件
 function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { name: string; level: ProficiencyLevel }[]; hasSkillPortrait: boolean }) {

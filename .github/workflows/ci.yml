@@ -31,15 +31,69 @@ jobs:
         run: pnpm tsc --noEmit
 
       - name: Lint
-        run: pnpm lint || true
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test:ci
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://fake.supabase.co' }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://fake.zeabur.app' }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_ENABLED: "false"
+
+      - name: Smoke test (L7)
+        run: |
+          PORT=3333 pnpm start &
+          SERVER_PID=$!
+          sleep 5
+          bash scripts/smoke-test.sh http://localhost:3333 && echo "L7 PASS" || { kill $SERVER_PID 2>/dev/null; echo "L7 FAIL"; exit 1; }
+          kill $SERVER_PID 2>/dev/null
+
+
+  e2e:
+    name: E2E (Playwright)
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
 
       - name: Build
         run: pnpm build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://fake.supabase.co
           NEXT_PUBLIC_SITE_URL: https://fake.zeabur.app
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_ENABLED: "false"
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload screenshots (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: test-results/
 
   codeql:
     name: CodeQL Analysis

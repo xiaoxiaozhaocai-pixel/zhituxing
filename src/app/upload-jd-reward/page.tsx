@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -47,7 +47,7 @@ export default function UploadJdRewardPage() {
   const [listLoading, setListLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'upload' | 'history'>('upload');
-  const [showTextInput, setShowTextInput] = useState(false);
+  const [_showTextInput, setShowTextInput] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   
   // 表单状态

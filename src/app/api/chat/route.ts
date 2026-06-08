@@ -38,10 +38,11 @@ import {
   needsCompression,
 } from '@/lib/context-compression';
 
-import { DISPATCH_CARDS, DISPATCH_API_MAP, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAMES } from './config';
+import { DISPATCH_CARDS, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAMES } from './config';
 import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES } from './prompts';
 import { prepareChatContext } from './chat-context';
 import { saveChatHistory } from './chat-history';
+import { runGuetFlywheel } from './guet-flywheel';
 
 
 export const runtime = 'nodejs';
@@ -55,7 +56,6 @@ function selectBotId(botType?: string): string {
   if (botType === 'decision') return process.env.COZE_BOT_DECISION || '';
   if (botType === 'career') return process.env.COZE_BOT_CAREER_PLANNING || '';
   if (botType === 'assessment') return process.env.COZE_BOT_ASSESSMENT || process.env.COZE_BOT_CAPABILITY || '';
-  if (botType === 'competency') return process.env.COZE_BOT_COMPETENCY || '';
   if (botType === 'xiaozhi') return process.env.COZE_BOT_XIAOZHI || '';
   return process.env.COZE_BOT_JD_ASSISTANT || '';
 }
@@ -145,25 +145,9 @@ function getFallbackResponse(botType?: string, message?: string): string {
     if (botType === 'xiaozhi' || msgLower.includes('小职')) {
     return `嗨～我是小职，你的AI求职伙伴！✨
 
-我可以陪你聊天、帮你改简历、模拟面试、做职业规划、评估胜任力……
+我可以陪你聊天、帮你改简历、模拟面试、做职业规划、做能力诊断……
 
 💬 有什么想聊的？或者直接告诉我你需要什么帮助～`;
-  }
-
-if (botType === 'competency' || msgLower.includes('胜任力')) {
-    return `您好！我是胜任力评估助手（会员专属）。
-
-请告诉我：
-
-🎯 **目标岗位**和**个人背景**
-
-📊 **我能帮您评估：**
-• 岗位胜任力模型匹配
-• 核心能力差距分析
-• 可视化胜任力雷达图
-• 针对性提升建议
-
-请提供信息，开始胜任力评估！`;
   }
 
   return `👋 你好呀！我是小职，你的AI求职伙伴～
@@ -179,99 +163,6 @@ if (botType === 'competency' || msgLower.includes('胜任力')) {
 📚 覆盖互联网/金融/制造/教育/医疗等15+主流行业
 
 请告诉我您的需求！`;
-}
-
-/**
- * 代理转发到专业智能体 API，注入 dispatch + conversation_id 事件
- * 同时收集 fullResponse 用于聊天历史存储
- */
-async function proxySpecializedApiStream(
-  apiPath: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body: Record<string, any>,
-  request: NextRequest,
-  effectiveConversationId: string,
-  resolvedBotType: string,
-): Promise<{ stream: ReadableStream; fullResponse: string }> {
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
-  
-  // 构建内部 API URL
-  const url = new URL(apiPath, request.url);
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  const cookie = request.headers.get('cookie');
-  if (cookie) headers['Cookie'] = cookie;
-  
-  console.log(`[chat] Forwarding to specialized API: ${url.toString()}`);
-  
-  const apiResponse = await fetch(url.toString(), {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  });
-  
-  if (!apiResponse.ok || !apiResponse.body) {
-    throw new Error(`Specialized API ${apiPath} returned ${apiResponse.status}`);
-  }
-  
-  let fullResponse = '';
-  const reader = apiResponse.body.getReader();
-  
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          
-          for (const line of lines) {
-            // 过滤专业 API 自己的结束标记 {type:'done'} 和 [DONE]
-            if (line.includes('[DONE]') || line.includes('"type":"done"')) continue;
-            
-            // 收集 fullResponse
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6));
-                const content = data?.content || data?.choices?.[0]?.delta?.content;
-                if (content) fullResponse += content;
-              } catch { /* non-JSON SSE data */ }
-            }
-            
-            if (line.trim()) {
-              controller.enqueue(encoder.encode(line + '\n'));
-            }
-          }
-        }
-        
-        // 流结束 — 注入 conversation_id
-        const convEvent = `event: conversation_id\ndata: ${JSON.stringify({ conversation_id: effectiveConversationId })}\n\n`;
-        controller.enqueue(encoder.encode(convEvent));
-        
-        // 注入 dispatch 事件
-        const card = DISPATCH_CARDS[resolvedBotType];
-        if (card) {
-          const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
-            intent: resolvedBotType,
-            ...card,
-          })}\n\n`;
-          controller.enqueue(encoder.encode(dispatchEvent));
-          console.log(`[xiaozhi] Dispatch event sent (deep): intent=${resolvedBotType}`);
-        }
-        
-        // [DONE]
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
-      } catch (err) {
-        console.error('[chat] Proxy stream error:', err);
-        controller.error(err);
-      }
-    }
-  });
-  
-  return { stream, fullResponse };
 }
 
 // SSE 流式响应头
@@ -295,40 +186,7 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
     // 全智能体调用链：每条链 = 当前 botType ← 上游产物
     // ================================================================
 
-    if (botType === 'competency') {
-      // 胜任力评估 ← 职业规划 + 能力测评
-      const { data: plans } = await supabase
-        .from('career_plans')
-        .select('plan_data, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      
-      if (plans && plans.length > 0 && plans[0]!.plan_data) {
-        const plan = plans[0]!.plan_data;
-        const planSummary = typeof plan === 'string' 
-          ? plan 
-          : JSON.stringify(plan).slice(0, 1000);
-        parts.push(`【上游职业规划结果】\n${planSummary}`);
-      }
-
-      // 胜任力 ← 能力测评
-      const { data: assessments } = await supabase
-        .from('assessment_results')
-        .select('result_data, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      
-      if (assessments && assessments.length > 0 && assessments[0]!.result_data) {
-        const ass = assessments[0]!.result_data;
-        const assSummary = typeof ass === 'string'
-          ? ass
-          : JSON.stringify(ass).slice(0, 1000);
-        parts.push(`【上游能力测评结果】\n${assSummary}`);
-      }
-
-    } else if (botType === 'interview') {
+    if (botType === 'interview') {
       // 模拟面试 ← 简历优化 + JD分析
       const { data: resumes } = await supabase
         .from('resume_optimizations')
@@ -411,7 +269,7 @@ async function getUpstreamArtifacts(userId: string, botType: string): Promise<st
       }
 
     } else if (botType === 'decision') {
-      // 考研就业决策 ← 能力测评 + 胜任力评估 + 职业规划
+      // 考研就业决策 ← 能力测评 + 能力诊断 + 职业规划
       const { data: assessments } = await supabase
         .from('assessment_results')
         .select('result_data, created_at')
@@ -524,7 +382,13 @@ export async function POST(request: NextRequest) {
     // ============================================================
     // 使用统一的认证函数，不再信任 x-user-id header
     // 漏洞修复：之前允许 x-user-id 绕过登录检查是严重的安全漏洞
-    const accessToken = parseAccessTokenFromCookie(request.headers) || request.cookies.get('sb-access-token')?.value || null;
+    const authBearer = request.headers.get('authorization')?.startsWith('Bearer ')
+      ? request.headers.get('authorization')!.slice(7)
+      : null;
+    const accessToken = authBearer
+      || parseAccessTokenFromCookie(request.headers)
+      || request.cookies.get('sb-access-token')?.value
+      || null;
     
     if (!accessToken) {
       return jsonError(ErrorCode.UNAUTHORIZED, '请先登录');
@@ -533,7 +397,7 @@ export async function POST(request: NextRequest) {
     // 契约化：用 zod 校验请求体
     const parsed = await parseRequestBody(request, ChatRequestSchema);
     if (!parsed.ok) return parsed.response;
-    const { message, botType } = parsed.data;
+    const { message, botType, jobId } = parsed.data;
     // conversationId 允许 null（前端会显式传 null），统一收敛成 undefined
     const conversationId = parsed.data.conversationId ?? undefined;
 
@@ -618,19 +482,44 @@ export async function POST(request: NextRequest) {
       console.log('[chat] User info not found but token exists, treating as free user');
     }
 
-    // 获取用户个人信息上下文
+    // ============================================================
+    // 获取用户个人信息上下文 + 上游智能体产物（仅首次消息注入，避免重复）
+    // 首次消息判断：无 conversationId 即新会话
+    // ============================================================
     let userContext = '';
-    if (userId) {
-      userContext = await getUserProfileContext(userId);
+    if (userId && !conversationId) {
+      const profileCtx = await getUserProfileContext(userId);
       
-      // ============================================================
-      // 智能体调用链：下游自动消费上游产物
-      // 根据当前 botType，自动查询相关的上游智能体产物并注入上下文
-      // ============================================================
+      // 上游智能体调用链
       const upstreamArtifacts = await getUpstreamArtifacts(userId, effectiveBotType);
-      if (upstreamArtifacts) {
-        userContext += '\n\n' + upstreamArtifacts;
+      
+      const contextParts: string[] = [];
+      if (profileCtx) contextParts.push(profileCtx);
+      if (upstreamArtifacts) contextParts.push(upstreamArtifacts);
+      
+      // 岗位百科深度优化：携带岗位数据
+      if (jobId) {
+        try {
+          const supabase = getSupabaseAdmin();
+          const { data: job } = await supabase
+            .from('job_descriptions')
+            .select('*')
+            .eq('id', jobId)
+            .single();
+          if (job) {
+            contextParts.push(`\n【待分析岗位信息】\n岗位名称：${job.job_title || ''}\n行业：${job.industry || ''}\n城市：${job.city || ''}\n薪资：${job.salary_range || ''}\n学历要求：${job.education || ''}\n经验要求：${job.experience || ''}\n是否应届友好：${job.fresh_graduate_friendly ? '是' : '否'}\n技能要求：${Array.isArray(job.hard_skills) ? job.hard_skills.join('、') : ''}\n软技能要求：${Array.isArray(job.soft_skills) ? job.soft_skills.join('、') : ''}\n岗位职责：\n${(job.responsibilities || job.raw_jd || '').slice(0, 3000)}\n---`);
+          }
+        } catch (e) {
+          console.error('[chat] 获取岗位数据失败:', e);
+        }
       }
+      
+      if (contextParts.length > 0) {
+        userContext = `【系统指令：以下是你需要了解的背景信息，请务必基于这些信息回答用户问题，不要重复询问用户已知的个人信息和前置分析结论】\n\n${contextParts.join('\n')}\n\n---\n`;
+      }
+    } else if (userId && conversationId) {
+      // 后续消息：不重复注入用户画像和上游产物，减少 token 消耗和干扰
+      console.log('[chat] 已有 conversationId，跳过上下文注入');
     }
 
     // 检查配额（仅当 userId 存在时）
@@ -666,6 +555,7 @@ export async function POST(request: NextRequest) {
         ['career', ['规划', '职业规划', '方向', '前景', '迷茫', '适合', '发展', '路径', '成长', '晋升']],
         ['assessment', ['测评', '评估', '测试', '水平', '能力', '做题', '题目', '考核', '测一下', '水平测试']],
         ['competency', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
+        ['course', ['课程', '教我', '上课', '讲一下', '教一下', '咋学', '怎么学', '入门教程']],
         ['jobs', ['岗位', '招聘', '职位', '求职', '找工作', '薪资', '工资', 'JD', '人资', 'hr', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招']],
       ];
       
@@ -700,47 +590,9 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================
-    // 深度调度：命中专业意图且有独立SSE API时，转发到专业智能体
-    // 被代理的 API 自己处理 RAG + Specialized Prompt，不再走下方 DeepSeek 通用路径
+    // 统一 DeepSeek + RAG 路径 — 所有智能体走这一条链路
+    // userContext 已在上面统一注入，不再需要独立 API 转发
     // ============================================================
-    if (effectiveBotType === 'xiaozhi' && useVoiceWrapper && DISPATCH_API_MAP[resolvedBotType]) {
-      const deepConvId = conversationId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-      const apiPath = DISPATCH_API_MAP[resolvedBotType];
-      
-      console.log(`[chat] Deep dispatch: intent=${resolvedBotType} → ${apiPath}`);
-      
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const apiBody: Record<string, any> = { message, conversationId: deepConvId };
-        const { stream: proxiedStream, fullResponse } = await proxySpecializedApiStream(
-          apiPath!, apiBody, request, deepConvId, resolvedBotType,
-        );
-        
-        // 异步保存聊天历史（不阻塞首字节）
-        if (fullResponse && userId) {
-          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-          const esc = (s: string) => (s || '').replace(/'/g, "''");
-          const insertSql = `
-            INSERT INTO public.chat_history (conversation_id, user_id, role, content, bot_type) VALUES
-            ('${esc(deepConvId)}', '${esc(userId)}', 'user', '${esc(message)}', '${esc(effectiveBotType)}'),
-            ('${esc(deepConvId)}', '${esc(userId)}', 'assistant', '${esc(fullResponse)}', '${esc(effectiveBotType)}');
-          `;
-          fetch(`${supabaseUrl}/rest/v1/rpc/exec`, {
-            method: 'POST',
-            headers: { 'apikey': supabaseKey || '', 'Authorization': `Bearer ${supabaseKey || ''}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sql: insertSql }),
-          }).catch(e => console.error('[chat] Deep dispatch history save error:', e));
-        }
-        
-        return new Response(proxiedStream, { headers: SSE_HEADERS });
-      } catch (err) {
-        console.error('[chat] Deep dispatch failed, falling back to prompt-based:', err);
-        // 回退到下方通用 DeepSeek + RAG 路径
-        useVoiceWrapper = false;
-        resolvedBotType = 'xiaozhi_chat';
-      }
-    }
 
     if (USE_DEEPSEEK) {
       try {
@@ -761,7 +613,7 @@ export async function POST(request: NextRequest) {
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
                 keywords.jobTitle ? { field: 'job_title', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ].filter(Boolean) as any, 10, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city')
+              ].filter(Boolean) as any, 40, 'job_title,industry,responsibilities,hard_skills,soft_skills,salary_range,city')
             : [],
           
           allowedTables!.includes('career_paths')
@@ -786,7 +638,9 @@ export async function POST(request: NextRequest) {
             : [],
           
           allowedTables!.includes('guet_knowledge')
-            ? querySupabase('guet_knowledge', [], 20, '*')
+            ? querySupabase('guet_knowledge',
+                keywords.keywords?.length ? keywords.keywords.slice(0, 3).map(kw => ({ field: 'content', operator: 'ilike' as const, value: kw })) : [],
+                keywords.keywords?.length ? 10 : 20, '*')
             : [],
         ]);
         
@@ -824,6 +678,11 @@ export async function POST(request: NextRequest) {
           basePrompt = SYSTEM_PROMPTS.xiaozhi_wrapper! + (SYSTEM_PROMPTS[actualBotType]! || SYSTEM_PROMPTS.career!);
         } else {
           basePrompt = SYSTEM_PROMPTS[actualBotType] || SYSTEM_PROMPTS.career!;
+        }
+        
+        // 注入用户上下文到 system prompt（所有智能体共享）
+        if (userContext) {
+          basePrompt = `【用户背景信息 — 平台自动注入，请直接使用，不要重新询问】\n${userContext}\n\n---\n\n${basePrompt}`;
         }
         
         // ============================================================
@@ -960,6 +819,13 @@ export async function POST(request: NextRequest) {
               // 发送保存结果事件
               const saveEvent = `event: save_result\ndata: ${JSON.stringify({ result: saveResult, convId: effectiveConversationId })}\n\n`;
               controller.enqueue(encoder.encode(saveEvent));
+
+              // 桂电知识飞轮：fire-and-forget（不阻塞响应）
+              runGuetFlywheel({
+                userMessage: message,
+                assistantResponse: fullResponse,
+                botType: effectiveBotType || '',
+              }).catch(e => console.error('[chat] Flywheel error:', e));
             } catch (err) {
               console.error('[chat] Stream wrapper error:', err);
               // 超时时发送友好降级消息
@@ -974,7 +840,7 @@ export async function POST(request: NextRequest) {
                   });
                   controller.enqueue(encoder.encode('data: ' + degradeMsg + '\n\n'));
                   controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-                } catch (e) { /* best effort */ }
+                } catch { /* best effort */ }
               }
             } finally {
               clearTimeout(timeoutId);

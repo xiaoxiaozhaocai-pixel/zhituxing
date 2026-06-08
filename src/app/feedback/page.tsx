@@ -77,7 +77,7 @@ export default function FeedbackPage() {
       } else {
         setError(data.error || '提交失败，请稍后重试');
       }
-    } catch (err) {
+    } catch {
       setError('网络异常，请稍后重试');
     } finally {
       setSubmitting(false);

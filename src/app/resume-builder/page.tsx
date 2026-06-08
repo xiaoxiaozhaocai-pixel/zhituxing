@@ -35,7 +35,7 @@ export default function ResumeBuilderPage() {
   const [resume, setResume] = useState<ResumeSections>(emptyResume);
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('preview');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [resumeId, setResumeId] = useState<number | null>(null);
+  const [_resumeId, setResumeId] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const resumeRef = useRef<HTMLDivElement>(null);

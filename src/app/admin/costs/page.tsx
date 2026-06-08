@@ -55,7 +55,7 @@ function CostTrendChart({ data }: { data: DailyCostItem[] }) {
 
   const labelInterval = Math.max(1, Math.floor(data.length / 12));
 
-  const costPoints = data.map((d, i) => `${toX(i)},${toY(d.estCost)}`);
+  const _costPoints = data.map((d, i) => `${toX(i)},${toY(d.estCost)}`);
   const chatPoints = data.map((d, i) => `${toX(i)},${toY(d.chats * 0.001)}`); // 缩放到大致同量级
 
   return (

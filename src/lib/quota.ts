@@ -96,16 +96,17 @@ export async function getUserQuota(userId: string): Promise<UserQuota | null> {
   const quota = await getUserQuotaFromDb(userId);
   
   if (!quota) {
+    const futureDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     return {
       monthly_quota: 10,
-      quota_reset_time: null,
+      quota_reset_time: futureDate,
       member_type: profile.userType,
       member_expire_time: profile.memberExpiresAt,
       used_quota: 0,
       interview_quota: 3,
-      interview_quota_reset_time: null,
+      interview_quota_reset_time: futureDate,
       assessment_quota: 1,
-      assessment_quota_reset_time: null
+      assessment_quota_reset_time: futureDate
     };
   }
   
@@ -177,7 +178,7 @@ export async function checkFeatureAccess(
 
 export async function deductQuota(
   userId: string,
-  feature: FeatureType
+  _feature: FeatureType
 ): Promise<{ success: boolean; reason?: string; remaining?: number }> {
   const supabase = getSupabaseAdmin();
   const quota = await getUserQuota(userId);

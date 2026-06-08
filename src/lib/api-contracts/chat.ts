@@ -42,5 +42,6 @@ export const ChatRequestSchema = z.object({
   message: z.string(),  // 空串/超长由 route 内安全检查走友好提示 SSE，不在 zod 层拦截
   botType: z.string().optional(),
   conversationId: z.string().nullable().optional(),
+  jobId: z.string().nullable().optional(),  // 岗位百科深度优化跳转时携带
 });
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;

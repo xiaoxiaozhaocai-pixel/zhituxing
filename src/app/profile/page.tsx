@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
+import { useMembership } from '@/contexts/MembershipContext';
 import type { AuthUser, QuotaInfo } from '@/hooks/useAuth';
-import type { UserProfile, NotificationItem, FavoriteItem, ReportItem } from '@/lib/types';
+import type {NotificationItem, FavoriteItem, ReportItem} from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
-import {
-  Bell,
+import { Bell,
   Crown,
   FileText,
   Heart,
@@ -25,24 +25,20 @@ import {
   DollarSign,
   Trash2,
   CheckCircle,
-  Share2,
   Copy,
   Gift,
   Calendar,
   Sparkles,
-  X,
   AlertCircle,
   Pencil,
   Smartphone,
   Mail,
-  Check,
   Bookmark,
   Target,
   Briefcase,
   Brain,
   ArrowRight,
-  FolderOpen,
-} from 'lucide-react';
+  FolderOpen } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 import GrowthCompanionCard from '@/components/GrowthCompanionCard';
 import GrowthTimeline from '@/components/GrowthTimeline';
@@ -360,7 +356,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
             })}
           </div>
           <div className="mt-4 pt-3 border-t">
-            <Link href="/onboarding">
+            <Link href="/guide">
               <Button variant="outline" size="sm" className="w-full text-xs">
                 补充更多信息
               </Button>
@@ -624,7 +620,8 @@ function MessagesPanel({ userId }: { userId: string }) {
 }
 
 // 会员面板组件
-function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | null }) {
+function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
+  const { isMember } = useMembership();
   const memberBenefits = [
     '无限次AI职业规划',
     '无限次AI模拟面试',
@@ -636,7 +633,7 @@ function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | n
 
   const getMemberStatus = () => {
     if (quota?.is_lifetime_member) return { label: '终身会员', color: 'bg-gradient-to-r from-purple-500 to-pink-500' };
-    if (quota?.is_member) return { label: '月度会员', color: 'bg-gradient-to-r from-orange-500 to-yellow-500' };
+    if (isMember) return { label: '月度会员', color: 'bg-gradient-to-r from-orange-500 to-yellow-500' };
     return { label: '普通用户', color: 'bg-gray-400' };
   };
 
@@ -668,7 +665,7 @@ function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | n
         </CardContent>
       </Card>
 
-      {!quota?.is_member && !quota?.is_lifetime_member && (
+      {!isMember && !quota?.is_lifetime_member && (
         <Card className="border-2 border-orange-200 bg-orange-50">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -1294,7 +1291,7 @@ function ProfileContent() {
       case 'messages':
         return <MessagesPanel userId={user.id} />;
       case 'membership':
-        return <MembershipPanel user={user} quota={quota} />;
+        return <MembershipPanel quota={quota} />;
       case 'reports':
         return <ReportsPanel userId={user.id} />;
       case 'growth':

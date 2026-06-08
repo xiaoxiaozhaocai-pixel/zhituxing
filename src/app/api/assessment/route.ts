@@ -14,7 +14,6 @@ import {
   extractKeywords,
   querySupabase,
   buildRAGContext,
-  createDeepSeekRAGStream,
 } from '@/lib/rag-utils';
 
 const supabase = getSupabaseAdmin();
@@ -475,7 +474,7 @@ ${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ""}
 - 不同人的测评结果必须有明显差异，不要所有人都给70-80分的安全分数`;
 
         // 5. 构建 DeepSeek 消息列表
-        const messages = [
+        const _messages = [
           { role: 'system' as const, content: systemPrompt },
           ...(history || []).filter((m: { role: string }) => m.role !== 'system'),
           { role: 'user' as const, content: userMessage },
@@ -503,7 +502,7 @@ ${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ""}
     // 1. 用户验证
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
-    const userType = userInfo?.userType || 'free';
+    const _userType = userInfo?.userType || 'free';
 
     // 2. 构建用户上下文
     let userContext = '';
@@ -531,7 +530,7 @@ ${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ""}
     }
 
     // 5. 生成 session_id
-    const finalSessionId = sessionId || `assessment_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const _finalSessionId = sessionId || `assessment_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     // 6. 调用 Workflow stream_run API
     const cozeResponse = await callWorkflowStreamApi({

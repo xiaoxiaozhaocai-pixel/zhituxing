@@ -5,10 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  X,
+import { X,
   Upload,
-  FileSpreadsheet,
   CheckCircle,
   XCircle,
   AlertTriangle,
@@ -18,9 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit3,
-  RefreshCw
-} from 'lucide-react';
-import { loadXLSX } from '@/lib/dynamic-imports';
+  RefreshCw } from 'lucide-react';
+import { loadExcelJS } from '@/lib/dynamic-imports';
 
 interface JDRow {
   id: string;
@@ -53,7 +50,7 @@ interface BatchImportModalProps {
 }
 
 // 模板字段定义
-const TEMPLATE_FIELDS = [
+const _TEMPLATE_FIELDS = [
   { key: 'jobName', label: '岗位名称', required: true, example: '如：HRBP（校招）' },
   { key: 'companyName', label: '企业名称', required: true, example: '如：腾讯' },
   { key: 'city', label: '城市', required: true, example: '如：深圳/桂林' },
@@ -69,7 +66,7 @@ const COMPANY_TYPES = ['国企', '民企', '上市公司', '外企', '事业单�
 
 export default function BatchImportModal({ show, onClose, onSuccess }: BatchImportModalProps) {
   const [step, setStep] = useState(1);
-  const [file, setFile] = useState<File | null>(null);
+  const [_file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<JDRow[]>([]);
   const [stats, setStats] = useState({ total: 0, valid: 0, error: 0, duplicate: 0 });
   const [duplicateOption, setDuplicateOption] = useState<'skip' | 'overwrite' | 'ask'>('skip');
@@ -104,12 +101,13 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       ['HRBP（校招）', '腾讯', '深圳', '12', '20', '互联网', '上市公司', '负责校园招聘...', '是'],
       ['产品经理', '阿里巴巴', '杭州', '15', '30', '互联网', '上市公司', '负责产品规划...', '是'],
     ];
-    // 动态加载xlsx（~300KB，按需加载）
-    const XLSX = await loadXLSX();
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'JD导入模板');
-    XLSX.writeFile(wb, 'JD批量导入模板.xlsx');
+    // 动态加载exceljs（按需加载）
+    const { ExcelJS, downloadBuffer } = await loadExcelJS();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('JD导入模板');
+    wsData.forEach((row: string[]) => ws.addRow(row));
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadBuffer(buffer as ArrayBuffer, 'JD批量导入模板.xlsx');
   };
 
   // 处理文件上传
@@ -157,31 +155,38 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
     reader.onload = async (e) => {
       try {
         const data = e.target?.result;
-        // 动态加载xlsx（~300KB，按需加载）
-        const XLSX = await loadXLSX();
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName!]!;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+        // 动态加载exceljs（按需加载）
+        const { ExcelJS } = await loadExcelJS();
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(data as ArrayBuffer);
+        const ws = wb.worksheets[0];
+        const jsonData: unknown[][] = [];
+        ws.eachRow((row) => {
+          const values: unknown[] = [];
+          row.eachCell((cell) => values.push(cell.value));
+          jsonData.push(values);
+        });
 
         // 解析数据行（跳过表头）
-        const rows: JDRow[] = jsonData.slice(1).map((row, index) => ({
-          id: `row_${index}_${Date.now()}`,
-          rowIndex: index + 2, // Excel行号从2开始（1是表头）
-          jobName: row[0] || '',
-          companyName: row[1] || '',
-          city: row[2] || '',
-          salaryMin: String(row[3] || ''),
-          salaryMax: String(row[4] || ''),
-          industry: row[5] || '',
-          companyType: row[6] || '',
-          jobDesc: row[7] || '',
-          isFreshFriendly: row[8] || '是',
-          status: 'pending' as const,
-          errors: [],
-          isSelected: true,
-        })).filter(row => row.jobName || row.companyName || row.city);
+        const rows: JDRow[] = jsonData.slice(1).map((row, index) => {
+          const s = (v: unknown) => String(v ?? '');
+          return {
+            id: `row_${index}_${Date.now()}`,
+            rowIndex: index + 2,
+            jobName: s(row[0]),
+            companyName: s(row[1]),
+            city: s(row[2]),
+            salaryMin: s(row[3]),
+            salaryMax: s(row[4]),
+            industry: s(row[5]),
+            companyType: s(row[6]),
+            jobDesc: s(row[7]),
+            isFreshFriendly: s(row[8]) || '是',
+            status: 'pending' as const,
+            errors: [],
+            isSelected: true,
+          };
+        }).filter(row => row.jobName || row.companyName || row.city);
 
         // 进入步骤2进行校验
         setData(rows);
@@ -425,12 +430,13 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       ['行号', '错误原因'],
       ...importResult.errors.map(e => [e.rowIndex, e.error])
     ];
-    // 动态加载xlsx（~300KB，按需加载）
-    const XLSX = await loadXLSX();
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '导入错误报告');
-    XLSX.writeFile(wb, '导入错误报告.xlsx');
+    // 动态加载exceljs（按需加载）
+    const { ExcelJS, downloadBuffer } = await loadExcelJS();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('导入错误报告');
+    wsData.forEach((row: (string | number)[]) => ws.addRow(row));
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadBuffer(buffer as ArrayBuffer, '导入错误报告.xlsx');
   };
 
   if (!show) return null;

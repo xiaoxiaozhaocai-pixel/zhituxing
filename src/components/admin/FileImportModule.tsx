@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, AlertCircle, CheckCircle, Upload } from 'lucide-react';
+import {Loader2, FileText, AlertCircle, CheckCircle} from 'lucide-react';
 
 interface FileImportModuleProps {
   onContentExtracted: (content: string) => void;
@@ -12,7 +12,7 @@ interface FileImportModuleProps {
 
 type FileType = 'txt' | 'docx' | 'pdf' | 'md';
 
-const ALLOWED_TYPES: Record<FileType, string[]> = {
+const _ALLOWED_TYPES: Record<FileType, string[]> = {
   txt: ['text/plain'],
   docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   pdf: ['application/pdf'],

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import Breadcrumb from '@/components/Breadcrumb';
 import { QUIZ_QUESTIONS, calculateQuizResult, type QuizResult } from '@/lib/assessment-engine';
-import { BarChart3, ChevronLeft, ChevronRight, Award, AlertTriangle, RefreshCw, Sparkles } from 'lucide-react';
+import {BarChart3, ChevronLeft, Award, AlertTriangle, RefreshCw, Sparkles} from 'lucide-react';
 
 const DIMENSION_ICONS: Record<string, string> = {
   '自我认知': '🧠',

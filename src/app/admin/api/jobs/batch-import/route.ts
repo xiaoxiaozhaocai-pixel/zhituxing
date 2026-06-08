@@ -12,7 +12,7 @@ function getSupabaseClient() {
 }
 
 // 简单的管理员验证
-async function verifyAdmin(request: NextRequest) {
+async function verifyAdmin(_request: NextRequest) {
   const cookieStore = await cookies();
   const adminToken = cookieStore.get('admin_token')?.value;
   const expectedToken = process.env.ADMIN_TOKEN || 'admin_token_for_zhituxing';
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     };
 
     // 批量插入数据（字段名映射到 job_descriptions 表的实际列名）
-    const jobsToInsert = jobs.map((job: JdImportItem, _index: number) => ({
+    const jobsToInsert = jobs.map((job: JdImportItem, __index: number) => ({
       job_title: job.job_name,
       company: job.company_name,
       city: job.city,
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             // 删除现有数据
             await supabase.from('job_descriptions').delete().eq('id', existing.id);
           }
-        } catch (e) {
+        } catch {
           // 继续处理
         }
       }

@@ -37,6 +37,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '登录失败，请重试' }, { status: 500 });
     }
 
+    // 查询数据库中的会员状态
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('user_type, membership_expires_at')
+      .eq('user_id', authData.user.id)
+      .maybeSingle();
+
+    const userType = profile?.user_type || 'free';
+    const isLifetime = userType === 'lifetime';
+    const isExpired = !isLifetime && profile?.membership_expires_at
+      ? new Date(profile.membership_expires_at) < new Date()
+      : false;
+    const isMember = userType !== 'free' && !isExpired;
+
     const response = NextResponse.json({
       success: true,
       message: '登录成功',
@@ -44,7 +58,8 @@ export async function POST(request: NextRequest) {
         id: authData.user.id,
         email: authData.user.email,
         nickname: authData.user.user_metadata?.nickname || `用户${authData.user.email?.split('@')[0]?.slice(-4) || ''}`,
-        is_member: false
+        is_member: isMember,
+        user_type: userType
       }
     });
     

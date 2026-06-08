@@ -168,7 +168,7 @@ function extractMajorRequire(responsibilities: string): string {
   const requireText = text.slice(requireStart, requireStart + 500);
   
   // 3. 匹配专业相关模式
-  const majorPatterns = [
+  const _majorPatterns = [
     // XX专业优先
     /([^\n，。；]{2,15}专业)[^\n，。；]*(?:优先|以上|均可|不限)/g,
     // 专业不限

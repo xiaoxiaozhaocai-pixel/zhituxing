@@ -6,16 +6,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Separator } from '@/components/ui/separator';
-import {
-  Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
+import { Send, Loader2, Briefcase, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
-  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
-  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp, ExternalLink
-} from 'lucide-react';
+  User, ArrowRight, RefreshCw, Link as LinkIcon,
+  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { SkeletonCardList } from '@/components/SkeletonCard';
@@ -85,7 +83,7 @@ interface ChatMessage {
 }
 
 export default function JobsPage() {
-  const router = useRouter();
+  const _router = useRouter();
   
   // 状态
   const [searchQuery, setSearchQuery] = useState('');
@@ -443,7 +441,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
     return `/auth?redirect=${encodeURIComponent(target)}`;
   };
 
-  const handleJobClick = (job: Job) => {
+  const _handleJobClick = (job: Job) => {
     document.location = getJobAnalysisUrl(job);
   };
 

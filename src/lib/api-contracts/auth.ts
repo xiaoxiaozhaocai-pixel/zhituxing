@@ -15,11 +15,19 @@ import { successResponse } from './_shared';
 // ============================================================
 // /api/auth/me
 // ============================================================
+export const MembershipInfoSchema = z.object({
+  isMember: z.boolean(),
+  type: z.string(),
+  expiresAt: z.string().nullable(),
+});
+export type MembershipInfo = z.infer<typeof MembershipInfoSchema>;
+
 export const MeUserSchema = z.object({
   id: z.string(),                       // supabase user uuid
   email: z.string().email().nullable(), // 第三方登录时可能没邮箱
   phone: z.string().nullable(),
   nickname: z.string(),
+  membership: MembershipInfoSchema.optional(),
 });
 export type MeUser = z.infer<typeof MeUserSchema>;
 

@@ -5,7 +5,7 @@
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
 const DEEPSEEK_BASE_URL = 'https://api.deepseek.com/chat/completions';
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash';
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || process.env.MODEL || 'deepseek-chat';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';

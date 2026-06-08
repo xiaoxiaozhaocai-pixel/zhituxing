@@ -4,14 +4,12 @@ import { FontPreload } from '@/components/FontPreload';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
-import FloatingMembershipButton from '@/components/FloatingMembershipButton';
 import FloatingAICTA from '@/components/FloatingAICTA';
 import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
 import { MembershipProvider } from '@/contexts/MembershipContext';
-import InspectorWrapper from '@/components/InspectorWrapper';
-import FirstVisitModal from '@/components/FirstVisitModal';
+
 import CookieConsent from '@/components/CookieConsent';
 import { SITE_URL } from '@/lib/config';
 
@@ -20,8 +18,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#2563EB' },
-    { media: '(prefers-color-scheme: dark)', color: '#1E3A8A' },
+    { media: '(prefers-color-scheme: light)', color: '#165DFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
   ],
 };
 
@@ -83,7 +81,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isDev = process.env.COZE_PROJECT_ENV === 'DEV';
+  const _isDev = process.env.COZE_PROJECT_ENV === 'DEV';
 
   return (
     <html lang="zh-CN">
@@ -131,14 +129,12 @@ export default function RootLayout({
             })
           }}
         />
-        {isDev && <InspectorWrapper />}
         <Providers>
           <ToastProvider>
             <MembershipProvider>
               <ProfileGuideProvider>
                 <Navbar />
                 <FreeQuotaBadge />
-                <FloatingMembershipButton />
                 <FloatingAICTA />
                 {children}
                 <Footer />
@@ -151,3 +147,4 @@ export default function RootLayout({
     </html>
   );
 }
+

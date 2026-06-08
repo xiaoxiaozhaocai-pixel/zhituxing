@@ -5,19 +5,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  Sparkles, 
+import { Sparkles, 
   Loader2, 
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  FileText,
   User,
   Calendar,
   MapPin,
   GraduationCap,
-  Eye
-} from 'lucide-react';
+  Eye } from 'lucide-react';
 
 // 报告项接口
 interface ReportItem {

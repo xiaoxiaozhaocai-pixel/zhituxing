@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 /**
  * 胜任力评估AI智能体流式API
  * 使用Coze Workflow stream_run API，通过SSE协议返回流式响应
- * 会员专属功能 — free用户提示升级
+ * 能力诊断功能 — 与职业规划合并后免费开放
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -53,19 +53,7 @@ export async function POST(request: NextRequest) {
     // 1. 用户验证 + 权限检查
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
-    const userType = userInfo?.userType || 'free';
-
-    // 胜任力评估是会员专属功能
-    if (userType !== 'member') {
-      const fallback = getCompetencyFallback(major || '', grade || '');
-      return new Response(createTextStream(fallback), {
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        },
-      });
-    }
+    const _userType = userInfo?.userType || 'free';
 
     // === DeepSeek + RAG 分支 ===
     if (USE_DEEPSEEK) {
@@ -116,7 +104,7 @@ export async function POST(request: NextRequest) {
 ${ragContext}`;
         
         // 构建消息
-        const messages = [
+        const _messages = [
           { role: 'system' as const, content: systemPrompt },
           ...(history || []).filter((m: { role: string }) => m.role !== 'system'),
           { role: 'user' as const, content: lastMessage },
@@ -166,7 +154,7 @@ ${ragContext}`;
     }
 
     // 5. 生成 session_id
-    const finalSessionId = sessionId || `competency_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const _finalSessionId = sessionId || `competency_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     // 6. 调用 Workflow stream_run API
     const cozeResponse = await callWorkflowStreamApi({

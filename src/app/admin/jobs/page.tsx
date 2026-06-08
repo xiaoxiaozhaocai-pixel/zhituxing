@@ -7,18 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import BatchImportModal from '@/components/admin/BatchImportModal';
-import {
-  Search,
+import { Search,
   Plus,
   Pencil,
   Trash2,
   Loader2,
-  Building2,
-  MapPin,
-  DollarSign,
   X,
-  Upload
-} from 'lucide-react';
+  Upload } from 'lucide-react';
 
 interface Job {
   id: string;

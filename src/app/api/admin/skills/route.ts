@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
-import { execSql, escapeParam } from '@/lib/exec-sql';
+import {execSql} from '@/lib/exec-sql';
 
 export const runtime = 'nodejs';
 

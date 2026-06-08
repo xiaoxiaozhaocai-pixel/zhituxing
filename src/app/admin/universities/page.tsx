@@ -73,7 +73,7 @@ export default function AdminUniversitiesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<UniversityForm>(defaultForm);
   const [saving, setSaving] = useState(false);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [_deleteConfirmId, _setDeleteConfirmId] = useState<number | null>(null);
 
   // 加载列表
   const fetchList = useCallback(async (page = 1) => {

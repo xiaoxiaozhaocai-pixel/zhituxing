@@ -12,6 +12,8 @@ import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 import { detectInjection, createBlockedSSE } from '@/lib/injection-detect';
 import { getAvailableCourses, buildCoursePrompt, detectCourseTopic } from '@/lib/course-generator';
 import type { CourseTopic } from '@/lib/course-generator';
+import { getUserProfileContext } from '@/lib/coze-stream';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
 
 const SSE_HEADERS = {
@@ -62,7 +64,21 @@ export async function POST(request: NextRequest) {
 
     // 检测课程主题
     const detectedTopic = detectCourseTopic({ topic: topic as CourseTopic, customPrompt: message });
-    const systemPrompt = buildCoursePrompt(detectedTopic, { customPrompt: message });
+    let systemPrompt = buildCoursePrompt(detectedTopic, { customPrompt: message });
+
+    // 注入用户上下文（和主路由保持一致）
+    const supabase = getSupabaseAdmin();
+    try {
+      const { data: { user } } = await supabase.auth.getUser(accessToken);
+      if (user?.id) {
+        const profileCtx = await getUserProfileContext(user.id);
+        if (profileCtx) {
+          systemPrompt = `【用户背景信息 — 平台自动注入，请直接使用，不要重新询问】\n${profileCtx}\n\n---\n\n${systemPrompt}`;
+        }
+      }
+    } catch (e) {
+      console.error('[course] 获取用户上下文失败:', e);
+    }
 
     const encoder = new TextEncoder();
     const dsStream = createDeepSeekRAGStream(systemPrompt, message, []);

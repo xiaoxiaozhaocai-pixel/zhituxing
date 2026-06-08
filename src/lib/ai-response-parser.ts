@@ -5,7 +5,7 @@
 
 // ========== 类型定义 ==========
 
-export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'promotion' | 'disclaimer' | 'table';
+export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'radar' | 'promotion' | 'disclaimer' | 'table';
 
 export interface ParsedSegment {
   type: SegmentType;
@@ -37,6 +37,14 @@ export interface ScoreItem {
   score: number;
   max?: number;
   label?: string;
+  /** 该维度在岗位胜任力中的推荐权重（百分比，如35表示35%） */
+  weight?: number;
+}
+
+export interface RadarData {
+  dimensions: { name: string; score: number; max: number; weight?: number }[];
+  overallScore?: number;
+  summary?: string;
 }
 
 export interface TableData {
@@ -179,7 +187,7 @@ function extractCardsFromJSON(obj: Record<string, unknown>): CardItem[] {
   const cards: CardItem[] = [];
 
   // 查找数组字段
-  for (const [key, val] of Object.entries(obj)) {
+  for (const [_key, val] of Object.entries(obj)) {
     if (Array.isArray(val) && val.length > 0) {
       const items = val;
       if (typeof items[0] === 'object' && items[0] !== null) {
@@ -243,7 +251,8 @@ function extractScoresFromJSON(obj: Record<string, unknown>): ScoreItem[] {
           const name = String(i.name || i.dimension || i.title || i.skill || i.label || '');
           const score = extractNumber(i.score || i.level || i.value || i.match_score || i.percentile);
           if (name && score !== null) {
-            scores.push({ name, score, max: extractNumber(i.max || i.total) ?? undefined });
+            const w = extractNumber(i.weight || i.weight_pct || i.weight_percent);
+            scores.push({ name, score, max: extractNumber(i.max || i.total) ?? undefined, weight: w ?? undefined });
           }
         }
       }
@@ -539,7 +548,10 @@ function parsePlainText(text: string): ParsedSegment[] {
         for (const [k, v] of Object.entries(kv)) {
           const num = extractNumber(v);
           if (num !== null) {
-            scores.push({ name: fieldToLabel(k), score: num });
+            // 尝试从原文提取权重，如「硬技能匹配度：40/100（权重35%）」
+            const weightMatch = v.match(/[（(]权重\s*(\d+)\s*%?\s*[）)]/);
+            const weight = weightMatch ? parseInt(weightMatch[1], 10) : undefined;
+            scores.push({ name: fieldToLabel(k), score: num, weight });
           } else {
             // 非数值的键值对，添加到文本
             currentText += `${fieldToLabel(k)}：${decodeUrlStr(v)}\n`;

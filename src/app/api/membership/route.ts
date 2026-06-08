@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getUserProfile, getUserQuotaFromDb } from '@/lib/quota';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonOk, jsonError, ErrorCode } from '@/lib/api-contracts/_shared';
 import { MembershipDataSchema } from '@/lib/api-contracts/membership';
 
@@ -13,34 +13,52 @@ export async function GET(request: NextRequest) {
     }
     const userId = authResult.id;
 
-    const profile = await getUserProfile(userId);
-    const quota = await getUserQuotaFromDb(userId);
+    // 直接内联查询，绕过 getUserProfile 和 getUserQuotaFromDb
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('user_profiles')
+      .select('user_type, membership_type, membership_expires_at')
+      .eq('user_id', userId)
+      .maybeSingle();
 
-    // 计算 is_expired（lifetime 用户永远不过期）
-    const isLifetime = profile.userType === 'lifetime';
-    const isExpired = !isLifetime && profile.memberExpiresAt
-      ? new Date(profile.memberExpiresAt) < new Date()
+    if (profileError) {
+      console.error('[Membership] profile query error:', profileError);
+    }
+
+    const userType = profile?.user_type || 'free';
+    const membershipType = profile?.membership_type || userType;
+    const membershipExpiresAt = profile?.membership_expires_at || null;
+
+    const isLifetime = userType === 'lifetime';
+    const isExpired = !isLifetime && membershipExpiresAt
+      ? new Date(membershipExpiresAt) < new Date()
       : false;
+    const isMember = userType !== 'free' && !isExpired;
+    const membershipPlan = isMember ? userType : null;
 
-    const isMember = profile.userType !== 'free' && !isExpired;
-    const membershipPlan = isMember ? profile.userType : null;
+    // 查询配额
+    const { data: quota } = await supabaseAdmin
+      .from('user_quotas')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
 
-    const monthlyQuota = quota.monthly_quota || 10;
-    const usedQuota = quota.used_quota || 0;
+    const monthlyQuota = quota?.monthly_quota || 10;
+    const usedQuota = quota?.used_quota || 0;
     const remainingQuota = Math.max(0, monthlyQuota - usedQuota);
 
     return jsonOk(MembershipDataSchema, {
-      userType: profile.userType,
-      membershipType: profile.userType,
+      userType,
+      membershipType,
       membershipPlan,
       isMember,
       isExpired,
-      membershipExpiresAt: isLifetime ? null : (profile.memberExpiresAt ?? null),
+      membershipExpiresAt: isLifetime ? null : membershipExpiresAt,
       monthlyQuota,
       usedQuota,
       remainingQuota,
-      interviewQuota: quota.interview_quota || 3,
-      assessmentQuota: quota.assessment_quota || 1,
+      interviewQuota: quota?.interview_quota || 3,
+      assessmentQuota: quota?.assessment_quota || 1,
     });
   } catch (err) {
     console.error('Membership API error:', err);

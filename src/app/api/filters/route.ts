@@ -50,6 +50,7 @@ export async function GET() {
       return NextResponse.json(cache.data, { headers: { 'Cache-Control': 'public, max-age=3600' } })
     }
     const headers = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
+    // 一次性拉取全部所需字段，5列xN页 → 1列xN页，API调用数降至1/5
     const fetchAll = async (select: string): Promise<Record<string, string | null>[]> => {
       const all: Record<string, string | null>[] = []
       for (let offset = 0; offset < 20000; offset += 1000) {
@@ -62,7 +63,12 @@ export async function GET() {
       return all
     }
 
-    const [indData, cityData, eduData, expData, compData] = await Promise.all([fetchAll('industry'), fetchAll('city'), fetchAll('education'), fetchAll('experience'), fetchAll('company_type')])
+    const allColumns = await fetchAll('industry,city,education,experience,company_type')
+    const indData = allColumns
+    const cityData = allColumns
+    const eduData = allColumns
+    const expData = allColumns
+    const compData = allColumns
 
     const countAndSort = (data: Array<Record<string, string | null>>, key: string) => {
       const counts: Record<string, number> = {}

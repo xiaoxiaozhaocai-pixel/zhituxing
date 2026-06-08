@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { SITE_URL } from '@/lib/config';
+
 
 export const metadata: Metadata = {
   title: 'AI职业规划 - 智能分析你的职业方向',

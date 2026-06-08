@@ -50,9 +50,9 @@ interface UserProfile {
 
 export default function CareerPlanningPage() {
   const router = useRouter();
-  const { user, quota, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [message, setMessage] = useState<{type: 'success' | 'error' | 'info', text: string} | null>(null);
@@ -73,7 +73,7 @@ export default function CareerPlanningPage() {
   const scrollAnimRef = useRef<number | null>(null);
   const isUserNearBottomRef = useRef(true);
 
-  const [showLoginPrompt, setShowLoginPrompt] = useState(true);
+  const [_showLoginPrompt, _setShowLoginPrompt] = useState(true);
 
   useEffect(() => {
     // 不再自动跳转，改为显示提示
@@ -414,7 +414,7 @@ export default function CareerPlanningPage() {
   if (!user && !authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 pt-24 pb-16">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4">
           {/* 页面标题 */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-6">
@@ -464,7 +464,7 @@ export default function CareerPlanningPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
         <Breadcrumb theme="light" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" />
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           {/* 标题 */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-4">

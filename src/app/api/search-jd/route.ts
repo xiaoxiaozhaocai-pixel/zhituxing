@@ -1,4 +1,4 @@
-import { safeErrorMessage } from '@/lib/api-error';
+
 export const dynamic = 'force-dynamic';
 /**
  * 统一岗位搜索API
@@ -49,7 +49,7 @@ interface SearchResult {
 
 const PLACEHOLDER_PATTERNS = ['placeholder', 'your-project', 'undefined', 'null', ''];
 
-function isValidConfig(url: string, key: string): boolean {
+function _isValidConfig(url: string, key: string): boolean {
   if (!url || !key) return false;
   const lower = url.toLowerCase() + key.toLowerCase();
   return !PLACEHOLDER_PATTERNS.some(p => lower === p.toLowerCase() || (p === '' && lower.trim() === ''));
@@ -69,7 +69,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
   let supabase;
   try {
     supabase = getSupabaseAdmin();
-  } catch (e) {
+  } catch {
     console.warn('[Search] Skipping database search: Supabase not configured');
     return [];
   }

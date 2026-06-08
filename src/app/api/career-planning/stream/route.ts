@@ -37,7 +37,9 @@ export const runtime = 'nodejs';
 
 // 职业规划 fallback 回复
 function getCareerFallback(major: string, grade: string, city: string): string {
-  return `# 🎯 职业规划报告
+  return `<<DATA:type=radar>>{"dimensions":[{"name":"硬技能","score":65,"max":100,"weight":40},{"name":"软技能","score":55,"max":100,"weight":25},{"name":"经验匹配","score":40,"max":100,"weight":25},{"name":"教育背景","score":70,"max":100,"weight":10}],"overallScore":58,"summary":"系统暂未获取到完整用户数据，显示默认评估。请完善个人信息以获得精准诊断。"}<<END>>
+
+# 🎯 能力诊断+成长规划报告
 
 **个人信息**
 - 所属专业：${major || '未填写'}
@@ -153,19 +155,31 @@ export async function POST(request: NextRequest) {
           { tableName: 'articles', displayName: '相关文章', data: articles },
         ]);
 
-        const systemPrompt = `你是学业与职业规划顾问"抉择"，擅长用SWOT分析法帮用户在考研vs就业之间做决策。
+        const systemPrompt = `你是能力诊断+成长规划顾问"抉择"，先诊断用户当前能力短板，再制定针对性成长路径。
 
-你的能力：
-1. 根据用户的个人情况（专业、年级、城市），分析考研和就业两条路
-2. 给出短期收益、长期发展、风险、机会成本的量化分析
-3. 提供具体可行的行动建议和时间规划
-4. 引用真实的岗位数据和薪资信息支撑分析
+## 输出格式（两步走）
 
-回答规范：
-- 使用SWOT框架清晰呈现分析过程
-- 量化分析要有数据支撑（薪资、竞争比、成功率等）
-- 给出明确的建议结论和理由
-- 如果检索不到相关数据，坦诚说明`;
+### 第一步：能力诊断（必须先用 DATA 块输出雷达图数据）
+先输出一个结构化数据块：
+\`\`\`
+<<DATA:type=radar>>{"dimensions":[{"name":"硬技能","score":75,"max":100,"weight":40},{"name":"软技能","score":60,"max":100,"weight":25},{"name":"经验匹配","score":45,"max":100,"weight":25},{"name":"教育背景","score":80,"max":100,"weight":10}],"overallScore":65,"summary":"你的硬技能和教育背景较好，但经验匹配是主要短板"}<<END>>
+\`\`\`
+维度说明：硬技能（专业知识和工具掌握）、软技能（沟通协作领导力）、经验匹配（实习项目与目标岗位相关度）、教育背景（学历专业匹配度）。分数基于用户输入和参考数据合理评估，0=完全不匹配，100=完美匹配。
+
+接着用文字展开诊断：每个维度的具体分析、短板定位、改进优先级。
+
+### 第二步：成长规划
+基于诊断结果，给出：
+1. 岗位匹配：推荐3-5个最适合的目标岗位（含薪资、竞争比）
+2. 分阶段计划：按月或按季度，每个阶段具体目标和行动
+3. 学习资源：推荐的课程、项目、证书
+4. SWOT总结
+
+## 回答规范
+- 第一步必须先输出 DATA 块（雷达图），再展开文字
+- 量化分析基于真实岗位数据
+- 建议具体可执行
+- 检索不到数据时坦诚说明`;
 
         const stream = createDeepSeekRAGStream(
           systemPrompt + (ragContext ? `\n\n--- 参考数据 ---\n${ragContext}\n---` : ''),

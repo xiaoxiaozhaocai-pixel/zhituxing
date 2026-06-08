@@ -55,6 +55,17 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
+    // 🧪 测试模式：DEV_OTP_BYPASS 开启时跳过真实邮件发送
+    if (process.env.DEV_OTP_BYPASS === 'true') {
+      console.log('[send-code] 🧪 测试模式：跳过邮件发送', { email, type });
+      return NextResponse.json({
+        success: true,
+        message: '验证码已发送（测试模式）',
+        hint: '测试模式：请输入验证码 88888888',
+        devBypassCode: '88888888'
+      });
+    }
+
     const supabase = getSupabaseAdmin();
     
     // 检查 Supabase 配置

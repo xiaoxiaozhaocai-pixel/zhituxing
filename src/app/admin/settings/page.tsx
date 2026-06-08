@@ -5,15 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import {
-  Settings,
+import { Settings,
   Globe,
   Crown,
   Gift,
-  Bell,
   Loader2,
-  Save
-} from 'lucide-react';
+  Save } from 'lucide-react';
 
 export default function SettingsPage() {
   const { admin } = useAdminAuth();

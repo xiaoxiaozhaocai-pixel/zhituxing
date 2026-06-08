@@ -6,8 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { 
-  Sparkles, 
+import { Sparkles, 
   Loader2, 
   AlertCircle,
   Download,
@@ -15,15 +14,13 @@ import {
   ChevronDown,
   ChevronUp,
   Briefcase,
-  GraduationCap,
   MapPin,
   TrendingUp,
   Calendar,
   ArrowLeft,
   Target,
   BookOpen,
-  MessageSquare
-} from 'lucide-react';
+  MessageSquare } from 'lucide-react';
 
 // 报告数据接口
 interface ReportData {
@@ -73,7 +70,7 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [_isDownloading, _setIsDownloading] = useState(false);
   
   // 折叠面板状态
   const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
@@ -131,7 +128,7 @@ export default function ReportPage() {
   };
 
   // 格式化日期
-  const formatDate = (dateStr: string) => {
+  const _formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('zh-CN', {
       year: 'numeric',

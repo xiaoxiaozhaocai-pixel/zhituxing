@@ -35,7 +35,7 @@ export function getSupabaseAdmin(): SupabaseClient {
   if (adminInstance) return adminInstance;
   
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.COZE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.COZE_SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY || process.env.COZE_SUPABASE_SERVICE_ROLE_KEY;
   
   if (!url || !key) {
     // 构建阶段环境变量可能缺失，返回空 client 避免构建失败

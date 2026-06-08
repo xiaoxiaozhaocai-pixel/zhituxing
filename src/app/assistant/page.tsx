@@ -7,17 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, MessageCircle, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv } from 'lucide-react';
+import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer, Share2, CheckSquare, Square} from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
-import TTSButton from '@/components/TTSButton';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
 // 初始化 DOMPurify（组件挂载时调用）
-function initDOMPurify() {
+function _initDOMPurify() {
   DOMPurify.addHook('uponSanitizeElement', (node) => {
     // 移除所有 on* 事件属性
     if (node instanceof Element) {
@@ -31,7 +30,7 @@ function initDOMPurify() {
 }
 
 /** XSS 防护：清洗 HTML 内容 */
-function sanitizeContent(content: string): string {
+function _sanitizeContent(content: string): string {
   return DOMPurify.sanitize(content, {
     ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'span', 'div'],
     ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
@@ -42,7 +41,6 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  interrupted?: boolean;  // 流中断标记
 }
 
 /** 过滤文本中残留的 <<DATA:type=xxx>>...<<END>> 标记（安全网） */
@@ -85,13 +83,18 @@ const interviewWelcome = `👋你好！我是职途星AI面试官，将为你还
 3. 该岗位的完整官方JD
 4. 你的个人求职简历`;
 
-const careerWelcome = `👋 你好！我是「职途星——你的AI职业生涯规划助手」，专为大学生打造的个性化职业规划工具，所有建议均基于全行业真实招聘数据。
-✨ 我能帮你做什么：
-🎯 岗位匹配：告诉我你的专业、年级和兴趣，推荐最适合你的3-5个岗位
-📈 成长路径：根据目标岗位，定制大一到大四的分阶段成长计划
-✅ 成功率测算：评估你应聘目标岗位的匹配度，给出针对性提升建议
-📝 求职指导：解答简历、面试、校招等通用求职问题
-💡 请告诉我你的专业、年级和求职意向，我来为你生成专属规划！`;
+const careerWelcome = `👋 你好！我是「职途星——能力诊断+成长规划助手」，将胜任力评估与职业规划深度融合，所有建议均基于全行业真实招聘数据。
+
+✨ **第一步：能力诊断**
+📊 胜任力雷达图：从硬技能、软技能、经验匹配、教育背景四个维度精准评估你的当前能力
+🔍 短板定位：自动识别你的能力薄弱环节，给出量化匹配度分数
+
+✨ **第二步：成长规划**
+🎯 岗位匹配：根据诊断结果推荐最适合你的3-5个目标岗位
+📈 成长路径：基于能力短板，定制分阶段成长计划与月度里程碑
+✅ 进度追踪：定期回顾能力变化，动态调整规划方向
+
+💡 两个功能已深度融合——诊断完成自动生成成长方案，请告诉我你的专业、年级和求职意向！`;
 
 const decisionWelcome = `👋 你好！我是「职途星——考研就业决策助手」，专为大三、大四学生打造的升学就业对比工具。
 ✨ 我能帮你做什么：
@@ -107,13 +110,6 @@ const assessmentWelcome = `👋 你好！我是「职途星——专业能力测
 🔍 短板分析：完成测评后，精准定位你的能力薄弱环节
 📝 提升建议：针对每个短板，提供具体的学习路径和资源推荐
 💡 请告诉我你的专业、年级，我来为你定制专属测评方案！`;
-
-const competencyWelcome = `👋 你好！我是「职途星——胜任力评估助手」，为你提供可视化能力雷达图和动态成长追踪。
-✨ 我能帮你做什么：
-📈 能力雷达图：基于职业规划、模拟面试、技能学习进度，生成可视化胜任力雷达图
-🔄 动态追踪：每月自动更新一次，记录你的成长轨迹
-📊 提升建议：根据评估结果，提供针对性的能力提升方案
-💡 专属会员服务，需要先完成职业规划或模拟面试哦！`;
 
 // 合规免责文案
 const disclaimerText = `
@@ -139,17 +135,17 @@ const bots: BotConfig[] = [
   },
   {
     id: 'career',
-    name: 'AI职业规划',
-    description: '制定专属成长路径',
+    name: '能力诊断+成长规划',
+    description: '诊断短板 + 定制成长路径',
     icon: <Sparkles className="w-5 h-5" />,
     color: 'text-[#722ED1]',
     gradient: 'from-purple-500 to-purple-600',
     welcomeMessage: careerWelcome + disclaimerText,
     quickQuestions: [
+      '生成我的胜任力诊断报告',
       '计算机专业职业规划',
-      '如何制定成长路径？',
-      '如何提升职场竞争力',
-      '职业发展路径建议'
+      '我的能力短板在哪里？',
+      '如何提升职场竞争力'
     ]
   },
   {
@@ -198,52 +194,7 @@ const bots: BotConfig[] = [
       '专业能力评估报告'
     ]
   },
-  {
-    id: 'competency',
-    name: '胜任力评估',
-    description: '仅限会员使用',
-    icon: <Crown className="w-5 h-5" />,
-    color: 'text-gray-600',
-    gradient: 'from-gray-500 to-gray-600',
-    welcomeMessage: competencyWelcome + disclaimerText,
-    quickQuestions: [
-      '查看我的胜任力雷达图',
-      '能力提升建议',
-      '成长轨迹追踪',
-      '本月能力评估'
-    ],
-    isVipOnly: true
-  },
-  {
-    id: 'xiaozhi',
-    name: '小职',
-    description: 'AI灵魂｜你的桂电学长',
-    icon: <Sparkles className="w-5 h-5" />,
-    color: 'text-[#165DFF]',
-    gradient: 'from-blue-400 to-indigo-500',
-    welcomeMessage: `👋 嘿！我是小职，你的桂电学长兼AI朋友~
 
-我是职途星的大脑，也是你求职路上的好搭档。不管你是大一的迷茫新生，还是大三正在找实习的大朋友——找我聊聊准没错！
-
-✨ **我能帮你：**
-• 🤔 聊聊桂电的校园生活、专业选择、就业方向
-• 🎯 帮你分析适合什么岗位、考研还是就业
-• 🔗 调度职途星其他能力帮你解决具体问题
-• 📊 结合真实数据给你靠谱建议
-• 💬 就是单纯想找人说说话也行~
-
-💡 **试试这样问我：**
-「桂电计算机怎么样？」「HR岗位前景如何？」「帮我叫一下面试官」「大三暑假该实习还是考研？」
-
-有什么想聊的，随时找我~`,
-    quickQuestions: [
-      '桂电计算机专业怎么样？',
-      '帮我分析一下考研还是就业',
-      '桂电学长，我该选什么方向？',
-      '叫一下面试官帮我模拟面试'
-    ],
-    isDefault: false
-  }
 ];
 
 export default function AssistantPage() {
@@ -262,49 +213,25 @@ function AssistantContent() {
   const searchParams = useSearchParams();
   const [activeBot, setActiveBot] = useState('jobs');
   const [messages, setMessages] = useState<Message[]>([]);
-  // 按智能体缓存对话历史（key=botId）
-  const conversationCacheRef = useRef<Record<string, Message[]>>({});
-  // 初始化：从 localStorage 恢复所有对话
-  const conversationsInitialized = useRef(false);
-  useEffect(() => {
-    if (conversationsInitialized.current) return;
-    conversationsInitialized.current = true;
-    try {
-      const saved = localStorage.getItem('zhituxing_conversations');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        conversationCacheRef.current = parsed;
-        // 恢复当前 activeBot 的对话
-        const currentMsgs = parsed[activeBot];
-        if (currentMsgs?.length) {
-          setMessages(currentMsgs);
-          setVisibleCount(Math.max(MESSAGE_WINDOW, currentMsgs.length));
-        }
-      }
-    } catch {}
-  }, [activeBot]);
-
-  // 每次 messages 变化时，同步到 cache 和 localStorage
-  useEffect(() => {
-    if (!conversationsInitialized.current) return;
-    conversationCacheRef.current = {
-      ...conversationCacheRef.current,
-      [activeBot]: messages,
-    };
-    try {
-      localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
-    } catch {}
-  }, [messages, activeBot]);
-  const MESSAGE_WINDOW = 30;
-  const [visibleCount, setVisibleCount] = useState(MESSAGE_WINDOW);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
   const [quotaFeature, setQuotaFeature] = useState<string>('');
+  // 导出功能状态
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  // 选择消息模式
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  // 分享链接状态
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [jdUrl, setJdUrl] = useState('');
   const [jdText, setJdText] = useState('');
   const [jdLoading, setJdLoading] = useState(false);
+  const [tabsCollapsed, setTabsCollapsed] = useState(false);
   const [jdError, setJdError] = useState('');
   
   // 登录弹窗状态
@@ -315,22 +242,6 @@ function AssistantContent() {
   
   // 文件上传状态
   const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
-  
-  // 小职调度卡片状态（Step2: dispatch event → action card）
-  const [dispatchCard, setDispatchCard] = useState<{
-    intent: string;
-    title: string;
-    description: string;
-    actionLabel: string;
-    tabId: string;
-    url?: string;  // 优先跳转到独立页面（如 /resume），无则切换 tab
-  } | null>(null);
-  
-  // 调度卡片动画 & 跳转状态
-  const [cardVisible, setCardVisible] = useState(false);
-  const [cardLeaving, setCardLeaving] = useState(false);
-  const [cardNavigating, setCardNavigating] = useState(false);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
@@ -339,13 +250,14 @@ function AssistantContent() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isUserNearBottomRef = useRef(true);
-  const scrollAnimRef = useRef<number | null>(null);
   
   // 待发送的 query 参数（从 URL 解析）
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
+  // 待发送的 jobId（岗位百科深度优化跳转携带）
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null);
 
   // SSE流式解析hook
-  const [streamState, streamActions] = useSSEStream();
+  const [_streamState, streamActions] = useSSEStream();
 
   const currentBot = bots.find(b => b.id === activeBot) || bots[0];
 
@@ -381,24 +293,6 @@ function AssistantContent() {
       });
     }
   }, [messages, scrollToBottom]);
-
-  // SSE流式输出时持续滚动到底部（流式内容更新不触发messages数组变化）
-  useEffect(() => {
-    if (isLoading && messages.length > 1) {
-      const scrollLoop = () => {
-        const container = chatContainerRef.current;
-        if (container && isUserNearBottomRef.current) {
-          container.scrollTop = container.scrollHeight;
-        }
-        scrollAnimRef.current = requestAnimationFrame(scrollLoop);
-      };
-      scrollAnimRef.current = requestAnimationFrame(scrollLoop);
-      return () => {
-        if (scrollAnimRef.current) cancelAnimationFrame(scrollAnimRef.current);
-      };
-    }
-    return;
-  }, [isLoading, messages.length]);
 
   // 检查用户个人信息状态
   useEffect(() => {
@@ -439,23 +333,81 @@ function AssistantContent() {
     return () => { AnalyticsTracker.destroy(); };
   }, [user]);
 
-  // 初始化欢迎消息
+  // 按 bot 缓存对话历史（本次浏览器会话内切换 tab 不丢失对话）
+  const messagesRef = useRef<Message[]>([]);
+  const historyRef = useRef<Record<string, Message[]>>({});
+  const prevBotRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (messages.length === 0) {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // 切换 bot 时：先保存当前 bot 的对话，再恢复目标 bot 的对话（无则插入欢迎消息）
+  useEffect(() => {
+    const oldBot = prevBotRef.current;
+
+    // 保存上一个 bot 的对话（仅当真的切换且内容不为空）
+    if (oldBot && oldBot !== activeBot && messagesRef.current.length > 0) {
+      historyRef.current[oldBot] = messagesRef.current;
+      try {
+        sessionStorage.setItem(`chat_${oldBot}`, JSON.stringify(messagesRef.current));
+      } catch {
+        // 忽略 quota 超限等错误
+      }
+    }
+
+    // 恢复目标 bot 的对话：先看内存，再看 sessionStorage
+    let restored = historyRef.current[activeBot];
+    if (!restored) {
+      try {
+        const stored = sessionStorage.getItem(`chat_${activeBot}`);
+        if (stored) {
+          const parsed: Message[] = JSON.parse(stored).map((m: Message & { timestamp: string | Date }) => ({
+            ...m,
+            timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+          }));
+          if (parsed.length > 0) {
+            restored = parsed;
+            historyRef.current[activeBot] = parsed;
+          }
+        }
+      } catch {
+        // 忽略反序列化错误
+      }
+    }
+
+    if (restored && restored.length > 0) {
+      setMessages(restored);
+    } else {
+      const newBot = bots.find(b => b.id === activeBot) || bots[0];
       setMessages([{
         role: 'assistant',
-        content: currentBot!.welcomeMessage,
-        timestamp: new Date()
+        content: newBot.welcomeMessage,
+        timestamp: new Date(),
       }]);
     }
-  }, [activeBot, currentBot!.welcomeMessage]);
+
+    prevBotRef.current = activeBot;
+  }, [activeBot]);
+
+  // 持续同步当前 bot 的对话到 sessionStorage（防止页面刷新丢失）
+  useEffect(() => {
+    if (prevBotRef.current !== activeBot) return;
+    if (messages.length < 1) return;  // 只有欢迎消息时不持久化
+    try {
+      sessionStorage.setItem(`chat_${activeBot}`, JSON.stringify(messages));
+    } catch {
+      // 忽略存储错误
+    }
+  }, [messages, activeBot]);
 
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
     const bot = searchParams.get('bot');
     if (bot && !pendingQuery) {
-      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency', 'xiaozhi'];
+      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment'];
       if (validBots.includes(bot)) {
+        // 切换 activeBot 会触发 useEffect 自动加载该 bot 的历史对话或欢迎消息
         setActiveBot(bot);
       }
     }
@@ -463,29 +415,11 @@ function AssistantContent() {
     if (query && !pendingQuery) {
       setPendingQuery(query);
     }
-  }, [searchParams, pendingQuery]);
-
-  // 调度卡片入场/退场动画
-  useEffect(() => {
-    if (dispatchCard && !cardVisible) {
-      const raf = requestAnimationFrame(() => setCardVisible(true));
-      return () => cancelAnimationFrame(raf);
+    const jobId = searchParams.get('jobId');
+    if (jobId && !pendingJobId) {
+      setPendingJobId(jobId);
     }
-    if (!dispatchCard && cardVisible) {
-      setCardVisible(false);
-    }
-      return;
-  }, [dispatchCard, cardVisible]);
-
-  // 调度卡片关闭（带退场动画）
-  const dismissCard = useCallback(() => {
-    setCardLeaving(true);
-    setTimeout(() => {
-      setDispatchCard(null);
-      setCardLeaving(false);
-      setCardNavigating(false);
-    }, 200);
-  }, []);
+  }, [searchParams, pendingQuery, pendingJobId]);
 
   // 解析JD链接
   const handleFetchJd = async (url: string) => {
@@ -551,44 +485,22 @@ function AssistantContent() {
     }
     
     try {
-      // TXT：客户端直接读取
-      if (fileExt === '.txt') {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const content = (event.target?.result as string).slice(0, 5000);
-          setUploadedFile({ name: file.name, content });
-          toast.success(`已上传：${file.name}`);
-        };
-        reader.onerror = () => toast.error('文件读取失败');
+      // 读取文件内容
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setUploadedFile({ name: file.name, content: content.slice(0, 5000) }); // 限制内容长度
+        toast.success(`已上传：${file.name}`);
+      };
+      reader.onerror = () => {
+        toast.error('文件读取失败');
+      };
+      
+      // 根据文件类型选择读取方式
+      if (['.txt'].includes(fileExt)) {
         reader.readAsText(file);
-      } else if (fileExt === '.pdf') {
-        // PDF：调用服务端解析
-        setIsLoading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-          const res = await fetch('/api/upload/parse', { method: 'POST', body: formData });
-          const result = await res.json();
-          if (!res.ok) {
-            toast.error(result.error || 'PDF解析失败');
-          } else {
-            setUploadedFile({ name: file.name, content: result.text.slice(0, 5000) });
-            toast.success(`已解析PDF（${result.pages || '?'}页）`);
-          }
-        } catch {
-          toast.error('PDF解析请求失败，请检查网络');
-        } finally {
-          setIsLoading(false);
-        }
       } else {
-        // DOCX/其他：前端文本兜底
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const content = (event.target?.result as string).slice(0, 5000);
-          setUploadedFile({ name: file.name, content });
-          toast.success(`已上传：${file.name}`);
-        };
-        reader.onerror = () => toast.error('文件读取失败');
+        // PDF/DOCX 等，尝试作为文本读取（可能乱码，但能提取部分内容）
         reader.readAsText(file);
       }
     } catch {
@@ -691,10 +603,14 @@ function AssistantContent() {
       let apiUrl = '/api/chat';
       // 使用 null 替代 undefined，避免 JSON.stringify 丢失字段
       const storedConvId = localStorage.getItem(`conversationId_${activeBot}`);
+      // 岗位百科深度优化跳转：携带 jobId（仅首条消息，发后清空）
+      const jobIdToSend = pendingJobId;
+      if (jobIdToSend) setPendingJobId(null);
       let requestBody: object = {
         message: messageText,
         botType: activeBot,
-        conversationId: storedConvId || null
+        conversationId: storedConvId || null,
+        jobId: jobIdToSend || null,
       };
       
       if (isInterview) {
@@ -750,7 +666,7 @@ function AssistantContent() {
       streamActions.reset();
       
       // 监听流式内容变化，更新消息
-      const originalStartStream = streamActions.startStream;
+      const _originalStartStream = streamActions.startStream;
       
       // 手动处理流式响应
       const reader = response.body?.getReader();
@@ -760,7 +676,6 @@ function AssistantContent() {
 
       const decoder = new TextDecoder();
       let fullContent = '';
-      let receivedDone = false;  // 追踪是否收到 [DONE]，用于检测流中断
       let sseBuffer = '';
       const firstTokenTimer = setTimeout(() => {
         // 15秒未收到第一个token
@@ -862,41 +777,8 @@ function AssistantContent() {
               continue;
             }
 
-            // dispatch 事件 — 小职调度卡片（Step2: 展示能力跳转卡片）
-            if (eventType === 'dispatch') {
-              try {
-                const parsed = JSON.parse(dataLine);
-                if (parsed.intent && parsed.title) {
-                  setDispatchCard({
-                    intent: parsed.intent,
-                    title: parsed.title,
-                    description: parsed.description || '',
-                    actionLabel: parsed.actionLabel || '去看看',
-                    tabId: parsed.tabId || 'jobs',
-                    url: parsed.url || undefined,
-                  });
-                  console.log('[chat] Dispatch card received:', parsed.intent, parsed.url ? `→ ${parsed.url}` : '');
-                }
-              } catch {
-                // 忽略解析错误
-              }
-              continue;
-            }
-
-            // save_result 事件 — 后端确认消息已持久化
-            if (eventType === 'save_result') {
-              try {
-                const parsed = JSON.parse(dataLine);
-                console.log('[chat] Save result:', parsed.result, 'convId:', parsed.convId);
-              } catch {
-                // 忽略
-              }
-              continue;
-            }
-
             // 检查 [DONE] 标记
             if (dataLine === '[DONE]') {
-              receivedDone = true;
               clearTimeout(firstTokenTimer);
               clearTimeout(timeoutTimer);
               break;
@@ -941,7 +823,7 @@ function AssistantContent() {
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
                     content: displayContent 
-                  } as Message;
+                  };
                   return newMsgs;
                 });
               } else if (parsed.type === 'done') {
@@ -978,7 +860,7 @@ function AssistantContent() {
                   newMsgs[newMsgs.length - 1] = { 
                     ...newMsgs[newMsgs.length - 1], 
                     content: displayContent 
-                  } as Message;
+                  };
                   return newMsgs;
                 });
               }
@@ -995,24 +877,24 @@ function AssistantContent() {
       const conversationIdMatch = fullContent.match(/conversationId["\s:]+([^"\\]+)/);
       if (conversationIdMatch) {
         if (isInterview) {
-          localStorage.setItem('interviewSessionId', conversationIdMatch[1]!)!;
+          localStorage.setItem('interviewSessionId', conversationIdMatch[1]);
         } else if (isPartner) {
-          localStorage.setItem('partnerSessionId', conversationIdMatch[1]!)!;
+          localStorage.setItem('partnerSessionId', conversationIdMatch[1]);
         } else {
-          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]!)!;
+          localStorage.setItem(`conversationId_${activeBot}`, conversationIdMatch[1]);
         }
       }
       
       // 确保免责文案已添加
       if (fullContent && !fullContent.includes('免责声明')) {
-        const disclaimer = currentBot!.welcomeMessage.split('---')[1] || '';
+        const disclaimer = currentBot.welcomeMessage.split('---')[1] || '';
         if (disclaimer) {
           setMessages(prev => {
             const newMsgs = [...prev];
             newMsgs[newMsgs.length - 1] = { 
               ...newMsgs[newMsgs.length - 1], 
               content: fullContent + disclaimer 
-            } as Message;
+            };
             return newMsgs;
           });
         }
@@ -1055,23 +937,9 @@ function AssistantContent() {
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
-    if (botId === activeBot) return;
-    // 保存当前智能体的对话到缓存
-    conversationCacheRef.current = {
-      ...conversationCacheRef.current,
-      [activeBot]: messages,
-    };
-    try {
-      localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
-    } catch {}
-    // 切换到新智能体
-    localStorage.removeItem(`conversationId_${activeBot}`);
+    // 切换 bot：上面的 useEffect 会自动保存当前对话并恢复目标 bot 的历史
+    // 不再清除 conversationId，这样切回来还能续接同一会话
     setActiveBot(botId);
-    // 恢复目标智能体的历史对话
-    const cached = conversationCacheRef.current[botId] || [];
-    setMessages(cached);
-    setVisibleCount(Math.max(MESSAGE_WINDOW, cached.length));
-    setDispatchCard(null);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
@@ -1080,14 +948,265 @@ function AssistantContent() {
     });
   };
 
-  const displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
-  const quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
+  // ===== 导出对话功能 =====
+  const EXPORT_DAILY_LIMIT = 3;
+  
+  function getExportKey(): string {
+    return `export_count_${new Date().toISOString().slice(0, 10)}`;
+  }
+  
+  function getTodayExportCount(): number {
+    try {
+      const count = localStorage.getItem(getExportKey());
+      return count ? parseInt(count, 10) : 0;
+    } catch { return 0; }
+  }
+  
+  function incrementExportCount(): void {
+    try {
+      const key = getExportKey();
+      const count = getTodayExportCount() + 1;
+      localStorage.setItem(key, String(count));
+    } catch { /* ignore */ }
+  }
+  
+  function getRemainingExports(): number {
+    const isMember = quota?.is_member || quota?.is_lifetime_member;
+    if (isMember) return 999; // 会员无限
+    return Math.max(0, EXPORT_DAILY_LIMIT - getTodayExportCount());
+  }
+  
+  function messagesToMarkdown(): string {
+    const botName = currentBot.name;
+    const date = new Date().toLocaleString('zh-CN');
+    let md = `# 职途星 - ${botName} 对话记录\n\n`;
+    md += `> 导出时间：${date}\n\n`;
+    md += `---\n\n`;
+    
+    for (const msg of messages) {
+      if (msg.role === 'user') {
+        md += `### 🧑 你\n\n${msg.content}\n\n`;
+      } else {
+        md += `### 🤖 ${botName}\n\n${msg.content}\n\n`;
+      }
+      md += `---\n\n`;
+    }
+    
+    md += `\n> 由 [职途星](https://zhituxing.tech) 生成 · 内容由AI生成，仅供参考\n`;
+    return md;
+  }
+  
+  function messagesToHtml(msgs?: Message[]): string {
+    const effective = msgs || messages;
+    const botName = currentBot.name;
+    const date = new Date().toLocaleString('zh-CN');
+    let html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">`;
+    html += `<title>职途星 - ${botName} 对话记录</title>`;
+    html += `<style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.8; }
+      h1 { color: #165DFF; border-bottom: 2px solid #165DFF; padding-bottom: 10px; }
+      .meta { color: #999; font-size: 14px; margin-bottom: 30px; }
+      .user { background: #f0f5ff; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #165DFF; }
+      .bot { background: #f8fafd; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #00B42A; }
+      .role { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+      .user .role { color: #165DFF; }
+      .bot .role { color: #00B42A; }
+      .content { white-space: pre-wrap; word-break: break-word; }
+      .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 13px; text-align: center; }
+      .footer a { color: #165DFF; }
+      @media print { body { max-width: 100%; } }
+    </style></head><body>`;
+    html += `<h1>职途星 - ${botName} 对话记录</h1>`;
+    html += `<p class="meta">导出时间：${date}</p>`;
+    
+    for (const msg of effective) {
+      const content = msg.content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`(.+?)`/g, '<code>$1</code>');
+      
+      if (msg.role === 'user') {
+        html += `<div class="user"><div class="role">🧑 你</div><div class="content">${content}</div></div>`;
+      } else {
+        html += `<div class="bot"><div class="role">🤖 ${botName}</div><div class="content">${content}</div></div>`;
+      }
+    }
+    
+    html += `<div class="footer"><p>由 <a href="https://zhituxing.tech">职途星</a> 生成 · 内容由AI生成，仅供参考</p></div>`;
+    html += `</body></html>`;
+    return html;
+  }
+  
+  function downloadFile(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+  const handleExport = async (format: 'md' | 'docx' | 'pdf') => {
+    setShowExportMenu(false);
+    
+    // 检查配额
+    const remaining = getRemainingExports();
+    if (remaining <= 0 && !quota?.is_member && !quota?.is_lifetime_member) {
+      setQuotaFeature('导出对话');
+      setShowQuotaDialog(true);
+      return;
+    }
+    
+    setExportLoading(true);
+    const botName = currentBot.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    
+    try {
+      if (format === 'md') {
+        const md = messagesToMarkdown();
+        downloadFile(md, `职途星_${botName}_${dateStr}.md`, 'text/markdown;charset=utf-8');
+      } else if (format === 'docx') {
+        const html = messagesToHtml();
+        downloadFile(html, `职途星_${botName}_${dateStr}.doc`, 'application/msword;charset=utf-8');
+      } else if (format === 'pdf') {
+        // PDF：在新窗口打开美化版本，触发打印
+        const html = messagesToHtml();
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.write(html);
+          w.document.close();
+          w.onload = () => {
+            w.print();
+          };
+        }
+      }
+      
+      // 非会员扣减次数
+      if (!quota?.is_member && !quota?.is_lifetime_member) {
+        incrementExportCount();
+      }
+      
+      toast.success(`已导出为 ${format.toUpperCase()} 格式`);
+    } catch {
+      toast.error('导出失败，请重试');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // 获取要导出/分享的消息（选择模式下只取勾选的，否则取全部）
+  function getEffectiveMessages(): Message[] {
+    if (selectMode && selectedIndices.size > 0) {
+      return messages.filter((_, i) => selectedIndices.has(i));
+    }
+    return messages.filter(m => m.role !== 'assistant' || !m.content.startsWith('👋'));
+  }
+  
+  // 选择模式辅助函数
+  const toggleSelectMode = () => {
+    if (selectMode) {
+      setSelectMode(false);
+      setSelectedIndices(new Set());
+    } else {
+      setSelectMode(true);
+      // 默认全选（排除欢迎消息）
+      const indices = new Set<number>();
+      messages.forEach((m, i) => {
+        if (!(m.role === 'assistant' && i === 0 && m.content.startsWith('👋'))) {
+          indices.add(i);
+        }
+      });
+      setSelectedIndices(indices);
+    }
+  };
+  
+  const toggleMessage = (index: number) => {
+    const next = new Set(selectedIndices);
+    if (next.has(index)) {
+      next.delete(index);
+    } else {
+      next.add(index);
+    }
+    setSelectedIndices(next);
+  };
+  
+  const _selectAllMessages = () => {
+    const indices = new Set<number>();
+    messages.forEach((m, i) => {
+      if (!(m.role === 'assistant' && i === 0)) {
+        indices.add(i);
+      }
+    });
+    setSelectedIndices(indices);
+  };
+  
+  // 生成分享链接
+  const handleShare = async () => {
+    setShowExportMenu(false);
+    const effectiveMsgs = getEffectiveMessages();
+    if (effectiveMsgs.length === 0) return;
+    
+    // 检查配额
+    const remaining = getRemainingExports();
+    if (remaining <= 0 && !quota?.is_member && !quota?.is_lifetime_member) {
+      setQuotaFeature('分享对话');
+      setShowQuotaDialog(true);
+      return;
+    }
+    
+    setShareLoading(true);
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          botName: currentBot.name,
+          botGradient: currentBot.gradient,
+          messages: effectiveMsgs.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShareUrl(data.url);
+        if (!quota?.is_member && !quota?.is_lifetime_member) {
+          incrementExportCount();
+        }
+      } else {
+        toast.error(data.error || '生成分享链接失败');
+      }
+    } catch {
+      toast.error('网络错误，请重试');
+    } finally {
+      setShareLoading(false);
+    }
+  };
+  
+  const copyShareLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      toast.success('链接已复制，发送给朋友即可查看');
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      toast.error('复制失败，请手动复制');
+    }
+  };
+
+  const _displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
+  const _quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 职业规划免费提示 */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
-        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-purple-700">
               AI职业规划永久免费
@@ -1104,62 +1223,193 @@ function AssistantContent() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* 页面标题 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            AI职业助手
-          </h1>
-          <p className="text-gray-600 text-sm">
-            小职全方位服务，助你求职无忧
-          </p>
-        </div>
-
-        {/* 功能Tab选择器 */}
-        <div className="bot-tabs mb-4">
-          <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
-            {bots.map((bot) => (
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* 页面标题 + 导出按钮 */}
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              AI职业助手
+            </h1>
+            <p className="text-gray-600 text-sm">
+              七大AI能力协同服务，助你求职无忧
+            </p>
+          </div>
+          
+          {/* 操作按钮组（有对话内容时显示） */}
+          {messages.length > 1 && (
+            <div className="flex items-center gap-2">
+              {/* 选择消息按钮 */}
               <button
-                key={bot.id}
-                onClick={() => {
-                  if (bot.isVipOnly && !quota?.is_member) {
-                    setQuotaFeature(bot.name);
-                    setShowQuotaDialog(true);
-                    return;
-                  }
-                  handleTabChange(bot.id);
-                }}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
-                  activeBot === bot.id
-                    ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
-                    : bot.isVipOnly && !quota?.is_member
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
-                      : 'text-gray-600 hover:bg-white hover:shadow'
+                onClick={toggleSelectMode}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-all ${
+                  selectMode
+                    ? 'bg-[#165DFF] text-white border-[#165DFF]'
+                    : 'text-gray-600 bg-white border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
                 }`}
               >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                  activeBot === bot.id ? 'bg-white/20' : bot.isVipOnly ? 'bg-gray-300' : 'bg-gray-200'
-                }`}>
-                  {bot.icon}
-                </div>
-                <div className="text-left">
-                  <div className={`font-semibold text-xs ${activeBot === bot.id ? 'text-white' : 'text-gray-900'}`}>
-                    {bot.name}
-                    {bot.isVipOnly && (
-                      <span className="ml-1 text-[10px] px-1 py-0.5 bg-[#FF7D00] text-white rounded">VIP</span>
-                    )}
-                  </div>
-                  <div className={`text-[10px] ${activeBot === bot.id ? 'text-white/80' : 'text-gray-500'} hidden md:block`}>
-                    {bot.description}
-                  </div>
-                </div>
+                <CheckSquare className="w-4 h-4" />
+                {selectMode ? `已选 ${selectedIndices.size}` : '选择消息'}
               </button>
-            ))}
-          </div>
+              
+              {/* 导出按钮 */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  disabled={exportLoading || shareLoading}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all disabled:opacity-50"
+                >
+                  {exportLoading || shareLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  导出/分享
+                  <span className="text-xs text-gray-400 ml-1">
+                    ({quota?.is_member ? '无限' : `${getRemainingExports()}/3`})
+                  </span>
+                  {!quota?.is_member && (
+                    <span className="text-[10px] text-gray-400 ml-0.5" title="每日0点重置">每日</span>
+                  )}
+                </button>
+                
+                {showExportMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                      {/* 分享链接 */}
+                      <button
+                        onClick={handleShare}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Share2 className="w-4 h-4 text-green-500" />
+                        生成分享链接
+                      </button>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        onClick={() => handleExport('md')}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <FileTextIcon className="w-4 h-4 text-blue-500" />
+                        导出 Markdown
+                      </button>
+                      <button
+                        onClick={() => handleExport('docx')}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <File className="w-4 h-4 text-blue-600" />
+                        导出 Word 文档
+                      </button>
+                      <button
+                        onClick={() => handleExport('pdf')}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Printer className="w-4 h-4 text-red-500" />
+                        导出 PDF
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 功能Tab选择器 — 可折叠 */}
+        <div className="bot-tabs mb-4">
+          {/* 折叠按钮 */}
+          <button
+            onClick={() => setTabsCollapsed(!tabsCollapsed)}
+            className="w-full flex items-center justify-center gap-1 py-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-1"
+          >
+            {tabsCollapsed ? (
+              <><ChevronDown className="w-3.5 h-3.5" /><span>展开功能列表</span></>
+            ) : (
+              <><ChevronUp className="w-3.5 h-3.5" /><span>收起功能列表</span></>
+            )}
+          </button>
+          
+          {/* 展开模式：完整Tab */}
+          {!tabsCollapsed && (
+            <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
+              {bots.map((bot) => (
+                <button
+                  key={bot.id}
+                  onClick={() => {
+                    if (bot.isVipOnly && !quota?.is_member) {
+                      setQuotaFeature(bot.name);
+                      setShowQuotaDialog(true);
+                      return;
+                    }
+                    handleTabChange(bot.id);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
+                    activeBot === bot.id
+                      ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
+                      : bot.isVipOnly && !quota?.is_member
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                        : 'text-gray-600 hover:bg-white hover:shadow'
+                  }`}
+                >
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                    activeBot === bot.id ? 'bg-white/20' : bot.isVipOnly ? 'bg-gray-300' : 'bg-gray-200'
+                  }`}>
+                    {bot.icon}
+                  </div>
+                  <div className="text-left">
+                    <div className={`font-semibold text-xs ${activeBot === bot.id ? 'text-white' : 'text-gray-900'}`}>
+                      {bot.name}
+                      {bot.isVipOnly && (
+                        <span className="ml-1 text-[10px] px-1 py-0.5 bg-[#FF7D00] text-white rounded">VIP</span>
+                      )}
+                    </div>
+                    <div className={`text-[10px] ${activeBot === bot.id ? 'text-white/80' : 'text-gray-500'} hidden md:block`}>
+                      {bot.description}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 折叠模式：紧凑图标栏 */}
+          {tabsCollapsed && (
+            <div className="flex gap-1.5 p-1.5 bg-gray-100 rounded-xl overflow-x-auto">
+              {bots.map((bot) => (
+                <button
+                  key={bot.id}
+                  onClick={() => {
+                    if (bot.isVipOnly && !quota?.is_member) {
+                      setQuotaFeature(bot.name);
+                      setShowQuotaDialog(true);
+                      return;
+                    }
+                    handleTabChange(bot.id);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 flex-shrink-0 ${
+                    activeBot === bot.id
+                      ? `bg-gradient-to-r ${bot.gradient} text-white shadow`
+                      : bot.isVipOnly && !quota?.is_member
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
+                        : 'text-gray-600 hover:bg-white hover:shadow'
+                  }`}
+                  title={bot.description}
+                >
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
+                    activeBot === bot.id ? 'bg-white/20' : bot.isVipOnly ? 'bg-gray-300' : 'bg-gray-200'
+                  }`}>
+                    {bot.icon}
+                  </div>
+                  <span className={`text-xs font-medium whitespace-nowrap ${activeBot === bot.id ? 'text-white' : 'text-gray-700'}`}>
+                    {bot.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 聊天区域 */}
-        <Card className="border-2 overflow-hidden flex flex-col" style={{
+        <Card className={`border-2 overflow-hidden flex flex-col mb-6 transition-all duration-300 ${tabsCollapsed ? "h-[calc(100vh-14rem)] max-h-[calc(100vh-8rem)]" : "h-[calc(100vh-18rem)] max-h-[calc(100vh-12rem)]"} min-h-[500px]`} style={{
           borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
         }}>
           {/* 快捷问题 */}
@@ -1167,7 +1417,7 @@ function AssistantContent() {
             <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-white">
               <p className="text-xs text-gray-500 mb-3">试试这些问题：</p>
               <div className="flex flex-wrap gap-2">
-                {currentBot!.quickQuestions.map((q, i) => (
+                {currentBot.quickQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => handleQuickQuestion(q)}
@@ -1185,61 +1435,42 @@ function AssistantContent() {
           <div 
             ref={chatContainerRef}
             onScroll={handleChatScroll}
-            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white h-[520px]"
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-gray-50 to-white min-h-[200px]"
           >
-            {/* 历史消息加载 */}
-            {(messages.length - visibleCount) > 0 && (
-              <div className="flex items-center px-2 pb-2">
-                <button
-                  onClick={() => setVisibleCount(prev => prev + 30)}
-                  className="text-xs text-blue-500 hover:text-blue-700 font-medium"
-                >
-                  ↑ 显示更早消息（{messages.length - visibleCount}条）
-                </button>
-              </div>
-            )}
-            {/* 清空对话按钮 */}
-            {messages.length > 0 && (
-              <div className="flex items-center justify-end px-2 pb-2">
-                <button
-                  onClick={() => {
-                      setMessages([]);
-                      setVisibleCount(30);
-                      conversationCacheRef.current = {
-                        ...conversationCacheRef.current,
-                        [activeBot]: [],
-                      };
-                      try {
-                        localStorage.setItem('zhituxing_conversations', JSON.stringify(conversationCacheRef.current));
-                      } catch {}
-                    }}
-                  className="text-xs text-gray-400 hover:text-gray-600"
-                >
-                  清空对话
-                </button>
-              </div>
-            )}
-            {messages.slice(-visibleCount).map((msg, index) => (
+            {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`flex items-start gap-3 group ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
+                {/* 选择模式下的勾选框 */}
+                {selectMode && (
+                  <button
+                    onClick={() => toggleMessage(index)}
+                    className="flex-shrink-0 mt-3 text-gray-400 hover:text-[#165DFF] transition-colors"
+                  >
+                    {selectedIndices.has(index) ? (
+                      <CheckSquare className="w-5 h-5 text-[#165DFF]" />
+                    ) : (
+                      <Square className="w-5 h-5" />
+                    )}
+                  </button>
+                )}
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     msg.role === 'user' 
-                      ? `bg-gradient-to-br ${currentBot!.gradient}` 
+                      ? `bg-gradient-to-br ${currentBot.gradient}` 
                       : 'bg-white border-2 border-gray-200'
                   }`}
                 >
                   {msg.role === 'user' 
                     ? <UserIcon className="w-5 h-5 text-white" /> 
-                    : <span className={`${currentBot!.color}`}>{currentBot!.icon}</span>
+                    : <span className={`${currentBot.color}`}>{currentBot.icon}</span>
                   }
                 </div>
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 ${
                     msg.role === 'user'
-                      ? `bg-gradient-to-br ${currentBot!.gradient} text-white rounded-tr-sm`
+                      ? `bg-gradient-to-br ${currentBot.gradient} text-white rounded-tr-sm`
                       : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
                   }`}
                 >
@@ -1253,12 +1484,6 @@ function AssistantContent() {
                       streaming={index === messages.length - 1 && isLoading}
                       role="assistant"
                     />
-                  )}
-                  {/* TTS语音朗读按钮 */}
-                  {msg.content && msg.role === 'assistant' && !isLoading && (
-                    <div className="mt-1 flex justify-end">
-                      <TTSButton text={msg.content} />
-                    </div>
                   )}
                   {/* 加载动画 */}
                   {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
@@ -1279,24 +1504,6 @@ function AssistantContent() {
                     >
                       重新生成
                     </button>
-                  )}
-                  {/* 流中断提示 + 重试 */}
-                  {msg.interrupted && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-xs text-amber-600">⚠️ 连接中断，回复可能不完整</span>
-                      <button
-                        onClick={() => {
-                          // 重新发送上一条用户消息
-                          const prevUserMsg = messages[index - 1];
-                          if (prevUserMsg?.role === 'user') {
-                            sendMessage(prevUserMsg.content);
-                          }
-                        }}
-                        className="px-3 py-1 bg-amber-50 text-amber-700 text-xs rounded-lg hover:bg-amber-100 transition-colors border border-amber-200"
-                      >
-                        重新生成
-                      </button>
-                    </div>
                   )}
                 </div>
               </div>
@@ -1399,62 +1606,6 @@ function AssistantContent() {
             </div>
           )}
 
-          {/* 小职调度卡片（Step2: 检测到意图后展示跳转卡片） */}
-          {dispatchCard && activeBot === 'xiaozhi' && (
-            <div className={`px-4 pb-3 transition-all duration-300 ease-out ${
-              cardVisible && !cardLeaving
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-3'
-            }`}>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-blue-900 text-sm mb-1">
-                      {dispatchCard.title}
-                    </h4>
-                    <p className="text-blue-700 text-xs leading-relaxed">
-                      {dispatchCard.description}
-                    </p>
-                  </div>
-                  <button
-                    onClick={dismissCard}
-                    disabled={cardNavigating}
-                    className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors disabled:opacity-30"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => {
-                      setCardNavigating(true);
-                      if (dispatchCard.url) {
-                        router.push(dispatchCard.url);
-                      } else {
-                        handleTabChange(dispatchCard.tabId);
-                      }
-                    }}
-                    disabled={cardNavigating}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {cardNavigating ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> 跳转中…</>
-                    ) : (
-                      dispatchCard.actionLabel
-                    )}
-                  </button>
-                  <button
-                    onClick={dismissCard}
-                    disabled={cardNavigating}
-                    className="px-4 py-2 text-blue-500 text-sm font-medium hover:text-blue-700 transition-colors disabled:opacity-30"
-                  >
-                    先不了
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* 输入框 */}
           <div className="p-4 border-t bg-white">
             {/* 个人信息状态提示 */}
@@ -1515,7 +1666,7 @@ function AssistantContent() {
               </button>
               <Input
                 ref={inputRef}
-                placeholder={`问${currentBot!.name}...`}
+                placeholder={`问${currentBot.name}...`}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
@@ -1525,7 +1676,7 @@ function AssistantContent() {
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !inputValue.trim()}
-                className={`bg-gradient-to-r ${currentBot!.gradient} hover:opacity-90 text-white h-12 px-6`}
+                className={`bg-gradient-to-r ${currentBot.gradient} hover:opacity-90 text-white h-12 px-6`}
               >
                 {isLoading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -1557,26 +1708,71 @@ function AssistantContent() {
 
         {/* 底部提示 */}
         <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleTabChange('jobs')}
+            className="flex items-center gap-2 hover:text-[#165DFF] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <span>全行业岗位百科</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <button
+            onClick={() => handleTabChange('interview')}
+            className="flex items-center gap-2 hover:text-[#00B42A] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600"></div>
             <span>模拟面试官</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <button
+            onClick={() => handleTabChange('career')}
+            className="flex items-center gap-2 hover:text-[#722ED1] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
             <span>职业生涯规划</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <button
+            onClick={() => handleTabChange('decision')}
+            className="flex items-center gap-2 hover:text-[#FF7D00] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600"></div>
             <span>考研就业决策</span>
-          </div>
+          </button>
         </div>
       </div>
 
       {/* 配额用完弹窗 */}
+      {/* 分享链接弹窗 */}
+      <Dialog open={!!shareUrl} onOpenChange={() => setShareUrl(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-green-500" />
+              分享链接已生成
+            </DialogTitle>
+            <DialogDescription>
+              将此链接发送给朋友，对方无需登录即可查看对话内容
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
+              <input
+                readOnly
+                value={shareUrl || ''}
+                className="flex-1 text-sm bg-transparent outline-none text-gray-700"
+              />
+              <Button
+                onClick={copyShareLink}
+                className="bg-gradient-to-r from-[#165DFF] to-[#0E4FD9] hover:opacity-90 text-white h-9 px-4 text-sm flex-shrink-0"
+              >
+                {shareCopied ? '已复制 ✓' : '复制链接'}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400">
+              💡 提示：分享链接包含当前对话的完整内容，对方可在浏览器中查看
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
         <DialogContent>
           <DialogHeader>
@@ -1647,5 +1843,3 @@ function AssistantContent() {
     </div>
   );
 }
-
-

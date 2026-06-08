@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { data: invite, error } = await supabase
+    const { data: invite, error: _error } = await supabase
       .from('invites')
       .select('*')
       .eq('inviter_id', userId)

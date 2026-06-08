@@ -3,6 +3,7 @@ import {
   parseRefreshTokenFromCookie,
   setAuthCookies,
 } from '@/lib/auth-cookies';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { tryRefreshSession } from '@/lib/auth-refresh';
 import type { User } from '@/lib/types';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
@@ -58,7 +59,21 @@ export async function GET(request: Request) {
       return jsonError('UNAUTHORIZED', '认证失败');
     }
 
-    // 构造契约 data
+    // 查询 membership 信息
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('user_type, membership_type, membership_expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    const isMember = profile?.user_type === 'member' || profile?.user_type === 'lifetime'
+      || profile?.membership_type === 'member' || profile?.membership_type === 'lifetime';
+    const isExpired = !isMember && profile?.membership_expires_at
+      ? new Date(profile.membership_expires_at) < new Date()
+      : false;
+
+    // 构造契约 data（含 membership）
     const data: MeData = {
       user: {
         id: user.id,
@@ -67,6 +82,11 @@ export async function GET(request: Request) {
         nickname:
           user.user_metadata?.nickname ||
           '用户' + (user.email?.split('@')[0]?.slice(-4) || ''),
+        membership: {
+          isMember: isMember && !isExpired,
+          type: profile?.user_type || profile?.membership_type || 'free',
+          expiresAt: profile?.membership_expires_at ?? null,
+        },
       },
       ...(refreshed && { refreshed: true as const }),
     };

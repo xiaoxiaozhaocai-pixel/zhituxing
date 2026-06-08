@@ -104,7 +104,7 @@ export async function saveChatHistory(
   cacheKey?: string,
   triggerCompression?: { conversationId: string; userId: string; needsCheck: () => Promise<boolean>; runCompression: (convId: string, uid: string) => Promise<void> },
 ): Promise<SaveHistoryResult> {
-  const { userId, conversationId, userMessage, assistantResponse, botType } = params;
+  const { userId, conversationId, userMessage: _userMessage, assistantResponse, botType: _botType } = params;
 
   console.log(`[chat] Before save: fullResponse.length=${assistantResponse?.length || 0}, userId=${userId}, conversationId=${conversationId}`);
   console.log(`[chat] fullResponse preview: ${assistantResponse?.substring(0, 100) || 'EMPTY'}`);

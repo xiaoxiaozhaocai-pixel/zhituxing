@@ -281,7 +281,7 @@ export function buildRAGContext(
   sources: RAGDataSource[],
   config: RAGContextConfig = {}
 ): string {
-  const { maxTextLength = 300, includeMetadata = true } = config;
+  const { maxTextLength = 300, includeMetadata: _includeMetadata = true } = config;
 
   if (sources.length === 0) {
     return '';

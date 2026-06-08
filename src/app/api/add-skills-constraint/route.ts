@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-async function executeSql(sql: string): Promise<{ data?: unknown; error?: string }> {
+async function _executeSql(sql: string): Promise<{ data?: unknown; error?: string }> {
   if (!SUPABASE_URL || !SERVICE_KEY) {
     return { error: 'Missing Supabase credentials' };
   }
@@ -42,7 +42,7 @@ async function executeSql(sql: string): Promise<{ data?: unknown; error?: string
 }
 
 // 直接使用 PostgreSQL 连接执行 DDL
-async function runDdl(sql: string): Promise<{ success: boolean; error?: string }> {
+async function _runDdl(sql: string): Promise<{ success: boolean; error?: string }> {
   // 通过 Supabase 的 pg_net 扩展执行原生 SQL
   // 或者使用 edge-runtime 的 Database API
   // 这里我们使用一个变通方法：通过 REST API 的 sql endpoint
@@ -70,7 +70,7 @@ async function runDdl(sql: string): Promise<{ success: boolean; error?: string }
 
 export async function GET() {
   // 检查约束是否存在
-  const checkSql = `
+  const _checkSql = `
     SELECT conname, pg_get_constraintdef(oid) as definition 
     FROM pg_constraint 
     WHERE conrelid = 'job_descriptions'::regclass 
@@ -103,7 +103,7 @@ export async function GET() {
 }
 
 export async function POST() {
-  const results: string[] = [];
+  const _results: string[] = [];
   
   // 约束 SQL
   const constraints = [

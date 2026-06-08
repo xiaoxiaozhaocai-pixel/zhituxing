@@ -10,7 +10,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserInfoFromRequest } from '@/lib/coze-stream';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
 import {
-  type CourseTopic,
   detectCourseTopic,
   buildCoursePrompt,
   getAvailableCourses,
