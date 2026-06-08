@@ -245,7 +245,7 @@ function AssistantContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
-  const _router = useRouter();
+  const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1267,6 +1267,9 @@ function AssistantContent() {
                   <span className="text-xs text-gray-400 ml-1">
                     ({quota?.is_member ? '无限' : `${getRemainingExports()}/3`})
                   </span>
+                  {!quota?.is_member && (
+                    <span className="text-[10px] text-gray-400 ml-0.5" title="每日0点重置">每日</span>
+                  )}
                 </button>
                 
                 {showExportMenu && (
