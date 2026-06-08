@@ -43,7 +43,8 @@ function buildJDText(jd: Record<string, unknown>): string {
   if (jd.job_title) parts.push(`岗位：${jd.job_title}`);
   if (jd.industry) parts.push(`行业：${jd.industry}`);
   if (jd.responsibilities) parts.push(`职责：${String(jd.responsibilities).slice(0, 800)}`);
-  if (jd.requirements) parts.push(`要求：${String(jd.requirements).slice(0, 500)}`);
+  if (jd.hard_skills) parts.push(`硬技能：${JSON.stringify(jd.hard_skills).slice(0, 500)}`);
+  if (jd.major_require) parts.push(`专业要求：${String(jd.major_require).slice(0, 300)}`);
   return parts.join('\n');
 }
 
@@ -135,7 +136,7 @@ async function main() {
   
   const { data: jds, error, count } = await supabase
     .from('job_descriptions')
-    .select('id, job_title, industry, responsibilities, requirements', { count: 'exact' })
+    .select('id, job_title, industry, responsibilities, hard_skills, major_require', { count: 'exact' })
     .eq('status', 'parsed')
     .is('embedding', null)
     .limit(10000);

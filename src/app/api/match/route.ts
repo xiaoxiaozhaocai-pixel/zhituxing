@@ -17,7 +17,6 @@ import { sanitizeJDList } from '@/lib/jd-sanitizer';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
 import { generateXiaozhiNote } from '@/lib/xiaozhi-recommend';
 import { matchJobs, type MatchRequest } from '@/lib/matching-service';
-import { isEmbeddingAvailable } from '@/lib/embedding';
 import {
   MatchPostRequestSchema,
   MatchPostDataSchema,
@@ -52,7 +51,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 20);
 
     // 检查 embedding 可用性
-    if (!isEmbeddingAvailable()) {
+    // embedding check removed - matching-service handles fallback internally
+    if (false) {
       console.warn('[match:GET] Embedding not available, returning empty');
       return jsonOk(MatchGetDataSchema, {
         items: [],

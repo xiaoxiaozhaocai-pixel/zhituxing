@@ -230,7 +230,7 @@ async function keywordFallback(
 
   let query = supabase
     .from('job_descriptions')
-    .select('id, job_title, industry, city, salary_range, education, experience, responsibilities, skills')
+    .select('id, job_title, industry, city, salary_range, education, experience, responsibilities, hard_skills, soft_skills, major_require')
     .eq('status', 'parsed')
     .limit(limit);
 
@@ -249,6 +249,19 @@ async function keywordFallback(
 // 3. 多维打分引擎
 // ============================================================
 
+/** 从 JD 的 jsonb 技能列构建技能字符串 */
+function buildJDSkillsString(jd: Record<string, unknown>): string {
+  const parts: string[] = [];
+  const hardSkills = jd.hard_skills;
+  const softSkills = jd.soft_skills;
+  if (Array.isArray(hardSkills)) parts.push(hardSkills.join(", "));
+  else if (typeof hardSkills === "string") parts.push(hardSkills);
+  if (Array.isArray(softSkills)) parts.push(softSkills.join(", "));
+  else if (typeof softSkills === "string") parts.push(softSkills);
+  if (jd.major_require) parts.push(String(jd.major_require));
+  return parts.join(", ");
+}
+
 function scoreJob(
   jd: Record<string, unknown>,
   userSkills: UserSkill[],
@@ -256,7 +269,7 @@ function scoreJob(
   expectedSalary?: string
 ): MatchResult {
   // 解析 JD 技能要求
-  const jdSkillsStr = (jd.skills as string) || '';
+  const jdSkillsStr = buildJDSkillsString(jd);
   const jdSkills = parseJobSkills(jdSkillsStr);
 
   // 3a. 技能匹配 (35%)
