@@ -1146,7 +1146,7 @@ export default function SkillPortraitPage() {
                   const key = `professional_${skill.name}`;
                   const sel = skillSelections[key];
                   return (
-                    <SkillSelectItem key={key} skill={skill} category="professional"
+                    <SkillSelectItem key={key} skill={skill}
                       selected={sel?.selected ?? (skill.hotness !== 'optional')}
                       level={sel?.level || '了解'}
                       onToggle={() => toggleSkill(key, skill.hotness)}
@@ -1169,7 +1169,7 @@ export default function SkillPortraitPage() {
                   const key = `office_${skill.name}`;
                   const sel = skillSelections[key];
                   return (
-                    <SkillSelectItem key={key} skill={skill} category="office"
+                    <SkillSelectItem key={key} skill={skill}
                       selected={sel?.selected ?? (skill.hotness !== 'optional')}
                       level={sel?.level || '了解'}
                       onToggle={() => toggleSkill(key, skill.hotness)}
@@ -1192,7 +1192,7 @@ export default function SkillPortraitPage() {
                   const key = `soft_${skill.name}`;
                   const sel = skillSelections[key];
                   return (
-                    <SkillSelectItem key={key} skill={skill} category="soft"
+                    <SkillSelectItem key={key} skill={skill}
                       selected={sel?.selected ?? (skill.hotness !== 'optional')}
                       level={sel?.level || '熟悉'}
                       onToggle={() => toggleSkill(key, skill.hotness)}
