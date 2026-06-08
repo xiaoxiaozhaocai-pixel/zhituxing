@@ -210,7 +210,7 @@ export default function SharePosterGenerator({
                     </>
                   ) : (
                     <>
-                      <Image className="w-4 h-4 mr-2" alt="" />
+                      <Image className="w-4 h-4 mr-2" />
                       生成海报
                     </>
                   )}
