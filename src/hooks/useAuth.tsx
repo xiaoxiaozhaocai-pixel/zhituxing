@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [quota, setQuota] = useState<QuotaInfo | null>(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/immutability
   useEffect(() => { checkAuth(); }, []);
 
   useEffect(() => {
