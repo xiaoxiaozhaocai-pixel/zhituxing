@@ -79,13 +79,30 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // ============================================================
+  // 架构归位 P8：砍掉页面路由 → 重定向到对应智能体
+  // ============================================================
   async redirects() {
     return [
-      {
-        source: "/career",
-        destination: "/career-planning",
-        permanent: true,
-      },
+      { source: "/career", destination: "/career-planning", permanent: true },
+
+      // 被职搭子吃掉的页面 → /assistant
+      { source: "/match", destination: "/assistant", permanent: true },
+      { source: "/search", destination: "/assistant", permanent: true },
+      { source: "/referrals", destination: "/assistant", permanent: true },
+      { source: "/referrals/:id", destination: "/assistant", permanent: true },
+      { source: "/upload-jd-reward", destination: "/assistant", permanent: true },
+
+      // 被职业规划吃掉的页面 → /career-planning
+      { source: "/skill-portrait", destination: "/career-planning", permanent: true },
+      { source: "/skills-graph", destination: "/career-planning", permanent: true },
+      { source: "/assessment", destination: "/career-planning", permanent: true },
+      { source: "/assessment/:path*", destination: "/career-planning", permanent: true },
+      { source: "/learning-path", destination: "/career-planning", permanent: true },
+      { source: "/growth", destination: "/career-planning", permanent: true },
+
+      // 引导页 → 首页（ProfileGuideProvider 已接管）
+      { source: "/guide", destination: "/", permanent: true },
     ];
   },
 };
