@@ -195,36 +195,6 @@ const bots: BotConfig[] = [
     ]
   },
 
-  {
-    id: 'xiaozhi',
-    name: '小职',
-    description: 'AI灵魂｜你的桂电学长',
-    icon: <Sparkles className="w-5 h-5" />,
-    color: 'text-[#165DFF]',
-    gradient: 'from-blue-400 to-indigo-500',
-    welcomeMessage: `👋 嘿！我是小职，你的桂电学长兼AI朋友~
-
-我是职途星的大脑，也是你求职路上的好搭档。不管你是大一的迷茫新生，还是大三正在找实习的大朋友——找我聊聊准没错！
-
-✨ **我能帮你：**
-• 🤔 聊聊桂电的校园生活、专业选择、就业方向
-• 🎯 帮你分析适合什么岗位、考研还是就业
-• 🔗 调度职途星其他AI能力帮你解决具体问题
-• 📊 结合真实数据给你靠谱建议
-• 💬 就是单纯想找人说说话也行~
-
-💡 **试试这样问我：**
-「桂电计算机怎么样？」「HR岗位前景如何？」「帮我叫一下面试官」「大三暑假该实习还是考研？」
-
-有什么想聊的，随时找我~`,
-    quickQuestions: [
-      '桂电计算机专业怎么样？',
-      '帮我分析一下考研还是就业',
-      '桂电学长，我该选什么方向？',
-      '叫一下面试官帮我模拟面试'
-    ],
-    isDefault: false
-  }
 ];
 
 export default function AssistantPage() {
@@ -435,7 +405,7 @@ function AssistantContent() {
   useEffect(() => {
     const bot = searchParams.get('bot');
     if (bot && !pendingQuery) {
-      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'xiaozhi'];
+      const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment'];
       if (validBots.includes(bot)) {
         // 切换 activeBot 会触发 useEffect 自动加载该 bot 的历史对话或欢迎消息
         setActiveBot(bot);
