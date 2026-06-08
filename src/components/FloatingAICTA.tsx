@@ -6,6 +6,7 @@ import { MessageSquare, Compass, Mic, Send, X, Loader2, Crown } from 'lucide-rea
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
+import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 const STORAGE_KEY_POS = 'xiaozhi-float-pos';
 const STORAGE_KEY_VISITED = 'xiaozhi-visited';
@@ -333,7 +334,10 @@ export default function FloatingAICTA() {
                     ? 'bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] text-white rounded-br-md'
                     : 'bg-white border border-[#E2E8F0] text-[#1E293B] rounded-bl-md shadow-sm'
                 }`}>
-                  {msg.content || <Loader2 className="w-4 h-4 animate-spin" />}
+                  {msg.content
+                    ? <AIResponseRenderer rawText={msg.content} role={msg.role as 'user' | 'assistant'} streaming={streaming && i === messages.length - 1} />
+                    : <Loader2 className="w-4 h-4 animate-spin" />
+                  }
                 </div>
               </div>
             ))}
