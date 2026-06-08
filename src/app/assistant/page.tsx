@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
 // 初始化 DOMPurify（组件挂载时调用）
-function initDOMPurify() {
+function _initDOMPurify() {
   DOMPurify.addHook('uponSanitizeElement', (node) => {
     // 移除所有 on* 事件属性
     if (node instanceof Element) {
@@ -30,7 +30,7 @@ function initDOMPurify() {
 }
 
 /** XSS 防护：清洗 HTML 内容 */
-function sanitizeContent(content: string): string {
+function _sanitizeContent(content: string): string {
   return DOMPurify.sanitize(content, {
     ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'span', 'div'],
     ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
@@ -265,7 +265,7 @@ function AssistantContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
-  const router = useRouter();
+  const _router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -277,7 +277,7 @@ function AssistantContent() {
   const [pendingJobId, setPendingJobId] = useState<string | null>(null);
 
   // SSE流式解析hook
-  const [streamState, streamActions] = useSSEStream();
+  const [_streamState, streamActions] = useSSEStream();
 
   const currentBot = bots.find(b => b.id === activeBot) || bots[0];
 
@@ -637,7 +637,7 @@ function AssistantContent() {
       streamActions.reset();
       
       // 监听流式内容变化，更新消息
-      const originalStartStream = streamActions.startStream;
+      const _originalStartStream = streamActions.startStream;
       
       // 手动处理流式响应
       const reader = response.body?.getReader();
@@ -926,8 +926,8 @@ function AssistantContent() {
     });
   };
 
-  const displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
-  const quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
+  const _displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
+  const _quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
 
   return (
     <div className="min-h-screen bg-gray-50">

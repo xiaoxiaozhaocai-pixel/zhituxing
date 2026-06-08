@@ -218,7 +218,7 @@ export default function MembershipPage() {
       toast.success('订单提交成功，请等待审核');
       setDialogOpen(false);
       router.push('/profile/orders');
-    } catch (__err) {
+    } catch {
       setOrderStatus('error');
       setErrorMessage('网络异常，请重试');
       toast.error('网络异常，请重试');

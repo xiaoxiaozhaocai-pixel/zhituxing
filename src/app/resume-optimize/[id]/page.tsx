@@ -23,7 +23,7 @@ interface OptimizationDetail {
 export default function ResumeDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { user, loading, quota } = useAuth();
+  const { user, loading } = useAuth();
   const { isMember } = useMembership();
   const [detail, setDetail] = useState<OptimizationDetail | null>(null);
   const [dataLoading, setDataLoading] = useState(true);

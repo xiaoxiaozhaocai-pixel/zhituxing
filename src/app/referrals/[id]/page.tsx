@@ -38,14 +38,14 @@ interface Referral {
 export default function ReferralDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, isAuthenticated, quota } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { isMember } = useMembership();
   const [referral, setReferral] = useState<Referral | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showContact, setShowContact] = useState(false);
+  const [_showContact, _setShowContact] = useState(false);
 
 
   useEffect(() => {

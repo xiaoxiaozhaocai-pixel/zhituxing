@@ -83,7 +83,7 @@ const trustStats = [
 ];
 
 export default function HomeClient() {
-  const router = useRouter();
+  const _router = useRouter();
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);

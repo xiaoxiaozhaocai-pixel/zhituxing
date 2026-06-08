@@ -5,7 +5,7 @@ import { Shield, CheckCircle2, Mail, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DataSourcePage() {
-  const [mounted, setMounted] = useState(false);
+  const [_mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);

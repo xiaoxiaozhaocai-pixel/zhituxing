@@ -47,7 +47,7 @@ export default function UploadJdRewardPage() {
   const [listLoading, setListLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'upload' | 'history'>('upload');
-  const [showTextInput, setShowTextInput] = useState(false);
+  const [_showTextInput, setShowTextInput] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   
   // 表单状态

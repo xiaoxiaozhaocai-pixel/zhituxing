@@ -620,7 +620,7 @@ function MessagesPanel({ userId }: { userId: string }) {
 }
 
 // 会员面板组件
-function MembershipPanel({ user, quota }: { user: AuthUser; quota: QuotaInfo | null }) {
+function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
   const { isMember } = useMembership();
   const memberBenefits = [
     '无限次AI职业规划',
@@ -1291,7 +1291,7 @@ function ProfileContent() {
       case 'messages':
         return <MessagesPanel userId={user.id} />;
       case 'membership':
-        return <MembershipPanel user={user} quota={quota} />;
+        return <MembershipPanel quota={quota} />;
       case 'reports':
         return <ReportsPanel userId={user.id} />;
       case 'growth':

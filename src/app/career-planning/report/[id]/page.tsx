@@ -70,7 +70,7 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [_isDownloading, _setIsDownloading] = useState(false);
   
   // 折叠面板状态
   const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
@@ -128,7 +128,7 @@ export default function ReportPage() {
   };
 
   // 格式化日期
-  const formatDate = (dateStr: string) => {
+  const _formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('zh-CN', {
       year: 'numeric',

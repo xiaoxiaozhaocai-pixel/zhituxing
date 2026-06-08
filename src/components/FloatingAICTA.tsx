@@ -37,7 +37,7 @@ interface ChatMessage {
 
 export default function FloatingAICTA() {
   const pathname = usePathname();
-  const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, _setIsHovered] = useState(false);
   const [showFirstVisit, setShowFirstVisit] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);

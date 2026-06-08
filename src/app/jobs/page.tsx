@@ -83,7 +83,7 @@ interface ChatMessage {
 }
 
 export default function JobsPage() {
-  const router = useRouter();
+  const _router = useRouter();
   
   // 状态
   const [searchQuery, setSearchQuery] = useState('');
@@ -441,7 +441,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
     return `/auth?redirect=${encodeURIComponent(target)}`;
   };
 
-  const handleJobClick = (job: Job) => {
+  const _handleJobClick = (job: Job) => {
     document.location = getJobAnalysisUrl(job);
   };
 

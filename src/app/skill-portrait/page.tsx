@@ -174,7 +174,7 @@ function AutumnRecruitProgressBar() {
 
 // 技能等级转数字（用于计算差距）
 const levelToNumber: Record<ProficiencyLevel, number> = { '了解': 1, '熟悉': 2, '熟练': 3, '精通': 4 };
-const numberToLevel = ['-', '了解', '熟悉', '熟练', '精通'];
+const _numberToLevel = ['-', '了解', '熟悉', '熟练', '精通'];
 
 // 目标岗位差距分析组件
 function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { name: string; level: ProficiencyLevel }[]; hasSkillPortrait: boolean }) {

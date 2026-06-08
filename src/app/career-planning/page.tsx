@@ -50,9 +50,9 @@ interface UserProfile {
 
 export default function CareerPlanningPage() {
   const router = useRouter();
-  const { user, quota, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [message, setMessage] = useState<{type: 'success' | 'error' | 'info', text: string} | null>(null);
@@ -73,7 +73,7 @@ export default function CareerPlanningPage() {
   const scrollAnimRef = useRef<number | null>(null);
   const isUserNearBottomRef = useRef(true);
 
-  const [showLoginPrompt, setShowLoginPrompt] = useState(true);
+  const [_showLoginPrompt, _setShowLoginPrompt] = useState(true);
 
   useEffect(() => {
     // 不再自动跳转，改为显示提示

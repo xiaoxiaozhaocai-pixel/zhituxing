@@ -92,7 +92,7 @@ const categoryLabels: Record<string, string> = {
 
 export default function ArticleDetailPage() {
   const params = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

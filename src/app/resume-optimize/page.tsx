@@ -57,7 +57,7 @@ interface ResumeItem {
 
 export default function ResumeOptimizePage() {
   const router = useRouter();
-  const { user, loading, quota } = useAuth();
+  const { user, loading } = useAuth();
   const { isMember } = useMembership();
   const [resumeContent, setResumeContent] = useState('');
   const [targetPosition, setTargetPosition] = useState('');

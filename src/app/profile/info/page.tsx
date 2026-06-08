@@ -38,7 +38,6 @@ import { ChevronLeft,
   AlertCircle } from 'lucide-react';
 import {
   parseSkillPortrait,
-  groupSkillsByCategory,
   convertToSaveFormat,
   PROFICIENCY_CONFIG,
   type SkillPortraitResult,
@@ -384,7 +383,7 @@ function ProfileInfoContent() {
   const { showToast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [_loading, _setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
   // 表单数据

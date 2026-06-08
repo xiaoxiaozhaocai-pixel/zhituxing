@@ -35,7 +35,7 @@ const quickQuestions = [
   '生成我的考研备考计划'
 ];
 
-const sharePrompt = (_inviteCode: string) => `
+const _sharePrompt = (_inviteCode: string) => `
 ---
 🎉 **分享这份报告给同学，双方都能获得奖励！**
 

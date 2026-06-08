@@ -44,7 +44,7 @@ function SearchContent() {
   const [searched, setSearched] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [histories, setHistories] = useState<SearchHistory[]>([]);
-  const [focused, setFocused] = useState(false);
+  const [_focused, setFocused] = useState(false);
 
   const performSearch = useCallback(async (q: string, type: 'all' | 'jobs' | 'articles') => {
     if (!q || q.trim().length < 2) return;
@@ -170,7 +170,7 @@ ${job.company ? `公司：${job.company}` : ''}
     return `/auth?redirect=${encodeURIComponent(target)}`;
   };
 
-  const handleAiAnalysis = (job: SearchResult) => {
+  const _handleAiAnalysis = (job: SearchResult) => {
     document.location = getAnalysisUrl(job);
   };
 
