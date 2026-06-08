@@ -210,6 +210,7 @@ export default function SharePosterGenerator({
                     </>
                   ) : (
                     <>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text */}
                       <Image className="w-4 h-4 mr-2" />
                       生成海报
                     </>
