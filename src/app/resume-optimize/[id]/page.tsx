@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -37,8 +37,10 @@ export default function ResumeDetailPage() {
 
   useEffect(() => {
     if (user && params.id) {
+// eslint-disable-next-line
       fetchDetail();
     }
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, params.id]);
 
   const fetchDetail = async () => {

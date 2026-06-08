@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -50,8 +50,10 @@ export default function ReferralDetailPage() {
 
   useEffect(() => {
     if (params.id) {
+// eslint-disable-next-line
       fetchReferral();
     }
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const fetchReferral = async () => {

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -135,8 +135,10 @@ export default function ArticleDetailPage() {
 
   useEffect(() => {
     if (params.id) {
+// eslint-disable-next-line
       fetchComments();
     }
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const fetchComments = async () => {
