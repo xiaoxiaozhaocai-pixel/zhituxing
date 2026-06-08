@@ -247,21 +247,41 @@ async function keywordFallback(
     query = query.ilike('city', `%${city}%`);
   }
 
-  // 技能关键词过滤：在 hard_skills、soft_skills、job_title 中搜索
+  // 技能关键词过滤：在 job_title、responsibilities 中搜索
+  // 注意: hard_skills/soft_skills 是 jsonb 数组，Supabase .or() 不支持直接 ilike
   if (skillsText) {
     const keywords = skillsText.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
     if (keywords.length > 0) {
-      // Supabase .or() 语法: 逗号分隔多个条件，用 .ilike.%value% 做模糊匹配
       const filters = keywords.flatMap(kw => [
-        `hard_skills.ilike.%${kw}%`,
-        `soft_skills.ilike.%${kw}%`,
-        `job_title.ilike.%${kw}%`
+        `job_title.ilike.%${kw}%`,
+        `responsibilities.ilike.%${kw}%`
       ]).join(',');
       query = query.or(filters);
     }
   }
 
-  const { data } = await query;
+  let { data } = await query;
+
+  // 降级：技能过滤无结果时，回退到无过滤查询
+  if ((!data || data.length === 0) && skillsText) {
+    console.warn('[keywordFallback] No results with skill filter, retrying without');
+    let fallbackQuery = supabase
+      .from('job_descriptions')
+      .select('id, job_title, industry, city, salary_range, education, experience, responsibilities, hard_skills, soft_skills, major_require')
+      .eq('status', 'parsed')
+      .limit(limit);
+
+    if (industry) {
+      fallbackQuery = fallbackQuery.ilike('industry', `%${industry}%`);
+    }
+    if (city) {
+      fallbackQuery = fallbackQuery.ilike('city', `%${city}%`);
+    }
+
+    const fallbackResult = await fallbackQuery;
+    data = fallbackResult.data;
+  }
+
   return (data || []) as Array<Record<string, unknown>>;
 }
 
