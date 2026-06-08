@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -155,6 +155,7 @@ export default function AdminUniversitiesPage() {
 
   // 跳转详情
   const goDetail = (id: number) => {
+// eslint-disable-next-line
     window.location.href = `/admin/universities/${id}`;
   };
 

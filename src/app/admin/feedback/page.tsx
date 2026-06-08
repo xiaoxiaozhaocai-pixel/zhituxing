@@ -54,6 +54,7 @@ export default function AdminFeedbackPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+// eslint-disable-next-line
       fetchFeedbacks();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

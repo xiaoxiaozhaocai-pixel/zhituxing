@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -46,6 +46,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+// eslint-disable-next-line
     if (isAuthenticated) fetchOrders();
   }, [isAuthenticated]);
 

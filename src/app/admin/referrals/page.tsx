@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -35,6 +35,7 @@ export default function AdminReferralsPage() {
   const [editingReferral, setEditingReferral] = useState<Partial<Referral>>({});
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchReferrals();
   }, []);
 

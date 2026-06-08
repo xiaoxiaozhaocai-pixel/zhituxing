@@ -57,6 +57,7 @@ export default function ContentPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeType, page]);

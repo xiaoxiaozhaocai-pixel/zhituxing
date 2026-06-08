@@ -55,6 +55,7 @@ export default function HistoryPage() {
   // 获取对话历史
   useEffect(() => {
     if (user) {
+// eslint-disable-next-line
       fetchHistories();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

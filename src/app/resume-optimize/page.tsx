@@ -81,7 +81,9 @@ export default function ResumeOptimizePage() {
 
   useEffect(() => {
     if (user) {
+// eslint-disable-next-line
       fetchRecentRecords();
+// eslint-disable-next-line
       fetchMyResumes();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

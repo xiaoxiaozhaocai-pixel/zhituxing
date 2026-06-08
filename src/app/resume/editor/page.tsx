@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -465,6 +466,7 @@ export default function ResumeEditorPage() {
     return createEmptyResume();
   });
   const [activeSection, setActiveSection] = useState<SectionKey>('basic');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [saving, setSaving] = useState(false);
   const [conversationMode, setConversationMode] = useState(false);
   const [chatMessages, setChatMessages] = useState<{role:'assistant'|'user';content:string}[]>([

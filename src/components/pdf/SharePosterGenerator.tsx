@@ -1,5 +1,6 @@
-'use client';
+﻿'use client';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useState, useRef, useCallback } from 'react';
 import NextImage from 'next/image';
 import { loadJSPDF } from '@/lib/dynamic-imports';

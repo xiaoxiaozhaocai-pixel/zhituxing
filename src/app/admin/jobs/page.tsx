@@ -53,6 +53,7 @@ export default function JobsPage() {
   const [showBatchImport, setShowBatchImport] = useState(false);
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);

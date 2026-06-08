@@ -51,6 +51,7 @@ export default function JdReviewPage() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, page]);

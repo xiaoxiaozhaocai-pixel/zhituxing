@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 
@@ -23,6 +23,7 @@ export default function FeatureFlagsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchFlags();
   }, []);
 

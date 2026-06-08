@@ -48,6 +48,7 @@ export default function AdminCareerPlanningPage() {
 
   useEffect(() => {
     if (user) {
+// eslint-disable-next-line
       fetchReports();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

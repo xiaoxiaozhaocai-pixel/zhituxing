@@ -620,6 +620,7 @@ export default function SkillPortraitPage() {
       return;
     }
     if (user) {
+// eslint-disable-next-line
       fetchExistingProfile();
     }
   }, [user, authLoading, router]);

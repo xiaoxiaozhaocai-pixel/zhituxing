@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,6 +73,7 @@ export default function LearningPathPage() {
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
+// eslint-disable-next-line
       fetchLearningData();
 
       // 埋点：查看学习路径

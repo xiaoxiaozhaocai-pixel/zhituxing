@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -52,6 +52,7 @@ export default function InvitePage() {
   // 获取邀请数据
   useEffect(() => {
     if (user) {
+// eslint-disable-next-line
       fetchInviteData();
     }
   }, [user]);

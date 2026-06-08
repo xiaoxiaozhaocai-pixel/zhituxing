@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { X, Cookie, Settings } from 'lucide-react';
@@ -34,6 +34,7 @@ const CookieConsent = () => {
   // Handle SSR hydration - only check storage after mount
   useEffect(() => {
     setMounted(true);
+// eslint-disable-next-line
     const hasConsent = checkExistingConsent();
     if (!hasConsent) {
       setShowBanner(true);

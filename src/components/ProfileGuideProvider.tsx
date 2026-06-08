@@ -18,6 +18,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
   const [showGuideBar, setShowGuideBar] = useState(false);
 
   useEffect(() => {
+// eslint-disable-next-line
     checkUserProfile();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

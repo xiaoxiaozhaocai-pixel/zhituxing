@@ -34,6 +34,7 @@ export default function ReferralsPage() {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchReferrals();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCity]);

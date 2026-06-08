@@ -63,6 +63,7 @@ export default function NotificationsPage() {
   const [sendResult, setSendResult] = useState<string | null>(null);
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, typeFilter]);

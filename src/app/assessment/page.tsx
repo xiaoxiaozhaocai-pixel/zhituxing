@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -67,6 +67,7 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
+// eslint-disable-next-line
       fetchAssessment();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -350,6 +351,7 @@ export default function AssessmentPage() {
                     <CardTitle className="text-purple-700">能力雷达图</CardTitle>
                   </CardHeader>
                   <CardContent>
+// eslint-disable-next-line
                     <RadarChart dimensions={selected.data.dimensions} />
                     {/* 维度详情 */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">

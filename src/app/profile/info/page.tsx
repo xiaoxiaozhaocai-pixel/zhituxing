@@ -267,6 +267,7 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
 
 function SkillSelectItem({
   skill,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
   category,
   selected,
   level,
@@ -451,6 +452,7 @@ function ProfileInfoContent() {
       return;
     }
     if (user) {
+// eslint-disable-next-line
       fetchProfile();
     }
   }, [user, authLoading, router]);

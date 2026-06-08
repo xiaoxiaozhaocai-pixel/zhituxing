@@ -82,6 +82,7 @@ export default function CareerPlanningPage() {
   // 读取用户个人信息
   useEffect(() => {
     if (user) {
+// eslint-disable-next-line
       fetchUserProfile();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

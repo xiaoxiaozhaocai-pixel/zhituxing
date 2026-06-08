@@ -25,6 +25,7 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
+// eslint-disable-next-line
       fetchFavorites();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

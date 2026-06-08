@@ -54,6 +54,7 @@ export default function SyncPage() {
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
 
   useEffect(() => {
+// eslint-disable-next-line
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);

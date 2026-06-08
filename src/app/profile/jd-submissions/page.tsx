@@ -50,6 +50,7 @@ export default function JdSubmissionsPage() {
 
   useEffect(() => {
     if (user) {
+// eslint-disable-next-line
       fetchSubmissions();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

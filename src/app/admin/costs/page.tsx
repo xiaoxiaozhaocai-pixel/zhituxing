@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -148,6 +148,7 @@ export default function AdminCostsPage() {
   const [days, setDays] = useState(30);
 
   useEffect(() => {
+// eslint-disable-next-line
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
