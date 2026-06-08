@@ -206,12 +206,19 @@ function extractCardsFromJSON(obj: Record<string, unknown>): CardItem[] {
           if (item.industry || item.city || item.company) {
             card.subtitle = [item.industry, item.city, item.company].filter(Boolean).map(String).join(' · ');
           }
-          // 技能标签
-          const skillKeys = ['required_skills', 'missing_skills', 'skills', 'tags', 'exam_subjects'];
-          for (const sk of skillKeys) {
-            if (Array.isArray(item[sk])) {
-              card.tags = (item[sk] as unknown[]).map(s => String(s));
-              break;
+          // 技能标签：合并 required_skills + missing_skills（后者加 ⚠️ 前缀）
+          const requiredSkills = Array.isArray(item.required_skills) ? (item.required_skills as unknown[]).map(s => String(s)) : [];
+          const missingSkills = Array.isArray(item.missing_skills) ? (item.missing_skills as unknown[]).map(s => `⚠️${String(s)}`) : [];
+          const mergedSkills = [...requiredSkills, ...missingSkills];
+          if (mergedSkills.length > 0) {
+            card.tags = mergedSkills;
+          } else {
+            const skillKeys = ['skills', 'tags', 'exam_subjects'];
+            for (const sk of skillKeys) {
+              if (Array.isArray(item[sk])) {
+                card.tags = (item[sk] as unknown[]).map(s => String(s));
+                break;
+              }
             }
           }
           cards.push(card);
