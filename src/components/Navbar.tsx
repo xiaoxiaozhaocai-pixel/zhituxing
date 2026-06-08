@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, Target, Route, Network, FileText, ChevronDown, Building2, TrendingUp } from 'lucide-react';
+import { Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, BookOpen, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -10,26 +10,33 @@ import { usePathname, useRouter } from 'next/navigation';
 
 const mainNavItems = [
   { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
-  { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
-  { name: 'AI助手', href: '/assistant', icon: <MessageSquare className="w-4 h-4" /> },
-  { name: '我的成长', href: '/growth', icon: <TrendingUp className="w-4 h-4" /> },
-  { name: '简历优化', href: '/resume-optimize', icon: <FileText className="w-4 h-4" /> },
 ];
-
 const moreNavItems = [
-  { name: '岗位匹配', href: '/match', icon: <Target className="w-4 h-4" /> },
-  { name: '技能画像', href: '/skill-portrait', icon: <Target className="w-4 h-4" /> },
-  { name: '学习路径', href: '/learning-path', icon: <Route className="w-4 h-4" /> },
-  { name: '技能图谱', href: '/skills-graph', icon: <Network className="w-4 h-4" /> },
-  { name: '互动课程', href: '/courses', icon: <BookOpen className="w-4 h-4" /> },
-  { name: '考研就业决策', href: '/decision', icon: <Sparkles className="w-4 h-4" /> },
   { name: '会员中心', href: '/membership', icon: <Crown className="w-4 h-4" /> },
-  { name: '求职干货', href: '/resources', icon: <BookOpen className="w-4 h-4" /> },
-  { name: '快速开始', href: '/guide', icon: <Compass className="w-4 h-4" /> },
   { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-4 h-4" /> },
   { name: '联系我们', href: '/contact', icon: <Phone className="w-4 h-4" /> },
   { name: '高校合作', href: '/university', icon: <Building2 className="w-4 h-4" /> },
 ];
+
+
+const agentNavItems = [
+  { name: '职搭子', href: '/assistant', icon: <Bot className="w-4 h-4" /> },
+  { name: '职业规划', href: '/career-planning', icon: <Compass className="w-4 h-4" /> },
+  { name: '简历助手', href: '/resume-optimize', icon: <FileText className="w-4 h-4" /> },
+];
+
+const agentNavItems2 = [
+  { name: 'AI模拟面试', href: '/interview', icon: <MessageSquare className="w-4 h-4" /> },
+  { name: '考研就业决策', href: '/decision', icon: <Sparkles className="w-4 h-4" /> },
+];
+
+const exploreNavItems = [
+  { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
+  { name: '互动课程', href: '/courses', icon: <BookOpen className="w-4 h-4" /> },
+  { name: '干货库', href: '/resources', icon: <GraduationCap className="w-4 h-4" /> },
+];
+
+
 
 export default function Navbar() {
   const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
@@ -99,9 +106,82 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-0.5">
+            {/* Desktop Nav - 智能体两行布局 */}
+            <div className="hidden lg:flex items-center gap-3">
+              {/* 首页 */}
               {mainNavItems.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'bg-[#165DFF]/8 text-[#165DFF]'
+                        : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.name}
+                  </Link>
+                );
+              })}
+
+              {/* 分隔线 */}
+              <div className="w-px h-6 bg-[#E2E8F0] mx-1" />
+
+              {/* 智能体区 - 两行 */}
+              <div className="flex flex-col gap-0.5">
+                {/* 第一行：职搭子 | 职业规划 | 简历助手 */}
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#94A3B8] px-1 font-medium">智能体</span>
+                  {agentNavItems.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border border-[#165DFF]/20'
+                            : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F1F5F9] border border-transparent'
+                        }`}
+                      >
+                        {item.icon}
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+                {/* 第二行：AI模拟面试 | 考研就业决策 */}
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-transparent px-1">智能体</span>
+                  {agentNavItems2.map((item) => {
+                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border border-[#165DFF]/20'
+                            : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F1F5F9] border border-transparent'
+                        }`}
+                      >
+                        {item.icon}
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 分隔线 */}
+              <div className="w-px h-6 bg-[#E2E8F0] mx-1" />
+
+              {/* 探索区 */}
+              <span className="text-[10px] text-[#94A3B8] font-medium mr-1">探索</span>
+              {exploreNavItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                 return (
                   <Link
@@ -240,7 +320,7 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-[#E2E8F0] bg-white/95 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-5 py-4 space-y-1.5">
-              {[...mainNavItems, ...moreNavItems].map((item) => {
+              {[...mainNavItems, ...agentNavItems, ...agentNavItems2, ...exploreNavItems, ...moreNavItems].map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                 return (
                   <Link
