@@ -351,7 +351,7 @@ export default function AssessmentPage() {
                     <CardTitle className="text-purple-700">能力雷达图</CardTitle>
                   </CardHeader>
                   <CardContent>
-// eslint-disable-next-line
+{/* eslint-disable-next-line */}
                     <RadarChart dimensions={selected.data.dimensions} />
                     {/* 维度详情 */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">

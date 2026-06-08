@@ -347,7 +347,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
       errors.push('企业类型无效');
     }
 
-// eslint-disable-next-line
+{/* eslint-disable-next-line */}
     editingRow.errors = errors;
     editingRow.status = errors.length > 0 ? 'error' : 'valid';
 
@@ -911,7 +911,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
                   <Button variant="outline" onClick={() => setEditingRow(null)}>取消</Button>
-// eslint-disable-next-line
+{/* eslint-disable-next-line */}
                   <Button onClick={saveEditRow}>保存</Button>
                 </div>
               </CardContent>
