@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -245,7 +245,6 @@ function AssistantContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, quota, refreshQuota } = useAuth();
-  const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

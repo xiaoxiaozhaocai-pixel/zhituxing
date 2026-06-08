@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,9 +14,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  User, GraduationCap, Briefcase, FolderGit2, Wrench, Award,
-  Plus, Trash2, GripVertical, Eye, Sparkles, Save, FileDown,
-  ChevronRight, ChevronDown, X, MessageCircle, Bot, Send,
+  User, GraduationCap, Briefcase, FolderGit2, Wrench,
+  Plus, Trash2, Eye, Sparkles, Save,
+  X, MessageCircle, Bot, Send,
 } from 'lucide-react';
 import {
   Resume, ResumeBasicInfo, ResumeEducation, ResumeExperience,
@@ -543,7 +543,7 @@ export default function ResumeEditorPage() {
       if (data.updates && Object.keys(data.updates).length > 0) {
         setResume(prev => applyUpdates(prev, data.updates));
       }
-    } catch (err) {
+    } catch {
       setChatMessages(prev => [...prev, {
         role: 'assistant',
         content: '抱歉，我这边出了点小问题，能再说一遍吗？',

@@ -8,26 +8,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Loader2, Share2, Download, Image } from 'lucide-react';
 
 interface SharePosterGeneratorProps {
-  reportId: string;
   reportTitle: string;
   reportType: 'career' | 'decision';
   userName?: string;
   inviteCode: string;
-  isMember: boolean;
 }
 
 export default function SharePosterGenerator({
-  reportId,
   reportTitle,
   reportType,
   userName,
   inviteCode,
-  isMember,
 }: SharePosterGeneratorProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [posterData, setPosterData] = useState<string | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const generatePoster = useCallback(() => {
     setGenerating(true);

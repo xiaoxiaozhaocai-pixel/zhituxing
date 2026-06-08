@@ -513,8 +513,8 @@ function SelectCombobox({ options, value, onChange, placeholder = '请选择...'
 
 // ==================== 技能选择项组件 ====================
 
-function SkillSelectItem({ skill, category, selected, level, onToggle, onLevelChange }: {
-  skill: SkillItem; category: string; selected: boolean; level: ProficiencyLevel;
+function SkillSelectItem({ skill, selected, level, onToggle, onLevelChange }: {
+  skill: SkillItem; selected: boolean; level: ProficiencyLevel;
   onToggle: () => void; onLevelChange: (lvl: ProficiencyLevel) => void;
 }) {
   const levels: ProficiencyLevel[] = ['了解', '熟悉', '熟练', '精通'];
