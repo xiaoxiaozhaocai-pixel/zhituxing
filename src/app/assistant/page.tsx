@@ -353,16 +353,73 @@ function AssistantContent() {
     return () => { AnalyticsTracker.destroy(); };
   }, [user]);
 
-  // 初始化欢迎消息
+  // 按 bot 缓存对话历史（本次浏览器会话内切换 tab 不丢失对话）
+  const messagesRef = useRef<Message[]>([]);
+  const historyRef = useRef<Record<string, Message[]>>({});
+  const prevBotRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (messages.length === 0) {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // 切换 bot 时：先保存当前 bot 的对话，再恢复目标 bot 的对话（无则插入欢迎消息）
+  useEffect(() => {
+    const oldBot = prevBotRef.current;
+
+    // 保存上一个 bot 的对话（仅当真的切换且内容不为空）
+    if (oldBot && oldBot !== activeBot && messagesRef.current.length > 1) {
+      historyRef.current[oldBot] = messagesRef.current;
+      try {
+        sessionStorage.setItem(`chat_${oldBot}`, JSON.stringify(messagesRef.current));
+      } catch {
+        // 忽略 quota 超限等错误
+      }
+    }
+
+    // 恢复目标 bot 的对话：先看内存，再看 sessionStorage
+    let restored = historyRef.current[activeBot];
+    if (!restored) {
+      try {
+        const stored = sessionStorage.getItem(`chat_${activeBot}`);
+        if (stored) {
+          const parsed: Message[] = JSON.parse(stored).map((m: Message & { timestamp: string | Date }) => ({
+            ...m,
+            timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+          }));
+          if (parsed.length > 0) {
+            restored = parsed;
+            historyRef.current[activeBot] = parsed;
+          }
+        }
+      } catch {
+        // 忽略反序列化错误
+      }
+    }
+
+    if (restored && restored.length > 0) {
+      setMessages(restored);
+    } else {
+      const newBot = bots.find(b => b.id === activeBot) || bots[0];
       setMessages([{
         role: 'assistant',
-        content: currentBot.welcomeMessage,
-        timestamp: new Date()
+        content: newBot.welcomeMessage,
+        timestamp: new Date(),
       }]);
     }
-  }, [activeBot, currentBot.welcomeMessage]);
+
+    prevBotRef.current = activeBot;
+  }, [activeBot]);
+
+  // 持续同步当前 bot 的对话到 sessionStorage（防止页面刷新丢失）
+  useEffect(() => {
+    if (prevBotRef.current !== activeBot) return;
+    if (messages.length <= 1) return;  // 只有欢迎消息时不持久化
+    try {
+      sessionStorage.setItem(`chat_${activeBot}`, JSON.stringify(messages));
+    } catch {
+      // 忽略存储错误
+    }
+  }, [messages, activeBot]);
 
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
@@ -370,16 +427,8 @@ function AssistantContent() {
     if (bot && !pendingQuery) {
       const validBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'xiaozhi'];
       if (validBots.includes(bot)) {
+        // 切换 activeBot 会触发 useEffect 自动加载该 bot 的历史对话或欢迎消息
         setActiveBot(bot);
-        // 立即用新 bot 的欢迎消息覆盖初始 jobs 欢迎消息（避免 useEffect 因 messages 非空不再刷新）
-        const targetBot = bots.find(b => b.id === bot);
-        if (targetBot) {
-          setMessages([{
-            role: 'assistant',
-            content: targetBot.welcomeMessage,
-            timestamp: new Date()
-          }]);
-        }
       }
     }
     const query = searchParams.get('query');
@@ -908,16 +957,9 @@ function AssistantContent() {
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {
-    // 先清除当前 activeBot 的 conversationId，再切换到新的 botId
-    localStorage.removeItem(`conversationId_${activeBot}`);
+    // 切换 bot：上面的 useEffect 会自动保存当前对话并恢复目标 bot 的历史
+    // 不再清除 conversationId，这样切回来还能续接同一会话
     setActiveBot(botId);
-    // 立即插入新 bot 的欢迎消息（避免点击同一 tab 时 useEffect 不触发导致白屏）
-    const newBot = bots.find(b => b.id === botId) || bots[0];
-    setMessages([{
-      role: 'assistant',
-      content: newBot.welcomeMessage,
-      timestamp: new Date()
-    }]);
     // 切换Tab时重置聊天区域滚动位置
     requestAnimationFrame(() => {
       if (chatContainerRef.current) {
