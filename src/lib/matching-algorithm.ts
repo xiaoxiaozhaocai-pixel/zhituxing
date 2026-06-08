@@ -410,16 +410,107 @@ export function estimateSalaryRange(
  * 从薪资范围字符串解析出上下限数字
  * 支持格式："8k-12k"、"8000-12000"、"8K-12K/月"、"6-10K" 等
  */
+
+/**
+ * 行业+岗位默认薪资估算（月薪/元）
+ * 当 JD 薪资为"面议"时使用，基于行业和岗位关键字推断
+ */
+const INDUSTRY_DEFAULTS: Record<string, { min: number; max: number }> = {
+  '互联网': { min: 10000, max: 25000 },
+  'IT': { min: 10000, max: 25000 },
+  '软件': { min: 10000, max: 25000 },
+  '金融': { min: 8000, max: 20000 },
+  '银行': { min: 8000, max: 20000 },
+  '通信': { min: 8000, max: 18000 },
+  '硬件': { min: 8000, max: 18000 },
+  '电子': { min: 8000, max: 18000 },
+  '半导体': { min: 10000, max: 25000 },
+  '人工智能': { min: 12000, max: 30000 },
+  '医疗': { min: 7000, max: 18000 },
+  '制药': { min: 7000, max: 18000 },
+  '教育': { min: 5000, max: 12000 },
+  '培训': { min: 5000, max: 12000 },
+  '制造': { min: 6000, max: 15000 },
+  '汽车': { min: 7000, max: 18000 },
+  '房地产': { min: 6000, max: 15000 },
+  '建筑': { min: 6000, max: 15000 },
+  '零售': { min: 5000, max: 10000 },
+  '电商': { min: 6000, max: 18000 },
+  '物流': { min: 5000, max: 12000 },
+  '能源': { min: 7000, max: 18000 },
+  '媒体': { min: 5000, max: 12000 },
+  '广告': { min: 5000, max: 12000 },
+  '咨询': { min: 7000, max: 18000 },
+  '财务': { min: 6000, max: 15000 },
+  '会计': { min: 5000, max: 12000 },
+  '传媒': { min: 5000, max: 15000 },
+  '市场营销': { min: 6000, max: 15000 },
+  '设计': { min: 6000, max: 18000 },
+  '游戏': { min: 8000, max: 20000 },
+  '法律': { min: 6000, max: 15000 },
+  '餐饮': { min: 5000, max: 10000 },
+  '旅游': { min: 5000, max: 10000 },
+};
+
+/** 按岗位关键字微调系数 */
+function getPositionMultiplier(jobTitle: string): number {
+  const title = jobTitle.toLowerCase();
+  const seniorKeywords = ['高级', '资深', '主管', '经理', '架构师', '专家', 'leader', 'senior', 'staff'];
+  const juniorKeywords = ['实习', '助理', '初级', '应届', '培训生', '管培生', 'intern', 'junior', 'trainee'];
+  
+  for (const kw of seniorKeywords) {
+    if (title.includes(kw)) return 1.5;
+  }
+  for (const kw of juniorKeywords) {
+    if (title.includes(kw)) return 0.7;
+  }
+  return 1.0;
+}
+
+export function estimateDefaultSalary(industry?: string, jobTitle?: string): { min: number; max: number } | null {
+  // 先查行业匹配
+  if (industry) {
+    for (const [key, range] of Object.entries(INDUSTRY_DEFAULTS)) {
+      if (industry.includes(key)) {
+        const multiplier = getPositionMultiplier(jobTitle || '');
+        return {
+          min: Math.round(range.min * multiplier),
+          max: Math.round(range.max * multiplier),
+        };
+      }
+    }
+  }
+  
+  // 无行业匹配 → 岗位关键字兜底
+  const multiplier = getPositionMultiplier(jobTitle || '');
+  const baseMin = 6000;
+  const baseMax = 15000;
+  return {
+    min: Math.round(baseMin * multiplier),
+    max: Math.round(baseMax * multiplier),
+  };
+}
+
+
 export function parseSalaryRange(salaryRange: string): {
   min: number;
   max: number;
 } | null {
   if (!salaryRange) return null;
 
-  // 统一转小写，去除空格和"月"字
   const cleaned = salaryRange.toLowerCase().replace(/\s/g, '').replace(/\/月/g, '');
 
-  // 匹配 数字+可选k 数字分隔符 数字+可选k
+  // 1. 中文单位格式："X千-Y万"、"X千-Y千"、"X万-Y万"
+  const chineseMatch = cleaned.match(/(\d+\.?\d*)\s*([万千])\s*[-–—~至到]\s*(\d+\.?\d*)\s*([万千])?/);
+  if (chineseMatch) {
+    const unit1 = chineseMatch[2]! === '万' ? 10000 : 1000;
+    const unit2 = (chineseMatch[4] || chineseMatch[2]) === '万' ? 10000 : 1000;
+    const cMin = parseFloat(chineseMatch[1]!) * unit1;
+    const cMax = parseFloat(chineseMatch[3]!) * unit2;
+    return { min: Math.round(cMin), max: Math.round(cMax) };
+  }
+
+  // 2. 标准格式："8k-12k"、"8000-12000"、"8K-12K"
   const pattern = /(\d+\.?\d*)\s*k?\s*[-–—~至到]\s*(\d+\.?\d*)\s*k?/i;
   const match = cleaned.match(pattern);
 
@@ -428,7 +519,6 @@ export function parseSalaryRange(salaryRange: string): {
   let min = parseFloat(match[1]!)!;
   let max = parseFloat(match[2]!)!;
 
-  // 如果原始字符串含 k，单位为千
   if (/k/i.test(salaryRange)) {
     min *= 1000;
     max *= 1000;

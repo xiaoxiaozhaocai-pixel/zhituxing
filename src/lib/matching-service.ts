@@ -12,6 +12,7 @@ import { getEmbedding } from '@/lib/embedding';
 import {
   calculateSkillMatch,
   estimateSalaryRange,
+  estimateDefaultSalary,
   parseJobSkills,
   extractUserSkillsFromAbilityBackground,
   parseUserSkillsFromText,
@@ -329,7 +330,7 @@ function scoreJob(
   const experienceScore = matchExperience(profile.grade, jd.experience as string);
 
   // 3f. 薪资匹配 (10%)
-  const salaryScore = matchSalary(expectedSalary, jd.salary_range as string);
+  const salaryScore = matchSalary(expectedSalary, jd.salary_range as string, jd.industry as string, jd.job_title as string);
 
   // 综合加权
   const totalScore = Math.round(
@@ -341,9 +342,13 @@ function scoreJob(
     salaryScore * WEIGHTS.salary
   );
 
-  // 薪资估算
+  // 薪资估算（"面议"时用行业默认值）
   const salaryEstimation = (() => {
-    const parsed = parseSalaryRange(jd.salary_range as string);
+    let parsed = parseSalaryRange(jd.salary_range as string);
+    if (!parsed) {
+      const defaults = estimateDefaultSalary(jd.industry as string, jd.job_title as string);
+      if (defaults) parsed = defaults;
+    }
     if (!parsed) return undefined;
     return estimateSalaryRange(totalScore, parsed.min, parsed.max);
   })();
@@ -451,11 +456,16 @@ function matchExperience(userGrade?: string, jdExp?: string): number {
 }
 
 /** 薪资匹配 */
-function matchSalary(expectedSalary?: string, jdSalary?: string): number {
-  if (!expectedSalary || !jdSalary) return 60;
+function matchSalary(expectedSalary?: string, jdSalary?: string, jdIndustry?: string, jdTitle?: string): number {
+  if (!expectedSalary) return 60;
   const parsedExpected = parseSalaryRange(expectedSalary);
-  const parsedJd = parseSalaryRange(jdSalary);
-  if (!parsedExpected || !parsedJd) return 60;
+  if (!parsedExpected) return 60;
+  
+  let parsedJd = parseSalaryRange(jdSalary || '');
+  if (!parsedJd) {
+    parsedJd = estimateDefaultSalary(jdIndustry, jdTitle);
+  }
+  if (!parsedJd) return 60;
 
   // 期望薪资在 JD 范围内的百分比
   const userMid = (parsedExpected.min + parsedExpected.max) / 2;
