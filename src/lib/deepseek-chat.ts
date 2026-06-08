@@ -138,7 +138,7 @@ export async function deepSeekChat(
  */
 export function createDeepSeekSSEStream(options: DeepSeekStreamOptions): ReadableStream {
   const encoder = new TextEncoder();
-  const { returnUsage, ...streamOptions } = options;
+  const { returnUsage: _returnUsage, ...streamOptions } = options;
 
   return new ReadableStream({
     async start(controller) {

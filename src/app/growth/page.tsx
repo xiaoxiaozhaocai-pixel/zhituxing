@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Clock, Globe, Sparkles, Target, TrendingUp, User } from 'lucide-react';
+import { ArrowRight, Clock, Sparkles, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface TimelineItem {
@@ -45,16 +45,7 @@ export default function GrowthPage() {
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/auth');
-      return;
-    }
-    fetchTimeline();
-  }, [user, authLoading]);
-
-  const fetchTimeline = async () => {
+  const fetchTimeline = useCallback(async () => {
     try {
       const res = await fetch('/api/growth/timeline', {
         headers: { 'x-user-id': user!.id },
@@ -66,7 +57,16 @@ export default function GrowthPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push('/auth');
+      return;
+    }
+    fetchTimeline();
+  }, [user, authLoading, router, fetchTimeline]);
 
   if (authLoading || (loading && !items.length)) {
     return (
@@ -143,7 +143,7 @@ export default function GrowthPage() {
               <div className="absolute left-6 top-3 bottom-3 w-0.5 bg-[#E2E8F0]" />
 
               <div className="space-y-4">
-                {items.map((item, idx) => {
+                {items.map((item, _idx) => {
                   const style = typeStyles[item.type];
                   return (
                     <div key={`${item.type}-${item.id}`} className="relative pl-14">

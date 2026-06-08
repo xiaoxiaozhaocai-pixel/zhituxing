@@ -60,7 +60,6 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.en
 
 const BATCH_SIZE = 20;
 const DELAY_MS = 500;
-const MAX_RETRIES = 3;
 
 // ============================================================
 // 工具函数

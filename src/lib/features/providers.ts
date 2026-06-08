@@ -1,7 +1,7 @@
 // src/lib/features/providers.ts
 // Feature Flag 读取层：环境变量 > Supabase site_config > 代码默认值
 
-import { FeatureFlag, FLAG_CONFIGS } from './flags';
+import { FLAG_CONFIGS } from './flags';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // ============================================================

@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
-import { matchJobs, type MatchRequest } from '@/lib/matching-service';
+import { matchJobs } from '@/lib/matching-service';
 import {
   MatchPostRequestSchema,
   MatchPostDataSchema,

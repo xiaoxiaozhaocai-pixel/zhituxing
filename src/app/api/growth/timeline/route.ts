@@ -6,6 +6,14 @@ import { getAuthenticatedUserId } from '@/lib/auth';
 
 const supabase = getSupabaseAdmin();
 
+
+interface TimelineRecord {
+  id: string;
+  created_at: string;
+  target_position?: string;
+  industry?: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const userId = await getAuthenticatedUserId(request);
@@ -29,7 +37,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     const items = [
-      ...(careerPlans.data || []).map((p: any) => ({
+      ...(careerPlans.data || []).map((p: TimelineRecord) => ({
         id: p.id,
         type: 'career-plan' as const,
         typeLabel: '职业规划',
@@ -40,7 +48,7 @@ export async function GET(request: NextRequest) {
         link: `/career-planning/report/${p.id}`,
         linkLabel: '查看报告 →',
       })),
-      ...(competencyResults.data || []).map((c: any) => ({
+      ...(competencyResults.data || []).map((c: TimelineRecord) => ({
         id: c.id,
         type: 'competency' as const,
         typeLabel: '胜任力评估',
@@ -51,7 +59,7 @@ export async function GET(request: NextRequest) {
         link: null,
         linkLabel: '',
       })),
-      ...(assessmentResults.data || []).map((a: any) => ({
+      ...(assessmentResults.data || []).map((a: TimelineRecord) => ({
         id: a.id,
         type: 'assessment' as const,
         typeLabel: '能力测评',
