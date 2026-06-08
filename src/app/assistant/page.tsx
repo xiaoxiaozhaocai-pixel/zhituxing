@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer} from 'lucide-react';
+import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer, Share2, CheckSquare, Square} from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -250,6 +250,13 @@ function AssistantContent() {
   // 导出功能状态
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  // 选择消息模式
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  // 分享链接状态
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [jdUrl, setJdUrl] = useState('');
   const [jdText, setJdText] = useState('');
@@ -1019,7 +1026,8 @@ function AssistantContent() {
     return md;
   }
   
-  function messagesToHtml(): string {
+  function messagesToHtml(msgs?: Message[]): string {
+    const effective = msgs || messages;
     const botName = currentBot.name;
     const date = new Date().toLocaleString('zh-CN');
     let html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">`;
@@ -1041,7 +1049,7 @@ function AssistantContent() {
     html += `<h1>职途星 - ${botName} 对话记录</h1>`;
     html += `<p class="meta">导出时间：${date}</p>`;
     
-    for (const msg of messages) {
+    for (const msg of effective) {
       const content = msg.content
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -1122,6 +1130,105 @@ function AssistantContent() {
     }
   };
 
+  // 获取要导出/分享的消息（选择模式下只取勾选的，否则取全部）
+  function getEffectiveMessages(): Message[] {
+    if (selectMode && selectedIndices.size > 0) {
+      return messages.filter((_, i) => selectedIndices.has(i));
+    }
+    return messages.filter(m => m.role !== 'assistant' || !m.content.startsWith('👋'));
+  }
+  
+  // 选择模式辅助函数
+  const toggleSelectMode = () => {
+    if (selectMode) {
+      setSelectMode(false);
+      setSelectedIndices(new Set());
+    } else {
+      setSelectMode(true);
+      // 默认全选（排除欢迎消息）
+      const indices = new Set<number>();
+      messages.forEach((m, i) => {
+        if (!(m.role === 'assistant' && i === 0 && m.content.startsWith('👋'))) {
+          indices.add(i);
+        }
+      });
+      setSelectedIndices(indices);
+    }
+  };
+  
+  const toggleMessage = (index: number) => {
+    const next = new Set(selectedIndices);
+    if (next.has(index)) {
+      next.delete(index);
+    } else {
+      next.add(index);
+    }
+    setSelectedIndices(next);
+  };
+  
+  const selectAllMessages = () => {
+    const indices = new Set<number>();
+    messages.forEach((m, i) => {
+      if (!(m.role === 'assistant' && i === 0)) {
+        indices.add(i);
+      }
+    });
+    setSelectedIndices(indices);
+  };
+  
+  // 生成分享链接
+  const handleShare = async () => {
+    setShowExportMenu(false);
+    const effectiveMsgs = getEffectiveMessages();
+    if (effectiveMsgs.length === 0) return;
+    
+    // 检查配额
+    const remaining = getRemainingExports();
+    if (remaining <= 0 && !quota?.is_member && !quota?.is_lifetime_member) {
+      setQuotaFeature('分享对话');
+      setShowQuotaDialog(true);
+      return;
+    }
+    
+    setShareLoading(true);
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          botName: currentBot.name,
+          botGradient: currentBot.gradient,
+          messages: effectiveMsgs.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShareUrl(data.url);
+        if (!quota?.is_member && !quota?.is_lifetime_member) {
+          incrementExportCount();
+        }
+      } else {
+        toast.error(data.error || '生成分享链接失败');
+      }
+    } catch {
+      toast.error('网络错误，请重试');
+    } finally {
+      setShareLoading(false);
+    }
+  };
+  
+  const copyShareLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      toast.success('链接已复制，发送给朋友即可查看');
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      toast.error('复制失败，请手动复制');
+    }
+  };
+
   const _displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
   const _quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
 
@@ -1158,53 +1265,78 @@ function AssistantContent() {
             </p>
           </div>
           
-          {/* 导出按钮（有对话内容时才显示） */}
+          {/* 操作按钮组（有对话内容时显示） */}
           {messages.length > 1 && (
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              {/* 选择消息按钮 */}
               <button
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                disabled={exportLoading}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all disabled:opacity-50"
+                onClick={toggleSelectMode}
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-all ${
+                  selectMode
+                    ? 'bg-[#165DFF] text-white border-[#165DFF]'
+                    : 'text-gray-600 bg-white border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
+                }`}
               >
-                {exportLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Download className="w-4 h-4" />
-                )}
-                导出对话
-                <span className="text-xs text-gray-400 ml-1">
-                  ({quota?.is_member ? '无限' : `${getRemainingExports()}/3`})
-                </span>
+                <CheckSquare className="w-4 h-4" />
+                {selectMode ? `已选 ${selectedIndices.size}` : '选择消息'}
               </button>
               
-              {showExportMenu && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                  <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
-                    <button
-                      onClick={() => handleExport('md')}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <FileTextIcon className="w-4 h-4 text-blue-500" />
-                      导出 Markdown
-                    </button>
-                    <button
-                      onClick={() => handleExport('docx')}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <File className="w-4 h-4 text-blue-600" />
-                      导出 Word 文档
-                    </button>
-                    <button
-                      onClick={() => handleExport('pdf')}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      <Printer className="w-4 h-4 text-red-500" />
-                      导出 PDF
-                    </button>
-                  </div>
-                </>
-              )}
+              {/* 导出按钮 */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  disabled={exportLoading || shareLoading}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all disabled:opacity-50"
+                >
+                  {exportLoading || shareLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4" />
+                  )}
+                  导出/分享
+                  <span className="text-xs text-gray-400 ml-1">
+                    ({quota?.is_member ? '无限' : `${getRemainingExports()}/3`})
+                  </span>
+                </button>
+                
+                {showExportMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                      {/* 分享链接 */}
+                      <button
+                        onClick={handleShare}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Share2 className="w-4 h-4 text-green-500" />
+                        生成分享链接
+                      </button>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        onClick={() => handleExport('md')}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <FileTextIcon className="w-4 h-4 text-blue-500" />
+                        导出 Markdown
+                      </button>
+                      <button
+                        onClick={() => handleExport('docx')}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <File className="w-4 h-4 text-blue-600" />
+                        导出 Word 文档
+                      </button>
+                      <button
+                        onClick={() => handleExport('pdf')}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Printer className="w-4 h-4 text-red-500" />
+                        导出 PDF
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -1335,8 +1467,21 @@ function AssistantContent() {
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                className={`flex items-start gap-3 group ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
+                {/* 选择模式下的勾选框 */}
+                {selectMode && (
+                  <button
+                    onClick={() => toggleMessage(index)}
+                    className="flex-shrink-0 mt-3 text-gray-400 hover:text-[#165DFF] transition-colors"
+                  >
+                    {selectedIndices.has(index) ? (
+                      <CheckSquare className="w-5 h-5 text-[#165DFF]" />
+                    ) : (
+                      <Square className="w-5 h-5" />
+                    )}
+                  </button>
+                )}
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     msg.role === 'user' 
@@ -1610,6 +1755,39 @@ function AssistantContent() {
       </div>
 
       {/* 配额用完弹窗 */}
+      {/* 分享链接弹窗 */}
+      <Dialog open={!!shareUrl} onOpenChange={() => setShareUrl(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-green-500" />
+              分享链接已生成
+            </DialogTitle>
+            <DialogDescription>
+              将此链接发送给朋友，对方无需登录即可查看对话内容
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
+              <input
+                readOnly
+                value={shareUrl || ''}
+                className="flex-1 text-sm bg-transparent outline-none text-gray-700"
+              />
+              <Button
+                onClick={copyShareLink}
+                className="bg-gradient-to-r from-[#165DFF] to-[#0E4FD9] hover:opacity-90 text-white h-9 px-4 text-sm flex-shrink-0"
+              >
+                {shareCopied ? '已复制 ✓' : '复制链接'}
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400">
+              💡 提示：分享链接包含当前对话的完整内容，对方可在浏览器中查看
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
         <DialogContent>
           <DialogHeader>
