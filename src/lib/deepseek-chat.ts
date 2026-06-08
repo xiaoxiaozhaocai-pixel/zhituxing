@@ -19,12 +19,31 @@ export interface DeepSeekStreamOptions {
   maxTokens?: number;
   onChunk?: (chunk: string) => void;
   signal?: AbortSignal;
+  returnUsage?: boolean;
+}
+
+export interface DeepSeekChatResult {
+  content: string;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }
 
 /**
  * 调用DeepSeek流式API，返回完整的文本响应
+ * 当 returnUsage=true 且非流式时，返回 DeepSeekChatResult（含 usage）
  */
-export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<string> {
+export async function deepSeekChat(
+  options: DeepSeekStreamOptions & { returnUsage: true }
+): Promise<DeepSeekChatResult>;
+export async function deepSeekChat(
+  options: DeepSeekStreamOptions & { returnUsage?: false }
+): Promise<string>;
+export async function deepSeekChat(
+  options: DeepSeekStreamOptions
+): Promise<string | DeepSeekChatResult> {
   const {
     messages,
     model = DEEPSEEK_MODEL,
@@ -32,6 +51,7 @@ export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<stri
     maxTokens = 4096,
     onChunk,
     signal,
+    returnUsage,
   } = options;
 
   if (!DEEPSEEK_API_KEY) {
@@ -62,7 +82,18 @@ export async function deepSeekChat(options: DeepSeekStreamOptions): Promise<stri
   // 非流式
   if (!onChunk) {
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || '';
+    const content = data.choices?.[0]?.message?.content || '';
+    if (returnUsage) {
+      return {
+        content,
+        usage: data.usage ? {
+          prompt_tokens: data.usage.prompt_tokens || 0,
+          completion_tokens: data.usage.completion_tokens || 0,
+          total_tokens: data.usage.total_tokens || 0,
+        } : undefined,
+      };
+    }
+    return content;
   }
 
   // 流式读取

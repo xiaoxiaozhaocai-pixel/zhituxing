@@ -104,12 +104,13 @@ export async function POST(request: NextRequest) {
     const userMessages = messages.filter((m) => m.role !== 'system');
     const fullMessages = [systemMessage, ...userMessages];
 
-    // 调用 DeepSeek（非流式）
+    // 调用 DeepSeek（非流式，返回含 usage 的结果）
     const result = await deepSeekChat({
       messages: fullMessages,
       temperature: 0.7,
       maxTokens: 2048,
-    });
+      returnUsage: true,
+    } as { messages: ChatMessage[]; temperature: number; maxTokens: number; returnUsage: true });
 
     // 记录成本
     if (result.usage) {
