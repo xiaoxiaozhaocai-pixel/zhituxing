@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Crown, Check, Zap, BarChart3, Network, Sparkles, Star, Shield, Loader2, ImageIcon, X
+  Crown, Check, Zap, BarChart3, Network, Sparkles, Star, Shield, Loader2, ImageIcon, X, Download
 } from 'lucide-react';
 import {
   Dialog,
@@ -29,6 +29,7 @@ const MEMBERSHIP_PLANS = [
       '完整岗位匹配分析',
       '技能图谱全功能',
       '学习路径规划',
+      '对话导出（无限次）',
       '1个月有效期'
     ],
     popular: true,
@@ -45,6 +46,7 @@ const MEMBERSHIP_PLANS = [
       '技能图谱全功能',
       '学习路径规划',
       '测评报告PDF导出',
+      '对话导出（无限次）',
       '4个月有效期'
     ],
     popular: false,
@@ -63,6 +65,7 @@ const MEMBERSHIP_PLANS = [
       '测评报告PDF导出',
       'AI模拟面试无限次',
       '职业规划深度分析',
+      '对话导出（无限次）',
       '12个月有效期'
     ],
     popular: false,
@@ -91,6 +94,7 @@ const FREE_BENEFITS = [
   { icon: <BarChart3 className="w-5 h-5" />, title: '匹配分析', desc: '基础岗位匹配' },
   { icon: <Network className="w-5 h-5" />, title: '技能图谱', desc: '查看技能关系' },
   { icon: <Sparkles className="w-5 h-5" />, title: '岗位搜索', desc: '搜索职位、查看详情' },
+  { icon: <Download className="w-5 h-5" />, title: '对话导出', desc: '每日3次导出机会' },
 ];
 
 export default function MembershipPage() {

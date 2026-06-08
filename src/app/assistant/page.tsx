@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown} from 'lucide-react';
+import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer} from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -247,6 +247,9 @@ function AssistantContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
   const [quotaFeature, setQuotaFeature] = useState<string>('');
+  // 导出功能状态
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [jdUrl, setJdUrl] = useState('');
   const [jdText, setJdText] = useState('');
@@ -968,6 +971,157 @@ function AssistantContent() {
     });
   };
 
+  // ===== 导出对话功能 =====
+  const EXPORT_DAILY_LIMIT = 3;
+  
+  function getExportKey(): string {
+    return `export_count_${new Date().toISOString().slice(0, 10)}`;
+  }
+  
+  function getTodayExportCount(): number {
+    try {
+      const count = localStorage.getItem(getExportKey());
+      return count ? parseInt(count, 10) : 0;
+    } catch { return 0; }
+  }
+  
+  function incrementExportCount(): void {
+    try {
+      const key = getExportKey();
+      const count = getTodayExportCount() + 1;
+      localStorage.setItem(key, String(count));
+    } catch { /* ignore */ }
+  }
+  
+  function getRemainingExports(): number {
+    const isMember = quota?.is_member || quota?.is_lifetime_member;
+    if (isMember) return 999; // 会员无限
+    return Math.max(0, EXPORT_DAILY_LIMIT - getTodayExportCount());
+  }
+  
+  function messagesToMarkdown(): string {
+    const botName = currentBot.name;
+    const date = new Date().toLocaleString('zh-CN');
+    let md = `# 职途星 - ${botName} 对话记录\n\n`;
+    md += `> 导出时间：${date}\n\n`;
+    md += `---\n\n`;
+    
+    for (const msg of messages) {
+      if (msg.role === 'user') {
+        md += `### 🧑 你\n\n${msg.content}\n\n`;
+      } else {
+        md += `### 🤖 ${botName}\n\n${msg.content}\n\n`;
+      }
+      md += `---\n\n`;
+    }
+    
+    md += `\n> 由 [职途星](https://zhituxing.tech) 生成 · 内容由AI生成，仅供参考\n`;
+    return md;
+  }
+  
+  function messagesToHtml(): string {
+    const botName = currentBot.name;
+    const date = new Date().toLocaleString('zh-CN');
+    let html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">`;
+    html += `<title>职途星 - ${botName} 对话记录</title>`;
+    html += `<style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.8; }
+      h1 { color: #165DFF; border-bottom: 2px solid #165DFF; padding-bottom: 10px; }
+      .meta { color: #999; font-size: 14px; margin-bottom: 30px; }
+      .user { background: #f0f5ff; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #165DFF; }
+      .bot { background: #f8fafd; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #00B42A; }
+      .role { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+      .user .role { color: #165DFF; }
+      .bot .role { color: #00B42A; }
+      .content { white-space: pre-wrap; word-break: break-word; }
+      .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 13px; text-align: center; }
+      .footer a { color: #165DFF; }
+      @media print { body { max-width: 100%; } }
+    </style></head><body>`;
+    html += `<h1>职途星 - ${botName} 对话记录</h1>`;
+    html += `<p class="meta">导出时间：${date}</p>`;
+    
+    for (const msg of messages) {
+      const content = msg.content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`(.+?)`/g, '<code>$1</code>');
+      
+      if (msg.role === 'user') {
+        html += `<div class="user"><div class="role">🧑 你</div><div class="content">${content}</div></div>`;
+      } else {
+        html += `<div class="bot"><div class="role">🤖 ${botName}</div><div class="content">${content}</div></div>`;
+      }
+    }
+    
+    html += `<div class="footer"><p>由 <a href="https://zhituxing.tech">职途星</a> 生成 · 内容由AI生成，仅供参考</p></div>`;
+    html += `</body></html>`;
+    return html;
+  }
+  
+  function downloadFile(content: string, filename: string, mimeType: string) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+  const handleExport = async (format: 'md' | 'docx' | 'pdf') => {
+    setShowExportMenu(false);
+    
+    // 检查配额
+    const remaining = getRemainingExports();
+    if (remaining <= 0 && !quota?.is_member && !quota?.is_lifetime_member) {
+      setQuotaFeature('导出对话');
+      setShowQuotaDialog(true);
+      return;
+    }
+    
+    setExportLoading(true);
+    const botName = currentBot.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    
+    try {
+      if (format === 'md') {
+        const md = messagesToMarkdown();
+        downloadFile(md, `职途星_${botName}_${dateStr}.md`, 'text/markdown;charset=utf-8');
+      } else if (format === 'docx') {
+        const html = messagesToHtml();
+        downloadFile(html, `职途星_${botName}_${dateStr}.doc`, 'application/msword;charset=utf-8');
+      } else if (format === 'pdf') {
+        // PDF：在新窗口打开美化版本，触发打印
+        const html = messagesToHtml();
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.write(html);
+          w.document.close();
+          w.onload = () => {
+            w.print();
+          };
+        }
+      }
+      
+      // 非会员扣减次数
+      if (!quota?.is_member && !quota?.is_lifetime_member) {
+        incrementExportCount();
+      }
+      
+      toast.success(`已导出为 ${format.toUpperCase()} 格式`);
+    } catch (err) {
+      toast.error('导出失败，请重试');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const _displayQuota = quota?.interview?.unlimited ? '无限' : (quota?.interview?.remaining ?? '加载中');
   const _quotaExhausted = !quota?.interview?.unlimited && (quota?.interview?.remaining ?? 0) <= 0;
 
@@ -993,14 +1147,66 @@ function AssistantContent() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* 页面标题 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            AI职业助手
-          </h1>
-          <p className="text-gray-600 text-sm">
-            七大AI能力协同服务，助你求职无忧
-          </p>
+        {/* 页面标题 + 导出按钮 */}
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              AI职业助手
+            </h1>
+            <p className="text-gray-600 text-sm">
+              七大AI能力协同服务，助你求职无忧
+            </p>
+          </div>
+          
+          {/* 导出按钮（有对话内容时才显示） */}
+          {messages.length > 1 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                disabled={exportLoading}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all disabled:opacity-50"
+              >
+                {exportLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                导出对话
+                <span className="text-xs text-gray-400 ml-1">
+                  ({quota?.is_member ? '无限' : `${getRemainingExports()}/3`})
+                </span>
+              </button>
+              
+              {showExportMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                    <button
+                      onClick={() => handleExport('md')}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <FileTextIcon className="w-4 h-4 text-blue-500" />
+                      导出 Markdown
+                    </button>
+                    <button
+                      onClick={() => handleExport('docx')}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <File className="w-4 h-4 text-blue-600" />
+                      导出 Word 文档
+                    </button>
+                    <button
+                      onClick={() => handleExport('pdf')}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Printer className="w-4 h-4 text-red-500" />
+                      导出 PDF
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 功能Tab选择器 — 可折叠 */}

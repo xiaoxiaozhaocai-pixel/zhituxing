@@ -8,6 +8,7 @@ export interface QuotaInfo {
   assessment: { remaining: number; unlimited: boolean; reset_time?: string };
   competency: { is_member_only: boolean; requires_report: boolean };
   decision: { remaining: number; unlimited: boolean };
+  export_conversation: { remaining: number; unlimited: boolean; used_today: number };
   remaining: number;
   reset_time: string;
   is_member: boolean;
@@ -76,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       assessment: { remaining: isMember ? -1 : 1, unlimited: isMember },
       competency: { is_member_only: true, requires_report: true },
       decision: { remaining: isMember ? -1 : 3, unlimited: isMember },
+      export_conversation: { remaining: isMember ? -1 : 3, unlimited: isMember, used_today: 0 },
       remaining: isMember ? -1 : 3,
       reset_time: new Date(Date.now() + 86400000).toISOString(),
       is_member: isMember,
@@ -134,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           assessment: { remaining: isM ? -1 : 1, unlimited: isM },
           competency: { is_member_only: true, requires_report: true },
           decision: { remaining: isM ? -1 : 3, unlimited: isM },
+          export_conversation: { remaining: isM ? -1 : 3, unlimited: isM, used_today: 0 },
           remaining: isM ? -1 : 3,
           reset_time: new Date(Date.now() + 86400000).toISOString(),
           is_member: isM,
