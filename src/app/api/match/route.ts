@@ -2,7 +2,7 @@
  * 岗位匹配 API — P1 改造版
  * 
  * 变更摘要（v2.0 vs v1.0）：
- * - GET：从假分（baseScore = max(60, 95-index*2)）改为 pgvector 语义搜索 + 多维打分
+ * - GET：从假分（baseScore = max(60, 95-index*2)）改为多维真实打分
  * - POST：修复分母Bug，改为调用 matching-service.ts 真实匹配引擎
  * - 所有匹配均走 matching-algorithm.ts 四个核心函数
  * 
@@ -13,15 +13,12 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { sanitizeJDList } from '@/lib/jd-sanitizer';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
-import { generateXiaozhiNote } from '@/lib/xiaozhi-recommend';
 import { matchJobs, type MatchRequest } from '@/lib/matching-service';
 import {
   MatchPostRequestSchema,
   MatchPostDataSchema,
   MatchGetDataSchema,
-  type MatchPostItem,
 } from '@/lib/api-contracts/match';
 
 // ============================================================
@@ -50,18 +47,6 @@ export async function GET(request: NextRequest) {
     const city = url.searchParams.get('city') || undefined;
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 20);
 
-    // 检查 embedding 可用性
-    // embedding check removed - matching-service handles fallback internally
-    if (false) {
-      console.warn('[match:GET] Embedding not available, returning empty');
-      return jsonOk(MatchGetDataSchema, {
-        items: [],
-        total: 0,
-        source: 'none',
-        xiaozhiNote: '匹配引擎暂未就绪，请先跟职搭子聊天获取岗位推荐～',
-      });
-    }
-
     // 执行真实匹配
     const results = await matchJobs({
       userId: user.id,
@@ -71,32 +56,40 @@ export async function GET(request: NextRequest) {
       limit,
     });
 
-    // 格式化为契约 schema
-    const items = results.map(r => ({
-      jobId: String(r.jobId),
-      jobName: r.jobTitle,
+    // 解析用户输入技能为数组
+    const userSkillsArray = skills
+      ? skills.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean)
+      : [];
+
+    // 格式化为 MatchGetDataSchema
+    const matches = results.map(r => ({
+      job: {
+        id: r.jobId,
+        jobName: r.jobTitle,
+        city: r.jobMeta.city || '',
+        industry: r.jobMeta.industry || '',
+        salaryMin: r.salaryEstimation?.estimatedMin ?? 0,
+        salaryMax: r.salaryEstimation?.estimatedMax ?? 0,
+        salaryRange: r.jobMeta.salaryRange || '',
+        requiredSkills: r.matchedSkills.slice(0, 5),
+      },
       matchScore: r.totalScore,
       weightedScore: r.totalScore,
-      skillScore: r.dimensions.skillScore,
-      skillGaps: r.skillGaps,
-      industry: r.jobMeta.industry,
-      city: r.jobMeta.city,
-      salaryRange: r.jobMeta.salaryRange,
-      salaryEstimation: r.salaryEstimation ? {
-        min: r.salaryEstimation.estimatedMin,
-        max: r.salaryEstimation.estimatedMax,
-        median: r.salaryEstimation.estimatedMedian,
-      } : undefined,
+      matchedSkills: r.matchedSkills,
+      gapSkills: r.skillGaps,
+      requiredGaps: r.requiredGaps,
+      learningPath: [],
+      salary: {
+        estimatedMin: r.salaryEstimation?.estimatedMin ?? 0,
+        estimatedMax: r.salaryEstimation?.estimatedMax ?? 0,
+        estimatedMedian: r.salaryEstimation?.estimatedMedian ?? 0,
+      },
     }));
 
-    const source = results.length > 0 ? 'pgvector' : 'none';
-    const xiaozhiNote = generateXiaozhiNote(items.length, source);
-
     return jsonOk(MatchGetDataSchema, {
-      items,
-      total: items.length,
-      source,
-      xiaozhiNote,
+      matches,
+      user_skills: userSkillsArray,
+      total: matches.length,
     });
   } catch (error) {
     console.error('[match:GET] Error:', error);
@@ -128,7 +121,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.ok) return parsed.response;
     const { skills, targetPosition, industry } = parsed.data;
 
-    // 执行真实匹配（修复旧版分母Bug：skillMatchScore + industryMatch → 多维加权）
+    // 执行真实匹配
     const results = await matchJobs({
       userId: user.id,
       skills: Array.isArray(skills) ? skills.join(',') : skills,
@@ -137,27 +130,29 @@ export async function POST(request: NextRequest) {
       limit: 10,
     });
 
-    // 格式化为契约 schema
-    const items: MatchPostItem[] = results.map(r => ({
-      job_id: String(r.jobId),
+    // 格式化为 MatchPostDataSchema
+    const userSkillsArray = Array.isArray(skills) ? skills : [];
+    const matches = results.map(r => ({
+      id: r.jobId,
       job_title: r.jobTitle,
-      industry: r.jobMeta.industry,
-      city: r.jobMeta.city,
-      salary_range: r.jobMeta.salaryRange,
-      education: r.jobMeta.education,
-      experience: r.jobMeta.experience,
+      company: null,
+      city: r.jobMeta.city || null,
+      salary_range: r.jobMeta.salaryRange || '',
+      education: r.jobMeta.education || null,
+      experience: r.jobMeta.experience || null,
+      industry: r.jobMeta.industry || null,
       match_score: r.totalScore,
       skill_match_score: r.dimensions.skillScore,
-      skill_gaps: r.skillGaps,
-      xiaozhi_note: undefined,
+      matched_skills: r.matchedSkills,
+      gap_skills: r.skillGaps,
+      fresh_graduate_friendly: null,
     }));
 
-    // 为 Top1 生成小职推荐语
-    if (items.length > 0 && items[0]) {
-      items[0].xiaozhi_note = generateXiaozhiNote(1, 'pgvector');
-    }
-
-    return jsonOk(MatchPostDataSchema, { items, total: items.length });
+    return jsonOk(MatchPostDataSchema, {
+      matches,
+      user_skills: userSkillsArray,
+      total: matches.length,
+    });
   } catch (error) {
     console.error('[match:POST] Error:', error);
     return jsonError('INTERNAL_ERROR', '匹配服务异常，请稍后重试');

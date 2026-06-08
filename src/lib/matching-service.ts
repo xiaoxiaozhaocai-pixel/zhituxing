@@ -41,6 +41,10 @@ export interface MatchResult {
   };
   /** 技能缺口 */
   skillGaps: string[];
+  /** 已匹配技能 */
+  matchedSkills: string[];
+  /** 必须技能缺口 */
+  requiredGaps: string[];
   /** 薪资估算 */
   salaryEstimation?: {
     estimatedMin: number;
@@ -321,6 +325,8 @@ function scoreJob(
       salaryScore,
     },
     skillGaps: skillResult.gapSkills,
+    matchedSkills: skillResult.matchedSkills,
+    requiredGaps: skillResult.requiredGaps,
     salaryEstimation: salaryEstimation ? {
       estimatedMin: salaryEstimation.estimatedSalaryMin,
       estimatedMax: salaryEstimation.estimatedSalaryMax,
