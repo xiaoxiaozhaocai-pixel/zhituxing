@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { LayoutGrid,
   Database,
   Crown,
-  BookOpen,
   Shield,
   HelpCircle,
   MessageSquare,

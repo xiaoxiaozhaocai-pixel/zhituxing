@@ -49,7 +49,7 @@ interface SearchResult {
 
 const PLACEHOLDER_PATTERNS = ['placeholder', 'your-project', 'undefined', 'null', ''];
 
-function isValidConfig(url: string, key: string): boolean {
+function _isValidConfig(url: string, key: string): boolean {
   if (!url || !key) return false;
   const lower = url.toLowerCase() + key.toLowerCase();
   return !PLACEHOLDER_PATTERNS.some(p => lower === p.toLowerCase() || (p === '' && lower.trim() === ''));

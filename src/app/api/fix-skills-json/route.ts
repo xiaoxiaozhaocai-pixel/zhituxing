@@ -18,7 +18,7 @@ export async function GET() {
     // Step 1: 检查脏数据量
     console.log('[fix-skills] Step 1: 检查脏数据量...');
     
-    const { data: dirtyCheck, error: checkError } = await supabase
+    const { data: _dirtyCheck, error: checkError } = await supabase
       .rpc('exec_sql', {
         query: `SELECT 
           COUNT(*) as total,

@@ -11,7 +11,7 @@ const PHONE_REGEX = /^1[3-9]\d{9}$/;
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, code, type = 'login' } = await request.json();
+    const { phone, code, _type = 'login' } = await request.json();
 
     if (!phone || !code) {
       return NextResponse.json({ error: '请提供手机号和验证码' }, { status: 400 });

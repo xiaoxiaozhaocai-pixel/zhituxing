@@ -164,7 +164,7 @@ export function createWorkflowSSEStream(params: {
   botType: string | undefined;
   fallbackText: string;
 }): ReadableStream {
-  const { workflowResponse, userId, botType, fallbackText } = params;
+  const { workflowResponse, _userId, _botType, fallbackText } = params;
 
   return new ReadableStream({
     async start(controller) {

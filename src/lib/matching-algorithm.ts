@@ -493,11 +493,11 @@ export function calculateCompetencyPercentile(
 
   // 降序排列，计算用户排名
   const sorted = [...allScores].sort((a, b) => b - a);
-  const rank = sorted.indexOf(userMatchScore) + 1;
+  const _rank = sorted.indexOf(userMatchScore) + 1;
 
   // 百分位：超过 (totalPeers - rank) / (totalPeers - 1) × 100 的竞争者
   // 如果多人同分，取最高百分位
-  const sameScoreCount = sorted.filter((s) => s === userMatchScore).length;
+  const _sameScoreCount = sorted.filter((s) => s === userMatchScore).length;
   const bestRank = sorted.indexOf(userMatchScore) + 1;
   const percentileRank =
     totalPeers > 1

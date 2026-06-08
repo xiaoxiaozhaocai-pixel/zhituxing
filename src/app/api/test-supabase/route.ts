@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const supabaseAuth = getSupabase();
-  const supabaseAdmin = getSupabaseAdmin();
+  const _supabaseAdmin = getSupabaseAdmin();
   
   // 测试登录
   const { data, error } = await supabaseAuth.auth.signInWithPassword({

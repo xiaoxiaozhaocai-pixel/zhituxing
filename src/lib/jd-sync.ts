@@ -20,7 +20,7 @@ export interface JdSyncResult {
 }
 
 const TIMEOUT_MS = 15000;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const _SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));

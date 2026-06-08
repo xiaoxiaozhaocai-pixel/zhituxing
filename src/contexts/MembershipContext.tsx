@@ -49,7 +49,7 @@ function applyData(data: MembershipData): MembershipState {
 export function MembershipProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<MembershipState>(defaultState);
   const { isAuthenticated } = useAuth();
-  const lastUserId = useRef<string | null>(null);
+  const _lastUserId = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {

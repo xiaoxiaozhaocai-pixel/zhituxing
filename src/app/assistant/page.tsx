@@ -1093,7 +1093,7 @@ function AssistantContent() {
       }
       
       toast.success(`已导出为 ${format.toUpperCase()} 格式`);
-    } catch (err) {
+    } catch {
       toast.error('导出失败，请重试');
     } finally {
       setExportLoading(false);
@@ -1136,7 +1136,7 @@ function AssistantContent() {
     setSelectedIndices(next);
   };
   
-  const selectAllMessages = () => {
+  const _selectAllMessages = () => {
     const indices = new Set<number>();
     messages.forEach((m, i) => {
       if (!(m.role === 'assistant' && i === 0)) {

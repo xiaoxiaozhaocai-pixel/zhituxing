@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       let totalChats = 0;
       let totalTokens = 0;
       let prevDayCost = -1;
-      let prevDayTokens = 0;
+      const _prevDayTokens = 0;
 
       const sorted = Array.from(dayMap.entries()).sort(([a], [b]) => a.localeCompare(b));
       for (const [date, counts] of sorted) {
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         totalCost += estCost;
         totalChats += counts.chats;
         totalTokens += estTokens;
-        if (prevDayCost < 0) { prevDayCost = estCost; prevDayTokens = estTokens; }
+        if (prevDayCost < 0) { prevDayCost = estCost; _prevDayTokens = estTokens; }
       }
 
       // 取最近两天对比变化

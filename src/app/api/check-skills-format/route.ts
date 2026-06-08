@@ -7,7 +7,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
  */
 export async function GET() {
   const supabase = getSupabaseAdmin();
-  const results: Record<string, unknown> = {};
+  const _results: Record<string, unknown> = {};
 
   try {
     // 获取样本数据

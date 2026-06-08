@@ -2,11 +2,11 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { setAuthCookies } from '@/lib/auth-cookies';
-import { rateLimit } from '@/lib/rate-limit';
+import { _rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, token, type = 'magiclink', flowType = 'signup', password, nickname } = await request.json();
+    const { email, token, _type = 'magiclink', flowType = 'signup', password, nickname } = await request.json();
 
     if (!email || !token) {
       return NextResponse.json({ error: '请提供邮箱和验证码' }, { status: 400 });
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       
       if (flowType === 'signup') {
         // 直接创建用户
-        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        const { data: _newUser, error: createError } = await supabase.auth.admin.createUser({
           email,
           password: password || 'Test1234',
           email_confirm: true,

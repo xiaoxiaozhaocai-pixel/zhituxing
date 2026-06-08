@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, Compass, Mic, Send, X, Loader2, Crown, Share2, Check, Copy } from 'lucide-react';
+import { MessageSquare, Compass, Mic, Send, X, Loader2, Crown, Share2, Check } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -56,7 +56,7 @@ export default function FloatingAICTA() {
 
   // ── 分享 ──
   const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied'>('idle');
-  const [shareUrl, setShareUrl] = useState('');
+  const [_shareUrl, setShareUrl] = useState('');
 
   // ── 会员引导 ──
   const { user, quota, loading } = useAuth();

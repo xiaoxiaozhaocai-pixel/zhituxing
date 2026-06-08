@@ -60,7 +60,7 @@ export default function JdSyncPage() {
   
   const [logs, setLogs] = useState<SyncLog[]>([]);
   const [stats, setStats] = useState<JobsStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncingPlatform, setSyncingPlatform] = useState<string | null>(null);
   const [progress, setProgress] = useState<SyncProgress | null>(null);

@@ -187,7 +187,7 @@ function extractCardsFromJSON(obj: Record<string, unknown>): CardItem[] {
   const cards: CardItem[] = [];
 
   // 查找数组字段
-  for (const [key, val] of Object.entries(obj)) {
+  for (const [_key, val] of Object.entries(obj)) {
     if (Array.isArray(val) && val.length > 0) {
       const items = val;
       if (typeof items[0] === 'object' && items[0] !== null) {

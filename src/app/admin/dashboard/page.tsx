@@ -72,7 +72,7 @@ export default function AdminDashboardPage() {
   const [health, setHealth] = useState<{ site: boolean | null; api: boolean | null }>({ site: null, api: null });
   const checkHealth = async () => {
     try {
-      const siteRes = await fetch('https://zhituxing.tech', { mode: 'no-cors' });
+      const _siteRes = await fetch('https://zhituxing.tech', { mode: 'no-cors' });
       setHealth(prev => ({ ...prev, site: true }));
     } catch { setHealth(prev => ({ ...prev, site: false })); }
     try {

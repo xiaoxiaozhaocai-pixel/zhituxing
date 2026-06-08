@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
   if (_authCheck) return _authCheck;
   try {
     const body = await request.json();
-    const { userId, action, memberType, adminId, adminUsername, blockReason, deleteUserJd } = body;
+    const { userId, action, memberType, adminId, adminUsername, _blockReason, deleteUserJd } = body;
 
     if (!userId || !action) {
       return NextResponse.json({ code: 400, message: '参数不完整' }, { status: 400 });

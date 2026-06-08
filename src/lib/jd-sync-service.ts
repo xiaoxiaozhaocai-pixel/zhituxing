@@ -303,7 +303,7 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
         continue;
       }
 
-      const contentType = response.headers.get('content-type') || '';
+      const _contentType = response.headers.get('content-type') || '';
       const text = await response.text();
       
       let data: Record<string, unknown>;
@@ -392,6 +392,7 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
  * 从API响应中提取岗位数据（适配不同API格式）
  */
 // API响应数据递归类型（用于extractJobItems处理嵌套JSON）
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ApiResponseData {
   [key: string]: unknown;
   data?: ApiResponseData | unknown[];

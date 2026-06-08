@@ -12,7 +12,7 @@ interface FileImportModuleProps {
 
 type FileType = 'txt' | 'docx' | 'pdf' | 'md';
 
-const ALLOWED_TYPES: Record<FileType, string[]> = {
+const _ALLOWED_TYPES: Record<FileType, string[]> = {
   txt: ['text/plain'],
   docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   pdf: ['application/pdf'],

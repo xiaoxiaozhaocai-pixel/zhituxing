@@ -178,7 +178,7 @@ export async function checkFeatureAccess(
 
 export async function deductQuota(
   userId: string,
-  feature: FeatureType
+  _feature: FeatureType
 ): Promise<{ success: boolean; reason?: string; remaining?: number }> {
   const supabase = getSupabaseAdmin();
   const quota = await getUserQuota(userId);

@@ -11,7 +11,7 @@ import type { FixStep } from '@/lib/types';
  */
 
 // 简单的 SQL 执行函数（通过 Supabase REST API）
-async function executeSql(_supabase: Record<string, unknown>, _sql: string): Promise<{ data: unknown; error: unknown }> {
+async function _executeSql(_supabase: Record<string, unknown>, _sql: string): Promise<{ data: unknown; error: unknown }> {
   // 使用 Supabase 的 rpc 功能执行原生 SQL
   // 注意：需要先在 Supabase 中创建 exec_sql 函数
   // 或者使用直接查询的方式

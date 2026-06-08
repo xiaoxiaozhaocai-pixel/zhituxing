@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = buildInterviewPrompt(resolvedStyle, userContext);
     const conversationId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    const keywords = extractKeywords(message);
+    const _keywords = extractKeywords(message);
     const encoder = new TextEncoder();
 
     // 使用 RAG 增强面试
