@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, Compass, Mic, Send, X, Loader2, Crown } from 'lucide-react';
+import { MessageSquare, Compass, Mic, Send, X, Loader2, Crown, Share2, Check, Copy } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -53,6 +53,10 @@ export default function FloatingAICTA() {
   const [streaming, setStreaming] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ── 分享 ──
+  const [shareState, setShareState] = useState<'idle' | 'loading' | 'copied'>('idle');
+  const [shareUrl, setShareUrl] = useState('');
 
   // ── 会员引导 ──
   const { user, quota, loading } = useAuth();
@@ -198,6 +202,34 @@ export default function FloatingAICTA() {
     }
   };
 
+  // ── 分享对话 ──
+  const handleShare = async () => {
+    if (messages.length === 0 || shareState === 'loading') return;
+    setShareState('loading');
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          botName: '小职',
+          botGradient: 'from-[#165DFF] to-[#3D7FFF]',
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        setShareUrl(data.url);
+        await navigator.clipboard.writeText(data.url);
+        setShareState('copied');
+        setTimeout(() => setShareState('idle'), 2500);
+      } else {
+        setShareState('idle');
+      }
+    } catch {
+      setShareState('idle');
+    }
+  };
+
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
   useEffect(() => { if (chatOpen) setTimeout(() => inputRef.current?.focus(), 100); }, [chatOpen]);
 
@@ -307,13 +339,35 @@ export default function FloatingAICTA() {
               <span className="font-semibold">小职</span>
               <span className="text-xs opacity-75">AI求职搭子</span>
             </div>
-            <button
-              onClick={() => setChatOpen(false)}
-              onPointerDown={(e) => e.stopPropagation()}
-              className="hover:bg-white/20 rounded-lg p-1.5 transition"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button
+                  onClick={handleShare}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  disabled={shareState === 'loading'}
+                  className="hover:bg-white/20 rounded-lg p-1.5 transition flex items-center gap-1.5 disabled:opacity-50"
+                  title="分享对话"
+                >
+                  {shareState === 'loading' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : shareState === 'copied' ? (
+                    <Check className="w-4 h-4 text-green-300" />
+                  ) : (
+                    <Share2 className="w-4 h-4" />
+                  )}
+                  {shareState === 'copied' && (
+                    <span className="text-xs text-green-300">已复制链接</span>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={() => setChatOpen(false)}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="hover:bg-white/20 rounded-lg p-1.5 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* 消息区 */}

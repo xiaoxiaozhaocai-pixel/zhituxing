@@ -60,22 +60,71 @@ export default async function SharePage({
   const gradientClass = data.botGradient || 'from-blue-500 to-blue-600';
   const date = new Date(data.createdAt).toLocaleString('zh-CN');
 
-  // 简易 Markdown → HTML 渲染
+  // Markdown → HTML 渲染（支持表格）
   function renderContent(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
+    // 先处理表格（必须在 escape 之前，因为表格语法不含 HTML 特殊字符）
+    const lines = text.split('\n');
+    const processedLines: string[] = [];
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i];
+      // 检测表头行：以 | 开头和结尾，下一行是分隔行
+      if (line.trim().startsWith('|') && line.trim().endsWith('|') && i + 1 < lines.length) {
+        const nextLine = lines[i + 1];
+        const isHeader = /^\|[\s\-:|]+\|$/.test(nextLine.trim());
+        if (isHeader) {
+          const headerCells = line.split('|').filter(c => c.trim()).map(c => `<th>${escapeHtml(c.trim())}</th>`).join('');
+          const bodyRows: string[] = [];
+          i += 2;
+          while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+            const cells = lines[i].split('|').filter(c => c.trim()).map(c => `<td>${escapeHtml(c.trim())}</td>`).join('');
+            bodyRows.push(`<tr>${cells}</tr>`);
+            i++;
+          }
+          processedLines.push(
+            '<div class="table-wrapper"><table class="md-table">' +
+            `<thead><tr>${headerCells}</tr></thead>` +
+            `<tbody>${bodyRows.join('')}</tbody>` +
+            '</table></div>'
+          );
+          continue;
+        }
+      }
+      processedLines.push(escapeHtml(line));
+      i++;
+    }
+
+    return processedLines.join('\n')
       // 代码块
       .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
       // 行内代码
       .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
       // 加粗
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // 斜体
+      .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>')
       // 链接
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      // 标题
+      .replace(/^### (.+)$/gm, '<h3 class="md-h3">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 class="md-h2">$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1 class="md-h1">$1</h1>')
+      // 无序列表
+      .replace(/^- (.+)$/gm, '<li class="md-li">$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li class="md-li">$2</li>')
+      // 分隔线
+      .replace(/^---$/gm, '<hr class="md-hr">')
+      // 引用
+      .replace(/^&gt; (.+)$/gm, '<blockquote class="md-blockquote"><p>$1</p></blockquote>')
       // 换行
       .replace(/\n/g, '<br>');
+  }
+
+  function escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   return (
