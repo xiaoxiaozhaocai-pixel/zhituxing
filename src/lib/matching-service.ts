@@ -103,7 +103,7 @@ export async function matchJobs(request: MatchRequest): Promise<MatchResult[]> {
 
   // 2. pgvector 语义搜索 → 召回候选 JD
   const searchText = buildSearchText(skills, targetPosition, industry, city);
-  const candidates = await semanticSearch(searchText, limit * 3, industry, city);
+  const candidates = await semanticSearch(searchText, limit * 3, industry, city, skills);
 
   if (candidates.length === 0) {
     return [];
@@ -194,7 +194,8 @@ async function semanticSearch(
   searchText: string,
   limit: number,
   industry?: string,
-  city?: string
+  city?: string,
+  skillsText?: string
 ): Promise<Array<Record<string, unknown>>> {
   const supabase = getSupabaseAdmin();
 
@@ -204,7 +205,7 @@ async function semanticSearch(
   if (!embedding || embedding.length === 0) {
     // 降级：关键词搜索
     console.warn('[matching] Embedding failed, falling back to keyword search');
-    return keywordFallback(limit, industry, city);
+    return keywordFallback(limit, industry, city, skillsText);
   }
 
   // pgvector 余弦相似度搜索
@@ -218,7 +219,7 @@ async function semanticSearch(
 
   if (error) {
     console.error('[matching] Vector search error:', error.message);
-    return keywordFallback(limit, industry, city);
+    return keywordFallback(limit, industry, city, skillsText);
   }
 
   return (data || []) as Array<Record<string, unknown>>;
@@ -228,7 +229,8 @@ async function semanticSearch(
 async function keywordFallback(
   limit: number,
   industry?: string,
-  city?: string
+  city?: string,
+  skillsText?: string
 ): Promise<Array<Record<string, unknown>>> {
   const supabase = getSupabaseAdmin();
 
@@ -243,6 +245,17 @@ async function keywordFallback(
   }
   if (city) {
     query = query.ilike('city', `%${city}%`);
+  }
+
+  // 技能关键词过滤：在 hard_skills、soft_skills、job_title 中搜索
+  if (skillsText) {
+    const keywords = skillsText.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
+    if (keywords.length > 0) {
+      const filters = keywords.map(kw => 
+        `hard_skills::text.ilike.%${kw}%,soft_skills::text.ilike.%${kw}%,job_title.ilike.%${kw}%`
+      ).join(',');
+      query = query.or(filters);
+    }
   }
 
   const { data } = await query;
