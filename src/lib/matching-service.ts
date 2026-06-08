@@ -237,8 +237,7 @@ async function keywordFallback(
   let query = supabase
     .from('job_descriptions')
     .select('id, job_title, industry, city, salary_range, education, experience, responsibilities, hard_skills, soft_skills, major_require')
-    .eq('status', 'parsed')
-    .limit(limit);
+    .eq('status', 'parsed');
 
   if (industry) {
     query = query.ilike('industry', `%${industry}%`);
@@ -260,6 +259,7 @@ async function keywordFallback(
     }
   }
 
+  query = query.limit(limit);
   let { data } = await query;
 
   // 降级：技能过滤无结果时，回退到无过滤查询
@@ -268,8 +268,7 @@ async function keywordFallback(
     let fallbackQuery = supabase
       .from('job_descriptions')
       .select('id, job_title, industry, city, salary_range, education, experience, responsibilities, hard_skills, soft_skills, major_require')
-      .eq('status', 'parsed')
-      .limit(limit);
+      .eq('status', 'parsed');
 
     if (industry) {
       fallbackQuery = fallbackQuery.ilike('industry', `%${industry}%`);
@@ -278,6 +277,7 @@ async function keywordFallback(
       fallbackQuery = fallbackQuery.ilike('city', `%${city}%`);
     }
 
+    fallbackQuery = fallbackQuery.limit(limit);
     const fallbackResult = await fallbackQuery;
     data = fallbackResult.data;
   }
