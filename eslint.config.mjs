@@ -49,7 +49,7 @@ const eslintConfig = defineConfig([
     'server.js',
     'dist/**',
     // Script files (CommonJS):
-    'scripts/**/*.js',
+    'scripts/**/*.js', 'zhituxing/**',
   ]),
 ]);
 
