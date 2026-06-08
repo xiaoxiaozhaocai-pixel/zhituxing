@@ -4,7 +4,7 @@
 
 -- match_jobs: 按余弦相似度搜索最匹配的 JD
 CREATE OR REPLACE FUNCTION match_jobs(
-  query_embedding extensions.vector(1536),
+  query_embedding extensions.vector(1024),
   match_limit INTEGER DEFAULT 20,
   industry_filter TEXT DEFAULT NULL,
   city_filter TEXT DEFAULT NULL

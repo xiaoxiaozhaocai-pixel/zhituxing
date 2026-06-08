@@ -5,9 +5,9 @@
 -- Step 1: 启用 pgvector 扩展
 CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions;
 
--- Step 2: 为 job_descriptions 添加 embedding 列（1536维 → DeepSeek/OpenAI 标准维度）
+-- Step 2: 为 job_descriptions 添加 embedding 列（1024维 → SiliconFlow BAAI bge-large-zh-v1.5（1024维））
 ALTER TABLE job_descriptions
-ADD COLUMN IF NOT EXISTS embedding extensions.vector(1536);
+ADD COLUMN IF NOT EXISTS embedding extensions.vector(1024);
 
 -- Step 3: 创建 HNSW 索引（生产级向量搜索索引，比 IVFFlat 更快）
 -- 注意：pgvector 0.5+ 才支持 HNSW；Supabase 已升级至 0.5+
@@ -22,4 +22,4 @@ ON job_descriptions(status, id)
 WHERE embedding IS NOT NULL;
 
 -- Step 5: 注释
-COMMENT ON COLUMN job_descriptions.embedding IS 'DeepSeek Embedding 向量（1536维），用于语义岗位匹配';
+COMMENT ON COLUMN job_descriptions.embedding IS 'DeepSeek Embedding 向量（1024维），用于语义岗位匹配';
