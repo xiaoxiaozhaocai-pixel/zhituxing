@@ -37,7 +37,7 @@ const getFriendlyError = (error: string): string => {
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, login, register, verifyOtp } = useAuth();
+  const { user, login, verifyOtp } = useAuth();
   
   // 步骤状态
   const [step, setStep] = useState<Step>('input');
@@ -53,7 +53,7 @@ function AuthContent() {
   
   // 注册相关
   const [nickname, setNickname] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
+  const [_inviteCode, setInviteCode] = useState('');
   
   // OTP相关
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '', '', '']);
@@ -217,7 +217,7 @@ function AuthContent() {
       } else {
         setError(getFriendlyError(result.message));
       }
-    } catch (err) {
+    } catch {
       setError('登录失败，请稍后重试');
     }
     
@@ -274,7 +274,7 @@ function AuthContent() {
       } else {
         setError(data.error || '发送验证码失败');
       }
-    } catch (err) {
+    } catch {
       setError('发送验证码失败，请稍后重试');
     }
     
@@ -324,7 +324,7 @@ function AuthContent() {
       } else {
         setError(getFriendlyError(data.error || data.message));
       }
-    } catch (err) {
+    } catch {
       setError('验证失败，请稍后重试');
     }
     
@@ -362,7 +362,7 @@ function AuthContent() {
       } else {
         setError(data.error || '发送失败');
       }
-    } catch (err) {
+    } catch {
       setError('发送失败，请稍后重试');
     }
     
@@ -399,7 +399,7 @@ function AuthContent() {
             } else {
               setError(getFriendlyError(result.message));
             }
-          } catch (err) {
+          } catch {
             setError('验证失败，请稍后重试');
           }
           setLoading(false);

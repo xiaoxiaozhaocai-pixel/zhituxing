@@ -420,7 +420,7 @@ function ProfileInfoContent() {
             }
           }
         }
-      } catch (__error) {
+      } catch {
         console.log('获取岗位列表失败，使用默认选项');
       }
     };

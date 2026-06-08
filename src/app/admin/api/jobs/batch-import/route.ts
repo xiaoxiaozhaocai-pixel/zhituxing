@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             // 删除现有数据
             await supabase.from('job_descriptions').delete().eq('id', existing.id);
           }
-        } catch (__e) {
+        } catch {
           // 继续处理
         }
       }

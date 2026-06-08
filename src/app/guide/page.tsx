@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   ChevronRight, Check, GraduationCap, MapPin, Sparkles, Target,
-  Brain, Loader2, ChevronDown, ChevronUp, MessageSquare, Briefcase, FileText, ArrowRight
+  Loader2, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 const GRADE_OPTIONS = [
@@ -37,7 +37,7 @@ const CITIES = ['北京', '上海', '广州', '深圳', '杭州', '成都', '武
 
 function QuickStartWizard() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

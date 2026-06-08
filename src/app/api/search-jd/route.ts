@@ -69,7 +69,7 @@ async function searchFromDatabase(query: string): Promise<SearchResult[]> {
   let supabase;
   try {
     supabase = getSupabaseAdmin();
-  } catch (__e) {
+  } catch {
     console.warn('[Search] Skipping database search: Supabase not configured');
     return [];
   }
