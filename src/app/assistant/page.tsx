@@ -347,7 +347,7 @@ function AssistantContent() {
     const oldBot = prevBotRef.current;
 
     // 保存上一个 bot 的对话（仅当真的切换且内容不为空）
-    if (oldBot && oldBot !== activeBot && messagesRef.current.length > 1) {
+    if (oldBot && oldBot !== activeBot && messagesRef.current.length > 0) {
       historyRef.current[oldBot] = messagesRef.current;
       try {
         sessionStorage.setItem(`chat_${oldBot}`, JSON.stringify(messagesRef.current));
@@ -393,7 +393,7 @@ function AssistantContent() {
   // 持续同步当前 bot 的对话到 sessionStorage（防止页面刷新丢失）
   useEffect(() => {
     if (prevBotRef.current !== activeBot) return;
-    if (messages.length <= 1) return;  // 只有欢迎消息时不持久化
+    if (messages.length < 1) return;  // 只有欢迎消息时不持久化
     try {
       sessionStorage.setItem(`chat_${activeBot}`, JSON.stringify(messages));
     } catch {
@@ -1705,22 +1705,34 @@ function AssistantContent() {
 
         {/* 底部提示 */}
         <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleTabChange('jobs')}
+            className="flex items-center gap-2 hover:text-[#165DFF] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <span>全行业岗位百科</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <button
+            onClick={() => handleTabChange('interview')}
+            className="flex items-center gap-2 hover:text-[#00B42A] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600"></div>
             <span>模拟面试官</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <button
+            onClick={() => handleTabChange('career')}
+            className="flex items-center gap-2 hover:text-[#722ED1] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
             <span>职业生涯规划</span>
-          </div>
-          <div className="flex items-center gap-2">
+          </button>
+          <button
+            onClick={() => handleTabChange('decision')}
+            className="flex items-center gap-2 hover:text-[#FF7D00] transition-colors cursor-pointer"
+          >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600"></div>
             <span>考研就业决策</span>
-          </div>
+          </button>
         </div>
       </div>
 
