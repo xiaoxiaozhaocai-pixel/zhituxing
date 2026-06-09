@@ -32,7 +32,6 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; label: string; r
 const MODULE_ICONS: Record<string, string> = {
   chat: '💬',
   interview: '🎯',
-  course: '📚',
   resume: '📝',
   jobs: '💼',
 };
@@ -256,7 +255,7 @@ export default function UsagePage() {
       <div className="text-xs text-[#94A3B8] p-4 bg-blue-50/50 rounded-lg border border-blue-100">
         <p className="font-medium text-blue-700 mb-1">📌 数据说明</p>
         <p>使用率 = 该模块活跃用户数 / 总活跃用户数。数据来源：Supabase messages + assessment_results 表。</p>
-        <p>模块分类：小职对话（messages表全部用户）、模拟面试（assessment_results 含interview标记）、互动课程（assessment_results 含course标记）、简历优化（messages含简历关键词）、岗位浏览（messages含岗位关键词）。</p>
+        <p>模块分类：小职对话（messages表全部用户）、模拟面试（assessment_results 含interview标记）、简历优化（messages含简历关键词）、岗位浏览（messages含岗位关键词）。</p>
       </div>
     </div>
   );

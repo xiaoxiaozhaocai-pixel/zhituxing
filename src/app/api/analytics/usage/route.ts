@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     const [
       chatResult,
       interviewResult,
-      courseResult,
       resumeResult,
       jobsResult,
     ] = await Promise.allSettled([
@@ -47,11 +46,6 @@ export async function GET(request: NextRequest) {
         .select('user_id', { count: 'exact', head: false })
         .gte('created_at', sinceISO)
         .or('result_data->>type.eq.interview,result_data->>interview.not.is.null'),
-      // 互动课程：从 assessment_results 表（含 course 标记）
-      supabase.from('assessment_results')
-        .select('user_id', { count: 'exact', head: false })
-        .gte('created_at', sinceISO)
-        .or('result_data->>type.eq.course,result_data->>course.not.is.null'),
       // 简历优化：从 messages 表按关键词
       supabase.from('messages')
         .select('user_id', { count: 'exact', head: false })
@@ -66,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     // 获取总活跃用户数（所有有记录的用户去重）
     const dedupUsers = new Set<string>();
-    [chatResult, interviewResult, courseResult, resumeResult, jobsResult].forEach((r) => {
+    [chatResult, interviewResult, resumeResult, jobsResult].forEach((r) => {
       if (r.status === 'fulfilled' && r.value.data) {
         (r.value.data as { user_id: string }[]).forEach((row) => {
           if (row.user_id) dedupUsers.add(row.user_id);
@@ -94,13 +88,6 @@ export async function GET(request: NextRequest) {
         module: 'interview',
         label: '模拟面试',
         users: extractUserCount(interviewResult),
-        percentage: 0,
-        status: 'low',
-      },
-      {
-        module: 'course',
-        label: '互动课程',
-        users: extractUserCount(courseResult),
         percentage: 0,
         status: 'low',
       },

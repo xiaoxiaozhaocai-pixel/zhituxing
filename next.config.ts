@@ -103,6 +103,7 @@ const nextConfig: NextConfig = {
 
       // 引导页 → 首页（ProfileGuideProvider 已接管）
       { source: "/guide", destination: "/", permanent: true },
+      { source: "/courses", destination: "/assistant", permanent: true },
     ];
   },
 };

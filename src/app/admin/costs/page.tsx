@@ -18,7 +18,6 @@ interface DailyCostItem {
   date: string;
   chats: number;
   interviews: number;
-  courses: number;
   estTokens: number;
   estCost: number;
 }
@@ -338,7 +337,6 @@ export default function AdminCostsPage() {
                       <th className="py-2 text-[#64748B] font-medium">日期</th>
                       <th className="py-2 text-[#64748B] font-medium text-right">对话</th>
                       <th className="py-2 text-[#64748B] font-medium text-right">面试</th>
-                      <th className="py-2 text-[#64748B] font-medium text-right">课程</th>
                       <th className="py-2 text-[#64748B] font-medium text-right">Token</th>
                       <th className="py-2 text-[#64748B] font-medium text-right">成本</th>
                     </tr>
@@ -349,7 +347,6 @@ export default function AdminCostsPage() {
                         <td className="py-2 text-[#1E293B]">{d.date}</td>
                         <td className="py-2 text-right text-[#1E293B]">{d.chats}</td>
                         <td className="py-2 text-right text-[#1E293B]">{d.interviews}</td>
-                        <td className="py-2 text-right text-[#1E293B]">{d.courses}</td>
                         <td className="py-2 text-right text-[#64748B] font-mono text-xs">{d.estTokens.toLocaleString()}</td>
                         <td className="py-2 text-right font-semibold" style={{
                           color: d.estCost > 1 ? '#EF4444' : d.estCost > 0.5 ? '#F97316' : '#1E293B'

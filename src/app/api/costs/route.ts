@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
         if (!bucket) continue;
         if (row.event_type === 'chat_send') bucket.chats++;
         else if (row.event_type === 'interview_complete') bucket.interviews++;
-        else if (row.event_type === 'course_start') bucket.courses++;
       }
     }
 

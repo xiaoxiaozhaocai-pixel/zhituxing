@@ -38,14 +38,6 @@ const FEATURE_FLAGS: Record<string, FeatureFlag> = {
     category: 'core',
     addedAt: '2026-06-04',
   },
-  interactiveCourses: {
-    key: 'interactiveCourses',
-    name: '互动课程系统',
-    description: '5大课程主题 + DeepSeek SSE流式生成',
-    enabled: true,
-    category: 'core',
-    addedAt: '2026-06-04',
-  },
   xiaozhiRecommend: {
     key: 'xiaozhiRecommend',
     name: '小职个性化推荐',

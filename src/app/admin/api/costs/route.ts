@@ -15,7 +15,6 @@ interface DailyCostItem {
   date: string;
   chats: number;
   interviews: number;
-  courses: number;
   estTokens: number;
   estCost: number;
 }
@@ -48,12 +47,12 @@ export async function GET(request: NextRequest) {
       }
 
       // 手动聚合
-      const dayMap = new Map<string, { chats: number; interviews: number; courses: number }>();
+      const dayMap = new Map<string, { chats: number; interviews: number }>();
       for (let i = 0; i < days; i++) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const key = d.toISOString().slice(0, 10);
-        dayMap.set(key, { chats: 0, interviews: 0, courses: 0 });
+        dayMap.set(key, { chats: 0, interviews: 0 });
       }
 
       if (chatData) {
@@ -63,7 +62,7 @@ export async function GET(request: NextRequest) {
           if (!bucket) continue;
           if (row.event_type === 'chat_send') bucket.chats++;
           else if (row.event_type === 'interview_complete') bucket.interviews++;
-          else if (row.event_type === 'course_start') bucket.courses++;
+          
         }
       }
 
@@ -79,14 +78,13 @@ export async function GET(request: NextRequest) {
         const estTokens =
           counts.chats * AVG_TOKENS_PER_CHAT +
           counts.interviews * AVG_TOKENS_PER_INTERVIEW +
-          counts.courses * AVG_TOKENS_PER_COURSE;
+          0;
         const estCost = (estTokens / 1_000_000) * DS_PRICE_PER_1M_TOKENS;
 
         daily.push({
           date,
           chats: counts.chats,
           interviews: counts.interviews,
-          courses: counts.courses,
           estTokens,
           estCost: Math.round(estCost * 10000) / 10000,
         });
