@@ -43,6 +43,7 @@ import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES } from './prompts';
 import { prepareChatContext } from './chat-context';
 import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
+import { runProfileFlywheel } from './profile-flywheel';
 
 
 export const runtime = 'nodejs';
@@ -825,7 +826,17 @@ export async function POST(request: NextRequest) {
                 userMessage: message,
                 assistantResponse: fullResponse,
                 botType: effectiveBotType || '',
-              }).catch(e => console.error('[chat] Flywheel error:', e));
+              }).catch(e => console.error('[chat] Guet Flywheel error:', e));
+
+              // 用户画像飞轮：fire-and-forget（不阻塞响应）
+              if (userId) {
+                runProfileFlywheel({
+                  userMessage: message,
+                  assistantResponse: fullResponse,
+                  botType: effectiveBotType || '',
+                  userId,
+                }).catch(e => console.error('[chat] Profile Flywheel error:', e));
+              }
             } catch (err) {
               console.error('[chat] Stream wrapper error:', err);
               // 超时时发送友好降级消息

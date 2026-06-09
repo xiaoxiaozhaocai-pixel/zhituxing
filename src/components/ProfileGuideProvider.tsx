@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 
@@ -11,7 +11,6 @@ interface ProfileGuideProviderProps {
 
 export default function ProfileGuideProvider({ children }: ProfileGuideProviderProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [hasProfile, setHasProfile] = useState(false);
   const [checkDone, setCheckDone] = useState(false);
   // Guide bar state (merged from ProfileGuideBar)
@@ -46,9 +45,8 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
 
         if (has) {
           localStorage.setItem('onboarding_done', 'true');
-        } else {
-          router.push('/guide');
         }
+        // 不再跳转到 /guide（已重定向），引导交给小职对话飞轮
       } else {
         setHasProfile(true);
       }
@@ -100,14 +98,14 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
           <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
             <div className="flex items-center gap-2 text-purple-800 text-sm">
               <span>💡</span>
-              <span className="font-medium">完善你的个人信息，职业规划精准度提升100%</span>
+              <span className="font-medium">跟小职聊聊你自己，我会记住你的专业和目标，让每次建议都更精准</span>
             </div>
             <div className="flex items-center gap-3">
               <Link
-                href="/profile/info?from=/match"
+                href="/assistant"
                 className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-full hover:from-purple-700 hover:to-indigo-700 transition-all shadow-sm"
               >
-                立即完善
+                去和小职聊聊
               </Link>
               <button onClick={handleDismissGuide} className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
                 稍后再说
