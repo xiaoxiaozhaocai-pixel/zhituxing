@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('AI Dashboard error:', error);
     return NextResponse.json(
-      { code: 500, message: '获取数据失败', error: String(error) },
+      { code: 500, message: '获取数据失败' },
       { status: 500 }
     );
   }
