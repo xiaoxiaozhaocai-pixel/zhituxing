@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limit';
+export const dynamic = 'force-dynamic';
 
 const supabase = getSupabaseAdmin();
 

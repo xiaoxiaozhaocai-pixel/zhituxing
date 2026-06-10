@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+export const dynamic = 'force-dynamic';
 
 /**
  * 检查 hard_skills/soft_skills 数据格式

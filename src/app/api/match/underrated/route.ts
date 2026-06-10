@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 反向匹配 API — 找出用户被低估的岗位
  * 
@@ -8,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+export const dynamic = 'force-dynamic';
 
 export const runtime = 'nodejs';
 

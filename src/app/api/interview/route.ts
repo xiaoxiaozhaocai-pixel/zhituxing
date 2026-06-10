@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 模拟面试AI智能体流式API
  * 
@@ -30,6 +29,7 @@ import {
 } from '@/lib/rag-utils';
 import type { ChatMessage } from '@/lib/types';
 import {
+export const dynamic = 'force-dynamic';
   type InterviewStyle,
   INTERVIEW_STYLES,
   buildStylePrompt,

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
@@ -15,6 +14,7 @@ import { INTERVIEW_STYLES, detectStyleSwitch } from '@/lib/interview-styles';
 import type { InterviewStyle } from '@/lib/interview-styles';
 import { getUserProfileContext } from '@/lib/coze-stream';
 import { extractKeywords, createDeepSeekRAGStream } from '@/lib/rag-utils';
+export const dynamic = 'force-dynamic';
 
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',

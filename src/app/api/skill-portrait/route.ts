@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 技能画像智能体 API
  * POST: 调用技能画像智能体，根据专业+意向行业+意向城市推荐技能
@@ -6,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
+export const dynamic = 'force-dynamic';
   getUserInfoFromRequest,
   getUserProfileContext,
   callCozeStreamApi,

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 
 // Polyfill DOMMatrix for Node.js (pdf-parse / pdfjs-dist dependency)
 if (typeof globalThis.DOMMatrix === 'undefined') {
@@ -26,6 +25,7 @@ if (typeof globalThis.Path2D === 'undefined') {
 }
 
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 

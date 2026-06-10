@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
+export const dynamic = 'force-dynamic';
 
 // 领取奖励
 export async function POST(request: NextRequest) {

@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getAllFlags } from '@/lib/features/flags';
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/features — 获取所有 Feature Flag 状态

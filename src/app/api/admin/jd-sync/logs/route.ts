@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSyncLogs } from '@/lib/jd-sync-service';
+export const dynamic = 'force-dynamic';
 
 // 获取同步日志列表
 export async function GET(request: NextRequest) {

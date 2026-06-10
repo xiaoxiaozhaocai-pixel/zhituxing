@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { setAuthCookies } from '@/lib/auth-cookies';
+export const dynamic = 'force-dynamic';
 
 /**
  * 手机验证码验证 + 登录

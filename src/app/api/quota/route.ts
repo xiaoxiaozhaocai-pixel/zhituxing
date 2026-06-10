@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
@@ -9,6 +8,7 @@ import {
   ErrorCode,
 } from '@/lib/api-contracts/_shared';
 import {
+export const dynamic = 'force-dynamic';
   QuotaDataSchema,
   QuotaResetDataSchema,
   QuotaUpdateRequestSchema,

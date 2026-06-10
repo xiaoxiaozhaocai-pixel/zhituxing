@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 职搭子AI智能体流式API
  * 调用DeepSeek API，通过RAG检索相关JD，返回流式响应
@@ -8,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createDeepSeekSSEStream } from '@/lib/deepseek-chat';
 import { searchRelevantJDs, buildJDAssistantPrompt } from '@/lib/jd-rag';
 import type { ChatMessage } from '@/lib/types';
+export const dynamic = 'force-dynamic';
 
 // 流式对话
 export async function POST(request: NextRequest) {

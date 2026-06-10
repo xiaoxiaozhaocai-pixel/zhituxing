@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 
 import { NextRequest } from 'next/server';
+export const dynamic = 'force-dynamic';
 
 // 内存存储（服务重启丢失，v1 可接受）
 interface ShareData {

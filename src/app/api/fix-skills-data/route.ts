@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import type { FixStep } from '@/lib/types';
+export const dynamic = 'force-dynamic';
 
 /**
  * 修复 skills 数据格式 + 添加约束

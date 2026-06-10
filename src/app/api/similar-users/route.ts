@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { findSimilarUsers, type UserSkillVector } from '@/lib/similar-users-algorithm';
+export const dynamic = 'force-dynamic';
 
 const supabase = getSupabaseAdmin();
 

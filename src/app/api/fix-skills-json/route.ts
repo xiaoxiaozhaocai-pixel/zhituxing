@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import type { FixStep } from '@/lib/types';
+export const dynamic = 'force-dynamic';
 
 /**
  * 数据修复脚本：修复 hard_skills 和 soft_skills 的 JSON 字符串格式问题

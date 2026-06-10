@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
@@ -15,6 +14,7 @@ import type { CourseTopic } from '@/lib/course-generator';
 import { getUserProfileContext } from '@/lib/coze-stream';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
+export const dynamic = 'force-dynamic';
 
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',

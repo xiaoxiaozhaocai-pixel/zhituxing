@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
@@ -6,6 +5,7 @@ import { sanitizeJDList } from '@/lib/jd-sanitizer';
 import type { JobRecord } from '@/lib/types';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 import { generateXiaozhiNote } from '@/lib/xiaozhi-recommend';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {

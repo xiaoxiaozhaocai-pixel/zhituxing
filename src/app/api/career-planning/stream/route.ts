@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 职业规划AI智能体流式API
  * 
@@ -24,6 +23,7 @@ import {
   getWorkflowConfig,
 } from '@/lib/coze-stream';
 import {
+export const dynamic = 'force-dynamic';
   extractKeywords,
   querySupabase,
   buildRAGContext,

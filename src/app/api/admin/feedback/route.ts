@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+export const dynamic = 'force-dynamic';
 
 // 管理员鉴权验证
 async function verifyAdmin(request: NextRequest): Promise<boolean> {

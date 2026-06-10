@@ -9,13 +9,13 @@
  * 认证：同 /api/chat（cookie sb-access-token + Supabase Auth）
  */
 
-export const dynamic = 'force-dynamic';
 
 import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
 import { matchJobs } from '@/lib/matching-service';
 import {
+export const dynamic = 'force-dynamic';
   MatchPostRequestSchema,
   MatchPostDataSchema,
   MatchGetDataSchema,

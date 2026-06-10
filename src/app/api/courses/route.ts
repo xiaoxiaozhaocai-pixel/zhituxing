@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 互动课程 API — 小职根据用户进度现讲
  * 
@@ -10,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserInfoFromRequest } from '@/lib/coze-stream';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
 import {
+export const dynamic = 'force-dynamic';
   detectCourseTopic,
   buildCoursePrompt,
   getAvailableCourses,

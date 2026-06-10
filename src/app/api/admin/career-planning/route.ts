@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { execSql } from '@/lib/exec-sql';
+export const dynamic = 'force-dynamic';
 
 // 管理员权限验证
 async function verifyAdmin(request: NextRequest): Promise<{ valid: boolean }> {

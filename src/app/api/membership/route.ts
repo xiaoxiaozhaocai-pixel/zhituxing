@@ -1,9 +1,9 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonOk, jsonError, ErrorCode } from '@/lib/api-contracts/_shared';
 import { MembershipDataSchema } from '@/lib/api-contracts/membership';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {

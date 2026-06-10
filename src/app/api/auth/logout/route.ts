@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { clearAuthCookies, parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 import { getSupabaseAdmin } from '@/lib/supabase';
+export const dynamic = 'force-dynamic';
 
 /**
  * 注销路由 —— P0 安全修复

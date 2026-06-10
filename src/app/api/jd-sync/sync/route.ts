@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import {syncAllPlatforms, getLastSyncStatus, getJobsStats, getPlatformStats} from '@/lib/jd-sync-service';
+export const dynamic = 'force-dynamic';
 
 // 触发全量同步
 export async function POST(request: NextRequest) {

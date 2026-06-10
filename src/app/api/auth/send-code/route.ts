@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+export const dynamic = 'force-dynamic';
 
 // 简单内存限流器：60秒内最多3次
 const sendCodeLimiter = new Map<string, { count: number; lastTime: number }>();

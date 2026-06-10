@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 
 // 将 Supabase 的 snake_case 关系类型映射到前端期望的 camelCase 类型
 const relationTypeMap: Record<string, string> = {
