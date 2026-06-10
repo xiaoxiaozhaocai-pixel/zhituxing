@@ -1,5 +1,30 @@
 export const dynamic = 'force-dynamic';
 
+// Polyfill DOMMatrix for Node.js (pdf-parse / pdfjs-dist dependency)
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  // @ts-expect-error - minimal polyfill
+  globalThis.DOMMatrix = class {
+    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+    constructor(init?: string | number[]) {
+      if (typeof init === 'string' && init.startsWith('matrix(')) {
+        const m = init.slice(7, -1).split(',').map(Number);
+        this.a = m[0] ?? 1; this.b = m[1] ?? 0;
+        this.c = m[2] ?? 0; this.d = m[3] ?? 1;
+        this.e = m[4] ?? 0; this.f = m[5] ?? 0;
+      }
+    }
+    multiply() { return this; }
+    translate() { return this; }
+    scale() { return this; }
+    rotate() { return this; }
+    transformPoint(p: { x: number; y: number }) { return { x: p.x, y: p.y }; }
+  };
+}
+if (typeof globalThis.Path2D === 'undefined') {
+  // @ts-expect-error - minimal polyfill
+  globalThis.Path2D = class {};
+}
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
