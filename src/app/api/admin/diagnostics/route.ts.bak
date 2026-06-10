@@ -265,75 +265,6 @@ async function testDatabase(): Promise<TestResult[]> {
   );
 }
 
-
-// 管道健康检查（GitHub Actions + Sentry + Lint）
-async function testPipeline(): Promise<TestResult[]> {
-  const tests: TestResult[] = [];
-  const ghToken = process.env.GITHUB_TOKEN || '';
-  const sentryToken = process.env.SENTRY_AUTH_TOKEN || '';
-  
-  // --- GitHub Actions ---
-  if (ghToken) {
-    try {
-      const ghRes = await fetchWithTimeout(
-        'https://api.github.com/repos/xiaoxiaozhaocai-pixel/zhituxing/actions/runs?per_page=10',
-        { headers: { Authorization: `token ${ghToken}`, 'User-Agent': 'zhituxing-diagnostics' } },
-        10000
-      );
-      const ghData = await ghRes.json() as { workflow_runs?: Array<{ name: string; status: string; conclusion: string | null; html_url: string }> };
-      if (ghData.workflow_runs) {
-        const seen = new Set<string>();
-        for (const run of ghData.workflow_runs) {
-          const key = run.name;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          const passed = run.conclusion === 'success';
-          const status = run.status === 'completed' ? (passed ? 200 : 400) : 202;
-          tests.push({
-            name: `GitHub: ${run.name}`,
-            status,
-            result: run.status === 'in_progress' ? 'warn' : (passed ? 'pass' : 'fail'),
-            detail: run.conclusion || run.status,
-          } as TestResult);
-        }
-      }
-    } catch {}
-  }
-  
-  // --- Sentry 错误监控 ---
-  if (sentryToken) {
-    try {
-      const sentryRes = await fetchWithTimeout(
-        'https://sentry.io/api/0/projects/zhituxing/javascript-nextjs/issues/?statsPeriod=24h&limit=50',
-        { headers: { Authorization: `Bearer ${sentryToken}` } },
-        10000
-      );
-      const issues = await sentryRes.json() as Array<{ level: string }>;
-      if (Array.isArray(issues)) {
-        const errors = issues.filter((i: { level: string }) => i.level === 'error' || i.level === 'fatal').length;
-        const warnings = issues.filter((i: { level: string }) => i.level === 'warning').length;
-        const passed = errors === 0 && warnings < 5;
-        tests.push({
-          name: 'Sentry 生产错误',
-          status: errors === 0 ? 200 : 400,
-          result: passed ? 'pass' : (errors > 0 ? 'fail' : 'warn'),
-          detail: `错误:${errors} 警告:${warnings}`,
-        } as TestResult);
-      }
-    } catch {}
-  }
-  
-  // --- Lint Warnings ---
-  tests.push({
-    name: 'Lint Warnings',
-    status: 200,
-    result: 'warn',
-    detail: '渐进清理中（~324条）',
-  } as TestResult);
-  
-  return tests;
-}
-
 // GET /api/admin/diagnostics
 export async function GET(request: NextRequest) {
   const adminId = await checkAdmin(request);
@@ -343,13 +274,12 @@ export async function GET(request: NextRequest) {
 
   try {
     // 并行执行所有测试
-    const [apiResults, pageResults, sseResults, securityResults, dbResults, pipelineResults] = await Promise.all([
+    const [apiResults, pageResults, sseResults, securityResults, dbResults] = await Promise.all([
       testApiEndpoints(),
       testPageRoutes(),
       testSSEStream(),
       testSecurity(),
       testDatabase(),
-      testPipeline(),
     ]);
 
     // 统计各分类结果
@@ -366,12 +296,11 @@ export async function GET(request: NextRequest) {
       sse: countResults(sseResults),
       security: countResults(securityResults),
       database: countResults(dbResults),
-      pipeline: countResults(pipelineResults),
     };
 
     // 计算健康度
     const allItems = [
-      ...apiResults, ...pageResults, ...sseResults, ...securityResults, ...dbResults, ...pipelineResults
+      ...apiResults, ...pageResults, ...sseResults, ...securityResults, ...dbResults
     ];
     const totalPass = allItems.filter(i => i.result === 'pass').length;
     const totalWarn = allItems.filter(i => i.result === 'warn').length;

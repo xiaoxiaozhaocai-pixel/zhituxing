@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw, CheckCircle2, XCircle, AlertTriangle, Database, Globe, Shield, Radio, FileCode } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle2, XCircle, AlertTriangle, Database, Globe, Shield, Radio, FileCode, GitBranch, Bug, AlertCircle } from 'lucide-react';
 
 interface DiagnosticItem {
   name: string;
@@ -31,6 +31,7 @@ interface DiagnosticsResult {
     sse: Category;
     security: Category;
     database: Category;
+    pipeline: Category;
   };
   timestamp: string;
 }
@@ -41,6 +42,7 @@ const categoryConfig = {
   pages: { label: '页面路由', icon: Globe, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
   security: { label: '安全检查', icon: Shield, color: 'text-emerald-600', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
   sse: { label: 'SSE流测试', icon: Radio, color: 'text-orange-600', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
+  pipeline: { label: '管道健康', icon: GitBranch, color: 'text-indigo-600', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
 };
 
 export default function DiagnosticsPage() {
@@ -223,7 +225,7 @@ export default function DiagnosticsPage() {
               </div>
 
               {/* 分类卡片 */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.keys(categoryConfig).map(key => 
                   renderCategoryCard(key as keyof typeof categoryConfig)
                 )}
