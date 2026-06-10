@@ -256,8 +256,6 @@ function MarkdownText({ text }: { text: string }) {
                 <code className="block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs whitespace-pre">{b.code}</code>
               </pre>
             );
-          case 'tier_match':
-            return <TierMatchCard key={idx} data={seg.data as TierMatchData} />;
 
           default:
             return null;
