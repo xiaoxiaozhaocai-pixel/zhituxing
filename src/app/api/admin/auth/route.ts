@@ -1,12 +1,12 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 function verifyAdminToken(token: string): boolean {
-  // 方式1：哈希比较（推荐，需先设置 ADMIN_TOKEN_HASH + ADMIN_TOKEN_SALT）
+  // 方式1：哈希比较，推荐，需先设置 ADMIN_TOKEN_HASH + ADMIN_TOKEN_SALT）
   const storedHash = process.env.ADMIN_TOKEN_HASH;
   const salt = process.env.ADMIN_TOKEN_SALT || 'zhituxing';
   if (storedHash) {
