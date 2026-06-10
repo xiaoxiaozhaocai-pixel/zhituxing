@@ -10,8 +10,8 @@ import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 const STORAGE_KEY_POS = 'xiaozhi-float-pos';
 const STORAGE_KEY_VISITED = 'xiaozhi-visited';
-const CHAT_PANEL_W = 384;
-const CHAT_PANEL_H = 520;
+const CHAT_PANEL_W = 440;
+const CHAT_PANEL_H = 600;
 const FAB_SIZE = 56;
 const GAP = 16;
 
