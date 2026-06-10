@@ -139,22 +139,28 @@ export default function FloatingAICTA() {
     setInput('');
     setStreaming(true);
 
+    // 统一 AbortController：控制 fetch + SSE reader（之前 AbortSignal.timeout 只管 fetch 不管 reader，导致流挂死时永久转圈）
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 90000);
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         credentials: 'include', // 显式带上 sb-access-token cookie，否则后端 401
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msg, botType: 'xiaozhi' }),
-        signal: AbortSignal.timeout(60000),
+        signal: abortController.signal,
       });
 
       if (!res.ok || !res.body) {
         if (res.status === 401) {
           setMessages(prev => [...prev, { role: 'assistant', content: '请先登录后再使用小职～\n\n👉 点击页面右上角登录按钮' }]);
+          clearTimeout(timeoutId);
           setStreaming(false);
           return;
         }
         setMessages(prev => [...prev, { role: 'assistant', content: '小职暂时无法回复，请稍后再试～' }]);
+        clearTimeout(timeoutId);
         setStreaming(false);
         return;
       }
@@ -166,6 +172,8 @@ export default function FloatingAICTA() {
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       while (true) {
+        // 双重保险：signal.aborted 兜底 + reader.read() 的 AbortError
+        if (abortController.signal.aborted) break;
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -191,14 +199,20 @@ export default function FloatingAICTA() {
           }
         }
       }
-    } catch {
+    } catch (err) {
+      // AbortError 超时 → 友好提示；其他错误 → 通用兜底
+      const isTimeout = (err as Error)?.name === 'AbortError';
       setMessages(prev => {
         const copy = [...prev];
         const last = copy[copy.length - 1];
-        copy[copy.length - 1] = { role: 'assistant', content: last!.content || '网络出了点问题，再试试？' };
+        copy[copy.length - 1] = {
+          role: 'assistant',
+          content: last?.content || (isTimeout ? '小职思考太久了，请稍后再试～' : '网络出了点问题，再试试？'),
+        };
         return copy;
       });
     } finally {
+      clearTimeout(timeoutId);
       setStreaming(false);
     }
   };
