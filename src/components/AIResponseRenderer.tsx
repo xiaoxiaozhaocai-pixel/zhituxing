@@ -35,7 +35,14 @@ function renderInline(text: string, keyPrefix = ''): ReactNode[] {
     }
     lastIdx = m.index + m[0].length;
   }
-  if (lastIdx < text.length) parts.push(text.slice(lastIdx));
+  if (lastIdx < text.length) {
+    // 清理 AI 模型残留的孤儿 markdown 标记（** / **** / *），避免原文泄露给用户
+    let trailing = text.slice(lastIdx)
+      .replace(/\*{2,}/g, '')   // **** / *** / ** 装饰分隔符
+      .replace(/(?<!\w)\*(?!\w)/g, '')  // 孤立 * 号
+      .trim();
+    if (trailing) parts.push(trailing);
+  }
   return parts;
 }
 
