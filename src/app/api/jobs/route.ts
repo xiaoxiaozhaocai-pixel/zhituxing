@@ -1,5 +1,3 @@
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
 import {NextRequest} from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
@@ -7,6 +5,8 @@ import type {CacheEntry, JobRecord} from '@/lib/types';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { JobsListDataSchema, type JobsListData } from '@/lib/api-contracts/jobs';
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // ============================================================
 // 内存缓存 - Edge Runtime 下为 best-effort（同实例命中时更快）

@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 /**
  * 通用聊天API — 路由到不同Coze智能体
  * 
@@ -45,9 +44,10 @@ import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
 import { matchJobs, type MatchResult } from '@/lib/matching-service';
-
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 

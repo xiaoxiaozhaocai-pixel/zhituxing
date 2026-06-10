@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserInfoFromRequest,
@@ -11,6 +10,8 @@ import {
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { calculateCompetencyPercentile, type CompetencyPercentileResult, type PeerMatchScore } from '@/lib/matching-algorithm';
 import {
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
   extractKeywords,
   querySupabase,
   buildRAGContext,
@@ -18,7 +19,6 @@ import {
 
 const supabase = getSupabaseAdmin();
 
-export const runtime = 'nodejs';
 
 // DeepSeek 开关
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';

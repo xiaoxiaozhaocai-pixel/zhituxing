@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 /**
  * 检查用户是否为管理员
