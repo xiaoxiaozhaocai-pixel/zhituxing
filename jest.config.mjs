@@ -1,8 +1,7 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+/** @type {import('jest').Config} */
+const config = {
   testEnvironment: 'node',
-  modulePathIgnorePatterns: ["<rootDir>/\.next/"],
+  modulePathIgnorePatterns: ["<rootDir>/.next/"],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
