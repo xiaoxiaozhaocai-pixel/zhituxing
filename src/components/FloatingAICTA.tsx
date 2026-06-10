@@ -69,9 +69,9 @@ export default function FloatingAICTA() {
     if (typeof window !== 'undefined' && window.location.pathname === '/membership') {
       setShowMembership(false); return;
     }
-    const exhausted = (quota?.remaining ?? 0) <= 0;
+    const exhausted = quota != null && quota.remaining <= 0;
     setQuotaExhausted(exhausted);
-    setShowMembership(true);
+    setShowMembership(exhausted);
   }, [user, quota, isMember]);
 
   // 初始化位置 + 首次访问判断
