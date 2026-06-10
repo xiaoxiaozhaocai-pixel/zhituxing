@@ -38,7 +38,7 @@ function renderInline(text: string, keyPrefix = ''): ReactNode[] {
   }
   if (lastIdx < text.length) {
     // 清理 AI 模型残留的孤儿 markdown 标记（** / **** / *），避免原文泄露给用户
-    let trailing = text.slice(lastIdx)
+    const trailing = text.slice(lastIdx)
       .replace(/\*{2,}/g, '')   // **** / *** / ** 装饰分隔符
       .replace(/(?<!\w)\*(?!\w)/g, '')  // 孤立 * 号
       .trim();

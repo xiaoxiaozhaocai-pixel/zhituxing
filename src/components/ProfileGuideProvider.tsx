@@ -19,7 +19,6 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
   useEffect(() => {
 // eslint-disable-next-line
     checkUserProfile();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkUserProfile = async () => {
