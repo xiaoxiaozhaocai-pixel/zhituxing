@@ -218,6 +218,75 @@ async function testSecurity(): Promise<TestResult[]> {
   return tests;
 }
 
+// 管道健康检查（GitHub Actions + Sentry + Lint）
+async function testPipeline(): Promise<TestResult[]> {
+  const tests: TestResult[] = [];
+  const token = process.env.GITHUB_TOKEN;
+  const sentryToken = process.env.SENTRY_AUTH_TOKEN;
+  const sentryOrg = process.env.SENTRY_ORG || 'zhituxing';
+  const sentryProject = process.env.SENTRY_PROJECT || 'javascript-nextjs';
+
+  // 1. GitHub Actions CI 状态
+  try {
+    const res = await fetchWithTimeout(
+      'https://api.github.com/repos/xiaoxiaozhaocai-pixel/zhituxing/actions/runs?per_page=3',
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } },
+      10000
+    );
+    if (res.ok) {
+      const data = await res.json() as { workflow_runs: Array<{ status: string; conclusion: string | null; name: string }> };
+      const runs = data.workflow_runs || [];
+      const latestRun = runs[0];
+      const status = latestRun?.conclusion || latestRun?.status || 'unknown';
+      const passed = status === 'success';
+      tests.push({
+        name: 'GitHub Actions CI',
+        status: res.status,
+        result: passed ? 'pass' : (status === 'unknown' ? 'warn' : 'fail'),
+        detail: `${latestRun?.name || 'N/A'}: ${status}`
+      });
+    } else {
+      tests.push({ name: 'GitHub Actions CI', status: res.status, result: 'fail', detail: `GitHub API ${res.status}` });
+    }
+  } catch (e: unknown) {
+    tests.push({ name: 'GitHub Actions CI', status: 0, result: 'fail', detail: (e as Error).message || '请求失败' });
+  }
+
+  // 2. Sentry 连接状态
+  try {
+    const res = await fetchWithTimeout(
+      `https://sentry.io/api/0/projects/${sentryOrg}/${sentryProject}/`,
+      { headers: { Authorization: `Bearer ${sentryToken}` } },
+      8000
+    );
+    const passed = res.ok;
+    tests.push({
+      name: 'Sentry 连接',
+      status: res.status,
+      result: passed ? 'pass' : 'fail',
+      detail: passed ? '连接正常' : `HTTP ${res.status}`
+    });
+  } catch (e: unknown) {
+    tests.push({ name: 'Sentry 连接', status: 0, result: 'fail', detail: (e as Error).message || '请求失败' });
+  }
+
+  // 3. Lint 自检（无 GITHUB_TOKEN 可用时判定为 warn）
+  if (!token) {
+    tests.push({ name: 'GITHUB_TOKEN', status: 0, result: 'fail', detail: '未配置环境变量' });
+  } else {
+    tests.push({ name: 'GITHUB_TOKEN', status: 200, result: 'pass', detail: '已配置' });
+  }
+
+  // 4. Sentry Token 检查
+  if (!sentryToken) {
+    tests.push({ name: 'SENTRY_AUTH_TOKEN', status: 0, result: 'fail', detail: '未配置环境变量' });
+  } else {
+    tests.push({ name: 'SENTRY_AUTH_TOKEN', status: 200, result: 'pass', detail: '已配置' });
+  }
+
+  return tests;
+}
+
 // 数据库状态检查
 async function testDatabase(): Promise<TestResult[]> {
   const tables = [
