@@ -45,7 +45,7 @@ export async function assembleContext(
       .order('created_at', { ascending: true }),
   ]);
 
-  const summary = convData?.summary || null;
+  const summary = convData?.data?.summary || null;
   const allMessages = messagesData.data || [];
 
   // 分离已压缩和未压缩消息

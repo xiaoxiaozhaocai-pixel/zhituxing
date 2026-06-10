@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,7 +62,7 @@ const exploreNavItems = [
 
 
 
-export default function Navbar() {
+function NavbarInner() {
   const { user, logout, isAuthenticated, loading: authLoading } = useAuth();
   const { isMember, membershipPlan } = useMembership();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -400,5 +400,16 @@ export default function Navbar() {
       </nav>
       <div className="h-16" />
     </>
+  );
+}
+
+/**
+ * 公开导出：用 Suspense 包裹 NavbarInner，避免 useSearchParams 在静态预渲染时报错。
+ */
+export default function Navbar() {
+  return (
+    <Suspense fallback={null}>
+      <NavbarInner />
+    </Suspense>
   );
 }

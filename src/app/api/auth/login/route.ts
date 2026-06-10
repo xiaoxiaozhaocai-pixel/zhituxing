@@ -2,14 +2,14 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { setAuthCookies } from '@/lib/auth-cookies';
-import { rateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
     // P1-4: 速率限制 5次/60秒
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    const rl = rateLimit(ip, { maxRequests: 5, windowMs: 60000, endpoint: 'login' });
-    if (!rl.allowed) {
+    const rl = checkRateLimit(`login:${ip}`, { maxRequests: 5, windowMs: 60000 });
+    if (!rl.success) {
       return NextResponse.json({ error: '请求过于频繁，请稍后重试' }, { status: 429 });
     }
     const body = await request.json();

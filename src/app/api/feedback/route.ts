@@ -23,9 +23,9 @@ function getClientIp(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimitResult = await checkRateLimit(clientIp, 10, 3600000);
+    const rateLimitResult = checkRateLimit(`feedback:${clientIp}`, { maxRequests: 10, windowMs: 3600000 });
     
-    if (!rateLimitResult.allowed) {
+    if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: '反馈过于频繁，请稍后再试' },
         { status: 429 }

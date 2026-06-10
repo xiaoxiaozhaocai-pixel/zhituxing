@@ -116,8 +116,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // 1. 全局限流（400次/分钟，按 user_id 或 IP）
   // --------------------------------------------------------
   const rateLimitKey = getRateLimitKey(request);
-  const globalCheck = await checkRateLimit(`global:${rateLimitKey}`, RATE_LIMIT, RATE_WINDOW_MS);
-  if (!globalCheck.allowed) {
+  const globalCheck = checkRateLimit(`global:${rateLimitKey}`, { maxRequests: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
+  if (!globalCheck.success) {
     return createRateLimitResponse();
   }
 
@@ -182,8 +182,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
     }
     
     console.log('[proxy] /api/chat auth passed, checking rate limit');
-    const chatCheck = await checkRateLimit(`chat:${rateLimitKey}`, 5, 60000);
-    if (!chatCheck.allowed) {
+    const chatCheck = checkRateLimit(`chat:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
+    if (!chatCheck.success) {
       return createRateLimitResponse();
     }
   }
@@ -192,8 +192,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // 4. /api/auth/login 和 /api/auth/register 路由：5次/分钟限流
   // --------------------------------------------------------
   if (pathname === '/api/auth/login' || pathname === '/api/auth/register') {
-    const authCheck = await checkRateLimit(`auth:${rateLimitKey}`, 5, 60000);
-    if (!authCheck.allowed) {
+    const authCheck = checkRateLimit(`auth:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
+    if (!authCheck.success) {
       return createRateLimitResponse();
     }
   }
@@ -202,8 +202,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // 5. /api/jobs 路由：30次/分钟限流
   // --------------------------------------------------------
   if (pathname.startsWith('/api/jobs')) {
-    const jobsCheck = await checkRateLimit(`jobs:${rateLimitKey}`, 30, 60000);
-    if (!jobsCheck.allowed) {
+    const jobsCheck = checkRateLimit(`jobs:${rateLimitKey}`, { maxRequests: 30, windowMs: 60000 });
+    if (!jobsCheck.success) {
       return createRateLimitResponse();
     }
   }
