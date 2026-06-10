@@ -391,15 +391,19 @@ function AssistantContent() {
   }, [activeBot]);
 
   // 持续同步当前 bot 的对话到 sessionStorage（防止页面刷新丢失）
+  // 只在 isLoading 结束时保存（避免流式过程中每个 token 都序列化全部消息导致卡死）
+  const prevIsLoading = useRef(isLoading);
   useEffect(() => {
-    if (prevBotRef.current !== activeBot) return;
-    if (messages.length < 1) return;  // 只有欢迎消息时不持久化
-    try {
-      sessionStorage.setItem(`chat_${activeBot}`, JSON.stringify(messages));
-    } catch {
-      // 忽略存储错误
+    // 从 loading -> 非 loading，说明一轮对话完成，此时保存
+    if (prevIsLoading.current && !isLoading && messages.length > 1) {
+      try {
+        sessionStorage.setItem(`chat_${activeBot}`, JSON.stringify(messages));
+      } catch {
+        // 忽略存储错误
+      }
     }
-  }, [messages, activeBot]);
+    prevIsLoading.current = isLoading;
+  }, [isLoading, messages, activeBot]);
 
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
