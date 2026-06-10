@@ -288,7 +288,7 @@ export default function ResumeDetailPage() {
             <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
             继续优化其他简历
           </Button>
-          <Link href="/resume-edit">
+          <Link href="/resume-builder">
             <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF] hover:to-[#165DFF] text-white font-semibold rounded-xl shadow-md shadow-[#165DFF]/20">
               <PenTool className="w-3.5 h-3.5 mr-1.5" />
               去编辑简历

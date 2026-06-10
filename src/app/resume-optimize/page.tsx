@@ -521,7 +521,7 @@ export default function ResumeOptimizePage() {
                   <p className="text-xs text-[#ccc] text-center py-6">暂无简历</p>
                 )}
                 <Link
-                  href="/resume-edit"
+                  href="/resume-builder"
                   className="flex items-center justify-center gap-1.5 text-xs text-[#165DFF] hover:text-[#3D7FFF] font-medium pt-2 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
