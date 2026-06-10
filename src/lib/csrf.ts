@@ -100,33 +100,3 @@ export function validateCSRF(request: NextRequest): NextResponse | null {
   // 注意：现代浏览器对跨站 POST 都会发送 Origin 头
   return null;
 }
-
-/**
- * Double-Submit Cookie 模式 CSRF Token 验证
- * 作为 Origin/Referer 验证的第二层防护，用于关键操作（支付/订单等）
- * 
- * 前端需配合：
- *   1. 登录时服务端下发 csrf-token cookie（SameSite=Strict, httpOnly=false）
- *   2. 前端从 cookie 读取 token，通过 x-csrf-token header 回传
- *   3. 服务端对比 cookie 和 header 中的 token 是否一致
- */
-export function validateCSRFToken(request: NextRequest): boolean {
-  const cookieToken = request.cookies.get('csrf-token')?.value;
-  const headerToken = request.headers.get('x-csrf-token');
-  
-  if (!cookieToken || !headerToken) {
-    // 开发环境允许无 token
-    if (process.env.NODE_ENV !== 'production') return true;
-    return false;
-  }
-  
-  // timing-safe comparison would be ideal, but for simplicity use strict equality
-  // with fixed-length comparison to prevent timing leaks
-  if (cookieToken.length !== headerToken.length) return false;
-  
-  let result = 0;
-  for (let i = 0; i < cookieToken.length; i++) {
-    result |= cookieToken.charCodeAt(i) ^ headerToken.charCodeAt(i);
-  }
-  return result === 0;
-}

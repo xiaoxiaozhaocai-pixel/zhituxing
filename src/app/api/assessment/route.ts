@@ -44,18 +44,28 @@ async function saveStructuredDataAssessment(
       dataField = 'plan_data';
     }
 
-    const { error } = await supabase
-      .from(table as any)
-      .insert({
-        user_id: userId,
-        [dataField]: jsonData,
-        created_at: now,
-      });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/${table}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          [dataField]: jsonData,
+          created_at: now,
+        }),
+      }
+    );
 
-    if (!error) {
+    if (res.ok) {
       console.log(`[assessment] 结构化数据已保存: type=${dataType}, table=${table}`);
     } else {
-      console.error('[assessment] 保存结构化数据失败:', error.message);
+      console.error('[assessment] 保存结构化数据失败:', res.status, await res.text());
     }
   } catch (error) {
     console.error('[assessment] 保存结构化数据异常:', error);
@@ -350,7 +360,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[assessment] GET Error:', error);
     return NextResponse.json(
-      { error: '查询测评历史失败' },
+      { error: '查询测评历史失败', detail: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
     );
   }
@@ -575,7 +585,7 @@ ${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ""}
   } catch (error) {
     console.error('能力测评生成失败:', error);
     return NextResponse.json(
-      { code: 500, message: '生成失败' },
+      { code: 500, message: '生成失败', error: error instanceof Error ? error.message : '未知错误' },
       { status: 500 }
     );
   }

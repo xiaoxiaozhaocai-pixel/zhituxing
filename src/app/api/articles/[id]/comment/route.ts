@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { safeErrorMessage } from '@/lib/api-error';
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
-
-export const dynamic = 'force-dynamic';
 
 // 发表文章评论
 export async function POST(
@@ -19,14 +18,15 @@ export async function POST(
       return NextResponse.json({ success: false, error: '请先登录' }, { status: 401 });
     }
 
-    const { content: rawContent, parentId } = await request.json();
+    const { content, parentId } = await request.json();
 
-    if (!rawContent || rawContent.trim().length === 0) {
+    if (!content || content.trim().length === 0) {
       return NextResponse.json({ success: false, error: '评论内容不能为空' }, { status: 400 });
     }
 
-    // 输入净化：剥离 HTML 标签，防止存储型 XSS
-    const content = rawContent.trim().replace(/<[^>]*>/g, '').slice(0, 1000);
+    if (content.length > 1000) {
+      return NextResponse.json({ success: false, error: '评论内容不能超过1000字' }, { status: 400 });
+    }
 
     // 获取用户信息
     const { data: user } = await supabase
@@ -41,7 +41,7 @@ export async function POST(
       .insert({
         user_id: userId,
         article_id: articleId,
-        content: content,
+        content: content.trim(),
         parent_id: parentId || null
       })
       .select()
