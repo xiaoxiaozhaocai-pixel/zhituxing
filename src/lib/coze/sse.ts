@@ -35,6 +35,9 @@ async function saveStructuredData(
       table = 'competency_results';
     } else if (dataType === 'decision_result' || botType === 'decision') {
       table = 'decision_results';
+    } else if (dataType === 'tier_match' || botType === 'jobs_tier') {
+      table = 'skill_job_match';
+      dataField = 'match_data';
     } else if (dataType === 'skill_portrait' || botType === 'skill_portrait') {
       table = 'skill_portraits';
       dataField = 'portrait_data';

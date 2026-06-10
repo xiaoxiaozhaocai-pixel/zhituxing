@@ -44,6 +44,7 @@ import { prepareChatContext } from './chat-context';
 import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
+import { matchJobs, type MatchResult } from '@/lib/matching-service';
 
 
 export const runtime = 'nodejs';
@@ -653,6 +654,50 @@ export async function POST(request: NextRequest) {
             : [],
         ]);
         
+        // ============================================================
+        // 岗位匹配智能体专属：pgvector 语义搜索 + 多维打分（仅 jobs/job_match）
+        // 在关键词 RAG 基础上叠加真实语义匹配结果
+        // ============================================================
+        let tierMatchContext = '';
+        if ((actualBotType === 'jobs' || actualBotType === 'job_match') && userId) {
+          try {
+            const matchResults: MatchResult[] = await matchJobs({
+              userId,
+              skills: message,
+              limit: 15,
+            });
+
+            if (matchResults.length > 0) {
+              // 按匹配度分三档
+              const precise = matchResults.filter(r => r.totalScore >= 75);
+              const reach = matchResults.filter(r => r.totalScore >= 60 && r.totalScore < 75);
+              const safety = matchResults.filter(r => r.totalScore >= 45 && r.totalScore < 60);
+
+              const formatJob = (r: MatchResult) =>
+                `  - ${r.jobTitle} | ${r.jobMeta.company || '未知公司'} | 匹配度${r.totalScore}% | ${r.jobMeta.industry || ''} | ${r.jobMeta.city || ''} | 已匹配:${r.matchedSkills.join('/') || '无'} | 缺口:${r.skillGaps.join('/') || '无'}`;
+
+              const parts: string[] = [];
+              if (precise.length > 0) {
+                parts.push(`【精准匹配岗 ≥75%】\n${precise.slice(0, 3).map(formatJob).join('\n')}`);
+              }
+              if (reach.length > 0) {
+                parts.push(`【冲刺岗 60-74%】\n${reach.slice(0, 3).map(formatJob).join('\n')}`);
+              }
+              if (safety.length > 0) {
+                parts.push(`【稳妥保底岗 45-59%】\n${safety.slice(0, 3).map(formatJob).join('\n')}`);
+              }
+
+              if (parts.length > 0) {
+                tierMatchContext = `\n\n【pgvector 语义匹配结果 — 基于 24753 条真实 JD 库召回，请基于以下数据生成三档推荐卡片】\n${parts.join('\n\n')}\n`;
+                console.log(`[chat] pgvector tier match: precise=${precise.length}, reach=${reach.length}, safety=${safety.length}`);
+              }
+            }
+          } catch (matchErr) {
+            console.error('[chat] matchJobs error:', matchErr);
+            // 降级：不阻断流程，继续用关键词 RAG
+          }
+        }
+
         // 构建 RAG 上下文（只包含有数据的表，使用 botType 定制的标签）
         const ragSources: { tableName: string; displayName: string; data: Record<string, unknown>[] }[] = [];
         if (allowedTables!.includes('job_descriptions') && jds.length > 0) {
@@ -674,7 +719,7 @@ export async function POST(request: NextRequest) {
           ragSources.push({ tableName: 'guet_knowledge', displayName: displayNames!['guet_knowledge'] || '桂电知识', data: guetKnowledge });
         }
         
-        const ragContext = buildRAGContext(ragSources);
+        const ragContext = buildRAGContext(ragSources) + tierMatchContext;
 
         // RAG 失败降级：无数据时告知 LLM 坦诚说明
         const ragDegradationNote = ragSources.length === 0

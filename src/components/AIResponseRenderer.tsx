@@ -4,6 +4,7 @@ import { useMemo, Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { parseAIResponse, stripDataMarkers, type CardItem, type TimelineItem, type TagGroup, type ScoreItem, type RadarData, type PromotionData, type TableData } from '@/lib/ai-response-parser';
 import {Lock, ChevronRight, CheckCircle, AlertTriangle, Award, TrendingUp} from 'lucide-react';
+import TierMatchCard, { type TierMatchData } from '@/components/cards/TierMatchCard';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
 // ========== 轻量 Markdown 渲染（无外部依赖） ==========
@@ -255,6 +256,9 @@ function MarkdownText({ text }: { text: string }) {
                 <code className="block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs whitespace-pre">{b.code}</code>
               </pre>
             );
+          case 'tier_match':
+            return <TierMatchCard key={idx} data={seg.data as TierMatchData} />;
+
           default:
             return null;
         }
@@ -806,6 +810,9 @@ export default function AIResponseRenderer({ rawText, streaming = false, role = 
                 {seg.data as string}
               </div>
             );
+
+          case 'tier_match':
+            return <TierMatchCard key={idx} data={seg.data as TierMatchData} />;
 
           default:
             return null;

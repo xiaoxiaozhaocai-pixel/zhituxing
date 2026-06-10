@@ -54,6 +54,7 @@ export interface MatchResult {
   };
   /** 岗位基本信息 */
   jobMeta: {
+    company?: string;
     industry?: string;
     city?: string;
     salaryRange?: string;
@@ -110,8 +111,11 @@ export async function matchJobs(request: MatchRequest): Promise<MatchResult[]> {
     return [];
   }
 
+  // 2b. 语义搜索返回字段有限，二次查询获取完整 JD 数据（company, hard_skills, soft_skills, major_require）
+  const enrichedCandidates = await enrichJDs(candidates);
+
   // 3. 多维打分
-  const scored = candidates.map(jd => scoreJob(jd, userSkills, userProfile, expectedSalary));
+  const scored = enrichedCandidates.map(jd => scoreJob(jd, userSkills, userProfile, expectedSalary));
 
   // 4. 按总分降序 + 截取
   scored.sort((a, b) => b.totalScore - a.totalScore);
@@ -224,6 +228,29 @@ async function semanticSearch(
   }
 
   return (data || []) as Array<Record<string, unknown>>;
+}
+
+/** 二次查询补全 JD 完整字段（company, hard_skills, soft_skills, major_require） */
+async function enrichJDs(
+  candidates: Array<Record<string, unknown>>
+): Promise<Array<Record<string, unknown>>> {
+  const ids = candidates.map(c => c.id).filter(Boolean);
+  if (ids.length === 0) return candidates;
+
+  const supabase = getSupabaseAdmin();
+  const { data: fullJDs } = await supabase
+    .from('job_descriptions')
+    .select('id, company, hard_skills, soft_skills, major_require')
+    .in('id', ids);
+
+  if (!fullJDs || fullJDs.length === 0) return candidates;
+
+  const fullMap = new Map(fullJDs.map((jd: Record<string, unknown>) => [jd.id, jd]));
+  return candidates.map(c => {
+    const full = fullMap.get(c.id);
+    if (!full) return c;
+    return { ...c, company: full.company, hard_skills: full.hard_skills, soft_skills: full.soft_skills, major_require: full.major_require };
+  });
 }
 
 /** 关键词降级搜索（embedding 不可用时） */
@@ -374,6 +401,7 @@ function scoreJob(
       estimatedMedian: salaryEstimation.estimatedSalaryMedian,
     } : undefined,
     jobMeta: {
+      company: jd.company as string,
       industry: jd.industry as string,
       city: jd.city as string,
       salaryRange: jd.salary_range as string,

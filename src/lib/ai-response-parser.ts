@@ -5,7 +5,7 @@
 
 // ========== 类型定义 ==========
 
-export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'radar' | 'promotion' | 'disclaimer' | 'table';
+export type SegmentType = 'text' | 'cards' | 'timeline' | 'tags' | 'scores' | 'radar' | 'promotion' | 'disclaimer' | 'table' | 'tier_match';
 
 export interface ParsedSegment {
   type: SegmentType;
