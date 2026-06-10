@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getAuthenticatedUserId } from '@/lib/auth';
 
 // 默认用户画像
 const getDefaultProfile = (userId: string) => ({
@@ -21,33 +22,10 @@ const getDefaultProfile = (userId: string) => ({
 
 export async function GET(request: NextRequest) {
   try {
-    // 从 cookie 读取 sb-access-token
-    const cookieHeader = request.headers.get('cookie') || '';
-    console.log('[user/profile GET] Cookie header:', cookieHeader ? '有cookie' : '无cookie');
-    const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
-    const token = tokenMatch ? tokenMatch[1] : null;
-
-    console.log('[user/profile GET] Token存在:', !!token, '长度:', token?.length || 0);
-
-    if (!token) {
-      console.log('[user/profile GET] 未登录 - 无token');
+    const userId = await getAuthenticatedUserId(request);
+    if (!userId) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
-
-    // 用 SERVICE_ROLE 客户端验证 token
-    
-    const supabaseAdmin = getSupabaseAdmin();
-
-    // 验证 token
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    console.log('[user/profile GET] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
-    
-    if (authError || !user) {
-      console.log('[user/profile GET] 认证失败:', authError?.message);
-      return NextResponse.json({ error: '认证失败: ' + (authError?.message || 'token无效') }, { status: 401 });
-    }
-
-    const userId = user.id;
 
     // 用 SERVICE_ROLE 客户端查询数据库（绕过 RLS）
     
@@ -83,33 +61,10 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    // 从 cookie 读取 sb-access-token
-    const cookieHeader = request.headers.get('cookie') || '';
-    console.log('[user/profile PUT] Cookie header:', cookieHeader ? '有cookie' : '无cookie');
-    const tokenMatch = cookieHeader.match(/sb-access-token=([^;]+)/);
-    const token = tokenMatch ? tokenMatch[1] : null;
-
-    console.log('[user/profile PUT] Token存在:', !!token, '长度:', token?.length || 0);
-
-    if (!token) {
-      console.log('[user/profile PUT] 未登录 - 无token');
+    const userId = await getAuthenticatedUserId(request);
+    if (!userId) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
-
-    // 用 SERVICE_ROLE 客户端验证 token
-    
-    const supabaseAdmin = getSupabaseAdmin();
-
-    // 验证 token
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    console.log('[user/profile PUT] Token验证:', user ? '成功 userId=' + user.id : '失败', authError?.message || '');
-    
-    if (authError || !user) {
-      console.log('[user/profile PUT] 认证失败:', authError?.message);
-      return NextResponse.json({ error: '认证失败: ' + (authError?.message || 'token无效') }, { status: 401 });
-    }
-
-    const userId = user.id;
 
     // 用 SERVICE_ROLE 客户端操作数据库（绕过 RLS）
     
@@ -190,8 +145,7 @@ export async function PUT(request: NextRequest) {
       console.error('[user/profile] 保存失败:', error);
       return NextResponse.json({ 
         code: 500, 
-        error: error.message || '保存失败',
-        details: error
+        message: '服务器内部错误，请稍后重试'
       }, { status: 500 });
     }
 
