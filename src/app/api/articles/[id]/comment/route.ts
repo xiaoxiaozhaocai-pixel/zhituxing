@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { safeErrorMessage } from '@/lib/api-error';
-export const dynamic = 'force-dynamic';
 import { getSupabase } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 // 发表文章评论
 export async function POST(
