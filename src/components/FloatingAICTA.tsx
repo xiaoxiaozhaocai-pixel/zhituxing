@@ -142,6 +142,7 @@ export default function FloatingAICTA() {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
+        credentials: 'include', // 显式带上 sb-access-token cookie，否则后端 401
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: msg, botType: 'xiaozhi' }),
         signal: AbortSignal.timeout(60000),
