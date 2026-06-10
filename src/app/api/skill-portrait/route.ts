@@ -5,15 +5,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-export const dynamic = 'force-dynamic';
   getUserInfoFromRequest,
   getUserProfileContext,
   callCozeStreamApi,
   createCozeSSEStream,
   createTextStream,
 } from '@/lib/coze-stream';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 function getSkillPortraitFallback(major?: string, targetCity?: string): string {
   const majorName = major || '您的专业';

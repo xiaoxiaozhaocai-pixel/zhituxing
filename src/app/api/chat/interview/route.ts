@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 /**
  * 独立模拟面试路由 — 模块解耦（M2）
@@ -14,6 +13,7 @@ import { INTERVIEW_STYLES, detectStyleSwitch } from '@/lib/interview-styles';
 import type { InterviewStyle } from '@/lib/interview-styles';
 import { getUserProfileContext } from '@/lib/coze-stream';
 import { extractKeywords, createDeepSeekRAGStream } from '@/lib/rag-utils';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const SSE_HEADERS = {
