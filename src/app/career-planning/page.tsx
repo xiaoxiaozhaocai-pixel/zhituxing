@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function CareerPlanningRedirect() {
   const router = useRouter();
   useEffect(() => {
-    router.replace('/growth');
+    router.replace('/assistant?bot=career');
   }, [router]);
   return null;
 }
