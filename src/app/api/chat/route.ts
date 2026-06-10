@@ -608,7 +608,7 @@ export async function POST(request: NextRequest) {
         const displayNames = RAG_DISPLAY_NAMES[actualBotType] || RAG_DISPLAY_NAMES.career;
         
         // 按配置查询数据（只查询允许的表）
-        const [jds, careerPaths, skills, resources, guetKnowledge = []] = await Promise.all([
+        const [jds, careerPaths, skills, skillAssessments, resources, guetKnowledge = []] = await Promise.all([
           allowedTables!.includes('job_descriptions')
             ? querySupabase('job_descriptions', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
@@ -629,6 +629,14 @@ export async function POST(request: NextRequest) {
                 keywords.industry ? { field: 'domain', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ].filter(Boolean) as any, 10, 'skill_name,category,domain')
+            : [],
+          
+          allowedTables!.includes('skill_assessments')
+            ? querySupabase('skill_assessments', [
+                keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
+                keywords.jobTitle ? { field: 'skill_name', operator: 'ilike', value: `%${keywords.jobTitle}%` } : undefined,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ].filter(Boolean) as any, 10, 'skill_name,dimension,question,options,correct_answer,explanation,difficulty')
             : [],
           
           allowedTables!.includes('learning_resources')
@@ -655,6 +663,9 @@ export async function POST(request: NextRequest) {
         }
         if (allowedTables!.includes('skill_taxonomy') && skills.length > 0) {
           ragSources.push({ tableName: 'skill_taxonomy', displayName: displayNames!['skill_taxonomy'] || '技能分类', data: skills });
+        }
+        if (allowedTables!.includes('skill_assessments') && skillAssessments.length > 0) {
+          ragSources.push({ tableName: 'skill_assessments', displayName: displayNames!['skill_assessments'] || '技能测评题库', data: skillAssessments });
         }
         if (allowedTables!.includes('learning_resources') && resources.length > 0) {
           ragSources.push({ tableName: 'learning_resources', displayName: displayNames!['learning_resources'] || '学习资源', data: resources });
@@ -820,6 +831,33 @@ export async function POST(request: NextRequest) {
               // 发送保存结果事件
               const saveEvent = `event: save_result\ndata: ${JSON.stringify({ result: saveResult, convId: effectiveConversationId })}\n\n`;
               controller.enqueue(encoder.encode(saveEvent));
+
+                            // 测评类智能体：提取并保存结构化测评数据（fire-and-forget）
+              if (effectiveBotType === 'assessment' && fullResponse && userId) {
+                const dataMatch = fullResponse.match(/<<DATA:type=skill_assessment>>([\s\S]*?)<<END>>/);
+                if (dataMatch) {
+                  try {
+                    const jsonData = JSON.parse(dataMatch[1].trim());
+                    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/assessment_results`, {
+                      method: 'POST',
+                      headers: {
+                        'apikey': process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+                        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal',
+                      },
+                      body: JSON.stringify({
+                        user_id: userId,
+                        result_data: jsonData,
+                        assessment_type: 'competency',
+                        created_at: new Date().toISOString(),
+                      }),
+                    }).catch(e => console.error('[chat] Assessment data save error:', e));
+                  } catch (e) {
+                    console.error('[chat] Assessment data parse error:', e);
+                  }
+                }
+              }
 
               // 桂电知识飞轮：fire-and-forget（不阻塞响应）
               runGuetFlywheel({
