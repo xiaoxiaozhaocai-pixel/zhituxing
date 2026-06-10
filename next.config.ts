@@ -104,6 +104,12 @@ const nextConfig: NextConfig = {
       // 引导页 → 首页（ProfileGuideProvider 已接管）
       { source: "/guide", destination: "/", permanent: true },
       { source: "/courses", destination: "/assistant", permanent: true },
+
+      // AI模拟面试 / 考研就业决策 → /assistant 智能体界面（共用对话框，仅 bot 不同）
+      { source: "/interview", destination: "/assistant?bot=interview", permanent: true },
+      { source: "/interview/:path*", destination: "/assistant?bot=interview", permanent: true },
+      { source: "/decision", destination: "/assistant?bot=decision", permanent: true },
+      { source: "/decision/:path*", destination: "/assistant?bot=decision", permanent: true },
     ];
   },
 };

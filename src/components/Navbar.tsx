@@ -6,7 +6,32 @@ import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, Hel
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+/**
+ * 判断导航项是否处于激活状态。
+ * - 普通 path：用 pathname === href 或 startsWith 判断
+ * - 带 query 的 href（如 /assistant?bot=interview）：要求 pathname 匹配 AND ?bot= 完全匹配
+ * - 共享路径 /assistant 且不带 bot 参数：仅当当前 URL 也没有 bot（或 bot=jobs 默认）时才高亮
+ */
+function isNavItemActive(href: string, pathname: string, currentBot: string | null): boolean {
+  const [path, query] = href.split('?');
+  const hrefBot = new URLSearchParams(query || '').get('bot');
+
+  if (path === '/') return pathname === '/';
+
+  const pathMatched = pathname === path || pathname.startsWith(path + '/');
+  if (!pathMatched) return false;
+
+  // 共享 /assistant 路径：通过 bot 参数区分（默认 bot=jobs 即"职搭子"）
+  if (path === '/assistant') {
+    const effectiveCurrent = currentBot || 'jobs';
+    const effectiveHref = hrefBot || 'jobs';
+    return effectiveCurrent === effectiveHref;
+  }
+
+  return true;
+}
 
 const mainNavItems = [
   { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
@@ -26,8 +51,8 @@ const agentNavItems = [
 ];
 
 const agentNavItems2 = [
-  { name: 'AI模拟面试', href: '/interview', icon: <MessageSquare className="w-4 h-4" /> },
-  { name: '考研就业决策', href: '/decision', icon: <Sparkles className="w-4 h-4" /> },
+  { name: 'AI模拟面试', href: '/assistant?bot=interview', icon: <MessageSquare className="w-4 h-4" /> },
+  { name: '考研就业决策', href: '/assistant?bot=decision', icon: <Sparkles className="w-4 h-4" /> },
 ];
 
 const exploreNavItems = [
@@ -46,6 +71,8 @@ export default function Navbar() {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentBot = searchParams.get('bot');
   const moreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -109,7 +136,7 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-3">
               {/* 首页 */}
               {mainNavItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                const isActive = isNavItemActive(item.href, pathname, currentBot);
                 return (
                   <Link
                     key={item.name}
@@ -135,7 +162,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-[#94A3B8] px-1 font-medium">智能体</span>
                   {agentNavItems.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                    const isActive = isNavItemActive(item.href, pathname, currentBot);
                     return (
                       <Link
                         key={item.name}
@@ -156,7 +183,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-transparent px-1">智能体</span>
                   {agentNavItems2.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                    const isActive = isNavItemActive(item.href, pathname, currentBot);
                     return (
                       <Link
                         key={item.name}
@@ -181,7 +208,7 @@ export default function Navbar() {
               {/* 探索区 */}
               <span className="text-[10px] text-[#94A3B8] font-medium mr-1">探索</span>
               {exploreNavItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                const isActive = isNavItemActive(item.href, pathname, currentBot);
                 return (
                   <Link
                     key={item.name}
@@ -221,7 +248,7 @@ export default function Navbar() {
                 >
                   <div className="py-1.5">
                     {moreNavItems.map((item) => {
-                      const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                      const isActive = isNavItemActive(item.href, pathname, currentBot);
                       return (
                         <Link
                           key={item.name}
@@ -320,7 +347,7 @@ export default function Navbar() {
           <div className="lg:hidden border-t border-[#E2E8F0] bg-white/95 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-5 py-4 space-y-1.5">
               {[...mainNavItems, ...agentNavItems, ...agentNavItems2, ...exploreNavItems, ...moreNavItems].map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                const isActive = isNavItemActive(item.href, pathname, currentBot);
                 return (
                   <Link
                     key={item.name}
