@@ -9,13 +9,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserInfoFromRequest } from '@/lib/coze-stream';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
 import {
-export const dynamic = 'force-dynamic';
   detectCourseTopic,
   buildCoursePrompt,
   getAvailableCourses,
 } from '@/lib/course-generator';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 

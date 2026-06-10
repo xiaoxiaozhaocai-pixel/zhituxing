@@ -14,15 +14,15 @@ import {
   createTextStream,
 } from '@/lib/coze-stream';
 import {
-export const dynamic = 'force-dynamic';
   extractKeywords,
   querySupabase,
   buildRAGContext,
   createDeepSeekRAGStream,
   PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 

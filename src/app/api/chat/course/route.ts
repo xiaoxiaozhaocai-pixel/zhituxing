@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 /**
  * 独立互动课程路由 — 模块解耦（M2）
@@ -14,6 +13,7 @@ import type { CourseTopic } from '@/lib/course-generator';
 import { getUserProfileContext } from '@/lib/coze-stream';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const SSE_HEADERS = {

@@ -29,7 +29,6 @@ import {
 } from '@/lib/rag-utils';
 import type { ChatMessage } from '@/lib/types';
 import {
-export const dynamic = 'force-dynamic';
   type InterviewStyle,
   INTERVIEW_STYLES,
   buildStylePrompt,
@@ -37,8 +36,9 @@ export const dynamic = 'force-dynamic';
   detectDebriefIntent,
   detectStyleSwitch,
 } from '@/lib/interview-styles';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 // DeepSeek 开关
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';

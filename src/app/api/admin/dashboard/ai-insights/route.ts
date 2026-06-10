@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
               lowActivityUsers: 0,
               totalUsers,
             },
-            insight: \`当前平台共 \${totalUsers || 0} 名用户，其中会员用户 \${memberCount || 0} 人\`,
+            insight: `当前平台共 ${totalUsers || 0} 名用户，其中会员用户 ${memberCount || 0} 人`,
           },
           opportunities: {
             title: '岗位机会推荐',
@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
               totalJdsThisMonth: monthNewJds,
             },
             insight: sortedCompanies.length > 0
-              ? \`本月活跃雇主：\${insightSummary.activeCompanies}\`
+              ? `本月活跃雇主：${insightSummary.activeCompanies}`
               : '本月暂无新增岗位数据',
           },
           suggestions: {
@@ -186,8 +186,8 @@ export async function GET(request: NextRequest) {
               monthNewUsers,
             },
             insight: [
-              pendingJds > 0 && \`待审核 JD \${pendingJds} 条，建议优先处理\`,
-              monthNewUsers && monthNewUsers > 0 && \`本月新注册 \${monthNewUsers} 名用户\`,
+              (pendingJds ?? 0) > 0 && `待审核 JD ${pendingJds} 条，建议优先处理`,
+              monthNewUsers && monthNewUsers > 0 && `本月新注册 ${monthNewUsers} 名用户`,
               '建议定期关注学生面试模拟数据，针对性开展就业指导',
             ].filter(Boolean).join('；'),
           },

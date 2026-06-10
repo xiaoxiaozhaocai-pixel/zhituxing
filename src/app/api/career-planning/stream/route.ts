@@ -23,17 +23,17 @@ import {
   getWorkflowConfig,
 } from '@/lib/coze-stream';
 import {
-export const dynamic = 'force-dynamic';
   extractKeywords,
   querySupabase,
   buildRAGContext,
   createDeepSeekRAGStream,
   PUBLIC_JD_FIELDS,
 } from '@/lib/rag-utils';
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 
-export const runtime = 'nodejs';
 
 // 职业规划 fallback 回复
 function getCareerFallback(major: string, grade: string, city: string): string {

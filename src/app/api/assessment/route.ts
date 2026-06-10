@@ -10,12 +10,12 @@ import {
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { calculateCompetencyPercentile, type CompetencyPercentileResult, type PeerMatchScore } from '@/lib/matching-algorithm';
 import {
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
   extractKeywords,
   querySupabase,
   buildRAGContext,
 } from '@/lib/rag-utils';
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const supabase = getSupabaseAdmin();
 

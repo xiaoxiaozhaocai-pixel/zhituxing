@@ -1,8 +1,8 @@
-export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { deepSeekChat, ChatMessage } from '@/lib/deepseek-chat';
 import { trackCost } from '@/lib/cost-tracker';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const SYSTEM_PROMPT = `你叫小职，是用户的简历助手。你的角色是"帮用户写简历的朋友"——亲切但不啰嗦，有专业度但不居高临下。

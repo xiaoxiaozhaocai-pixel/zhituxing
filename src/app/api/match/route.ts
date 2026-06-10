@@ -15,11 +15,11 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
 import { matchJobs } from '@/lib/matching-service';
 import {
-export const dynamic = 'force-dynamic';
   MatchPostRequestSchema,
   MatchPostDataSchema,
   MatchGetDataSchema,
 } from '@/lib/api-contracts/match';
+export const dynamic = 'force-dynamic';
 
 // ============================================================
 // GET /api/match — 语义搜索匹配（替代旧假分逻辑）

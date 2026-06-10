@@ -1,9 +1,9 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserId } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 /**
  * POST /api/admin/orders/[id]/approve

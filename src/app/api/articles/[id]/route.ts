@@ -1,7 +1,7 @@
 import { safeErrorMessage } from '@/lib/api-error';
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
+export const dynamic = 'force-dynamic';
 
 // 获取单个文章
 export async function GET(

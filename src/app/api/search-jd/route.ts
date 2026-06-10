@@ -16,7 +16,6 @@ import {
   SearchJdPostRequestSchema,
 } from '@/lib/api-contracts/search-jd';
 import {
-export const dynamic = 'force-dynamic';
   getUserInfoFromRequest,
   getUserProfileContext,
   callCozeStreamApi,
@@ -26,8 +25,9 @@ export const dynamic = 'force-dynamic';
   createTextStream,
   getWorkflowConfig,
 } from '@/lib/coze-stream';
-
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
 
 const SSE_HEADERS = {
   'Content-Type': 'text/event-stream',

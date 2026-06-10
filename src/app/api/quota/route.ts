@@ -8,12 +8,12 @@ import {
   ErrorCode,
 } from '@/lib/api-contracts/_shared';
 import {
-export const dynamic = 'force-dynamic';
   QuotaDataSchema,
   QuotaResetDataSchema,
   QuotaUpdateRequestSchema,
   QuotaUpdateDataSchema,
 } from '@/lib/api-contracts/quota';
+export const dynamic = 'force-dynamic';
 
 // in-memory 缓存（5 分钟 TTL）
 type QuotaCacheEntry = { data: ReturnType<typeof buildQuotaData>; expires: number };

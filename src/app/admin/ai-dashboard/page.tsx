@@ -164,7 +164,7 @@ export default function AIDashboardPage() {
               {cards?.opportunities.data.topCompanies?.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-gray-500 font-medium">活跃雇主 TOP10：</p>
-                  {cards.opportunities.data.topCompanies.map((c: any, i: number) => (
+                  {cards!.opportunities.data.topCompanies.map((c: any, i: number) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-gray-700 truncate flex-1">{i + 1}. {c.name}</span>
                       <span className="text-gray-500 ml-2">{c.count}条</span>
