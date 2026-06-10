@@ -44,11 +44,13 @@ async function saveStructuredDataAssessment(
       dataField = 'plan_data';
     }
 
-    const { error } = await supabase.from(table).insert({
-      user_id: userId,
-      [dataField]: jsonData,
-      created_at: now,
-    });
+    const { error } = await supabase
+      .from(table as any)
+      .insert({
+        user_id: userId,
+        [dataField]: jsonData,
+        created_at: now,
+      });
 
     if (!error) {
       console.log(`[assessment] 结构化数据已保存: type=${dataType}, table=${table}`);
