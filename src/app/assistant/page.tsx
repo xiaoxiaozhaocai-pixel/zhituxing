@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer, Share2, CheckSquare, Square} from 'lucide-react';
+import {Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer, Share2, CheckSquare, Square, Trash2} from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -216,6 +216,7 @@ function AssistantContent() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [quotaFeature, setQuotaFeature] = useState<string>('');
   // 导出功能状态
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -936,6 +937,23 @@ function AssistantContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuery, isLoading, messages.length]);
 
+  // 清空当前 bot 对话
+  const handleClearMessages = () => {
+    const bot = activeBot;
+    // 清空 sessionStorage
+    try { sessionStorage.removeItem(`chat_${bot}`); } catch {}
+    // 清空内存缓存
+    delete historyRef.current[bot];
+    // 重置为欢迎消息
+    const currentBot = bots.find(b => b.id === bot) || bots[0];
+    setMessages([{
+      role: 'assistant',
+      content: currentBot.welcomeMessage,
+      timestamp: new Date(),
+    }]);
+    setShowClearConfirm(false);
+  };
+
   const handleTabChange = (botId: string) => {
     // 切换 bot：上面的 useEffect 会自动保存当前对话并恢复目标 bot 的历史
     // 不再清除 conversationId，这样切回来还能续接同一会话
@@ -1249,6 +1267,14 @@ function AssistantContent() {
               >
                 <CheckSquare className="w-4 h-4" />
                 {selectMode ? `已选 ${selectedIndices.size}` : '选择消息'}
+              </button>
+              {/* 清空消息按钮 */}
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
+                清空消息
               </button>
               
               {/* 导出按钮 */}
@@ -1738,6 +1764,32 @@ function AssistantContent() {
           </button>
         </div>
       </div>
+
+      {/* 清空消息确认弹窗 */}
+      <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              清空对话
+            </DialogTitle>
+            <DialogDescription>
+              清空后无法恢复，确定要清空当前对话历史吗？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleClearMessages}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              确认清空
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 配额用完弹窗 */}
       {/* 分享链接弹窗 */}
