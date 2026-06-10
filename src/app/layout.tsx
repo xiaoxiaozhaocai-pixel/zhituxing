@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: '%s | 职途星',
   },
   description:
-    '大学生求职不焦虑。小职AI陪你做职业规划、技能匹配、模拟面试。20000+真实岗位覆盖27大行业，从迷茫到清晰，免费使用。',
+    '懂桂电学生的AI朋友——小职，陪你走好求职每一步',
   keywords: [
     '职业规划',
     '岗位搜索',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '职途星 — 懂桂电学生的AI朋友',
     description:
-      '大学生求职不焦虑。小职AI陪你做职业规划、技能匹配、模拟面试。免费使用，覆盖27大行业20000+真实岗位。',
+      '懂桂电学生的AI朋友——小职，陪你走好求职每一步',
     url: SITE_URL,
     locale: 'zh_CN',
     type: 'website',
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: '职途星 — 懂桂电学生的AI朋友',
-    description: '大学生求职不焦虑。小职AI陪你做职业规划、技能匹配、模拟面试。免费使用。',
+    description: '懂桂电学生的AI朋友——小职，陪你走好求职每一步',
     images: ['https://s.coze.cn/image/9JW8vCo1HrY/'],
   },
   alternates: {

@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   TrendingUp, AlertTriangle, Briefcase, Lightbulb, RefreshCw,
-  Users, FileText, ArrowUp, ArrowDown, Loader2
+  Loader2
 } from 'lucide-react';
 
 interface CardData {
   title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Record<string, any>;
   insight: string;
 }
@@ -38,7 +39,7 @@ export default function AIDashboardPage() {
       } else {
         setError(json.message || '获取数据失败');
       }
-    } catch (e) {
+    } catch {
       setError('网络错误');
     } finally {
       setLoading(false);
@@ -164,7 +165,7 @@ export default function AIDashboardPage() {
               {cards?.opportunities.data.topCompanies?.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-gray-500 font-medium">活跃雇主 TOP10：</p>
-                  {cards!.opportunities.data.topCompanies.map((c: any, i: number) => (
+                  {cards!.opportunities.data.topCompanies.map((c: { name: string; count: number }, i: number) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-gray-700 truncate flex-1">{i + 1}. {c.name}</span>
                       <span className="text-gray-500 ml-2">{c.count}条</span>

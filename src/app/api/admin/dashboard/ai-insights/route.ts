@@ -14,7 +14,7 @@ async function checkAdmin(request: NextRequest): Promise<boolean> {
 }
 
 // ===== 工具函数 =====
-function getDateRange(days: number) {
+function _getDateRange(days: number) {
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - days);
