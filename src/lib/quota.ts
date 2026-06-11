@@ -4,6 +4,11 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase';
+import {
+  MembershipPermissions,
+  tierMeetsMinimum,
+  type MembershipTier,
+} from '@/config/membership-permissions';
 
 export interface UserQuota {
   monthly_quota: number;
@@ -24,19 +29,6 @@ export type FeatureType =
   | 'competency'
   | 'decision'
   | 'resume_optimize';
-
-export const FeatureConfig: Record<FeatureType, {
-  freeQuota: number;
-  memberOnly: boolean;
-  requiresBaseReport: boolean;
-}> = {
-  career_planning: { freeQuota: -1, memberOnly: false, requiresBaseReport: false },
-  interview: { freeQuota: 3, memberOnly: false, requiresBaseReport: false },
-  assessment: { freeQuota: 1, memberOnly: false, requiresBaseReport: false },
-  competency: { freeQuota: 0, memberOnly: true, requiresBaseReport: true },
-  decision: { freeQuota: 3, memberOnly: false, requiresBaseReport: false },
-  resume_optimize: { freeQuota: 0, memberOnly: false, requiresBaseReport: false }
-};
 
 export async function getUserProfile(userId: string) {
   const supabase = getSupabaseAdmin();
@@ -127,19 +119,32 @@ export async function getUserQuota(userId: string): Promise<UserQuota | null> {
   };
 }
 
-export async function isMember(userId: string): Promise<boolean> {
+/**
+ * 获取用户当前 membership_tier（统一真相源）
+ * 返回标准化 tier 值，含过期降级逻辑
+ */
+export async function getMembershipTier(userId: string): Promise<MembershipTier> {
   const profile = await getUserProfile(userId);
-  if (profile.userType === 'member') {
-    // 检查会员是否过期
-    if (profile.memberExpiresAt) {
-      const expiresAt = new Date(profile.memberExpiresAt);
-      if (expiresAt < new Date()) {
-        return false;
-      }
+  const tier = (profile.userType || 'free') as MembershipTier;
+
+  // 非 lifetime 会员检查是否过期 → 降级为 free
+  if (tier !== 'free' && tier !== 'lifetime' && profile.memberExpiresAt) {
+    const expiresAt = new Date(profile.memberExpiresAt);
+    if (expiresAt < new Date()) {
+      return 'free';
     }
-    return true;
   }
-  return false;
+
+  return tier;
+}
+
+/**
+ * @deprecated 使用 getMembershipTier() 替代
+ * 保留以兼容旧调用方
+ */
+export async function isMember(userId: string): Promise<boolean> {
+  const tier = await getMembershipTier(userId);
+  return tier !== 'free';
 }
 
 function isQuotaExpired(resetTime: string | null): boolean {
@@ -151,32 +156,38 @@ export async function checkFeatureAccess(
   userId: string,
   feature: FeatureType
 ): Promise<{ allowed: boolean; reason?: string; remaining?: number }> {
-  const member = await isMember(userId);
+  const tier = await getMembershipTier(userId);
   const quota = await getUserQuota(userId);
-  const config = FeatureConfig[feature];
-  
-  if (member) {
-    // 会员可以访问所有功能
+  const perm = MembershipPermissions[feature];
+
+  // 会员（任意等级）→ 全部功能无限使用
+  if (tier !== 'free') {
     return { allowed: true, remaining: -1 };
   }
-  
-  if (config.memberOnly) {
-    return { 
-      allowed: false, 
-      reason: '此功能为会员专属，开通会员即可使用' 
+
+  // 免费用户 → 检查该功能最低 tier 要求
+  if (!tierMeetsMinimum(tier, perm.minTier)) {
+    return {
+      allowed: false,
+      reason: `此功能需${perm.minTier === 'monthly' ? '开通会员' : '升级会员'}即可使用`,
     };
   }
-  
+
+  // 免费用户 → 检查试用配额
+  if (perm.freeQuota === -1) {
+    return { allowed: true, remaining: -1 };
+  }
+
   if (quota && !isQuotaExpired(quota.quota_reset_time)) {
-    const remaining = quota.monthly_quota - quota.used_quota;
+    const remaining = perm.freeQuota - quota.used_quota;
     if (remaining > 0) {
       return { allowed: true, remaining };
     }
   }
-  
-  return { 
-    allowed: false, 
-    reason: '配额已用完，开通会员可获得无限次使用' 
+
+  return {
+    allowed: false,
+    reason: '免费试用次数已用完，开通会员即可无限使用',
   };
 }
 
@@ -230,26 +241,29 @@ export async function getAllQuotas(userId: string): Promise<{
   competency: { isMemberOnly: boolean; hasReport: boolean };
   decision: { remaining: number; unlimited: boolean };
   isMember: boolean;
+  tier: MembershipTier;
 }> {
-  const member = await isMember(userId);
+  const tier = await getMembershipTier(userId);
   const quota = await getUserQuota(userId);
-  
+  const isPaid = tier !== 'free';
+
   return {
     career_planning: { remaining: -1, unlimited: true },
-    interview: { 
-      remaining: member ? -1 : (quota?.interview_quota || 3),
-      unlimited: member 
+    interview: {
+      remaining: isPaid ? -1 : (quota?.interview_quota || 3),
+      unlimited: isPaid,
     },
-    assessment: { 
-      remaining: member ? -1 : (quota?.assessment_quota || 1),
-      unlimited: member 
+    assessment: {
+      remaining: isPaid ? -1 : (quota?.assessment_quota || 1),
+      unlimited: isPaid,
     },
-    competency: { isMemberOnly: true, hasReport: false },
-    decision: { 
-      remaining: member ? -1 : (quota?.monthly_quota || 10),
-      unlimited: member 
+    competency: { isMemberOnly: !isPaid, hasReport: false },
+    decision: {
+      remaining: isPaid ? -1 : (quota?.monthly_quota || 10),
+      unlimited: isPaid,
     },
-    isMember: member
+    isMember: isPaid,
+    tier,
   };
 }
 
