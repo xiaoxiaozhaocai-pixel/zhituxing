@@ -21,9 +21,9 @@ export async function GET(request: Request) {
     }
 
     const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
+    const supabaseAnon = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
     let user: User | null = null;
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 
     // 1. 先尝试 access_token
     if (accessToken) {
-      const { data, error } = await supabase.auth.getUser(accessToken);
+      const { data, error } = await supabaseAnon.auth.getUser(accessToken);
       if (!error && data.user) {
         user = data.user;
       }
