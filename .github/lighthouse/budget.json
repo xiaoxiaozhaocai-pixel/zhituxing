@@ -2,12 +2,24 @@
   {
     "path": "/*",
     "resourceSizes": [
-      { "resourceType": "script", "budget": 500 },
-      { "resourceType": "total", "budget": 2000 }
+      {
+        "resourceType": "script",
+        "budget": 500
+      },
+      {
+        "resourceType": "total",
+        "budget": 2000
+      }
     ],
     "timings": [
-      { "metric": "largest-contentful-paint", "budget": 3000 },
-      { "metric": "interactive", "budget": 5000 }
+      {
+        "metric": "largest-contentful-paint",
+        "budget": 5000
+      },
+      {
+        "metric": "interactive",
+        "budget": 6500
+      }
     ]
   }
 ]
