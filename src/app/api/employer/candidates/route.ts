@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
   const whereSql = where.join(' AND ');
 
   // 查总数
-  const countSql = `SELECT COUNT(*)::int AS total FROM user_portrait_v WHERE ${whereSql}`;
+  const countSql = `SELECT COUNT(*)::int AS total FROM public.user_portrait_v WHERE ${whereSql}`;
   const countRows = (await execSql(countSql, ...params)) as Array<{ total: number }>;
   const total = countRows?.[0]?.total || 0;
 
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
       profile_updated_at,
       assessment_at,
       career_plan_at
-    FROM user_portrait_v
+    FROM public.user_portrait_v
     WHERE ${whereSql}
     ORDER BY ${orderBy}
     LIMIT %L OFFSET %L
