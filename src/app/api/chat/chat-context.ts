@@ -9,6 +9,7 @@ import {
   assembleContext,
   getRecentNRounds,
   autoDowngradeCheck,
+  getUserHistoricalSummaries,
 } from '@/lib/context-compression';
 
 export interface ChatContextParams {
@@ -48,15 +49,22 @@ export async function prepareChatContext(params: ChatContextParams): Promise<Cha
   const compressionLevel = autoDowngradeCheck([message]);
   let systemPrompt = '';
 
+  // P2-1 跨会话长期记忆：拉取该用户最近 3 条已压缩对话的 summary
+  // 注入到 systemPrompt，让小职跨会话延续记忆（零额外 DeepSeek 调用，复用现有 summary）
+  const historicalMemory = userId
+    ? await getUserHistoricalSummaries(userId, effectiveConversationId, 3)
+    : '';
+  const memoryBlock = historicalMemory ? `\n\n${historicalMemory}\n\n---\n` : '';
+
   if (compressionLevel === 'window') {
-    systemPrompt = basePrompt + '\n\n' + ragContext + ragDegradationNote + roleReinforcement;
+    systemPrompt = basePrompt + memoryBlock + '\n\n' + ragContext + ragDegradationNote + roleReinforcement;
     history = await getRecentNRounds(effectiveConversationId, 15);
-    console.log(`[chat] Context compression: downgraded to window mode (15 rounds)`);
+    console.log(`[chat] Context compression: downgraded to window mode (15 rounds), hasLongTermMemory=${!!historicalMemory}`);
   } else {
     const context = await assembleContext(effectiveConversationId, userId || '', 3);
-    systemPrompt = basePrompt + '\n\n' + ragContext + ragDegradationNote + '\n\n' + context.fullContextText + roleReinforcement;
+    systemPrompt = basePrompt + memoryBlock + '\n\n' + ragContext + ragDegradationNote + '\n\n' + context.fullContextText + roleReinforcement;
     history = context.recentMessages;
-    console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs`);
+    console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs, hasLongTermMemory=${!!historicalMemory}`);
   }
 
   // AI 响应缓存查询

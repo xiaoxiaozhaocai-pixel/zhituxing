@@ -103,6 +103,8 @@ export async function assembleContext(
 
 // ============================================================
 // 3. 检查是否需要压缩
+// P2-1 优化：阈值从 20 降到 8（4 轮对话即触发），让短对话也能形成 summary
+// 跨会话记忆才能真正起作用（统计显示 ≤20 条的对话占绝大多数，永远不会压缩）
 // ============================================================
 export async function needsCompression(conversationId: string): Promise<boolean> {
   const supabase = getSupabaseAdmin();
@@ -117,7 +119,7 @@ export async function needsCompression(conversationId: string): Promise<boolean>
     return false;
   }
 
-  return (count || 0) > 20;
+  return (count || 0) > 8;
 }
 
 // ============================================================
@@ -292,7 +294,50 @@ async function callDeepSeekForSummary(prompt: string): Promise<string | null> {
 }
 
 // ============================================================
-// 7. 找回上下文（跨天/降级恢复）
+// 7. 跨会话长期记忆：按 user_id 拉取最近 N 条已压缩 summary
+// （P2-1 小职记忆体系：让小职跨会话延续上下文）
+// ============================================================
+export async function getUserHistoricalSummaries(
+  userId: string,
+  excludeConvId: string,
+  limit: number = 3
+): Promise<string> {
+  if (!userId) return '';
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('conversation_id, summary, bot_type, updated_at')
+    .eq('user_id', userId)
+    .neq('conversation_id', excludeConvId || '')
+    .not('summary', 'is', null)
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('[context-compression] getUserHistoricalSummaries error:', error);
+    return '';
+  }
+  if (!data || data.length === 0) return '';
+
+  const parts: string[] = ['【小职的长期记忆 — 跨会话延续】'];
+  data.forEach((c, i) => {
+    const s = c.summary as SummaryJson | null;
+    if (!s?.summary) return;
+    const botLabel = c.bot_type ? `（${c.bot_type}）` : '';
+    parts.push(`${i + 1}. 上次对话${botLabel}：${s.summary}`);
+    if (s.key_decisions && s.key_decisions.length > 0) {
+      parts.push(`   关键决策：${s.key_decisions.slice(0, 3).join('；')}`);
+    }
+    if (s.pending_items && s.pending_items.length > 0) {
+      parts.push(`   待办：${s.pending_items.slice(0, 2).join('；')}`);
+    }
+  });
+
+  return parts.length > 1 ? parts.join('\n') : '';
+}
+
+// ============================================================
+// 8. 找回上下文（跨天/降级恢复）
 // ============================================================
 export async function recallContext(
   conversationId: string,
