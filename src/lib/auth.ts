@@ -50,14 +50,16 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<AuthUs
       // 从 user_profiles 获取用户类型
       const { data: profile } = await supabase
         .from('user_profiles')
-        .select('user_type, membership_type, membership_expires_at, nickname')
+        .select('user_type, membership_type, membership_tier, membership_expires_at, nickname')
         .eq('user_id', user.id)
         .maybeSingle();
       
-      const rawType = profile?.user_type || 'free';
+      // 优先读 membership_tier（新真相源），fallback 读 user_type/membership_type（旧字段兼容）
+      const rawType = profile?.membership_tier || profile?.user_type || profile?.membership_type || 'free';
       const membershipExpiresAt = profile?.membership_expires_at;
       
       // 判断是否有效会员：非 free 且（永久会员 或 未过期）
+      // 兼容旧值 'member'（统一按 monthly 处理）
       const isLifetime = rawType === 'lifetime';
       const isExpired = !isLifetime && membershipExpiresAt
         ? new Date(membershipExpiresAt) < new Date()

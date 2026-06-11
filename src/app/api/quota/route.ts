@@ -24,7 +24,7 @@ function invalidateQuotaCache(userId: string) {
   quotaCache.delete(userId);
 }
 
-type ProfileRow = { user_type?: string | null; member_expires_at?: string | null } | null;
+type ProfileRow = { user_type?: string | null; membership_tier?: string | null; member_expires_at?: string | null } | null;
 type QuotaRow = {
   quota?: number | null;
   monthly_quota?: number | null;
@@ -36,8 +36,10 @@ type QuotaRow = {
 } | null;
 
 function buildQuotaData(profile: ProfileRow, q: QuotaRow) {
+  // 优先读 membership_tier（新真相源），fallback 读 user_type（旧字段兼容）
+  const userType = profile?.membership_tier || profile?.user_type || 'free';
   return {
-    userType: profile?.user_type || 'free',
+    userType,
     quota: q?.quota ?? q?.monthly_quota ?? 10,
     usedQuota: q?.used_quota ?? 0,
     monthlyQuota: q?.monthly_quota ?? 10,
@@ -67,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('user_type, member_expires_at')
+      .select('user_type, membership_tier, member_expires_at')
       .eq('user_id', userId)
       .maybeSingle();
 

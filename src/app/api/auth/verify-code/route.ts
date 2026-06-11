@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     // 2. 查找用户
     const { data: profiles } = await supabase
       .from('user_profiles')
-      .select('user_id, nickname, user_type, membership_expires_at')
+      .select('user_id, nickname, membership_tier, user_type, membership_expires_at')
       .eq('phone', phone)
       .limit(1);
 
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     if (profiles && profiles.length > 0) {
       userId = profiles[0].user_id;
       nickname = profiles[0].nickname || `用户${phone.slice(-4)}`;
-      userType = profiles[0].user_type || 'free';
+      // 优先读 membership_tier（新真相源），fallback 读 user_type（旧字段兼容）
+      userType = profiles[0].membership_tier || profiles[0].user_type || 'free';
     } else {
       // 新用户：创建 Supabase Auth 用户
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
           phone,
           nickname,
           user_type: 'free',
+          membership_tier: 'free',
         }, { onConflict: 'id' });
       }
     }

@@ -11,12 +11,13 @@ export async function GET(request: NextRequest) {
     // 用户统计（user_profiles）
     const { count: totalUsers, data: _users } = await supabase
       .from('user_profiles')
-      .select('user_id, created_at, membership_type', { count: 'exact' });
+      .select('user_id, created_at, membership_tier, membership_type', { count: 'exact' });
 
     const { count: memberCount } = await supabase
       .from('user_profiles')
       .select('user_id', { count: 'exact', head: true })
-      .not('membership_type', 'is', null);
+      .not('membership_tier', 'is', null)
+      .neq('membership_tier', 'free');
 
     // 今日新增（UTC+8）
     const now = new Date();

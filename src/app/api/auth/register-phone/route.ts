@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
       phone,
       nickname: defaultNickname,
       user_type: 'free',
+      membership_tier: 'free',
     }, { onConflict: 'id' });
 
     // 5. 生成 session（用 signInWithPassword，因为已设置密码）

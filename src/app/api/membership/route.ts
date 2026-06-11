@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin();
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
-      .select('user_type, membership_type, membership_expires_at')
+      .select('user_type, membership_type, membership_tier, membership_expires_at')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -25,16 +25,18 @@ export async function GET(request: NextRequest) {
       console.error('[Membership] profile query error:', profileError);
     }
 
-    const userType = profile?.user_type || 'free';
+    // 优先读 membership_tier（新真相源），fallback 读 user_type/membership_type（旧字段兼容）
+    const membershipTier = profile?.membership_tier || profile?.membership_type || profile?.user_type || 'free';
+    const userType = profile?.user_type || membershipTier;
     const membershipType = profile?.membership_type || userType;
     const membershipExpiresAt = profile?.membership_expires_at || null;
 
-    const isLifetime = userType === 'lifetime';
+    const isLifetime = membershipTier === 'lifetime';
     const isExpired = !isLifetime && membershipExpiresAt
       ? new Date(membershipExpiresAt) < new Date()
       : false;
-    const isMember = userType !== 'free' && !isExpired;
-    const membershipPlan = isMember ? userType : null;
+    const isMember = membershipTier !== 'free' && !isExpired;
+    const membershipPlan = isMember ? membershipTier : null;
 
     // 查询配额
     const { data: quota } = await supabaseAdmin
@@ -48,6 +50,7 @@ export async function GET(request: NextRequest) {
     const remainingQuota = Math.max(0, monthlyQuota - usedQuota);
 
     return jsonOk(MembershipDataSchema, {
+      membershipTier,
       userType,
       membershipType,
       membershipPlan,

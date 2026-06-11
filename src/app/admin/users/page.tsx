@@ -33,6 +33,7 @@ interface UserRow {
   user_id: number;
   user_type: string;
   membership_type: string;
+  membership_tier: string | null;
   membership_plan: string | null;
   major: string | null;
   grade: string | null;
@@ -312,9 +313,9 @@ export default function AdminUsersPage() {
                     <TableCell className="text-[#1E293B]">{user.grade || '-'}</TableCell>
                     <TableCell className="text-[#1E293B] max-w-[150px] truncate">{user.job_intention || '-'}</TableCell>
                     <TableCell>
-                      {user.membership_type === 'member' ? (
+                      {(user.membership_tier || user.membership_type) && (user.membership_tier || user.membership_type) !== 'free' ? (
                         <Badge className="bg-amber-50 text-amber-700 border-amber-200">
-                          <Crown className="h-3 w-3 mr-1" />{user.membership_plan || '会员'}
+                          <Crown className="h-3 w-3 mr-1" />{user.membership_plan || user.membership_tier || user.membership_type || '会员'}
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-[#64748B] border-[#E2E8F0]">免费</Badge>
@@ -378,7 +379,7 @@ export default function AdminUsersPage() {
                   <DetailItem label="求职意向" value={userDetail.profile.job_intention as string} />
                   <DetailItem label="城市" value={userDetail.profile.city as string} />
                   <DetailItem label="人格类型" value={userDetail.profile.personality_type as string} />
-                  <DetailItem label="会员" value={userDetail.profile.membership_type as string} />
+                  <DetailItem label="会员" value={(userDetail.profile.membership_tier as string) || (userDetail.profile.membership_type as string)} />
                   <DetailItem label="会员套餐" value={userDetail.profile.membership_plan as string} />
                   <DetailItem label="注册时间" value={userDetail.profile.created_at ? new Date(userDetail.profile.created_at as string).toLocaleDateString('zh-CN') : undefined} />
                 </div>

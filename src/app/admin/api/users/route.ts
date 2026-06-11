@@ -20,18 +20,18 @@ export async function GET(request: NextRequest) {
     // 构建查询
     let query = supabase
       .from('user_profiles')
-      .select('user_id, user_type, membership_type, membership_plan, major, grade, job_intention, city, personality_type, is_admin, created_at', { count: 'exact' });
+      .select('user_id, user_type, membership_type, membership_tier, membership_plan, major, grade, job_intention, city, personality_type, is_admin, created_at', { count: 'exact' });
 
     // 关键词搜索
     if (keyword) {
       query = query.or(`user_type.ilike.%${keyword}%`);
     }
 
-    // 会员类型筛选
+    // 会员类型筛选 — 优先用 membership_tier（新真相源）筛选
     if (memberType === 'member') {
-      query = query.not('membership_type', 'is', null);
+      query = query.not('membership_tier', 'is', null).neq('membership_tier', 'free');
     } else if (memberType === 'normal') {
-      query = query.is('membership_type', null);
+      query = query.or('membership_tier.is.null,membership_tier.eq.free');
     }
 
     // 拉黑状态筛选
@@ -124,7 +124,8 @@ export async function POST(request: NextRequest) {
           .from('user_profiles')
           .update({
             membership_type: 'lifetime',
-            membership_plan: 'lifetime'
+            membership_plan: 'lifetime',
+            membership_tier: 'lifetime'
           })
           .eq('user_id', userId);
         if (error) throw error;
@@ -136,7 +137,8 @@ export async function POST(request: NextRequest) {
           .from('user_profiles')
           .update({
             membership_type: 'monthly',
-            membership_plan: 'monthly'
+            membership_plan: 'monthly',
+            membership_tier: 'monthly'
           })
           .eq('user_id', userId);
         if (error) throw error;
@@ -149,7 +151,8 @@ export async function POST(request: NextRequest) {
         .update({
           is_lifetime_member: false,
           member_type: null,
-          member_expire_time: null
+          member_expire_time: null,
+          membership_tier: 'free'
         })
         .eq('user_id', userId);
       if (error) throw error;

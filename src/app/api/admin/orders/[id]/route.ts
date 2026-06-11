@@ -71,6 +71,12 @@ export async function PUT(
           member_expires_at: expiresAt,
           updated_at: new Date().toISOString()
         });
+      
+      // 同步更新 user_profiles.membership_tier
+      await supabase
+        .from('user_profiles')
+        .update({ membership_tier: data.plan_id || 'monthly' })
+        .eq('user_id', data.user_id);
     }
 
     return NextResponse.json({ success: true, data });

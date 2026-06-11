@@ -64,7 +64,7 @@ async function getStats() {
 
   // 会员数（无参数，使用直接查询）
   const memberRows = await execSql(
-    `SELECT COUNT(*)::int as total FROM user_profiles WHERE membership_type = 'member'`
+    `SELECT COUNT(*)::int as total FROM user_profiles WHERE membership_tier IS NOT NULL AND membership_tier != 'free'`
   ) as Record<string, unknown>[];
 
   // 本周新增（无参数，使用直接查询）
@@ -105,7 +105,7 @@ async function getGrowthTrend(days: string) {
 async function getUserDetail(userId: number) {
   // 使用参数化查询防止SQL注入
   const profileRows = await execSql(
-    `SELECT user_id, user_type, membership_type, membership_plan, major, grade,
+    `SELECT user_id, user_type, membership_type, membership_tier, membership_plan, major, grade,
             job_intention, city, skills, personality_type, ability_background::text,
             internship_experience, project_experience, awards, is_admin, created_at
      FROM user_profiles WHERE user_id = %L`,
@@ -197,7 +197,7 @@ async function getUserList(searchParams: URLSearchParams) {
     params.push(escapedKeyword, escapedKeyword, escapedKeyword);
   }
   if (membershipType) {
-    conditions.push(`membership_type = %L`);
+    conditions.push(`membership_tier = %L`);
     params.push(membershipType);
   }
   if (major) {
@@ -223,7 +223,7 @@ async function getUserList(searchParams: URLSearchParams) {
   const safeOffset = Math.max(0, offset);
   
   const rows = await execSql(
-    `SELECT user_id, user_type, membership_type, membership_plan, major, grade,
+    `SELECT user_id, user_type, membership_type, membership_tier, membership_plan, major, grade,
             job_intention, city, personality_type, is_admin, created_at
      FROM user_profiles ${whereClause}
      ORDER BY created_at DESC

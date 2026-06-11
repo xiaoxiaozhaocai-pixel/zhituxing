@@ -63,13 +63,15 @@ export async function GET(request: Request) {
     const supabaseAdmin = getSupabaseAdmin();
     const { data: profile } = await supabaseAdmin
       .from('user_profiles')
-      .select('user_type, membership_type, membership_expires_at')
+      .select('user_type, membership_type, membership_tier, membership_expires_at')
       .eq('user_id', user.id)
       .maybeSingle();
     
-    const isMember = profile?.user_type === 'member' || profile?.user_type === 'lifetime'
-      || profile?.membership_type === 'member' || profile?.membership_type === 'lifetime';
-    const isExpired = !isMember && profile?.membership_expires_at
+    // 优先读 membership_tier（新真相源），fallback 读旧字段
+    const tier = profile?.membership_tier || profile?.membership_type || profile?.user_type || 'free';
+    const isMember = tier !== 'free';
+    const isLifetimeCheck = tier === 'lifetime';
+    const isExpired = !isLifetimeCheck && profile?.membership_expires_at
       ? new Date(profile.membership_expires_at) < new Date()
       : false;
 
@@ -84,7 +86,7 @@ export async function GET(request: Request) {
           '用户' + (user.email?.split('@')[0]?.slice(-4) || ''),
         membership: {
           isMember: isMember && !isExpired,
-          type: profile?.user_type || profile?.membership_type || 'free',
+          type: tier,
           expiresAt: profile?.membership_expires_at ?? null,
         },
       },

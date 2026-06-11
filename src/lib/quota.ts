@@ -42,16 +42,20 @@ export async function getUserProfile(userId: string) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('user_type, member_expires_at')
+    .select('user_type, membership_tier, member_expires_at, membership_expires_at')
     .eq('user_id', userId)
     .maybeSingle();
   
   if (error || !data) {
     return { userType: 'free', memberExpiresAt: null };
   }
+
+  // 优先读 membership_tier（新真相源），fallback 读 user_type（旧字段兼容）
+  const membershipTier = data.membership_tier || data.user_type;
+
   return { 
-    userType: data.user_type || 'free',
-    memberExpiresAt: data.member_expires_at 
+    userType: membershipTier || 'free',
+    memberExpiresAt: data.membership_expires_at || data.member_expires_at
   };
 }
 

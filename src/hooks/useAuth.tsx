@@ -131,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       if (data.success && data.user) {
         setUser(data.user);
-        const isM = data.user.is_member || data.user.user_type === 'member';
+        const isM = data.user.is_member;
         setQuota({
           career_planning: { remaining: -1, unlimited: isM },
           interview: { remaining: isM ? -1 : 3, unlimited: isM },
@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           remaining: isM ? -1 : 3,
           reset_time: new Date(Date.now() + 86400000).toISOString(),
           is_member: isM,
-          member_type: isM ? 'member' : 'free',
+          member_type: isM ? (data.user.user_type || 'member') : 'free',
           member_expire_time: null,
         });
       }

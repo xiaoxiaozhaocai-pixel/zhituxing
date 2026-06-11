@@ -20,7 +20,9 @@ import { z } from 'zod';
 
 /** 会员类型：free | monthly | semester | annual | lifetime，向后兼容用 string */
 export const MembershipDataSchema = z.object({
-  /** 用户原始类型（free / monthly / semester / annual / lifetime） */
+  /** 新真相源字段：会员等级 */
+  membershipTier: z.string(),
+  /** 用户原始类型（free / monthly / semester / annual / lifetime）— 旧字段兼容 */
   userType: z.string(),
   /** = userType 别名（兼容旧字段命名） */
   membershipType: z.string(),

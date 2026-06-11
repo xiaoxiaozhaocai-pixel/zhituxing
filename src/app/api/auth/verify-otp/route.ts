@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
           user_id: finalUser.id,
           nickname: finalUser.user_metadata?.nickname || nickname || `用户${(finalUser.email?.split('@')[0]?.slice(-4) || '')}`,
           user_type: 'free',
+          membership_tier: 'free',
         }, { onConflict: 'id' });
       
       if (profileError) {

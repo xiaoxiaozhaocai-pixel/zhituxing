@@ -40,16 +40,17 @@ export async function POST(request: NextRequest) {
     // 查询数据库中的会员状态
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('user_type, membership_expires_at')
+      .select('user_type, membership_tier, membership_expires_at')
       .eq('user_id', authData.user.id)
       .maybeSingle();
 
-    const userType = profile?.user_type || 'free';
-    const isLifetime = userType === 'lifetime';
+    // 优先读 membership_tier（新真相源），fallback 读 user_type（旧字段兼容）
+    const membershipTier = profile?.membership_tier || profile?.user_type || 'free';
+    const isLifetime = membershipTier === 'lifetime';
     const isExpired = !isLifetime && profile?.membership_expires_at
       ? new Date(profile.membership_expires_at) < new Date()
       : false;
-    const isMember = userType !== 'free' && !isExpired;
+    const isMember = membershipTier !== 'free' && !isExpired;
 
     const response = NextResponse.json({
       success: true,
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
         email: authData.user.email,
         nickname: authData.user.user_metadata?.nickname || `用户${authData.user.email?.split('@')[0]?.slice(-4) || ''}`,
         is_member: isMember,
-        user_type: userType
+        user_type: membershipTier
       }
     });
     
