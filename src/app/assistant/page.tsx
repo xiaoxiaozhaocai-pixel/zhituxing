@@ -14,6 +14,7 @@ import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
+import AgentChainStatus from '@/components/AgentChainStatus';
 
 // 初始化 DOMPurify（组件挂载时调用）
 function _initDOMPurify() {
@@ -1252,6 +1253,7 @@ function AssistantContent() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
+        <AgentChainStatus />
         {/* 页面标题 + 导出按钮 */}
         <div className="mb-6 flex items-start justify-between">
           <div>
