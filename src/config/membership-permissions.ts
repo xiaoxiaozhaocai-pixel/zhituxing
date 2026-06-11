@@ -35,7 +35,7 @@ export const MembershipPermissions: Record<FeatureType, FeaturePermission> = {
   assessment:      { minTier: 'free', freeQuota: 5,  label: '能力测评' },
   competency:      { minTier: 'monthly', freeQuota: 0, label: '胜任力分析' },
   decision:        { minTier: 'free', freeQuota: 3,  label: '求职决策' },
-  resume_optimize: { minTier: 'monthly', freeQuota: 0, label: '简历优化' },
+  resume_optimize: { minTier: 'free', freeQuota: 5, label: '简历优化' },
 };
 
 /**

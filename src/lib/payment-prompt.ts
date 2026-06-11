@@ -59,7 +59,7 @@ export const PAYMENT_GUIDES: Record<FeatureType, PaymentGuide> = {
 ✅ 多维度胜任力雷达图
 ✅ 补齐差距的学习路径
 
-💎 ¥9.9/月解锁`,
+💎 ¥9.9/月，无限次使用`,
   },
   decision: {
     value: '数据驱动考研vs就业决策，不靠感觉',
@@ -75,7 +75,7 @@ export const PAYMENT_GUIDES: Record<FeatureType, PaymentGuide> = {
   },
   resume_optimize: {
     value: 'AI简历诊断+智能优化，通过率提升显著',
-    paywall: `🔒 简历优化是会员专属功能～
+    paywall: `🎯 简历优化5次免费额度已用完～
 
 它能帮你：
 ✅ AI诊断简历47个问题点
@@ -83,6 +83,6 @@ export const PAYMENT_GUIDES: Record<FeatureType, PaymentGuide> = {
 ✅ JD匹配度评分
 ✅ 一键优化建议
 
-💎 ¥9.9/月解锁`,
+💎 ¥9.9/月，无限次使用`,
   },
 };
