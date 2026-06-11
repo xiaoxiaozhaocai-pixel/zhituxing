@@ -316,12 +316,12 @@ export default function SkillsGraphPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-24 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-[#f0f5ff]/40 via-white to-[#f0f5ff]/30 pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4">
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] shadow-md shadow-[#165DFF]/20 rounded-lg flex items-center justify-center">
               <Network className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">技能关系图</h1>
@@ -338,7 +338,7 @@ export default function SkillsGraphPage() {
         </div>
 
         {/* 搜索和筛选 */}
-        <Card className="mb-6 border-indigo-100">
+        <Card className="mb-6 border-blue-100">
           <CardContent className="py-4">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="relative flex-1 max-w-md">
@@ -386,7 +386,7 @@ export default function SkillsGraphPage() {
 
         {loading ? (
           <div className="flex flex-col items-center py-20">
-            <Spinner className="w-10 h-10 text-indigo-500" />
+            <Spinner className="w-10 h-10 text-[#165DFF]" />
             <p className="mt-4 text-gray-500">加载技能关系数据...</p>
           </div>
         ) : simNodes.length === 0 ? (
@@ -401,9 +401,9 @@ export default function SkillsGraphPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* 图谱区域 */}
             <div className="lg:col-span-3">
-              <Card className="border-indigo-100 overflow-hidden">
+              <Card className="border-blue-100 overflow-hidden">
                 <CardHeader className="pb-2 flex-row items-center justify-between">
-                  <CardTitle className="text-indigo-700 text-base">技能关系网络</CardTitle>
+                  <CardTitle className="text-[#165DFF] text-base">技能关系网络</CardTitle>
                   <div className="flex items-center gap-2">
                     <div className="flex rounded-lg border border-gray-200 p-0.5 mr-1">
                       {(['force', 'circular', 'hierarchy'] as const).map((mode) => (
@@ -412,7 +412,7 @@ export default function SkillsGraphPage() {
                           onClick={() => setLayoutMode(mode)}
                           className={`px-2.5 py-1 text-xs rounded-md transition-all ${
                             layoutMode === mode
-                              ? 'bg-indigo-500 text-white shadow-sm'
+                              ? 'bg-[#165DFF] text-white shadow-sm'
                               : 'text-gray-500 hover:text-gray-700'
                           }`}
                         >
@@ -551,7 +551,7 @@ export default function SkillsGraphPage() {
                             <circle
                               cx={node.x} cy={node.y} r={r + 12}
                               fill="none"
-                              stroke="#7C3AED"
+                              stroke="#FF7D00"
                               strokeWidth={2}
                               className="animate-ping"
                               style={{ animationDuration: '1s', animationIterationCount: '1' }}
@@ -559,8 +559,8 @@ export default function SkillsGraphPage() {
                           )}
                           <circle
                             cx={node.x} cy={node.y} r={r}
-                            fill={isSelected ? '#4F46E5' : isSearchMatch ? '#7C3AED' : isHovered ? '#6366F1' : isConnected ? '#EEF2FF' : '#F9FAFB'}
-                            stroke={isSelected ? '#4338CA' : isSearchMatch ? '#7C3AED' : isHovered ? '#4F46E5' : isConnected ? '#A5B4FC' : '#E5E7EB'}
+                            fill={isSelected ? '#165DFF' : isSearchMatch ? '#FF7D00' : isHovered ? '#3D7FFF' : isConnected ? '#DBEAFE' : '#FAFBFC'}
+                            stroke={isSelected ? '#0F4FE0' : isSearchMatch ? '#FF7D00' : isHovered ? '#165DFF' : isConnected ? '#93C5FD' : '#E5E7EB'}
                             strokeWidth={isSelected || isHovered ? 3 : isSearchMatch ? 2.5 : 1.5}
                             style={{ transition: 'fill 0.2s, stroke 0.2s' }}
                           />
@@ -584,7 +584,7 @@ export default function SkillsGraphPage() {
             {/* 右侧：节点详情 */}
             <div className="lg:col-span-1 space-y-4">
               {/* 图例 */}
-              <Card className="border-indigo-100">
+              <Card className="border-blue-100">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm text-gray-600">关系图例</CardTitle>
                 </CardHeader>
@@ -606,9 +606,9 @@ export default function SkillsGraphPage() {
 
               {/* 选中节点信息 */}
               {selectedNode ? (
-                <Card className="border-indigo-100">
+                <Card className="border-blue-100">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-indigo-700 flex items-center gap-1">
+                    <CardTitle className="text-[#165DFF] flex items-center gap-1">
                       <Info className="w-4 h-4" /> {selectedNode}
                       <button onClick={() => setSelectedNode(null)} className="ml-auto">
                         <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
@@ -648,7 +648,7 @@ export default function SkillsGraphPage() {
               )}
 
               {/* 节点列表 */}
-              <Card className="border-indigo-100">
+              <Card className="border-blue-100">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm text-gray-600">技能节点 ({simNodes.length})</CardTitle>
                 </CardHeader>
@@ -662,7 +662,7 @@ export default function SkillsGraphPage() {
                           onClick={() => setSelectedNode(node.name)}
                           className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                             selectedNode === node.name
-                              ? 'bg-indigo-50 text-indigo-700 font-medium'
+                              ? 'bg-[#165DFF]/8 text-[#165DFF] font-medium'
                               : 'hover:bg-gray-50 text-gray-600'
                           }`}
                         >
