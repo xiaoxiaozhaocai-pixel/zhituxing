@@ -32,7 +32,7 @@ export interface FeaturePermission {
 export const MembershipPermissions: Record<FeatureType, FeaturePermission> = {
   career_planning: { minTier: 'free', freeQuota: -1, label: '职业规划' },
   interview:       { minTier: 'free', freeQuota: 3,  label: 'AI模拟面试' },
-  assessment:      { minTier: 'free', freeQuota: 1,  label: '能力测评' },
+  assessment:      { minTier: 'free', freeQuota: 5,  label: '能力测评' },
   competency:      { minTier: 'monthly', freeQuota: 0, label: '胜任力分析' },
   decision:        { minTier: 'free', freeQuota: 3,  label: '求职决策' },
   resume_optimize: { minTier: 'monthly', freeQuota: 0, label: '简历优化' },

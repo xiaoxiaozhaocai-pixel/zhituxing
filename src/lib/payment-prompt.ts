@@ -40,7 +40,7 @@ export const PAYMENT_GUIDES: Record<FeatureType, PaymentGuide> = {
   },
   assessment: {
     value: '专业能力测评，定位你的真实水平',
-    paywall: `🎯 能力测评1次免费额度已用完～
+    paywall: `🎯 能力测评5次免费额度已用完～
 
 开通会员解锁：
 
