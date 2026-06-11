@@ -538,7 +538,7 @@ export async function POST(request: NextRequest) {
         const guideText = guide?.paywall
           ? guide.paywall + '\n\n' + quotaText
           : (access.reason || '此功能需开通会员使用，¥9.9/月');
-        return createTextStream(guideText);
+        return new Response(createTextStream(guideText), { headers: SSE_HEADERS });
       }
     }
 
