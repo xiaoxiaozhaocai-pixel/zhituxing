@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus, Upload, Zap, TrendingUp, Eye, PenTool, MessageSquare } from 'lucide-react';
+import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus, Upload, Zap, TrendingUp, Eye, PenTool, MessageSquare, MessageCircle, ChevronDown, ChevronUp, Copy, Send } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
 
@@ -53,6 +53,225 @@ interface ResumeItem {
   sections: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+}
+
+interface SuggestionItem {
+  type: string;
+  title: string;
+  suggestion: string;
+}
+
+interface ChatMsg {
+  role: 'user' | 'assistant';
+  content: string;
+  rewriteSnippet?: string | null;
+}
+
+function SuggestionCard({
+  item,
+  originalContent,
+  targetPosition,
+}: {
+  item: SuggestionItem;
+  originalContent: string;
+  targetPosition: string;
+}) {
+  const config = item.type === 'highlight'
+    ? { bg: 'bg-green-50/80', border: 'border-l-green-400', badge: 'bg-green-100 text-green-700', label: '✨ 亮点', accent: 'text-green-700' }
+    : item.type === 'improvement'
+    ? { bg: 'bg-orange-50/80', border: 'border-l-orange-400', badge: 'bg-orange-100 text-orange-700', label: '🔧 待改进', accent: 'text-orange-700' }
+    : { bg: 'bg-blue-50/80', border: 'border-l-blue-400', badge: 'bg-blue-100 text-blue-700', label: '💡 建议', accent: 'text-blue-700' };
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const quickPrompts = ['举个具体例子', '帮我改写一段', '这条怎么落地'];
+
+  const stripRewriteBlock = (text: string): string =>
+    text.replace(/```改写\s*[\s\S]*?```/g, '').trim();
+
+  const send = async (textOverride?: string) => {
+    const content = (textOverride ?? input).trim();
+    if (!content || sending) return;
+    const next: ChatMsg[] = [...messages, { role: 'user', content }];
+    setMessages(next);
+    setInput('');
+    setSending(true);
+    try {
+      const res = await fetch('/api/resume/refine', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          suggestionTitle: item.title,
+          suggestionContent: item.suggestion,
+          suggestionType: item.type,
+          originalContent,
+          targetPosition,
+          messages: next,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessages([
+          ...next,
+          {
+            role: 'assistant',
+            content: data.data.reply || '',
+            rewriteSnippet: data.data.rewriteSnippet || null,
+          },
+        ]);
+      } else {
+        setMessages([
+          ...next,
+          { role: 'assistant', content: '出错了：' + (data.error || '未知错误') },
+        ]);
+      }
+    } catch {
+      setMessages([
+        ...next,
+        { role: 'assistant', content: '网络错误，请重试' },
+      ]);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCopy = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
+  };
+
+  return (
+    <Card className={`shadow-sm border-0 border-l-[3px] ${config.border} ${config.bg} hover:shadow-md transition-all duration-200`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <Badge className={`${config.badge} border-0 text-xs font-medium shrink-0`}>
+            {config.label}
+          </Badge>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-semibold text-[#1a1a1a] mb-1">{item.title}</h4>
+            <p className="text-sm text-[#555] leading-relaxed">{item.suggestion}</p>
+
+            <button
+              type="button"
+              onClick={() => setChatOpen((v) => !v)}
+              className={`mt-3 inline-flex items-center gap-1.5 text-xs font-medium ${config.accent} hover:opacity-75 transition-opacity`}
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              {chatOpen ? '收起深聊' : '💬 跟小职深聊'}
+              {chatOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+
+            {chatOpen && (
+              <div className="mt-3 pt-3 border-t border-gray-200/70 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                {messages.length === 0 && (
+                  <div>
+                    <p className="text-[11px] text-[#999] mb-1.5">试试这些问题：</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {quickPrompts.map((q) => (
+                        <button
+                          key={q}
+                          type="button"
+                          onClick={() => send(q)}
+                          disabled={sending}
+                          className="px-2.5 py-1 text-xs rounded-full bg-white border border-gray-200 hover:border-[#165DFF]/40 hover:text-[#165DFF] text-[#666] transition-colors disabled:opacity-50"
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {messages.length > 0 && (
+                  <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                    {messages.map((m, mi) => (
+                      <div key={mi} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[88%] ${m.role === 'user' ? 'order-2' : ''}`}>
+                          <div
+                            className={`text-xs leading-relaxed rounded-2xl px-3.5 py-2 ${
+                              m.role === 'user'
+                                ? 'bg-[#165DFF] text-white rounded-br-sm'
+                                : 'bg-white border border-gray-200 text-[#333] rounded-bl-sm'
+                            }`}
+                          >
+                            <div className="whitespace-pre-wrap break-words">
+                              {m.role === 'assistant' ? stripRewriteBlock(m.content) : m.content}
+                            </div>
+                          </div>
+
+                          {m.role === 'assistant' && m.rewriteSnippet && (
+                            <div className="mt-2 rounded-xl border-2 border-[#165DFF]/30 bg-gradient-to-br from-[#f0f5ff] to-white p-3 shadow-sm">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[11px] font-semibold text-[#165DFF] flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3" />
+                                  可直接复制的改写
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(m.rewriteSnippet!, mi)}
+                                  className="inline-flex items-center gap-1 text-[11px] text-[#165DFF] hover:text-[#3D7FFF] font-medium"
+                                >
+                                  {copiedIdx === mi ? (
+                                    <><CheckCircle className="w-3 h-3" /> 已复制</>
+                                  ) : (
+                                    <><Copy className="w-3 h-3" /> 一键复制</>
+                                  )}
+                                </button>
+                              </div>
+                              <pre className="text-xs leading-relaxed text-[#1a1a1a] whitespace-pre-wrap break-words font-sans">
+{m.rewriteSnippet}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {sending && (
+                      <div className="flex justify-start">
+                        <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-3.5 py-2 text-xs text-[#999] flex items-center gap-1.5">
+                          <Loader2 className="w-3 h-3 animate-spin" /> 小职思考中…
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-1">
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        send();
+                      }
+                    }}
+                    placeholder={messages.length === 0 ? '或直接输入你的问题…' : '继续追问…'}
+                    disabled={sending}
+                    className="text-xs h-9 rounded-xl border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/10"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => send()}
+                    disabled={sending || !input.trim()}
+                    className="h-9 px-3.5 rounded-xl bg-[#165DFF] hover:bg-[#3D7FFF] text-white shadow-sm"
+                  >
+                    {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function ResumeOptimizePage() {
@@ -421,29 +640,14 @@ export default function ResumeOptimizePage() {
                     <span className="text-sm font-normal text-[#999] ml-2">共 {optimizationResult.suggestions.length} 条</span>
                   </h3>
                 </div>
-                {optimizationResult.suggestions.map((item, idx) => {
-                  const config = item.type === 'highlight'
-                    ? { bg: 'bg-green-50/80', border: 'border-l-green-400', badge: 'bg-green-100 text-green-700', dot: 'bg-green-400', label: '✨ 亮点' }
-                    : item.type === 'improvement'
-                    ? { bg: 'bg-orange-50/80', border: 'border-l-orange-400', badge: 'bg-orange-100 text-orange-700', dot: 'bg-orange-400', label: '🔧 待改进' }
-                    : { bg: 'bg-blue-50/80', border: 'border-l-blue-400', badge: 'bg-blue-100 text-blue-700', dot: 'bg-blue-400', label: '💡 建议' };
-
-                  return (
-                    <Card key={idx} className={`shadow-sm border-0 border-l-[3px] ${config.border} ${config.bg} hover:shadow-md transition-all duration-200`}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <Badge className={`${config.badge} border-0 text-xs font-medium shrink-0`}>
-                            {config.label}
-                          </Badge>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-[#1a1a1a] mb-1">{item.title}</h4>
-                            <p className="text-sm text-[#555] leading-relaxed">{item.suggestion}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                {optimizationResult.suggestions.map((item, idx) => (
+                  <SuggestionCard
+                    key={idx}
+                    item={item}
+                    originalContent={resumeContent}
+                    targetPosition={targetPosition}
+                  />
+                ))}
                 <div className="flex justify-end pt-2">
                   <Button
                     variant="outline"
