@@ -524,13 +524,21 @@ export async function POST(request: NextRequest) {
       console.log('[chat] 已有 conversationId，跳过上下文注入');
     }
 
-    // 检查配额（仅当 userId 存在时）
+    // 检查配额（仅当 userId 存在时）—— 会员v2：不足时展示付费引导，不直接拒绝
     if (userId) {
       const feature = botType === 'interview' ? 'interview' :
                       botType === 'assessment' ? 'assessment' : 'career_planning';
       const access = await checkFeatureAccess(userId, feature);
       if (!access.allowed) {
-        return jsonError(ErrorCode.QUOTA_EXCEEDED, access.reason || '配额已用完');
+        const { PAYMENT_GUIDES } = await import('@/lib/payment-prompt');
+        const guide = PAYMENT_GUIDES[feature];
+        const quotaText = access.remaining !== undefined && access.remaining >= 0
+          ? `（剩余 ${access.remaining} 次）`
+          : '';
+        const guideText = guide?.paywall
+          ? guide.paywall + '\n\n' + quotaText
+          : (access.reason || '此功能需开通会员使用，¥9.9/月');
+        return createTextStream(guideText);
       }
     }
 
