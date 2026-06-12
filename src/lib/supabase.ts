@@ -52,6 +52,23 @@ function createDummyClient(): SupabaseClient {
   return createClient('https://placeholder.supabase.co', 'placeholder-key');
 }
 
+
+/**
+ * 获取 Supabase Auth 客户端（使用 ANON_KEY，不缓存）
+ * 专门用于 signInWithPassword 等会改变内部 auth state 的操作
+ * 避免污染 admin client 的 service_role 身份
+ */
+export function getSupabaseAuth(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.COZE_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.COZE_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    return createDummyClient();
+  }
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
 // ========== 兼容旧代码的导出 ==========
 // 注意：这些是 getter 函数，不是直接导出的客户端实例
 // 使用方式：import { getSupabase, getSupabaseAdmin } from '@/lib/supabase'

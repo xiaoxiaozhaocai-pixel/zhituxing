@@ -7,7 +7,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin, getSupabaseAuth } from '@/lib/supabase';
 import { setAuthCookies } from '@/lib/auth-cookies';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
@@ -112,7 +112,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 4) 自动登录（生成 session）
-    const { data: session, error: sErr } = await supabase.auth.signInWithPassword({
+    // 使用独立 auth client 避免污染 admin client 的 service_role 身份
+    const authClient = getSupabaseAuth();
+    const { data: session, error: sErr } = await authClient.auth.signInWithPassword({
       email,
       password,
     });
