@@ -615,9 +615,23 @@ export async function POST(request: NextRequest) {
         const actualBotType = (effectiveBotType === 'xiaozhi') ? resolvedBotType : effectiveBotType;
         const allowedTables = RAG_TABLE_CONFIG[actualBotType] || RAG_TABLE_CONFIG.career;
         const displayNames = RAG_DISPLAY_NAMES[actualBotType] || RAG_DISPLAY_NAMES.career;
+
+        // ============================================================
+        // 单岗位深度分析模式：jobId 存在时（来自岗位百科「AI深度分析」入口）
+        // 跳过 RAG 召回 + pgvector 三档匹配，仅基于已注入的单岗位上下文（见上方 jobId 分支）
+        // 避免模型混淆"分析这一个岗位"和"推荐多个岗位"两种意图，杜绝吐出多条 JD 卡片
+        // ============================================================
+        const isSingleJobAnalysisMode = !!jobId;
+        if (isSingleJobAnalysisMode) {
+          console.log(`[chat] 单岗位深度分析模式 jobId=${jobId}，跳过 RAG/pgvector 召回`);
+        }
         
         // 按配置查询数据（只查询允许的表）
-        const [jds, careerPaths, skills, skillAssessments, resources, guetKnowledge = []] = await Promise.all([
+        // 单岗位深度分析模式：完全跳过 RAG 召回，所有结果用空数组占位
+        const emptyRagResults: [Record<string, unknown>[], Record<string, unknown>[], Record<string, unknown>[], Record<string, unknown>[], Record<string, unknown>[], Record<string, unknown>[]] = [[], [], [], [], [], []];
+        const [jds, careerPaths, skills, skillAssessments, resources, guetKnowledge = []] = isSingleJobAnalysisMode
+          ? emptyRagResults
+          : await Promise.all([
           allowedTables!.includes('job_descriptions')
             ? querySupabase('job_descriptions', [
                 keywords.industry ? { field: 'industry', operator: 'ilike', value: `%${keywords.industry}%` } : undefined,
@@ -667,7 +681,7 @@ export async function POST(request: NextRequest) {
         // 在关键词 RAG 基础上叠加真实语义匹配结果
         // ============================================================
         let tierMatchContext = '';
-        if ((actualBotType === 'jobs' || actualBotType === 'job_match') && userId) {
+        if ((actualBotType === 'jobs' || actualBotType === 'job_match') && userId && !isSingleJobAnalysisMode) {
           try {
             const matchResults: MatchResult[] = await matchJobs({
               userId,
@@ -748,6 +762,11 @@ export async function POST(request: NextRequest) {
         // 注入用户上下文到 system prompt（所有智能体共享）
         if (userContext) {
           basePrompt = `【用户背景信息 — 平台自动注入，请直接使用，不要重新询问】\n${userContext}\n\n---\n\n${basePrompt}`;
+        }
+
+        // 单岗位深度分析模式：追加强约束，禁止罗列多个岗位
+        if (isSingleJobAnalysisMode) {
+          basePrompt = `${basePrompt}\n\n【单岗位深度分析强约束】当前用户从「岗位百科」点击「AI深度分析」入口跳来，意图是针对【用户背景信息】中已注入的「待分析岗位信息」做一份单岗位深度分析。请严格遵守：\n1. 只分析这一个岗位，不要罗列其他岗位、不要做"三档推荐"、不要输出多个岗位卡片。\n2. 围绕用户提问中的 5 个维度（岗位前景、技能解读、面试准备、薪资谈判、职业路径）展开。\n3. 不要输出 JSON 数组或多卡片结构，使用自然 Markdown 段落 + 标题，便于阅读。`;
         }
         
         // ============================================================
