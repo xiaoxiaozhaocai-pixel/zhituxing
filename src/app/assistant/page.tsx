@@ -235,6 +235,7 @@ function AssistantContent() {
   const [shareLoading, setShareLoading] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [shareInfo, setShareInfo] = useState<{ mode: string; messageCount: number; originalCount: number } | null>(null);
   const [hasProfile, setHasProfile] = useState(false);
   const [jdUrl, setJdUrl] = useState('');
   const [jdText, setJdText] = useState('');
@@ -1191,6 +1192,8 @@ function AssistantContent() {
     
     setShareLoading(true);
     try {
+      // selectMode 选中消息走 'selected'，否则走 'curated' 精选片段（默认）
+      const mode: 'curated' | 'selected' = selectMode && selectedIndices.size > 0 ? 'selected' : 'curated';
       const res = await fetch('/api/share', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1198,11 +1201,17 @@ function AssistantContent() {
           botName: currentBot.name,
           botGradient: currentBot.gradient,
           messages: effectiveMsgs.map(m => ({ role: m.role, content: m.content })),
+          mode,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setShareUrl(data.url);
+        setShareInfo({
+          mode: data.mode,
+          messageCount: data.messageCount,
+          originalCount: data.originalCount,
+        });
         if (!quota?.is_member && !quota?.is_lifetime_member) {
           incrementExportCount();
         }
@@ -1805,7 +1814,7 @@ function AssistantContent() {
 
       {/* 配额用完弹窗 */}
       {/* 分享链接弹窗 */}
-      <Dialog open={!!shareUrl} onOpenChange={() => setShareUrl(null)}>
+      <Dialog open={!!shareUrl} onOpenChange={() => { setShareUrl(null); setShareInfo(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1817,6 +1826,14 @@ function AssistantContent() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {shareInfo && shareInfo.mode === 'curated' && shareInfo.messageCount < shareInfo.originalCount && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#165DFF]/8 border border-[#165DFF]/20 rounded-lg">
+                <Sparkles className="w-4 h-4 text-[#165DFF] flex-shrink-0" />
+                <span className="text-xs text-[#165DFF] font-medium">
+                  已为你精选 {shareInfo.messageCount} 条精华内容（共 {shareInfo.originalCount} 条）
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border">
               <input
                 readOnly
@@ -1831,7 +1848,7 @@ function AssistantContent() {
               </Button>
             </div>
             <p className="text-xs text-gray-400">
-              💡 提示：分享链接包含当前对话的完整内容，对方可在浏览器中查看
+              💡 链接 30 天有效，对方无需登录即可查看
             </p>
           </div>
         </DialogContent>
