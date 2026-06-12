@@ -71,7 +71,6 @@ export async function PUT(request: NextRequest) {
     const supabase = getSupabaseAdmin();
     
     const body = await request.json();
-    console.log('[user/profile PUT] 请求body:', JSON.stringify(body, null, 2));
 
     // 构建更新数据，只使用数据库真实存在的列
     // 数据库实际存在的列：major, grade, target_cities(jsonb), target_job, hard_skills(jsonb), soft_skills(jsonb), 
@@ -132,7 +131,6 @@ export async function PUT(request: NextRequest) {
     }
     if (body.has_project !== undefined) updateData.has_project = body.has_project;
 
-    console.log('[user/profile] 保存数据:', JSON.stringify(updateData, null, 2));
 
     // 使用 upsert：存在则更新，不存在则插入
     const { data: profile, error } = await supabase

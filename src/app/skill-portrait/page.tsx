@@ -631,7 +631,6 @@ export default function SkillPortraitPage() {
         credentials: 'include',
       });
       const data = await response.json();
-      console.log('[skill-portrait] 加载已有数据:', data);
       if (data.code === 200 && data.data?.profile) {
         const profile = data.data.profile;
         setForm({
@@ -852,17 +851,13 @@ export default function SkillPortraitPage() {
         // 技能熟练度暂不保存（数据库无对应列）
       };
       
-      console.log('[skill-portrait] 保存请求:', JSON.stringify(requestBody, null, 2));
-      
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(requestBody),
       });
-      
-      console.log('[skill-portrait] 响应状态:', response.status, response.statusText);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('[skill-portrait] HTTP错误:', response.status, errorText);
@@ -871,7 +866,6 @@ export default function SkillPortraitPage() {
       }
       
       const data = await response.json();
-      console.log('[skill-portrait] 响应数据:', data);
       
       if (data.code === 200) {
         localStorage.setItem('skill-portrait-done', 'true');

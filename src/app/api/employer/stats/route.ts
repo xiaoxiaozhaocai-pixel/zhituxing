@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
   }
 
   const unlocks = unlocksRows ?? [];
+  const unlocksPartial = unlocks.length >= 5000;
 
   // 3) 当前有效解锁数（不限窗口）
   const { count: activeCount, error: activeErr } = await supabase
@@ -90,6 +91,7 @@ export async function GET(request: NextRequest) {
   }
 
   const txs = txRows ?? [];
+  const txsPartial = txs.length >= 5000;
 
   // 聚合：每日时序
   const dayMap = new Map<string, { unlocks: number; consumed: number }>();
@@ -147,5 +149,6 @@ export async function GET(request: NextRequest) {
     active_unlocks: activeCount ?? 0,
     daily_timeseries: daily,
     top_repeat_candidates: topRepeat,
+    data_truncated: unlocksPartial || txsPartial,
   });
 }

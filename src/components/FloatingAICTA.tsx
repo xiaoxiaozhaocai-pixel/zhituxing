@@ -8,7 +8,6 @@ import { useAuth } from '@/hooks/useAuth';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 
 const STORAGE_KEY_POS = 'xiaozhi-float-pos';
-const STORAGE_KEY_VISITED = 'xiaozhi-visited';
 const CHAT_PANEL_W = 440;
 const CHAT_PANEL_H = 600;
 const FAB_SIZE = 56;
@@ -36,7 +35,6 @@ interface ChatMessage {
 export default function FloatingAICTA() {
   const pathname = usePathname();
   const [isHovered, _setIsHovered] = useState(false);
-  const [showFirstVisit, setShowFirstVisit] = useState(false);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const dragOffset = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -72,13 +70,7 @@ export default function FloatingAICTA() {
       }
     } catch { /* ignore */ }
     setPosition({ x: window.innerWidth - FAB_SIZE - 24, y: window.innerHeight - FAB_SIZE - 100 });
-
-    const visited = localStorage.getItem(STORAGE_KEY_VISITED);
-    if (!visited) {
-      setShowFirstVisit(true);
-      localStorage.setItem(STORAGE_KEY_VISITED, '1');
-      setTimeout(() => setShowFirstVisit(false), 4000);
-    }
+    // 6/12 P5-D4：删除首次访问自动展开，悬浮按钮仅在主动 hover 时展开（主人偏好）
   }, []);
 
   // ── 拖拽 ──
@@ -88,7 +80,6 @@ export default function FloatingAICTA() {
     dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     dragMoved.current = false;
     setDragging(true);
-    setShowFirstVisit(false);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
 
@@ -236,7 +227,7 @@ export default function FloatingAICTA() {
   if (pathname?.startsWith('/profile') || pathname?.startsWith('/admin')) return null;
   if (!position) return null;
 
-  const isExpanded = showFirstVisit || isHovered;
+  const isExpanded = isHovered;
 
   return (
     <>
@@ -270,7 +261,7 @@ export default function FloatingAICTA() {
           type="button"
           onClick={handleFabClick}
           className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl select-none btn-gradient hover:shadow-[#165DFF]/40 ${
-            dragging ? 'cursor-grabbing scale-110' : showFirstVisit ? 'cursor-pointer' : 'cursor-grab'
+            dragging ? 'cursor-grabbing scale-110' : 'cursor-grab'
           } animate-pulse-ring`}
         >
           <MessageSquare className="w-6 h-6 text-white pointer-events-none" />

@@ -243,6 +243,8 @@ export const EmployerStatsDataSchema = z.object({
   active_unlocks: z.number(),
   daily_timeseries: z.array(EmployerStatsTimeseriesPointSchema),
   top_repeat_candidates: z.array(EmployerStatsTopCandidateSchema),
+  // 数据截断标记：窗口内 unlocks/流水 ≥5000 行时为 true。早期雇主无影响；规模放大后前端可显示"数据过多已截断"提示并触发切游标分页升级
+  data_truncated: z.boolean().optional(),
 });
 
 export type EmployerStatsData = z.infer<typeof EmployerStatsDataSchema>;
