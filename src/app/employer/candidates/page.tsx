@@ -333,6 +333,7 @@ function UnlockDialog({
   onClose: () => void;
   onSuccess: (newBalance: number | null) => void;
 }) {
+  const router = useRouter();
   const [stage, setStage] = useState<'confirm' | 'unlocked' | 'error'>('confirm');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -444,10 +445,13 @@ function UnlockDialog({
                 )}
               </div>
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  router.push(`/employer/candidates/${candidate.user_id}`);
+                }}
                 className="w-full py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg shadow-md shadow-[#165DFF]/20 hover:opacity-90 transition"
               >
-                查看完整画像（开发中）
+                查看完整画像 →
               </button>
             </>
           )}

@@ -131,3 +131,104 @@ export const EmployerRechargeCallbackDataSchema = z.object({
   message: z.string(),
 });
 export type EmployerRechargeCallbackData = z.infer<typeof EmployerRechargeCallbackDataSchema>;
+
+// ============================================================
+// S6 P5-D · 候选人详情（已解锁画像）
+// ============================================================
+export const EmployerCandidateUnlockInfoSchema = z.object({
+  unlocked_at: z.string(),
+  expires_at: z.string(),
+  hours_remaining: z.number(),
+});
+
+export const EmployerCandidatePortraitSchema = z.object({
+  user_id: z.string().uuid(),
+  nickname: z.string().nullable(),
+  phone: z.string().nullable(),
+  major: z.string().nullable(),
+  grade: z.string().nullable(),
+  graduation_year: z.string().nullable(),
+  gpa: z.number().nullable(),
+  english_level: z.string().nullable(),
+  target_cities: z.array(z.string()).nullable(),
+  target_industry: z.string().nullable(),
+  target_job: z.string().nullable(),
+  career_tendency: z.string().nullable(),
+  personality_type: z.string().nullable(),
+  hard_skills: z.array(z.string()).nullable(),
+  soft_skills: z.array(z.string()).nullable(),
+  has_internship: z.boolean().nullable(),
+  has_project: z.boolean().nullable(),
+  awards: z.array(z.unknown()).nullable(),
+  internship_experience: z.array(z.unknown()).nullable(),
+  project_experience: z.array(z.unknown()).nullable(),
+  assessment_at: z.string().nullable(),
+  assessment_overall_score: z.number().nullable(),
+  major_match_score: z.number().nullable(),
+  tech_skill_score: z.number().nullable(),
+  industry_awareness_score: z.number().nullable(),
+  practice_score: z.number().nullable(),
+  soft_skill_score: z.number().nullable(),
+  job_readiness_score: z.number().nullable(),
+  top_strengths: z.array(z.string()).nullable(),
+  top_weaknesses: z.array(z.string()).nullable(),
+  matched_jobs: z.array(z.unknown()).nullable(),
+  skill_gaps: z.array(z.string()).nullable(),
+  improvement_plan: z.unknown().nullable(),
+  career_plan_at: z.string().nullable(),
+  plan_target_job: z.string().nullable(),
+  plan_target_industry: z.string().nullable(),
+  career_paths: z.array(z.unknown()).nullable(),
+  skill_learning_path: z.unknown().nullable(),
+  current_match_score: z.number().nullable(),
+  action_plan: z.unknown().nullable(),
+  interview_at: z.string().nullable(),
+  interview_target_job: z.string().nullable(),
+  interview_overall_score: z.number().nullable(),
+  resume_match_score: z.number().nullable(),
+  hr_round_score: z.number().nullable(),
+  technical_round_score: z.number().nullable(),
+  executive_round_score: z.number().nullable(),
+  key_strengths: z.array(z.string()).nullable(),
+  key_weaknesses: z.array(z.string()).nullable(),
+  gap_skills: z.array(z.string()).nullable(),
+  portrait_completeness_score: z.number(),
+});
+
+export const EmployerCandidateDetailDataSchema = z.object({
+  unlock: EmployerCandidateUnlockInfoSchema,
+  portrait: EmployerCandidatePortraitSchema,
+});
+
+export type EmployerCandidateDetailData = z.infer<typeof EmployerCandidateDetailDataSchema>;
+
+// ============================================================
+// S6 P6 · 雇主数据看板（统计聚合）
+// ============================================================
+export const EmployerStatsTimeseriesPointSchema = z.object({
+  date: z.string(),
+  unlocks: z.number(),
+  consumed: z.number(),
+});
+
+export const EmployerStatsTopCandidateSchema = z.object({
+  candidate_user_id: z.string().uuid(),
+  unlock_count: z.number(),
+  last_unlocked_at: z.string(),
+});
+
+export const EmployerStatsDataSchema = z.object({
+  credit_balance: z.number(),
+  total_recharged: z.number(),
+  total_consumed: z.number(),
+  range_days: z.number(),
+  range_start: z.string(),
+  range_end: z.string(),
+  total_unlocks: z.number(),
+  unique_candidates: z.number(),
+  active_unlocks: z.number(),
+  daily_timeseries: z.array(EmployerStatsTimeseriesPointSchema),
+  top_repeat_candidates: z.array(EmployerStatsTopCandidateSchema),
+});
+
+export type EmployerStatsData = z.infer<typeof EmployerStatsDataSchema>;
