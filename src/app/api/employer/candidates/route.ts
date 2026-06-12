@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUserId } from '@/lib/auth';
 import { execSql } from '@/lib/exec-sql';
+import { getEmployerSession } from '@/lib/employer-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,27 +24,9 @@ export const runtime = 'nodejs';
  *   page                页码（默认 1）
  *   page_size           每页数量（默认 20，最大 100）
  *
- * 鉴权：MVP 阶段复用 ADMIN_USER_IDS（S6 P4 employer 账号体系上线后切换为 employer_id 鉴权）
- *
+ * 鉴权（S6 P4 切换）：getEmployerSession 校验 employer_profiles.status='active'
  * 返回字段：候选人画像（昵称已脱敏，phone 不返回）
  */
-
-// 鉴权（沿用 admin 模式，S6 P4 后替换为 employer 鉴权）
-async function checkEmployer(request: NextRequest): Promise<string | null> {
-  const authUserId = await getAuthenticatedUserId(request);
-  if (!authUserId) return null;
-
-  const adminIds = process.env.ADMIN_USER_IDS;
-  if (!adminIds) {
-    console.warn('[employer/candidates] ADMIN_USER_IDS not configured');
-    return null;
-  }
-
-  const adminList = adminIds.split(',').map((id) => id.trim().toLowerCase());
-  if (!adminList.includes(authUserId.toLowerCase())) return null;
-
-  return authUserId;
-}
 
 // 昵称脱敏：保留首字 + ** 末字
 function maskNickname(nickname: string | null): string {
@@ -56,11 +38,12 @@ function maskNickname(nickname: string | null): string {
 }
 
 export async function GET(request: NextRequest) {
-  const employerId = await checkEmployer(request);
-  if (!employerId) {
+  const session = await getEmployerSession(request);
+  if (!session) {
     // 安全：返回 404 而非 403，避免暴露端点
     return NextResponse.json({ error: '接口不存在' }, { status: 404 });
   }
+  const employerId = session.employerId;
 
   const { searchParams } = new URL(request.url);
 
