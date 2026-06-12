@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const ALLOWED_TYPES = ['recharge', 'consume', 'refund', 'adjust'] as const;
+const ALLOWED_TYPES = ['recharge', 'consume', 'refund', 'bonus'] as const;
 type TxType = (typeof ALLOWED_TYPES)[number];
 
 export async function GET(request: NextRequest) {

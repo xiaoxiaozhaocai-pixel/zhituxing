@@ -94,7 +94,7 @@ export type EmployerUnlockData = z.infer<typeof EmployerUnlockDataSchema>;
 // 流水单条
 export const EmployerTransactionItemSchema = z.object({
   id: z.string().uuid(),
-  type: z.enum(['recharge', 'consume', 'refund', 'adjust']),
+  type: z.enum(['recharge', 'consume', 'refund', 'bonus']),
   amount: z.number().int(),
   balance_after: z.number().int().nonnegative(),
   related_candidate_id: z.string().uuid().nullable(),
@@ -159,9 +159,23 @@ export const EmployerCandidatePortraitSchema = z.object({
   soft_skills: z.array(z.string()).nullable(),
   has_internship: z.boolean().nullable(),
   has_project: z.boolean().nullable(),
-  awards: z.array(z.unknown()).nullable(),
-  internship_experience: z.array(z.unknown()).nullable(),
-  project_experience: z.array(z.unknown()).nullable(),
+  awards: z.array(z.object({
+    name: z.string().optional(),
+    role: z.string().optional(),
+    year: z.string().optional(),
+  }).passthrough()).nullable(),
+  internship_experience: z.array(z.object({
+    company: z.string().optional(),
+    role: z.string().optional(),
+    duration: z.string().optional(),
+    description: z.string().optional(),
+  }).passthrough()).nullable(),
+  project_experience: z.array(z.object({
+    name: z.string().optional(),
+    role: z.string().optional(),
+    tech_stack: z.string().optional(),
+    description: z.string().optional(),
+  }).passthrough()).nullable(),
   assessment_at: z.string().nullable(),
   assessment_overall_score: z.number().nullable(),
   major_match_score: z.number().nullable(),

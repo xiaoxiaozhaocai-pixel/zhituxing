@@ -3,11 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  ArrowLeft, Loader2, Lock, Phone, GraduationCap, Briefcase, MapPin,
-  Award, Sparkles, TrendingUp, Target, AlertTriangle, BookOpen,
-  CheckCircle2, XCircle, Clock, User, Star, Languages, Users,
-} from 'lucide-react';
+import { ArrowLeft, Loader2, Lock, Phone, GraduationCap, Briefcase, MapPin, Award, Sparkles, TrendingUp, Target, AlertTriangle, BookOpen, CheckCircle2, XCircle, Clock, User, Star, Languages, Users, Code2, Trophy } from 'lucide-react';
 
 interface UnlockInfo {
   unlocked_at: string;
@@ -33,9 +29,9 @@ interface Portrait {
   soft_skills: string[] | null;
   has_internship: boolean | null;
   has_project: boolean | null;
-  awards: unknown[] | null;
-  internship_experience: unknown[] | null;
-  project_experience: unknown[] | null;
+  awards: Array<{ name?: string; role?: string; year?: string; [k: string]: unknown }> | null;
+  internship_experience: Array<{ company?: string; role?: string; duration?: string; description?: string; [k: string]: unknown }> | null;
+  project_experience: Array<{ name?: string; role?: string; tech_stack?: string; description?: string; [k: string]: unknown }> | null;
   assessment_at: string | null;
   assessment_overall_score: number | null;
   major_match_score: number | null;
@@ -441,27 +437,77 @@ export default function CandidateDetailPage() {
             </Section>
           )}
 
-          {/* 经历 */}
-          {(fmtArrSize(portrait.internship_experience) > 0 || fmtArrSize(portrait.project_experience) > 0 || fmtArrSize(portrait.awards) > 0) && (
-            <Section icon={BookOpen} title="经历摘要">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 rounded-xl bg-slate-50/80">
-                  <div className="text-2xl font-bold text-slate-900 tabular-nums">{fmtArrSize(portrait.internship_experience)}</div>
-                  <div className="text-xs text-slate-500 mt-1">实习</div>
-                </div>
-                <div className="text-center p-4 rounded-xl bg-slate-50/80">
-                  <div className="text-2xl font-bold text-slate-900 tabular-nums">{fmtArrSize(portrait.project_experience)}</div>
-                  <div className="text-xs text-slate-500 mt-1">项目</div>
-                </div>
-                <div className="text-center p-4 rounded-xl bg-slate-50/80">
-                  <div className="text-2xl font-bold text-slate-900 tabular-nums">{fmtArrSize(portrait.awards)}</div>
-                  <div className="text-xs text-slate-500 mt-1">获奖</div>
-                </div>
-              </div>
-              <p className="mt-4 text-xs text-slate-400 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                详细经历明细页 P5-D2 即将上线
-              </p>
+          {/* 实习经历明细 */}
+          {fmtArrSize(portrait.internship_experience) > 0 && (
+            <Section icon={Briefcase} title={`实习经历（${fmtArrSize(portrait.internship_experience)} 段）`}>
+              <ul className="space-y-3">
+                {(portrait.internship_experience || []).map((it, idx) => (
+                  <li key={idx} className="p-4 rounded-xl bg-gradient-to-br from-blue-50/60 to-white border border-[#165DFF]/10 hover:border-[#165DFF]/30 hover:-translate-y-0.5 transition">
+                    <div className="flex items-baseline justify-between flex-wrap gap-2">
+                      <h4 className="font-semibold text-slate-900">
+                        {it.company || '未知公司'}
+                        {it.role && <span className="ml-2 text-sm font-normal text-slate-600">· {it.role}</span>}
+                      </h4>
+                      {it.duration && (
+                        <span className="text-xs text-slate-500 tabular-nums px-2 py-0.5 rounded-full bg-white/80 border border-slate-200">
+                          {it.duration}
+                        </span>
+                      )}
+                    </div>
+                    {it.description && (
+                      <p className="mt-2 text-sm text-slate-600 leading-relaxed">{it.description}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* 项目经历明细 */}
+          {fmtArrSize(portrait.project_experience) > 0 && (
+            <Section icon={Code2} title={`项目经历（${fmtArrSize(portrait.project_experience)} 个）`}>
+              <ul className="space-y-3">
+                {(portrait.project_experience || []).map((it, idx) => (
+                  <li key={idx} className="p-4 rounded-xl bg-gradient-to-br from-purple-50/60 to-white border border-purple-200/40 hover:border-purple-300 hover:-translate-y-0.5 transition">
+                    <div className="flex items-baseline justify-between flex-wrap gap-2">
+                      <h4 className="font-semibold text-slate-900">
+                        {it.name || '未命名项目'}
+                        {it.role && <span className="ml-2 text-sm font-normal text-slate-600">· {it.role}</span>}
+                      </h4>
+                    </div>
+                    {it.tech_stack && (
+                      <div className="mt-1.5 text-xs text-purple-700 font-mono">{it.tech_stack}</div>
+                    )}
+                    {it.description && (
+                      <p className="mt-2 text-sm text-slate-600 leading-relaxed">{it.description}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* 获奖记录明细 */}
+          {fmtArrSize(portrait.awards) > 0 && (
+            <Section icon={Trophy} title={`获奖记录（${fmtArrSize(portrait.awards)} 项）`}>
+              <ul className="space-y-2">
+                {(portrait.awards || []).map((it, idx) => (
+                  <li key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/70 to-white border border-amber-200/50 hover:border-amber-300 transition">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF7D00] to-[#FFB347] flex items-center justify-center flex-shrink-0">
+                      <Trophy className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-slate-900 truncate">{it.name || '未命名奖项'}</div>
+                      {it.role && <div className="text-xs text-slate-500 mt-0.5">{it.role}</div>}
+                    </div>
+                    {it.year && (
+                      <span className="text-xs font-medium text-amber-700 tabular-nums px-2 py-1 rounded-full bg-amber-100/70 flex-shrink-0">
+                        {it.year}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </Section>
           )}
         </div>

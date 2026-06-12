@@ -13,7 +13,7 @@ interface Balance {
   total_consumed: number;
 }
 
-type TxType = 'recharge' | 'consume' | 'refund' | 'adjust';
+type TxType = 'recharge' | 'consume' | 'refund' | 'bonus';
 
 interface Tx {
   id: string;
@@ -51,7 +51,7 @@ const TYPE_META: Record<TxType, { label: string; cls: string; icon: typeof Arrow
   recharge: { label: '充值', cls: 'text-emerald-600 bg-emerald-50', icon: ArrowDownToLine },
   consume: { label: '消费', cls: 'text-rose-600 bg-rose-50', icon: ArrowUpFromLine },
   refund: { label: '退款', cls: 'text-blue-600 bg-blue-50', icon: RefreshCw },
-  adjust: { label: '调整', cls: 'text-slate-600 bg-slate-50', icon: RefreshCw },
+  bonus: { label: '奖励', cls: 'text-amber-600 bg-amber-50', icon: ArrowDownToLine },
 };
 
 export default function BillingPage() {
@@ -128,7 +128,7 @@ export default function BillingPage() {
   };
 
   const fmtAmount = (tx: Tx) => {
-    const sign = tx.type === 'recharge' || tx.type === 'refund' || (tx.type === 'adjust' && tx.amount > 0) ? '+' : '-';
+    const sign = tx.type === 'recharge' || tx.type === 'refund' || tx.type === 'bonus' ? '+' : '-';
     const abs = Math.abs(tx.amount);
     return { sign, abs };
   };
