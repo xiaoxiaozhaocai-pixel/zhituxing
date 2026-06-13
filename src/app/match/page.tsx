@@ -159,14 +159,14 @@ export default function MatchPage() {
           {/* 登录提示卡片 */}
           <Card className="border-blue-100 shadow-xl">
             <CardContent className="py-16 text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Lock className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">登录后解锁完整功能</h3>
               <p className="text-gray-500 mb-6">登录后可保存匹配结果，查看详细技能分析，获取专属学习建议</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
-                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg">
                     <LogIn className="w-5 h-5 mr-2" />
                     立即登录
                   </Button>
@@ -480,7 +480,7 @@ export default function MatchPage() {
         {!loading && fetched && userSkills.length > 0 && (
           <div className="mt-10">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -490,23 +490,23 @@ export default function MatchPage() {
             </div>
 
             {underratedLoading ? (
-              <Card className="border-violet-100">
+              <Card className="border-blue-100">
                 <CardContent className="py-10 text-center">
-                  <Spinner className="w-8 h-8 text-violet-500 mx-auto" />
+                  <Spinner className="w-8 h-8 text-blue-500 mx-auto" />
                   <p className="mt-3 text-gray-500 text-sm">正在分析你的隐藏优势...</p>
                 </CardContent>
               </Card>
             ) : underratedJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {underratedJobs.map((job, i) => (
-                  <Card key={i} className="border-violet-100 hover:shadow-lg transition-shadow overflow-hidden group cursor-pointer">
-                    <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
+                  <Card key={i} className="border-blue-100 hover:shadow-lg transition-shadow overflow-hidden group cursor-pointer">
+                    <div className="h-1 bg-gradient-to-r from-blue-500 to-blue-600" />
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-bold text-gray-900 group-hover:text-violet-600 transition-colors">
+                        <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                           {job.jobName}
                         </h3>
-                        <div className="flex items-center gap-1 text-violet-600 bg-violet-50 px-2 py-1 rounded-full text-xs font-medium">
+                        <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full text-xs font-medium">
                           <EyeOff className="w-3 h-3" />
                           被低估
                         </div>
@@ -516,11 +516,11 @@ export default function MatchPage() {
                         {job.industry && <span><Briefcase className="w-3 h-3 inline mr-1" />{job.industry}</span>}
                       </div>
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="text-2xl font-bold text-violet-600">{job.matchScore}%</div>
+                        <div className="text-2xl font-bold text-blue-600">{job.matchScore}%</div>
                         <div className="text-xs text-gray-500">匹配度</div>
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed">
-                        <span className="text-violet-600 font-medium">为什么被低估：</span>
+                        <span className="text-blue-600 font-medium">为什么被低估：</span>
                         {job.reason}
                       </p>
                     </CardContent>
@@ -528,9 +528,9 @@ export default function MatchPage() {
                 ))}
               </div>
             ) : (
-              <Card className="border-violet-100">
+              <Card className="border-blue-100">
                 <CardContent className="py-10 text-center">
-                  <Sparkles className="w-10 h-10 text-violet-300 mx-auto mb-3" />
+                  <Sparkles className="w-10 h-10 text-blue-300 mx-auto mb-3" />
                   <p className="text-gray-500">暂无被低估的岗位推荐</p>
                   <p className="text-gray-400 text-sm mt-1">完善更多技能信息，解锁隐藏机会</p>
                 </CardContent>
@@ -542,15 +542,15 @@ export default function MatchPage() {
         {/* 未登录/无技能时显示解锁提示 */}
         {!loading && fetched && userSkills.length === 0 && filtered.length > 0 && (
           <div className="mt-10">
-            <Card className="border-violet-100 bg-gradient-to-br from-violet-50 to-purple-50">
+            <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-blue-50">
               <CardContent className="py-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">解锁反向匹配</h3>
                 <p className="text-gray-500 text-sm mb-4">完成技能画像后，发现你被低估的好机会</p>
                 <Link href="/growth">
-                  <Button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700">
+                  <Button className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700">
                     去完善技能画像
                   </Button>
                 </Link>

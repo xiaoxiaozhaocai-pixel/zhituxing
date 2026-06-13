@@ -32,7 +32,7 @@ const sections = [
     ],
   },
   {
-    icon: <Lock className="w-6 h-6 text-purple-600" />,
+    icon: <Lock className="w-6 h-6 text-blue-600" />,
     title: '三、数据安全',
     content: `我们采用行业标准的加密技术和安全措施保护您的个人信息：`,
     list: [
@@ -66,7 +66,7 @@ const sections = [
     note: '这些服务商均有严格的数据保护协议，不会将您的数据用于其他目的。',
   },
   {
-    icon: <UserCircle className="w-6 h-6 text-indigo-600" />,
+    icon: <UserCircle className="w-6 h-6 text-blue-600" />,
     title: '六、用户权利',
     content: `您对个人信息享有以下权利：`,
     list: [
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white py-16">
+      <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-10 h-10" />
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
         ))}
 
         {/* Contact Section */}
-        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50">
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-blue-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl">
               <Mail className="w-6 h-6 text-blue-600" />

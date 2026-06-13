@@ -215,7 +215,7 @@ export default function ContentPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : items.length === 0 ? (
@@ -229,7 +229,7 @@ export default function ContentPage() {
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          {item.is_pinned && <Pin className="w-4 h-4 text-purple-600" />}
+                          {item.is_pinned && <Pin className="w-4 h-4 text-blue-600" />}
                           <span className="font-medium">{item.title}</span>
                         </div>
                       </td>
@@ -326,7 +326,7 @@ export default function ContentPage() {
                     onChange={(e) => setForm(prev => ({ ...prev, content: e.target.value }))}
                     placeholder="请输入内容"
                     rows={10}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                 </div>
                 

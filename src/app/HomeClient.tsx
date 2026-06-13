@@ -14,7 +14,7 @@ const painPoints = [
     icon: <Compass className="w-5 h-5" />,
     title: '我到底适合做什么？',
     desc: '专业不对口、兴趣不清晰？小职帮你一步步理清思路。',
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-blue-500 to-blue-600',
   },
   {
     icon: <Search className="w-5 h-5" />,
@@ -26,7 +26,7 @@ const painPoints = [
     icon: <TrendingUp className="w-5 h-5" />,
     title: '考研还是直接就业？',
     desc: '数据推演帮你做选择，不靠感觉做决定。',
-    color: 'from-violet-500 to-purple-600',
+    color: 'from-blue-500 to-blue-600',
   },
 ];
 

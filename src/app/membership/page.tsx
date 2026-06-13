@@ -234,7 +234,7 @@ export default function MembershipPage() {
       <div className="max-w-6xl mx-auto px-4">
         {/* 标题 */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border border-blue-200 mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-100 text-blue-700 border border-blue-200 mb-4">
             <Crown className="w-5 h-5" /> 会员中心
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -257,7 +257,7 @@ export default function MembershipPage() {
               }`}
             >
               {plan.popular && (
-                <div className="absolute top-0 right-0 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs px-3 py-1 rounded-bl-lg">
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-blue-500 to-blue-500 text-white text-xs px-3 py-1 rounded-bl-lg">
                   🔥 入门首选
                 </div>
               )}
@@ -284,7 +284,7 @@ export default function MembershipPage() {
                 <Button 
                   className={`w-full ${
                     plan.popular 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600' 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600' 
                       : 'bg-gray-800 hover:bg-gray-900'
                   }`}
                   onClick={() => handleOpenPlan(plan)}
@@ -522,7 +522,7 @@ export default function MembershipPage() {
 
             {/* 提交按钮 */}
             <Button
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600"
               disabled={!screenshotFile || orderStatus === 'uploading' || orderStatus === 'submitting'}
               onClick={handleSubmitOrder}
             >

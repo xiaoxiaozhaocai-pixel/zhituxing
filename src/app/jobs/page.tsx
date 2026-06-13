@@ -493,20 +493,20 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
       </div>
 
       {/* 职业规划提示 - 紫色渐变 */}
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-500">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-500">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-4 text-sm text-white">
           <span className="flex items-center gap-1">
             💡 先生成你的职业规划，获得更精准的岗位推荐
           </span>
-          <span className="text-purple-200">|</span>
+          <span className="text-blue-200">|</span>
           <span className="flex items-center gap-1">
             完善信息，精准度提升100%
           </span>
-          <Link href="/growth" className="underline hover:text-purple-200 font-medium flex items-center gap-1 ml-2">
+          <Link href="/growth" className="underline hover:text-blue-200 font-medium flex items-center gap-1 ml-2">
             生成规划 →
           </Link>
-          <span className="text-purple-200">|</span>
-          <Link href="/profile/info?from=/jobs" className="underline hover:text-purple-200 font-medium flex items-center gap-1">
+          <span className="text-blue-200">|</span>
+          <Link href="/profile/info?from=/jobs" className="underline hover:text-blue-200 font-medium flex items-center gap-1">
             完善信息 →
           </Link>
         </div>
@@ -696,7 +696,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
             <p className="text-lg font-medium text-gray-700 mb-2">暂无岗位数据，敬请期待</p>
             <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">我们正在马不停蹄更新中～先去看看AI为你匹配的岗位吧</p>
             <Link href="/match">
-              <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg px-6 py-5">
+              <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg px-6 py-5">
                 <Briefcase className="w-4 h-4 mr-2" />
                 去查看匹配推荐
               </Button>
@@ -1082,7 +1082,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
                 {/* 小职智能点评 */}
                 {(selectedJob.xiaozhi_note || selectedJob.friendliness) && (
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-50 rounded-lg p-4 border border-blue-100">
                     <div className="flex items-start gap-2">
                       <span className="text-lg">🤖</span>
                       <div>

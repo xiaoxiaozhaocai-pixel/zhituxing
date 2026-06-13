@@ -45,7 +45,7 @@ const relationColors: Record<string, string> = {
   co_occur: '#3B82F6',    // 蓝
   prerequisite: '#22C55E', // 绿
   similar: '#F97316',     // 橙
-  career_path: '#A855F7', // 紫
+  career_path: '#165DFF', // 紫
 };
 
 const relationLabels: Record<string, string> = {

@@ -41,15 +41,15 @@ const operationTypeColors: Record<string, string> = {
   logout: 'bg-gray-100 text-gray-700',
   jd_review_pass: 'bg-green-100 text-green-700',
   jd_review_reject: 'bg-red-100 text-red-700',
-  jd_create: 'bg-purple-100 text-purple-700',
+  jd_create: 'bg-blue-100 text-blue-700',
   jd_update: 'bg-orange-100 text-orange-700',
   jd_delete: 'bg-red-100 text-red-700',
   member_manage: 'bg-yellow-100 text-yellow-700',
-  content_create: 'bg-indigo-100 text-indigo-700',
+  content_create: 'bg-blue-100 text-blue-700',
   content_update: 'bg-cyan-100 text-cyan-700',
   content_delete: 'bg-pink-100 text-pink-700',
   sync_trigger: 'bg-teal-100 text-teal-700',
-  settings_update: 'bg-violet-100 text-violet-700'
+  settings_update: 'bg-blue-100 text-blue-700'
 };
 
 export default function LogsPage() {
@@ -130,7 +130,7 @@ export default function LogsPage() {
                 <select
                   value={filters.type}
                   onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="">全部</option>
                   {types.map(type => (
@@ -198,7 +198,7 @@ export default function LogsPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (

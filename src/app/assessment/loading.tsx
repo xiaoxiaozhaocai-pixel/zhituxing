@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function AssessmentLoading() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white pt-24 pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white pt-24 pb-16">
       <div className="max-w-6xl mx-auto px-4">
         {/* 页面标题骨架 */}
         <div className="mb-8">
@@ -26,7 +26,7 @@ export default function AssessmentLoading() {
                       <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1" />
                       <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
                     </div>
-                    <div className="h-6 w-12 bg-purple-200 rounded animate-pulse" />
+                    <div className="h-6 w-12 bg-blue-200 rounded animate-pulse" />
                   </div>
                 </CardContent>
               </Card>
@@ -36,24 +36,24 @@ export default function AssessmentLoading() {
           {/* 右侧测评详情 */}
           <div className="lg:col-span-2 space-y-6">
             {/* 竞争力百分位卡片 */}
-            <Card className="border-purple-100 overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-purple-400 to-violet-600" />
+            <Card className="border-blue-100 overflow-hidden">
+              <div className="h-1 bg-gradient-to-r from-blue-400 to-blue-600" />
               <CardContent className="py-5">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="h-5 w-28 bg-gray-200 rounded animate-pulse mb-2" />
                     <div className="h-3 w-40 bg-gray-200 rounded animate-pulse" />
                   </div>
-                  <div className="h-8 w-24 bg-purple-200 rounded animate-pulse" />
+                  <div className="h-8 w-24 bg-blue-200 rounded animate-pulse" />
                 </div>
-                <div className="mt-3 h-3 bg-purple-50 rounded-full overflow-hidden">
-                  <div className="h-full w-2/3 bg-purple-200 rounded-full animate-pulse" />
+                <div className="mt-3 h-3 bg-blue-50 rounded-full overflow-hidden">
+                  <div className="h-full w-2/3 bg-blue-200 rounded-full animate-pulse" />
                 </div>
               </CardContent>
             </Card>
 
             {/* 雷达图卡片 */}
-            <Card className="border-purple-100">
+            <Card className="border-blue-100">
               <CardHeader>
                 <div className="h-6 w-28 bg-gray-200 rounded animate-pulse" />
               </CardHeader>
@@ -64,7 +64,7 @@ export default function AssessmentLoading() {
                 {/* 维度详情骨架 */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-purple-50 rounded-lg p-3">
+                    <div key={i} className="bg-blue-50 rounded-lg p-3">
                       <div className="h-3 w-16 bg-gray-200 rounded animate-pulse mb-2" />
                       <div className="h-5 w-12 bg-gray-200 rounded animate-pulse" />
                     </div>

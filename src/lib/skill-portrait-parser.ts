@@ -246,7 +246,7 @@ export function convertToSaveFormat(
  */
 export const PROFICIENCY_CONFIG: Record<ProficiencyLevel, { color: string; bgColor: string; width: string; label: string }> = {
   '了解': { color: '#3B82F6', bgColor: '#EFF6FF', width: '20%', label: '了解' },
-  '熟悉': { color: '#10B981', bgColor: '#ECFDF5', width: '50%', label: '熟悉' },
+  '熟悉': { color: '#165DFF', bgColor: '#ECFDF5', width: '50%', label: '熟悉' },
   '熟练': { color: '#F59E0B', bgColor: '#FFFBEB', width: '75%', label: '熟练' },
   '精通': { color: '#EF4444', bgColor: '#FEF2F2', width: '100%', label: '精通' },
 };

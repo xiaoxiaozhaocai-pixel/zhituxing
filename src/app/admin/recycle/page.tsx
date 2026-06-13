@@ -223,7 +223,7 @@ export default function RecyclePage() {
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : items.length === 0 ? (

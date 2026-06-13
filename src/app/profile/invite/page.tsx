@@ -335,7 +335,7 @@ export default function InvitePage() {
           <DialogHeader>
             <DialogTitle className="text-center">邀请海报</DialogTitle>
           </DialogHeader>
-          <div className="aspect-[3/4] bg-gradient-to-br from-[#165DFF] to-[#722ED1] rounded-lg flex flex-col items-center justify-center p-8 text-white text-center">
+          <div className="aspect-[3/4] bg-gradient-to-br from-[#165DFF] to-[#165DFF] rounded-lg flex flex-col items-center justify-center p-8 text-white text-center">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl font-bold">职</span>
             </div>

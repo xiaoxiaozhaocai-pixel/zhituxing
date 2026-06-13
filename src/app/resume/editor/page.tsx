@@ -585,7 +585,7 @@ export default function ResumeEditorPage() {
             variant={conversationMode ? "default" : "outline"}
             size="sm"
             onClick={() => setConversationMode(!conversationMode)}
-            className={conversationMode ? "bg-[#8B5CF6] hover:bg-[#7C3AED] text-white" : "border-[#8B5CF6] text-[#8B5CF6]"}
+            className={conversationMode ? "bg-[#165DFF] hover:bg-[#165DFF] text-white" : "border-[#165DFF] text-[#165DFF]"}
           >
             {conversationMode ? <X className="w-4 h-4 mr-1" /> : <MessageCircle className="w-4 h-4 mr-1" />}
             {conversationMode ? "手动编辑" : "让小职帮你写"}
@@ -604,9 +604,9 @@ export default function ResumeEditorPage() {
             <div className="flex-1 flex flex-col">
               <div className="px-4 pt-4 pb-2 border-b border-[#E2E8F0]">
                 <div className="flex items-center gap-2 mb-2">
-                  <Bot className="w-5 h-5 text-[#8B5CF6]" />
+                  <Bot className="w-5 h-5 text-[#165DFF]" />
                   <span className="text-sm font-medium text-[#1E293B]">与小职对话</span>
-                  <Badge variant="outline" className="text-xs text-[#8B5CF6] border-[#DDD6FE] bg-[#F5F3FF]">
+                  <Badge variant="outline" className="text-xs text-[#165DFF] border-[#DDD6FE] bg-[#F5F3FF]">
                     简历自动填充中
                   </Badge>
                 </div>
@@ -618,7 +618,7 @@ export default function ResumeEditorPage() {
                     <div className={`max-w-[85%] rounded-lg px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                       msg.role === 'assistant'
                         ? 'bg-[#F1F5F9] text-[#334155]'
-                        : 'bg-[#8B5CF6] text-white'
+                        : 'bg-[#165DFF] text-white'
                     }`}>
                       {msg.content}
                     </div>
@@ -652,7 +652,7 @@ export default function ResumeEditorPage() {
                       }
                     }}
                   />
-                  <Button size="sm" className="bg-[#8B5CF6] hover:bg-[#7C3AED] shrink-0" disabled={sending} onClick={() => { const inp = inputRef.current; if (inp && inp.value.trim()) { const val = inp.value; inp.value = ''; sendMessage(val); } }}>
+                  <Button size="sm" className="bg-[#165DFF] hover:bg-[#165DFF] shrink-0" disabled={sending} onClick={() => { const inp = inputRef.current; if (inp && inp.value.trim()) { const val = inp.value; inp.value = ''; sendMessage(val); } }}>
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>

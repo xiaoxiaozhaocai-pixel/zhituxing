@@ -65,7 +65,7 @@ export default function QuizPage() {
         <div className="max-w-4xl mx-auto px-4">
           {/* 总览卡片 */}
           <Card className="border-blue-100 overflow-hidden mb-6">
-            <div className="h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600" />
+            <div className="h-1.5 bg-gradient-to-r from-blue-500 to-blue-600" />
             <CardContent className="py-8 text-center">
               <Award className="w-16 h-16 text-blue-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-[#1E293B] mb-2">测评完成</h1>

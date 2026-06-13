@@ -48,10 +48,10 @@ const menuItems = [
   { id: 'info', label: '个人信息', icon: User, color: '#165DFF' },
   { id: 'messages', label: '我的消息', icon: Bell, color: '#165DFF' },
   { id: 'membership', label: '我的会员', icon: Crown, color: '#FF7D00' },
-  { id: 'reports', label: '我的报告', icon: FileText, color: '#722ED1' },
+  { id: 'reports', label: '我的报告', icon: FileText, color: '#165DFF' },
   { id: 'growth', label: '成长记录', icon: Sparkles, color: '#165DFF' },
   { id: 'favorites', label: '我的收藏', icon: Heart, color: '#EF4444' },
-  { id: 'invite', label: '我的邀请', icon: Users, color: '#10B981' },
+  { id: 'invite', label: '我的邀请', icon: Users, color: '#165DFF' },
   { id: 'settings', label: '账号设置', icon: Settings, color: '#6B7280' },
   { id: 'logout', label: '退出登录', icon: LogOut, color: '#EF4444', isLogout: true },
 ];
@@ -321,7 +321,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+            <Sparkles className="w-5 h-5 text-blue-600" />
             补充信息（可选）
           </CardTitle>
           <CardDescription className="text-xs text-gray-400">
@@ -335,7 +335,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
               { key: 'target_industry', label: '意向行业', icon: Target, color: 'text-blue-600', format: (v: string | string[]) => Array.isArray(v) ? v.join('、') : v },
               { key: 'target_cities', label: '意向城市', icon: MapPin, color: 'text-green-600', format: (v: string | string[]) => Array.isArray(v) ? v.join('、') : v },
               { key: 'economic_pressure', label: '家庭经济', icon: DollarSign, color: 'text-red-500' },
-              { key: 'career_tendency', label: '学术vs实践', icon: Brain, color: 'text-purple-600' },
+              { key: 'career_tendency', label: '学术vs实践', icon: Brain, color: 'text-blue-600' },
             ].map(field => {
               const rawVal = getFieldValue(field.key === 'target_cities' ? 'target_city' : field.key);
               const displayVal = rawVal ? (field.format ? field.format(rawVal) : rawVal) : null;
@@ -443,7 +443,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+            <Sparkles className="w-5 h-5 text-blue-600" />
             技能画像
           </CardTitle>
         </CardHeader>
@@ -468,19 +468,19 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                 title="软技能"
                 icon={Brain}
                 skills={grouped.soft}
-                accentColor="#8B5CF6"
+                accentColor="#165DFF"
                 onEdit={() => router.push('/profile/info?from=/profile&step=3')}
               />
             </>
           ) : (
             <div className="text-center py-8">
-              <div className="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-3">
-                <Sparkles className="w-7 h-7 text-purple-400" />
+              <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-3">
+                <Sparkles className="w-7 h-7 text-blue-400" />
               </div>
               <p className="text-gray-500 text-sm mb-1">完善你的技能画像</p>
               <p className="text-gray-400 text-xs mb-4">获取精准职业规划和岗位匹配</p>
               <Link href="/profile/info?from=/profile">
-                <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-purple-600 hover:from-[#165DFF]/90 hover:to-purple-600/90 text-white shadow-md shadow-purple-500/20">
+                <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90 text-white shadow-md shadow-blue-500/20">
                   AI智能推荐技能
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
@@ -636,7 +636,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
   ];
 
   const getMemberStatus = () => {
-    if (quota?.is_lifetime_member) return { label: '终身会员', color: 'bg-gradient-to-r from-purple-500 to-pink-500' };
+    if (quota?.is_lifetime_member) return { label: '终身会员', color: 'bg-gradient-to-r from-blue-500 to-pink-500' };
     if (isMember) return { label: '月度会员', color: 'bg-gradient-to-r from-orange-500 to-yellow-500' };
     return { label: '普通用户', color: 'bg-gray-400' };
   };
@@ -649,7 +649,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
         <h2 className="text-xl font-bold text-gray-900">我的会员</h2>
       </div>
 
-      <Card className="bg-gradient-to-r from-[#722ED1] to-[#9B5AE7] text-white">
+      <Card className="bg-gradient-to-r from-[#165DFF] to-[#9B5AE7] text-white">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -761,7 +761,7 @@ function ReportsPanel({ userId }: { userId: string }) {
             <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 mb-4">还没有生成过职业规划报告</p>
             <Link href="/growth">
-              <Button className="bg-[#722ED1] hover:bg-[#6019c4]">去生成报告</Button>
+              <Button className="bg-[#165DFF] hover:bg-[#6019c4]">去生成报告</Button>
             </Link>
           </CardContent>
         </Card>
@@ -954,7 +954,7 @@ function InvitePanel({ userId }: { userId: string }) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">我的邀请</h2>
 
-      <Card className="bg-gradient-to-r from-[#10B981] to-[#34D399] text-white">
+      <Card className="bg-gradient-to-r from-[#165DFF] to-[#34D399] text-white">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -1330,7 +1330,7 @@ function ProfileContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/60 via-white to-purple-50/40">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/60 via-white to-blue-50/40">
       <div className="flex">
         {/* 左侧侧边栏 */}
         <aside className="w-[240px] bg-white border-r border-blue-100 min-h-screen fixed left-0 top-0 flex flex-col shadow-[2px_0_12px_rgba(30,58,138,0.06)]">
@@ -1349,7 +1349,7 @@ function ProfileContent() {
           {/* 用户信息头部 */}
           <div className="p-4 border-b border-blue-50 bg-gradient-to-b from-blue-50/50 to-white">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-gradient-to-br from-[#165DFF] to-[#722ED1] rounded-full flex items-center justify-center ring-2 ring-blue-100 flex-shrink-0">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#165DFF] to-[#165DFF] rounded-full flex items-center justify-center ring-2 ring-blue-100 flex-shrink-0">
                 <span className="text-white text-base font-bold">
                   {user.nickname?.charAt(0) || 'U'}
                 </span>
@@ -1388,7 +1388,7 @@ function ProfileContent() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#165DFF] to-[#722ED1] text-white shadow-md shadow-purple-200/40'
+                      ? 'bg-gradient-to-r from-[#165DFF] to-[#165DFF] text-white shadow-md shadow-blue-200/40'
                       : 'text-gray-600 hover:bg-blue-50/60 hover:text-[#165DFF]'
                   }`}
                 >

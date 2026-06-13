@@ -43,11 +43,21 @@ exit $errors
 | 2.4 | dark:* Tailwind class | `grep -r "dark:" src/ --include="*.tsx"` | 圣经3.0 |
 | 2.5 | globals.css 暗色定义 | `grep -E "@custom-variant dark\|^\.dark\s*\{" src/app/globals.css` | 圣经3.0 |
 
-### 已知豁免（白名单）
+### 已知豁免（白名单）— v2 v2026-06-13
 
-- **shadcn/ui 默认 dark:**：`src/components/ui/*.tsx` 中的 dark: class 是 shadcn 默认结构，主题层关闭后不生效，保留以维持组件可移植性
-- **career-planning 紫主题**：`src/app/career-planning/**` 模块独立紫色（#722ED1）作为子模块视觉锚点，与主蓝形成层级区分
-- **图表数据色 / 状态色**：admin 仪表板的多色饼图、面试通过=绿、离职=红 等语义色
+**目录豁免：**
+- `src/components/ui/*` — shadcn/ui 默认 dark: 结构，主题层关闭后不生效，保留组件可移植性
+- `src/app/career-planning/**` — 子模块独立紫主题 #722ED1，作为视觉锚点与主蓝形成层级
+- `src/app/admin/analytics/**` · `admin/diagnostics/**` · `admin/universities/**` · `admin/skills/**` · `admin/users/**` · `admin/api/stats/**` — 仪表板多色图表 / 状态语义
+- `src/app/dashboard/cost/**` — BOT_COLORS 多色折线
+- `src/app/employer/analytics/**` · `employer/dashboard/**` · `employer/candidates/**` — 雇主端匹配度色阶 / 状态语义
+
+**行内关键词豁免：**
+- `BOT_COLORS` `palette` `chart` `colors =` — 多色调色板
+- `accentColor` `badgeColor` `lineStyle` `stroke=` `fill=` — 图表组件入参
+- `interview` `status_color` `GrowthTimeline` — 业务状态色（面试通过=绿、运营中=绿）
+
+**真违规视为：** 主功能页（如 learning-path / skill-portrait / match / profile / assistant）随手用 indigo/purple/violet/fuchsia/翠绿，无明确语义且偏离主蓝/会员金 token
 
 ### 运行
 

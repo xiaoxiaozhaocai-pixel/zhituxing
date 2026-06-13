@@ -85,7 +85,7 @@ export default function NotificationsPage() {
     const colors: Record<string, string> = {
       quota: 'bg-blue-100 text-blue-700',
       invite: 'bg-orange-100 text-orange-700',
-      membership: 'bg-purple-100 text-purple-700',
+      membership: 'bg-blue-100 text-blue-700',
       system: 'bg-gray-100 text-gray-700',
       tip: 'bg-green-100 text-green-700'
     };

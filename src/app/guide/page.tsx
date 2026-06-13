@@ -27,7 +27,7 @@ const GRADE_OPTIONS = [
 const STATUS_OPTIONS = [
   { value: '求职中', label: '求职中', desc: '正在找实习/工作', color: 'border-blue-500 bg-blue-50' },
   { value: '考研', label: '考研', desc: '准备研究生考试', color: 'border-green-500 bg-green-50' },
-  { value: '考公', label: '考公', desc: '准备公务员考试', color: 'border-purple-500 bg-purple-50' },
+  { value: '考公', label: '考公', desc: '准备公务员考试', color: 'border-blue-500 bg-blue-50' },
   { value: '留学', label: '留学', desc: '准备出国留学', color: 'border-orange-500 bg-orange-50' },
   { value: '未决定', label: '未决定', desc: '还在探索中', color: 'border-gray-400 bg-gray-50' },
 ];
@@ -212,8 +212,8 @@ function QuickStartWizard() {
   const renderStep3 = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Sparkles className="w-8 h-8 text-purple-600" />
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Sparkles className="w-8 h-8 text-blue-600" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900">最后一步（可选）</h2>
         <p className="text-gray-500 mt-2">填了之后所有 AI 功能自动个性化，跳过也行</p>

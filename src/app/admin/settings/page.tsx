@@ -95,7 +95,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
@@ -125,7 +125,7 @@ export default function SettingsPage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-5 h-5 text-purple-600" />
+            <Globe className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-semibold">网站基本设置</h2>
           </div>
           
@@ -201,7 +201,7 @@ export default function SettingsPage() {
                 value={settings.monthly_member_benefits}
                 onChange={(e) => updateSetting('monthly_member_benefits', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
           </div>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Gift className="w-5 h-5 text-purple-600" />
+            <Gift className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-semibold">JD上传激励规则</h2>
           </div>
           
@@ -264,7 +264,7 @@ export default function SettingsPage() {
               <select
                 value={settings.sync_frequency}
                 onChange={(e) => updateSetting('sync_frequency', e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="1">1次/天</option>
                 <option value="2">2次/天</option>

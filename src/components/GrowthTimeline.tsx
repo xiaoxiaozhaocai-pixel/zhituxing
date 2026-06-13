@@ -18,11 +18,11 @@ interface GrowthTimelineProps {
 
 const typeConfig = {
   register: { icon: Sparkles, color: '#165DFF', bgColor: 'bg-blue-100' },
-  assessment: { icon: Brain, color: '#722ED1', bgColor: 'bg-purple-100' },
-  report: { icon: FileText, color: '#10B981', bgColor: 'bg-green-100' },
+  assessment: { icon: Brain, color: '#165DFF', bgColor: 'bg-blue-100' },
+  report: { icon: FileText, color: '#165DFF', bgColor: 'bg-green-100' },
   resume: { icon: FileSearch, color: '#F59E0B', bgColor: 'bg-amber-100' },
   favorite: { icon: Heart, color: '#EF4444', bgColor: 'bg-red-100' },
-  interview: { icon: Mic, color: '#8B5CF6', bgColor: 'bg-violet-100' }
+  interview: { icon: Mic, color: '#165DFF', bgColor: 'bg-blue-100' }
 };
 
 function formatDate(dateString: string): string {

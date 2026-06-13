@@ -108,8 +108,8 @@ export async function GET(request: NextRequest) {
     // ===== 来源统计（基于用户创建时间分布） =====
     const sourceStats = [
       { name: '直接访问', value: Math.round((totalUsers || 3) * 0.45), color: '#165DFF' },
-      { name: '搜索引擎', value: Math.round((totalUsers || 3) * 0.25), color: '#722ED1' },
-      { name: '邀请链接', value: Math.round((totalUsers || 3) * 0.18), color: '#10B981' },
+      { name: '搜索引擎', value: Math.round((totalUsers || 3) * 0.25), color: '#165DFF' },
+      { name: '邀请链接', value: Math.round((totalUsers || 3) * 0.18), color: '#165DFF' },
       { name: '社交媒体', value: Math.max(1, Math.round((totalUsers || 3) * 0.12)), color: '#FF7D00' },
     ];
 

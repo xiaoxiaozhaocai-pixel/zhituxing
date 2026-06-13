@@ -116,7 +116,7 @@ export default function AboutPage() {
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-12 border border-blue-100">
+        <div className="text-center bg-gradient-to-r from-blue-50 to-blue-50 rounded-2xl p-12 border border-blue-100">
           <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-gray-900 mb-2">和我们一起成长</h3>
           <p className="text-gray-600 mb-6">

@@ -30,12 +30,12 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo区域 */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-            <span className="text-3xl font-bold text-purple-600">职</span>
+            <span className="text-3xl font-bold text-blue-600">职</span>
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">职途星后台管理系统</h1>
           <p className="text-white/70">请输入管理员账号登录</p>
@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="请输入账号"
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="请输入密码"
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
             </div>
@@ -87,7 +87,7 @@ export default function AdminLoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 text-base font-medium"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-base font-medium"
             >
               {loading ? (
                 <>

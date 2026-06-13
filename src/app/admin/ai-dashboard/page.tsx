@@ -134,8 +134,8 @@ export default function AIDashboardPage() {
                 <p className="text-2xl font-bold text-red-700">{cards?.highRisk.data.totalUsers || 0}</p>
                 <p className="text-xs text-gray-500 mt-1">平台总用户</p>
               </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
-                <p className="text-2xl font-bold text-purple-700">{cards?.highRisk.data.lowActivityUsers || 0}</p>
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <p className="text-2xl font-bold text-blue-700">{cards?.highRisk.data.lowActivityUsers || 0}</p>
                 <p className="text-xs text-gray-500 mt-1">低活跃用户</p>
               </div>
             </div>
@@ -186,7 +186,7 @@ export default function AIDashboardPage() {
         <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Lightbulb className="w-5 h-5 text-purple-600" />
+              <Lightbulb className="w-5 h-5 text-blue-600" />
               {cards?.suggestions.title}
             </CardTitle>
           </CardHeader>

@@ -66,7 +66,7 @@ interface Stats {
 
 const planLabel: Record<string, { label: string; className: string }> = {
   monthly: { label: '月度会员', className: 'bg-blue-100 text-blue-700' },
-  semester: { label: '学期会员', className: 'bg-purple-100 text-purple-700' },
+  semester: { label: '学期会员', className: 'bg-blue-100 text-blue-700' },
   yearly: { label: '年度会员', className: 'bg-orange-100 text-orange-700' },
   lifetime: { label: '永久会员', className: 'bg-pink-100 text-pink-700' },
 };

@@ -707,7 +707,7 @@ function TableRenderer({ data }: { data: TableData }) {
 
 function PromotionRenderer({ data }: { data: PromotionData }) {
   return (
-    <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+    <div className="mt-3 bg-gradient-to-r from-blue-50 to-blue-50 border border-blue-200 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-2">
         <Lock className="w-4 h-4 text-blue-600" />
         <span className="font-semibold text-blue-800">解锁{data.featureName}</span>

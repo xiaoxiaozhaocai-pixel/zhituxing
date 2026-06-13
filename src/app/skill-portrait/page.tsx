@@ -265,9 +265,9 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
 
   if (!hasSkillPortrait) {
     return (
-      <Card className="border-violet-100 bg-gradient-to-br from-violet-50 to-purple-50">
+      <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-blue-50">
         <CardContent className="py-8 text-center">
-          <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
             <Target className="w-7 h-7 text-white" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2">目标岗位差距分析</h3>
@@ -279,10 +279,10 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
   }
 
   return (
-    <Card className="border-violet-100">
+    <Card className="border-blue-100">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Target className="w-5 h-5 text-violet-600" />
+          <Target className="w-5 h-5 text-blue-600" />
           目标岗位差距分析
         </CardTitle>
       </CardHeader>
@@ -293,7 +293,7 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
           <select
             value={selectedJob}
             onChange={(e) => analyzeGap(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 outline-none"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
           >
             <option value="">请选择目标岗位...</option>
             {jobs.map((job, i) => (
@@ -305,7 +305,7 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
         {/* 分析结果 */}
         {loading && (
           <div className="py-6 text-center">
-            <Loader2 className="w-6 h-6 text-violet-500 animate-spin mx-auto" />
+            <Loader2 className="w-6 h-6 text-blue-500 animate-spin mx-auto" />
             <p className="text-sm text-gray-500 mt-2">正在分析差距...</p>
           </div>
         )}
@@ -350,7 +350,7 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
                     <div key={i} className="bg-gray-50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-900">{gap.skill}</span>
-                        <span className="text-xs text-violet-600 font-medium">预计需 {gap.weeks} 周</span>
+                        <span className="text-xs text-blue-600 font-medium">预计需 {gap.weeks} 周</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <span>当前：{'★'.repeat(gap.current)}{'☆'.repeat(4 - gap.current)}</span>
@@ -366,8 +366,8 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
             )}
 
             {/* 总结 */}
-            <div className="bg-violet-50 rounded-lg p-4 border border-violet-100">
-              <p className="text-sm text-violet-800">
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <p className="text-sm text-blue-800">
                 <strong>学习建议：</strong>
                 如果每周投入 <strong>5 小时</strong>，约 <strong>{Math.ceil(analysis.totalWeeks)} 周</strong> 可达到目标岗位要求。
               </p>
@@ -889,7 +889,7 @@ export default function SkillPortraitPage() {
         <div className="max-w-2xl mx-auto px-4">
           {/* 页面标题 */}
           <div className="text-center mb-10">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-purple-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30 mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30 mb-4">
               <Target className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">AI技能画像</h1>
@@ -899,14 +899,14 @@ export default function SkillPortraitPage() {
           {/* 登录提示卡片 */}
           <Card className="border-blue-200 shadow-xl">
             <CardContent className="py-16 text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Lock className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">登录解锁完整功能</h3>
               <p className="text-gray-500 mb-6">登录后可保存技能画像，追踪学习进度，获取个性化推荐</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
-                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg">
                     <LogIn className="w-5 h-5 mr-2" />
                     立即登录
                   </Button>
@@ -994,7 +994,7 @@ export default function SkillPortraitPage() {
         {currentStep === 1 && (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-purple-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30">
                 <Target className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 mt-4">AI技能画像分析</h2>
@@ -1058,7 +1058,7 @@ export default function SkillPortraitPage() {
               <Card className="border-0 shadow-md">
                 <CardContent className="py-16 flex flex-col items-center justify-center">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#165DFF]/10 to-purple-500/10 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#165DFF]/10 to-blue-500/10 flex items-center justify-center">
                       <Brain className="w-10 h-10 text-[#165DFF] animate-pulse" />
                     </div>
                     <div className="absolute -inset-2 rounded-full border-2 border-[#165DFF]/20 border-t-[#165DFF] animate-spin" />
@@ -1076,10 +1076,10 @@ export default function SkillPortraitPage() {
               </Card>
             ) : aiResult ? (
               <>
-                <Card className="border-0 shadow-md bg-gradient-to-br from-[#165DFF]/5 to-purple-500/5">
+                <Card className="border-0 shadow-md bg-gradient-to-br from-[#165DFF]/5 to-blue-500/5">
                   <CardContent className="py-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
                         <Sparkles className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
@@ -1091,7 +1091,7 @@ export default function SkillPortraitPage() {
                         <div className="flex gap-3 mt-3">
                           <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full">专业技能 {aiResult.professionalSkills.length} 项</span>
                           <span className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded-full">办公技能 {aiResult.officeSkills.length} 项</span>
-                          <span className="text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded-full">软技能 {aiResult.softSkills.length} 项</span>
+                          <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full">软技能 {aiResult.softSkills.length} 项</span>
                         </div>
                       </div>
                     </div>
@@ -1177,7 +1177,7 @@ export default function SkillPortraitPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                  <Brain className="w-5 h-5 text-blue-600" />
                   软技能
                 </CardTitle>
               </CardHeader>
@@ -1320,7 +1320,7 @@ export default function SkillPortraitPage() {
                     )}
                     {aiResult.softSkills.filter((_, i) => skillSelections[`soft_${aiResult.softSkills[i]!.name}`]?.selected).length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-purple-600 mb-1.5">软技能</p>
+                        <p className="text-xs font-medium text-blue-600 mb-1.5">软技能</p>
                         <div className="flex flex-wrap gap-1.5">
                           {aiResult.softSkills.map((skill) => {
                             const key = `soft_${skill.name}`;

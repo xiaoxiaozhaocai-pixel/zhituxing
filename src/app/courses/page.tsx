@@ -84,7 +84,7 @@ const COURSES: CourseItem[] = [
 const LEVEL_STYLES: Record<string, string> = {
   '入门': 'bg-green-50 text-green-700 border-green-200',
   '进阶': 'bg-blue-50 text-blue-700 border-blue-200',
-  '实战': 'bg-purple-50 text-purple-700 border-purple-200',
+  '实战': 'bg-blue-50 text-blue-700 border-blue-200',
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -244,7 +244,7 @@ export default function CoursesPage() {
         )}
 
         {/* 底部提示 */}
-        <div className="mt-12 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 text-center">
+        <div className="mt-12 p-6 bg-gradient-to-r from-blue-50 to-blue-50 rounded-xl border border-blue-100 text-center">
           <h3 className="text-lg font-bold text-[#1E3A8A] mb-2">💡 学习建议</h3>
           <p className="text-sm text-[#475569] max-w-2xl mx-auto">
             建议从「简历撰写实战」开始，然后根据你的求职阶段选择相应课程。

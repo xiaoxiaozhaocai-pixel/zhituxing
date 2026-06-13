@@ -46,7 +46,7 @@ interface CareerPlanStep {
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   mastered: { label: '已掌握', color: 'text-green-600 bg-green-50 border-green-200', icon: <CheckCircle2 className="w-5 h-5 text-green-500" /> },
   practicing: { label: '练习中', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: <Circle className="w-5 h-5 text-blue-500 fill-blue-200" /> },
-  learning: { label: '学习中', color: 'text-purple-600 bg-purple-50 border-purple-200', icon: <Circle className="w-5 h-5 text-purple-500 fill-purple-200" /> },
+  learning: { label: '学习中', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: <Circle className="w-5 h-5 text-blue-500 fill-blue-200" /> },
   not_started: { label: '未开始', color: 'text-gray-500 bg-gray-50 border-gray-200', icon: <Circle className="w-5 h-5 text-gray-300" /> },
 };
 
@@ -308,30 +308,30 @@ export default function LearningPathPage() {
 
               {/* 前置技能链 */}
               {selectedJob?.prerequisiteChains && Object.keys(selectedJob.prerequisiteChains).length > 0 && (
-                <Card className="border-purple-100">
+                <Card className="border-blue-100">
                   <CardHeader>
-                    <CardTitle className="text-purple-700 flex items-center gap-1">
+                    <CardTitle className="text-blue-700 flex items-center gap-1">
                       <Lightbulb className="w-4 h-4" /> 技能前置关系
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       {Object.entries(selectedJob.prerequisiteChains).map(([skill, prereqs], i) => (
-                        <div key={i} className="bg-purple-50 rounded-lg p-3">
-                          <div className="text-sm font-medium text-purple-800 mb-2">{skill}</div>
+                        <div key={i} className="bg-blue-50 rounded-lg p-3">
+                          <div className="text-sm font-medium text-blue-800 mb-2">{skill}</div>
                           {Array.isArray(prereqs) && prereqs.length > 0 ? (
                             <div className="flex items-center gap-2 flex-wrap">
                               {prereqs.map((p: string, j: number) => (
                                 <span key={j} className="flex items-center gap-1">
-                                  <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">{p}</Badge>
-                                  {j < prereqs.length - 1 && <ArrowRight className="w-3 h-3 text-purple-400" />}
+                                  <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">{p}</Badge>
+                                  {j < prereqs.length - 1 && <ArrowRight className="w-3 h-3 text-blue-400" />}
                                 </span>
                               ))}
-                              <ArrowRight className="w-3 h-3 text-purple-400" />
-                              <Badge className="text-xs bg-purple-600 text-white">{skill}</Badge>
+                              <ArrowRight className="w-3 h-3 text-blue-400" />
+                              <Badge className="text-xs bg-blue-600 text-white">{skill}</Badge>
                             </div>
                           ) : (
-                            <span className="text-xs text-purple-500">无前置技能要求，可直接学习</span>
+                            <span className="text-xs text-blue-500">无前置技能要求，可直接学习</span>
                           )}
                         </div>
                       ))}

@@ -208,7 +208,7 @@ export default function AdminUsersPage() {
         <StatCard icon={<Users className="h-5 w-5" />} label="总用户数" value={stats?.total ?? '-'} color="text-blue-600" />
         <StatCard icon={<Crown className="h-5 w-5" />} label="会员数" value={stats?.members ?? '-'} color="text-amber-500" />
         <StatCard icon={<TrendingUp className="h-5 w-5" />} label="会员转化率" value={stats ? `${stats.conversionRate}%` : '-'} color="text-emerald-600" />
-        <StatCard icon={<UserPlus className="h-5 w-5" />} label="本周新增" value={stats?.weeklyNew ?? '-'} color="text-purple-600" />
+        <StatCard icon={<UserPlus className="h-5 w-5" />} label="本周新增" value={stats?.weeklyNew ?? '-'} color="text-blue-600" />
       </div>
 
       {/* 增长趋势 */}

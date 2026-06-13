@@ -25,7 +25,7 @@ const PLATFORMS = [
   { id: 'mohrss', name: '中国公共招聘网', color: 'bg-green-500', pages: 10 },
   { id: 'gxrc', name: '广西人才网上', color: 'bg-orange-500', pages: 10 },
   { id: 'iguopin', name: '国聘网', color: 'bg-red-500', pages: 10 },
-  { id: 'chinahr', name: '中国研究生招聘网', color: 'bg-purple-500', pages: 10 },
+  { id: 'chinahr', name: '中国研究生招聘网', color: 'bg-blue-500', pages: 10 },
   { id: 'gxedu', name: '广西高校毕业生就业网', color: 'bg-teal-500', pages: 5 }
 ];
 
@@ -291,8 +291,8 @@ export default function JdSyncPage() {
                     {logs[0] ? formatTime(logs[0].sync_time) : '从未同步'}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
             </CardContent>

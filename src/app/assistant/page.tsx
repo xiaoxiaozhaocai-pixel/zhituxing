@@ -145,8 +145,8 @@ const bots: BotConfig[] = [
     name: '能力诊断+成长规划',
     description: '诊断短板 + 定制成长路径',
     icon: <Sparkles className="w-5 h-5" />,
-    color: 'text-[#722ED1]',
-    gradient: 'from-purple-500 to-purple-600',
+    color: 'text-[#165DFF]',
+    gradient: 'from-blue-500 to-blue-600',
     welcomeMessage: careerWelcome + disclaimerText,
     quickQuestions: [
       '生成我的胜任力诊断报告',
@@ -160,7 +160,7 @@ const bots: BotConfig[] = [
     name: 'AI模拟面试',
     description: 'AI模拟真实面试',
     icon: <GraduationCap className="w-5 h-5" />,
-    color: 'text-[#00B42A]',
+    color: 'text-[#165DFF]',
     gradient: 'from-green-500 to-green-600',
     welcomeMessage: interviewWelcome + disclaimerText,
     quickQuestions: [
@@ -1037,10 +1037,10 @@ function AssistantContent() {
       h1 { color: #165DFF; border-bottom: 2px solid #165DFF; padding-bottom: 10px; }
       .meta { color: #999; font-size: 14px; margin-bottom: 30px; }
       .user { background: #f0f5ff; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #165DFF; }
-      .bot { background: #f8fafd; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #00B42A; }
+      .bot { background: #f8fafd; padding: 16px 20px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #165DFF; }
       .role { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
       .user .role { color: #165DFF; }
-      .bot .role { color: #00B42A; }
+      .bot .role { color: #165DFF; }
       .content { white-space: pre-wrap; word-break: break-word; }
       .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 13px; text-align: center; }
       .footer a { color: #165DFF; }
@@ -1243,18 +1243,18 @@ function AssistantContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 职业规划免费提示 */}
-      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-blue-100">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-purple-700">
+            <span className="text-blue-700">
               AI职业规划永久免费
             </span>
             <span className="text-gray-300">|</span>
-            <span className="text-purple-700">
+            <span className="text-blue-700">
               无限次生成完整报告
             </span>
           </div>
-          <Link href="/growth" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
+          <Link href="/growth" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
             立即生成
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -1457,7 +1457,7 @@ function AssistantContent() {
 
         {/* 聊天区域 */}
         <Card className={`border-2 overflow-hidden flex flex-col mb-6 transition-all duration-300 ${tabsCollapsed ? "h-[calc(100vh-14rem)] max-h-[calc(100vh-8rem)]" : "h-[calc(100vh-18rem)] max-h-[calc(100vh-12rem)]"} min-h-[500px]`} style={{
-          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
+          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#165DFF'
         }}>
           {/* 快捷问题 */}
           {messages.length <= 1 && (
@@ -1764,16 +1764,16 @@ function AssistantContent() {
           </button>
           <button
             onClick={() => handleTabChange('interview')}
-            className="flex items-center gap-2 hover:text-[#00B42A] transition-colors cursor-pointer"
+            className="flex items-center gap-2 hover:text-[#165DFF] transition-colors cursor-pointer"
           >
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600"></div>
             <span>模拟面试官</span>
           </button>
           <button
             onClick={() => handleTabChange('career')}
-            className="flex items-center gap-2 hover:text-[#722ED1] transition-colors cursor-pointer"
+            className="flex items-center gap-2 hover:text-[#165DFF] transition-colors cursor-pointer"
           >
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <span>职业生涯规划</span>
           </button>
           <button

@@ -3,14 +3,14 @@ import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 px-4">
       {/* 404 动画数字 */}
       <div className="relative mb-8">
-        <div className="text-[180px] md:text-[240px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 opacity-20 select-none animate-pulse">
+        <div className="text-[180px] md:text-[240px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-500 to-blue-500 opacity-20 select-none animate-pulse">
           404
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-2xl animate-bounce">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-blue-600 to-blue-600 flex items-center justify-center shadow-2xl animate-bounce">
             <svg className="w-16 h-16 md:w-20 md:h-20 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -29,7 +29,7 @@ export default function NotFound() {
       {/* 操作按钮 */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Link href="/">
-          <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 4 4M5 10l7 7m4-4l2 2m-2-2l7-7" />
             </svg>
@@ -48,7 +48,7 @@ export default function NotFound() {
 
       {/* 装饰元素 */}
       <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-blue-200 opacity-30 blur-xl animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-purple-200 opacity-30 blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-blue-200 opacity-30 blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
     </div>
   );
 }

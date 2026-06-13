@@ -50,7 +50,7 @@ export default function LoginPromptOverlay({
         <Card className="w-full max-w-md shadow-2xl border-2 border-blue-100 animate-in fade-in zoom-in-95 duration-300">
           <CardContent className="p-8 text-center">
             {/* 图标 */}
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
               <Lock className="w-8 h-8 text-white" />
             </div>
 
@@ -72,7 +72,7 @@ export default function LoginPromptOverlay({
             {/* 按钮 */}
             <div className="space-y-3 mt-6">
               <Link href="/auth">
-                <Button className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+                <Button className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg">
                   <LogIn className="w-5 h-5 mr-2" />
                   立即登录
                 </Button>

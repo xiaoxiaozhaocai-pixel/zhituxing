@@ -265,7 +265,7 @@ export default function FaqPage() {
         </div>
 
         {/* Quick Contact */}
-        <Card className="mt-12 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <Card className="mt-12 bg-gradient-to-r from-blue-50 to-blue-50 border-blue-200">
           <CardContent className="p-8 text-center">
             <MessageSquare className="w-12 h-12 text-blue-600 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 mb-2">

@@ -34,7 +34,7 @@ function AdminLoginLayout({ children }: AdminLayoutProps) {
 function AdminLoading() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
-      <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+      <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
     </div>
   );
 }
@@ -94,7 +94,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
       <aside className="fixed top-0 left-0 bottom-0 w-[240px] bg-[#1F2937] z-50 overflow-y-auto">
         {/* Logo区域 */}
         <div className="h-16 flex items-center px-5 border-b border-gray-700">
-          <div className="w-9 h-9 bg-gradient-to-br from-[#7C3AED] to-purple-400 rounded-lg flex items-center justify-center">
+          <div className="w-9 h-9 bg-gradient-to-br from-[#165DFF] to-blue-400 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-base">职</span>
           </div>
           <span className="ml-3 text-white font-semibold text-lg">职途星管理后台</span>
@@ -113,7 +113,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200
                   ${active 
-                    ? 'bg-[#7C3AED] text-white' 
+                    ? 'bg-[#165DFF] text-white' 
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }
                 `}
@@ -133,7 +133,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
         <div className="flex items-center gap-4">
           {/* 管理员信息 */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-[#7C3AED] to-purple-400 rounded-full flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#165DFF] to-blue-400 rounded-full flex items-center justify-center">
               <span className="text-white font-semibold text-sm">
                 {admin?.username?.charAt(0).toUpperCase() || 'A'}
               </span>

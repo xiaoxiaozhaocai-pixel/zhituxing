@@ -116,8 +116,8 @@ export default function SyncPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <RefreshCw className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <RefreshCw className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">总同步次数</p>
@@ -178,7 +178,7 @@ export default function SyncPage() {
             <Button 
               onClick={() => handleSync('all')}
               disabled={syncing}
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-blue-600 hover:bg-blue-700"
             >
               {syncing && syncingPlatform === 'all' ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -239,7 +239,7 @@ export default function SyncPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (

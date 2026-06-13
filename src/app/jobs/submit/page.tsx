@@ -224,7 +224,7 @@ export default function JdSubmitPage() {
 
         <div className="space-y-6">
           {/* 奖励说明卡片 */}
-          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-[#165DFF]/30">
+          <Card className="bg-gradient-to-r from-blue-50 to-blue-50 border-[#165DFF]/30">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-[#165DFF]/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -411,7 +411,7 @@ export default function JdSubmitPage() {
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="w-5 h-5 text-purple-500" />
+                <Sparkles className="w-5 h-5 text-blue-500" />
                 JD内容
               </CardTitle>
             </CardHeader>

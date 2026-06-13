@@ -228,8 +228,8 @@ export default function FileImportModule({
         className={`
           border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all
           ${isDragging 
-            ? 'border-purple-500 bg-purple-50' 
-            : 'border-gray-300 hover:border-purple-400 bg-gray-50 hover:bg-gray-100'
+            ? 'border-blue-500 bg-blue-50' 
+            : 'border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-gray-100'
           }
         `}
         onDragOver={handleDragOver}
@@ -247,7 +247,7 @@ export default function FileImportModule({
         
         {isLoading ? (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
             <p className="text-sm text-gray-600">正在解析文件，请稍候...</p>
           </div>
         ) : (

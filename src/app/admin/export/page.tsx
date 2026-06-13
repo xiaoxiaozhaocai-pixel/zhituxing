@@ -130,13 +130,13 @@ export default function ExportPage() {
             <Card 
               key={option.type}
               className={`cursor-pointer transition-all hover:shadow-md ${
-                isSelected ? 'ring-2 ring-purple-600 bg-purple-50' : ''
+                isSelected ? 'ring-2 ring-blue-600 bg-blue-50' : ''
               }`}
               onClick={() => setSelectedType(option.type)}
             >
               <CardContent className="p-4 text-center">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
-                  isSelected ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
+                  isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
                 }`}>
                   <Icon className="w-6 h-6" />
                 </div>
@@ -199,7 +199,7 @@ export default function ExportPage() {
             <Button 
               onClick={handleExport}
               disabled={exporting}
-              className="w-full bg-purple-600 hover:bg-purple-700"
+              className="w-full bg-blue-600 hover:bg-blue-700"
             >
               {exporting ? (
                 <>
@@ -233,7 +233,7 @@ export default function ExportPage() {
                     <p className="text-sm text-gray-600 mb-2">已生成文件：</p>
                     <ul className="space-y-1">
                       {exportResult.files.map((file, index) => (
-                        <li key={index} className="text-sm text-purple-600 flex items-center gap-2">
+                        <li key={index} className="text-sm text-blue-600 flex items-center gap-2">
                           <FileText className="w-4 h-4" />
                           {file}
                         </li>

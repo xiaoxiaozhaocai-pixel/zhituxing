@@ -208,15 +208,15 @@ export default function UploadJdRewardPage() {
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#722ED1]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* 顶部Banner */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 py-12 px-4">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-600 py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full text-sm mb-4">
             <Gift className="w-4 h-4" />
@@ -272,7 +272,7 @@ export default function UploadJdRewardPage() {
             onClick={() => setActiveTab('upload')}
             className={`flex-1 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'upload'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg'
                 : 'bg-white text-gray-600 hover:bg-gray-50 border'
             }`}
           >
@@ -283,7 +283,7 @@ export default function UploadJdRewardPage() {
             onClick={() => setActiveTab('history')}
             className={`flex-1 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'history'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg'
                 : 'bg-white text-gray-600 hover:bg-gray-50 border'
             }`}
           >
@@ -298,19 +298,19 @@ export default function UploadJdRewardPage() {
             <Card className="mb-6">
               <CardContent className="pt-6">
                 <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-600" />
+                  <Zap className="w-5 h-5 text-blue-600" />
                   3步免费领终身会员
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       1
                     </div>
                     <h4 className="font-medium text-gray-900 mb-1">上传真实校招JD</h4>
                     <p className="text-sm text-gray-500">粘贴岗位文本或上传截图，支持任意企业校招岗位</p>
                   </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       2
                     </div>
                     <h4 className="font-medium text-gray-900 mb-1">等待审核通过</h4>
@@ -354,7 +354,7 @@ export default function UploadJdRewardPage() {
                         value={jobName}
                         onChange={(e) => setJobName(e.target.value)}
                         placeholder="例如：前端开发工程师（2026届校招）"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
 
@@ -368,7 +368,7 @@ export default function UploadJdRewardPage() {
                           value={companyName}
                           onChange={(e) => setCompanyName(e.target.value)}
                           placeholder="例如：阿里巴巴"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         />
                       </div>
                       <div>
@@ -380,7 +380,7 @@ export default function UploadJdRewardPage() {
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
                           placeholder="例如：北京"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -394,7 +394,7 @@ export default function UploadJdRewardPage() {
                         value={salary}
                         onChange={(e) => setSalary(e.target.value)}
                         placeholder="例如：15k-25k 或 15000-25000"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
 
@@ -407,7 +407,7 @@ export default function UploadJdRewardPage() {
                         onChange={(e) => setJdContent(e.target.value)}
                         placeholder="粘贴岗位描述内容，包括岗位职责、任职要求等..."
                         rows={8}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
                       />
                     </div>
                   </div>
@@ -465,7 +465,7 @@ export default function UploadJdRewardPage() {
             <CardContent className="pt-6">
               {listLoading ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                 </div>
               ) : submissions.length === 0 ? (
                 <div className="text-center py-8">
@@ -473,7 +473,7 @@ export default function UploadJdRewardPage() {
                   <p className="text-gray-500">暂无上传记录</p>
                   <Button
                     onClick={() => setActiveTab('upload')}
-                    className="mt-4 bg-purple-600 hover:bg-purple-700"
+                    className="mt-4 bg-blue-600 hover:bg-blue-700"
                   >
                     去上传JD
                   </Button>
@@ -517,7 +517,7 @@ export default function UploadJdRewardPage() {
         <Card className="mt-8">
           <CardContent className="pt-6">
             <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-purple-600" />
+              <HelpCircle className="w-5 h-5 text-blue-600" />
               常见问题
             </h3>
             <div className="space-y-2">

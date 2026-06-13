@@ -42,8 +42,8 @@ const contactMethods = [
     title: '商务合作邮箱',
     value: 'business@zhituxing.com',
     description: '24小时内回复',
-    color: 'bg-purple-100 text-purple-600',
-    bgColor: 'hover:bg-purple-50'
+    color: 'bg-blue-100 text-blue-600',
+    bgColor: 'hover:bg-blue-50'
   },
   {
     icon: <MapPin className="w-6 h-6" />,
@@ -338,7 +338,7 @@ export default function ContactPage() {
             </Card>
 
             {/* Thank You */}
-            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <Card className="bg-gradient-to-r from-blue-50 to-blue-50 border-blue-200">
               <CardContent className="p-6 text-center">
                 <Heart className="w-8 h-8 text-red-400 mx-auto mb-2" />
                 <p className="text-sm text-gray-600">

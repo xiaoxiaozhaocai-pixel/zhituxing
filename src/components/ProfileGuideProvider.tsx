@@ -93,16 +93,16 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
       {children}
       {/* 个人信息完善引导条（合并自 ProfileGuideBar） */}
       {showGuideBar && (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100 fixed top-[64px] left-0 right-0 z-40 shadow-sm">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-50 border-b border-blue-100 fixed top-[64px] left-0 right-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-purple-800 text-sm">
+            <div className="flex items-center gap-2 text-blue-800 text-sm">
               <span>💡</span>
               <span className="font-medium">跟小职聊聊你自己，我会记住你的专业和目标，让每次建议都更精准</span>
             </div>
             <div className="flex items-center gap-3">
               <Link
                 href="/assistant"
-                className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-medium rounded-full hover:from-purple-700 hover:to-indigo-700 transition-all shadow-sm"
+                className="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-blue-600 text-white text-sm font-medium rounded-full hover:from-blue-700 hover:to-blue-700 transition-all shadow-sm"
               >
                 去和小职聊聊
               </Link>

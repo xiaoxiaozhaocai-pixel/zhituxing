@@ -991,7 +991,7 @@ function ProfileInfoContent() {
               <Card className="border-0 shadow-md">
                 <CardContent className="py-16 flex flex-col items-center justify-center">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#165DFF]/10 to-purple-500/10 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#165DFF]/10 to-blue-500/10 flex items-center justify-center">
                       <Brain className="w-10 h-10 text-[#165DFF] animate-pulse" />
                     </div>
                     <div className="absolute -inset-2 rounded-full border-2 border-[#165DFF]/20 border-t-[#165DFF] animate-spin" />
@@ -1010,10 +1010,10 @@ function ProfileInfoContent() {
               </Card>
             ) : aiResult ? (
               <>
-                <Card className="border-0 shadow-md bg-gradient-to-br from-[#165DFF]/5 to-purple-500/5">
+                <Card className="border-0 shadow-md bg-gradient-to-br from-[#165DFF]/5 to-blue-500/5">
                   <CardContent className="py-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
                         <Sparkles className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
@@ -1031,7 +1031,7 @@ function ProfileInfoContent() {
                           <span className="text-xs px-2 py-1 bg-green-50 text-green-700 rounded-full">
                             办公技能 {aiResult.officeSkills.length} 项
                           </span>
-                          <span className="text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded-full">
+                          <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full">
                             软技能 {aiResult.softSkills.length} 项
                           </span>
                         </div>
@@ -1138,7 +1138,7 @@ function ProfileInfoContent() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                  <Brain className="w-5 h-5 text-blue-600" />
                   软技能
                 </CardTitle>
               </CardHeader>
@@ -1328,7 +1328,7 @@ function ProfileInfoContent() {
                       return skillSelections[key]?.selected;
                     }).length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-purple-600 mb-1.5">软技能</p>
+                        <p className="text-xs font-medium text-blue-600 mb-1.5">软技能</p>
                         <div className="flex flex-wrap gap-1.5">
                           {aiResult.softSkills.map((skill) => {
                             const key = `soft_${skill.name}`;

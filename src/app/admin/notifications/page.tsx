@@ -37,7 +37,7 @@ const typeLabels: Record<string, string> = {
 
 const typeColors: Record<string, string> = {
   system: 'bg-blue-100 text-blue-700',
-  activity: 'bg-purple-100 text-purple-700',
+  activity: 'bg-blue-100 text-blue-700',
   personal: 'bg-green-100 text-green-700'
 };
 
@@ -134,7 +134,7 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">站内信管理</h1>
-        <Button onClick={() => setModal(true)} className="bg-purple-600 hover:bg-purple-700">
+        <Button onClick={() => setModal(true)} className="bg-blue-600 hover:bg-blue-700">
           <Send className="w-4 h-4 mr-2" />
           发送站内信
         </Button>
@@ -173,8 +173,8 @@ export default function NotificationsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Mail className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Mail className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">活动通知</p>
@@ -221,7 +221,7 @@ export default function NotificationsPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : notifications.length === 0 ? (
@@ -315,7 +315,7 @@ export default function NotificationsPage() {
                     <select
                       value={sendForm.type}
                       onChange={(e) => setSendForm(prev => ({ ...prev, type: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     >
                       <option value="system">系统通知</option>
                       <option value="activity">活动通知</option>
@@ -328,7 +328,7 @@ export default function NotificationsPage() {
                     <select
                       value={sendForm.targetType}
                       onChange={(e) => setSendForm(prev => ({ ...prev, targetType: e.target.value }))}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     >
                       <option value="all">全体用户</option>
                       <option value="members">仅会员用户</option>
@@ -363,7 +363,7 @@ export default function NotificationsPage() {
                       onChange={(e) => setSendForm(prev => ({ ...prev, content: e.target.value }))}
                       placeholder="输入通知内容"
                       rows={5}
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                     />
                   </div>
                   

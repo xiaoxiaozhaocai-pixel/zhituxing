@@ -234,7 +234,7 @@ export default function JdReviewPage() {
             onClick={() => { setStatus(item.value); setPage(1); }}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               status === item.value 
-                ? 'bg-purple-600 text-white' 
+                ? 'bg-blue-600 text-white' 
                 : 'bg-white text-gray-600 hover:bg-gray-50 border'
             }`}
           >
@@ -269,9 +269,9 @@ export default function JdReviewPage() {
 
       {/* 批量操作 */}
       {selected.length > 0 && (
-        <Card className="border-purple-200 bg-purple-50">
+        <Card className="border-blue-200 bg-blue-50">
           <CardContent className="pt-4 pb-4 flex items-center justify-between">
-            <span className="text-purple-700 font-medium">已选择 {selected.length} 项</span>
+            <span className="text-blue-700 font-medium">已选择 {selected.length} 项</span>
             <div className="flex gap-2">
               <Button 
                 onClick={handleBatchApprove} 
@@ -324,7 +324,7 @@ export default function JdReviewPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={8} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : submissions.length === 0 ? (
@@ -502,7 +502,7 @@ export default function JdReviewPage() {
                 onChange={(e) => setRejectModal(prev => ({ ...prev, reason: e.target.value }))}
                 placeholder="请输入拒绝原因（将通知用户）"
                 rows={4}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
               />
               <div className="flex justify-end gap-2 mt-4">
                 <Button variant="outline" onClick={() => setRejectModal({ show: false, id: null, reason: '' })}>

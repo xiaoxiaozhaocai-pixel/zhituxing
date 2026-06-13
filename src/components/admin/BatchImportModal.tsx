@@ -466,12 +466,12 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
             <div key={s} className="flex items-center">
               <div className={`
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${step >= s ? 'bg-purple-600 text-white' : 'bg-gray-300 text-gray-500'}
+                ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-500'}
               `}>
                 {step > s ? <CheckCircle className="w-5 h-5" /> : s}
               </div>
               {s < 4 && (
-                <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-purple-600' : 'bg-gray-300'}`} />
+                <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-blue-600' : 'bg-gray-300'}`} />
               )}
             </div>
           ))}
@@ -495,7 +495,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
 
               {/* 上传区域 */}
               <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-500 transition-colors cursor-pointer"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
@@ -539,7 +539,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
             <div className="space-y-6">
               {isCheckingDuplicates ? (
                 <div className="text-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-purple-600 mb-4" />
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-4" />
                   <p className="text-gray-600">正在解析文件并校验数据...</p>
                 </div>
               ) : (

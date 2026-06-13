@@ -193,7 +193,7 @@ export default function JobsPage() {
             <select
               value={filters.source}
               onChange={(e) => { setFilters(prev => ({ ...prev, source: e.target.value })); setPage(1); }}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             >
               <option value="">全部来源</option>
               {sources.map(s => <option key={s} value={s}>{s}</option>)}
@@ -201,7 +201,7 @@ export default function JobsPage() {
             <select
               value={filters.city}
               onChange={(e) => { setFilters(prev => ({ ...prev, city: e.target.value })); setPage(1); }}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             >
               <option value="">全部城市</option>
               {cities.map(c => <option key={c} value={c}>{c}</option>)}
@@ -234,7 +234,7 @@ export default function JobsPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : jobs.length === 0 ? (
@@ -353,7 +353,7 @@ export default function JobsPage() {
                     value={form.jd_content}
                     onChange={(e) => setForm(prev => ({ ...prev, jd_content: e.target.value }))}
                     rows={5}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
                 

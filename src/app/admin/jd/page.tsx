@@ -191,7 +191,7 @@ export default function AdminJdPage() {
           { label: '启用', value: stats?.active_count ?? 0, color: 'text-green-600' },
           { label: '禁用', value: stats?.disabled_count ?? 0, color: 'text-red-600' },
           { label: '过期', value: stats?.expired_count ?? 0, color: 'text-yellow-600' },
-          { label: '本周新增', value: stats?.this_week_new ?? 0, color: 'text-purple-600' },
+          { label: '本周新增', value: stats?.this_week_new ?? 0, color: 'text-blue-600' },
         ].map((card) => (
           <Card key={card.label} className="p-4 bg-white border-[#E2E8F0] shadow-sm">
             <div className="text-xs text-[#64748B] mb-1">{card.label}</div>

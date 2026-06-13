@@ -18,9 +18,9 @@ export default function GenerateGuideModal({ show, onClose, onContinue }: Genera
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         {/* 顶部装饰 */}
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 h-20 flex items-center justify-center border-b border-purple-100">
-          <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
-            <Sparkles className="w-8 h-8 text-purple-600" />
+        <div className="bg-gradient-to-r from-blue-50 to-blue-50 h-20 flex items-center justify-center border-b border-blue-100">
+          <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
+            <Sparkles className="w-8 h-8 text-blue-600" />
           </div>
         </div>
 
@@ -43,7 +43,7 @@ export default function GenerateGuideModal({ show, onClose, onContinue }: Genera
           {/* 按钮 */}
           <div className="space-y-3">
             <Link href="/profile/info?from=/growth" onClick={onClose}>
-              <button className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg shadow-purple-500/30">
+              <button className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30">
                 完善信息后生成
               </button>
             </Link>

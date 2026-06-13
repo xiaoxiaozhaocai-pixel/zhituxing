@@ -50,7 +50,7 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
 const PLAN_MAP: Record<string, { label: string; className: string }> = {
   free: { label: 'Free', className: 'bg-gray-50 text-gray-600 border-gray-200' },
   starter: { label: 'Starter', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  pro: { label: 'Pro', className: 'bg-purple-50 text-purple-700 border-purple-200' },
+  pro: { label: 'Pro', className: 'bg-blue-50 text-blue-700 border-blue-200' },
 };
 
 const ROLE_MAP: Record<string, { label: string; className: string }> = {

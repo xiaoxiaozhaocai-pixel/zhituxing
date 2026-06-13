@@ -110,7 +110,7 @@ export default function AdminCareerPlanningPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#722ED1] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
       </div>
     );
   }
@@ -136,7 +136,7 @@ export default function AdminCareerPlanningPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Sparkles className="w-7 h-7 text-[#722ED1]" />
+            <Sparkles className="w-7 h-7 text-[#165DFF]" />
             职业规划报告管理
           </h1>
           <p className="text-gray-500 mt-2">
@@ -179,7 +179,7 @@ export default function AdminCareerPlanningPage() {
                   ))}
                 </select>
               </div>
-              <Button type="submit" className="bg-[#722ED1] hover:bg-[#722ED1]/90">
+              <Button type="submit" className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                 搜索
               </Button>
               <Button 
@@ -199,7 +199,7 @@ export default function AdminCareerPlanningPage() {
         {/* 加载状态 */}
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#722ED1] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
           </div>
         )}
 
@@ -273,7 +273,7 @@ export default function AdminCareerPlanningPage() {
                           </td>
                           <td className="py-3 px-4">
                             <a href={`/career-planning/report/${report.id}`} target="_blank">
-                              <Button variant="outline" size="sm" className="text-[#722ED1] border-purple-200 hover:bg-purple-50">
+                              <Button variant="outline" size="sm" className="text-[#165DFF] border-blue-200 hover:bg-blue-50">
                                 <Eye className="w-4 h-4 mr-1" />
                                 查看
                               </Button>

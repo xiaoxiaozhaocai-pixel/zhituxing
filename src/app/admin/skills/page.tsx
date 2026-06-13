@@ -41,7 +41,7 @@ const RELATION_CONFIG: Record<string, { label: string; color: string; lineStyle:
   prerequisite: { label: '前置关系', color: '#22C55E', lineStyle: '' },
   co_occur: { label: '共现关系', color: '#3B82F6', lineStyle: '6,3' },
   similar: { label: '相似关系', color: '#F97316', lineStyle: '3,3' },
-  career_path: { label: '职业路径', color: '#A855F7', lineStyle: '10,3' },
+  career_path: { label: '职业路径', color: '#165DFF', lineStyle: '10,3' },
 };
 
 export default function AdminSkillsPage() {
@@ -423,7 +423,7 @@ export default function AdminSkillsPage() {
                             <div className="flex gap-1">
                               <Button size="sm" variant="ghost" onClick={() => setEditingItem(item)} className="text-blue-600 text-xs h-6">编辑</Button>
                               <Button size="sm" variant="ghost" onClick={() => handleDeleteTaxonomy(item.id)} className="text-red-600 text-xs h-6">删除</Button>
-                              <Button size="sm" variant="ghost" onClick={() => { setGraphSkill(item.skill_name); }} className="text-purple-600 text-xs h-6">图谱</Button>
+                              <Button size="sm" variant="ghost" onClick={() => { setGraphSkill(item.skill_name); }} className="text-blue-600 text-xs h-6">图谱</Button>
                             </div>
                           )}
                         </td>

@@ -34,7 +34,7 @@ const botNames: Record<string, string> = {
 const botColors: Record<string, string> = {
   jobs: 'text-[#165DFF] bg-[#165DFF]/10',
   interview: 'text-[#00B42A] bg-[#00B42A]/10',
-  career: 'text-[#722ED1] bg-[#722ED1]/10'
+  career: 'text-[#165DFF] bg-[#165DFF]/10'
 };
 
 export default function HistoryPage() {

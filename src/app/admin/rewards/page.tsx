@@ -38,7 +38,7 @@ const rewardTypeLabels: Record<string, string> = {
 };
 
 const rewardTypeColors: Record<string, string> = {
-  lifetime: 'bg-purple-100 text-purple-700',
+  lifetime: 'bg-blue-100 text-blue-700',
   monthly: 'bg-orange-100 text-orange-700',
   bonus_months: 'bg-blue-100 text-blue-700',
   jd_submit: 'bg-green-100 text-green-700'
@@ -145,8 +145,8 @@ export default function RewardsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Gift className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Gift className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">总发放记录</p>
@@ -243,7 +243,7 @@ export default function RewardsPage() {
                 {loading ? (
                   <tr>
                     <td colSpan={8} className="px-4 py-12 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-purple-600" />
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
                     </td>
                   </tr>
                 ) : records.length === 0 ? (
@@ -341,7 +341,7 @@ export default function RewardsPage() {
                   <select
                     value={grantForm.rewardType}
                     onChange={(e) => setGrantForm(prev => ({ ...prev, rewardType: e.target.value }))}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   >
                     <option value="lifetime">终身会员</option>
                     <option value="monthly">月度会员</option>

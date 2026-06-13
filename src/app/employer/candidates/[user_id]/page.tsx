@@ -468,7 +468,7 @@ export default function CandidateDetailPage() {
             <Section icon={Code2} title={`项目经历（${fmtArrSize(portrait.project_experience)} 个）`}>
               <ul className="space-y-3">
                 {(portrait.project_experience || []).map((it, idx) => (
-                  <li key={idx} className="p-4 rounded-xl bg-gradient-to-br from-purple-50/60 to-white border border-purple-200/40 hover:border-purple-300 hover:-translate-y-0.5 transition">
+                  <li key={idx} className="p-4 rounded-xl bg-gradient-to-br from-blue-50/60 to-white border border-blue-200/40 hover:border-blue-300 hover:-translate-y-0.5 transition">
                     <div className="flex items-baseline justify-between flex-wrap gap-2">
                       <h4 className="font-semibold text-slate-900">
                         {it.name || '未命名项目'}
@@ -476,7 +476,7 @@ export default function CandidateDetailPage() {
                       </h4>
                     </div>
                     {it.tech_stack && (
-                      <div className="mt-1.5 text-xs text-purple-700 font-mono">{it.tech_stack}</div>
+                      <div className="mt-1.5 text-xs text-blue-700 font-mono">{it.tech_stack}</div>
                     )}
                     {it.description && (
                       <p className="mt-2 text-sm text-slate-600 leading-relaxed">{it.description}</p>
