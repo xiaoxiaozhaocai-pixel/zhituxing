@@ -405,7 +405,7 @@ export async function POST(request: NextRequest) {
 
     // botType 标准化（空输入校验需要用到）
     // xiaozhi的空输入使用xiaozhi_chat模式的提示
-    const effectiveBotType = botType || 'career';
+    const effectiveBotType = botType || 'xiaozhi';
 
     // ============================================================
     // 安全检查：空消息校验 - 返回 SSE 格式友好提示（按 botType 定制）

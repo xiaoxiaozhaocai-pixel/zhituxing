@@ -86,6 +86,7 @@ export const ROLE_REINFORCEMENTS: Record<string, string> = {
   assessment: '\n【角色重申】你只负责技能测评和出题评分，不做职业规划。职业规划请咨询职业规划师。',
   competency: '\n【角色重申】你只负责胜任力评估和差距分析，不做职业规划。职业规划请咨询职业规划师。',
   xiaozhi: '',
+  xiaozhi_chat: '',
   resume: '\n【角色重申】你只负责简历优化和JD对标，不做职业规划或面试模拟。',
   skill: '\n【角色重申】你只负责技能梳理和差距分析，不做职业规划或面试模拟。',
 };
