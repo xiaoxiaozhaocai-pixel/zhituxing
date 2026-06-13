@@ -28,3 +28,29 @@ echo "结果: $errors 项违规"
 exit $errors
 '
 ```
+
+---
+
+## L2 视觉一致性（v2026-06-13）
+
+> 设计 Token：primary `#165DFF`·会员金 `#FF7D00`·灰阶 slate-* · 蓝白底 · 禁暗色
+
+| # | 检查项 | 命令 | 来源 |
+|---|--------|------|------|
+| 2.1 | 紫色硬编码（非主题色） | `grep -rE "#722ED1\|#8B5CF6\|#A855F7\|#7C3AED" src/` | 圣经3.0 |
+| 2.2 | 翠绿硬编码（非状态色） | `grep -rE "#10B981\|#00B42A\|#059669\|#16A34A" src/` | 圣经3.0 |
+| 2.3 | indigo/purple/emerald/violet/fuchsia Tailwind 类 | `grep -rE "(bg\|text\|border)-(indigo\|purple\|emerald)-" src/` | 圣经3.0 |
+| 2.4 | dark:* Tailwind class | `grep -r "dark:" src/ --include="*.tsx"` | 圣经3.0 |
+| 2.5 | globals.css 暗色定义 | `grep -E "@custom-variant dark\|^\.dark\s*\{" src/app/globals.css` | 圣经3.0 |
+
+### 已知豁免（白名单）
+
+- **shadcn/ui 默认 dark:**：`src/components/ui/*.tsx` 中的 dark: class 是 shadcn 默认结构，主题层关闭后不生效，保留以维持组件可移植性
+- **career-planning 紫主题**：`src/app/career-planning/**` 模块独立紫色（#722ED1）作为子模块视觉锚点，与主蓝形成层级区分
+- **图表数据色 / 状态色**：admin 仪表板的多色饼图、面试通过=绿、离职=红 等语义色
+
+### 运行
+
+```bash
+bash scripts/visual-audit.sh
+```
