@@ -143,6 +143,7 @@ export default function FloatingAICTA() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let fullContent = '';
+      let sseBuffer = '';
 
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
@@ -152,26 +153,41 @@ export default function FloatingAICTA() {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        // 修复 6/13 23:30：用 \n\n 切完整 SSE 事件 + 跨 chunk buffer
+        // 避免 TCP 半截 JSON 导致 content 丢失，避免 dispatch/conversation_id 等 event 的 data 被当 text 累加
+        sseBuffer += decoder.decode(value, { stream: true });
+        const events = sseBuffer.split('\n\n');
+        sseBuffer = events.pop() ?? '';
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            try {
-              const json = JSON.parse(data);
-              const content = json?.content || json?.choices?.[0]?.delta?.content || '';
-              if (content) {
-                fullContent += content;
-                setMessages(prev => {
-                  const copy = [...prev];
-                  copy[copy.length - 1] = { role: 'assistant', content: fullContent };
-                  return copy;
-                });
-              }
-            } catch { /* non-JSON SSE line */ }
+        for (const evt of events) {
+          if (!evt.trim()) continue;
+          let eventType = 'message';
+          let dataLine = '';
+          for (const line of evt.split('\n')) {
+            if (line.startsWith('event:')) {
+              eventType = line.slice(6).trim();
+            } else if (line.startsWith('data: ')) {
+              dataLine = line.slice(6);
+            } else if (line.startsWith('data:')) {
+              dataLine = line.slice(5);
+            }
           }
+          if (!dataLine) continue;
+          if (dataLine === '[DONE]') continue;
+          // 只累加普通 message 事件的 text content；conversation_id / dispatch / save_result 跳过
+          if (eventType !== 'message') continue;
+          try {
+            const json = JSON.parse(dataLine);
+            const content = json?.content || json?.choices?.[0]?.delta?.content || '';
+            if (content) {
+              fullContent += content;
+              setMessages(prev => {
+                const copy = [...prev];
+                copy[copy.length - 1] = { role: 'assistant', content: fullContent };
+                return copy;
+              });
+            }
+          } catch { /* non-JSON SSE data */ }
         }
       }
     } catch (err) {
