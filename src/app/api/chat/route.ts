@@ -399,7 +399,7 @@ export async function POST(request: NextRequest) {
     // 契约化：用 zod 校验请求体
     const parsed = await parseRequestBody(request, ChatRequestSchema);
     if (!parsed.ok) return parsed.response;
-    const { message, botType, jobId } = parsed.data;
+    const { message, botType } = parsed.data;
     // conversationId 允许 null（前端会显式传 null），统一收敛成 undefined
     const conversationId = parsed.data.conversationId ?? undefined;
 
@@ -499,23 +499,7 @@ export async function POST(request: NextRequest) {
       if (profileCtx) contextParts.push(profileCtx);
       if (upstreamArtifacts) contextParts.push(upstreamArtifacts);
       
-      // 岗位百科深度优化：携带岗位数据
-      if (jobId) {
-        try {
-          const supabase = getSupabaseAdmin();
-          const { data: job } = await supabase
-            .from('job_descriptions')
-            .select('*')
-            .eq('id', jobId)
-            .single();
-          if (job) {
-            contextParts.push(`\n【待分析岗位信息】\n岗位名称：${job.job_title || ''}\n行业：${job.industry || ''}\n城市：${job.city || ''}\n薪资：${job.salary_range || ''}\n学历要求：${job.education || ''}\n经验要求：${job.experience || ''}\n是否应届友好：${job.fresh_graduate_friendly ? '是' : '否'}\n技能要求：${Array.isArray(job.hard_skills) ? job.hard_skills.join('、') : ''}\n软技能要求：${Array.isArray(job.soft_skills) ? job.soft_skills.join('、') : ''}\n岗位职责：\n${(job.responsibilities || job.raw_jd || '').slice(0, 3000)}\n---`);
-          }
-        } catch (e) {
-          console.error('[chat] 获取岗位数据失败:', e);
-        }
-      }
-      
+
       if (contextParts.length > 0) {
         userContext = `【系统指令：以下是你需要了解的背景信息，请务必基于这些信息回答用户问题，不要重复询问用户已知的个人信息和前置分析结论】\n\n${contextParts.join('\n')}\n\n---\n`;
       }

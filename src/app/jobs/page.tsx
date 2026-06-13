@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -409,38 +409,10 @@ export default function JobsPage() {
     fetchJobs();
   };
 
-  // 生成岗位分析提示词
-  const generateJobAnalysisPrompt = (job: Job): string => {
-    const cleanJobName = job.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim();
-    const skillsText = job.skills?.length > 0 ? job.skills.join('、') : '暂无';
-    const softSkillsText = job.softSkills && job.softSkills.length > 0 ? job.softSkills.join('、') : '暂无';
-    
-    return `请帮我深度分析以下岗位：
-
-岗位名称：${cleanJobName}
-工作城市：${job.city || '不限'}
-薪资范围：${job.salary || '面议'}
-学历要求：${job.education || '不限'}
-经验要求：${job.experience || '不限'}
-行业领域：${job.industry || '综合'}
-技能要求：${skillsText}
-软技能要求：${softSkillsText}
-${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdContent.length > 500 ? '...' : ''}` : ''}
-
-请从以下几个方面进行深度分析：
-1. 岗位前景与发展空间
-2. 技能要求解读与学习建议
-3. 面试准备重点
-4. 薪资谈判技巧
-5. 职业发展路径建议`;
-  };
-
-  // 跳转到登录页（带redirect回AI助手）
-  // 使用原生 <a> 标签 + document.location 双保险，防止 Turbopack 生产构建优化
+  // 跳转到岗位深度分析专属页（2026-06-13 重设计：独立 /api/job-analysis + /jobs/[id]/analysis）
+  // 未登录会先到 /auth 完成登录，登录后自动回分析页
   const getJobAnalysisUrl = (job: Job) => {
-    const prompt = generateJobAnalysisPrompt(job);
-    const target = `/assistant?bot=jobs&jobId=${job.id}&query=${encodeURIComponent(prompt)}`;
-    return `/auth?redirect=${encodeURIComponent(target)}`;
+    return `/auth?redirect=${encodeURIComponent(`/jobs/${job.id}/analysis`)}`;
   };
 
   const _handleJobClick = (job: Job) => {

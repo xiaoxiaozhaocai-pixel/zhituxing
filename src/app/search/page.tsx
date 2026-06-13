@@ -142,32 +142,9 @@ function SearchContent() {
     }
   };
 
-  // 生成岗位分析提示词（搜索页简化版）
-  const generateJobAnalysisPrompt = (job: SearchResult): string => {
-    const jobTitle = job.jobTitle || '未知岗位';
-    
-    return `请帮我深度分析以下岗位：
-
-岗位名称：${jobTitle}
-${job.location ? `工作城市：${job.location}` : ''}
-${job.salary ? `薪资范围：${job.salary}` : ''}
-${job.education ? `学历要求：${job.education}` : ''}
-${job.experience ? `经验要求：${job.experience}` : ''}
-${job.company ? `公司：${job.company}` : ''}
-
-请从以下几个方面进行深度分析：
-1. 岗位前景与发展空间
-2. 技能要求解读与学习建议
-3. 面试准备重点
-4. 薪资谈判技巧
-5. 职业发展路径建议`;
-  };
-
-  // AI深度分析跳转（先到登录页，已登录则自动跳回）
+  // AI 深度分析跳转：导向独立的 /jobs/[id]/analysis 页（2026-06-13 重设计）
   const getAnalysisUrl = (job: SearchResult) => {
-    const prompt = generateJobAnalysisPrompt(job);
-    const target = `/assistant?query=${encodeURIComponent(prompt)}`;
-    return `/auth?redirect=${encodeURIComponent(target)}`;
+    return `/auth?redirect=${encodeURIComponent(`/jobs/${job.id}/analysis`)}`;
   };
 
   const _handleAiAnalysis = (job: SearchResult) => {
