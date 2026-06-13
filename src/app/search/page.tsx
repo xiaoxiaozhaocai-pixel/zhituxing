@@ -144,7 +144,7 @@ function SearchContent() {
 
   // AI 深度分析跳转：导向独立的 /jobs/[id]/analysis 页（2026-06-13 重设计）
   const getAnalysisUrl = (job: SearchResult) => {
-    return `/auth?redirect=${encodeURIComponent(`/jobs/${job.id}/analysis`)}`;
+    return `/jobs/${job.id}/analysis`;
   };
 
   const _handleAiAnalysis = (job: SearchResult) => {

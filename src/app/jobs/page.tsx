@@ -412,7 +412,7 @@ export default function JobsPage() {
   // 跳转到岗位深度分析专属页（2026-06-13 重设计：独立 /api/job-analysis + /jobs/[id]/analysis）
   // 未登录会先到 /auth 完成登录，登录后自动回分析页
   const getJobAnalysisUrl = (job: Job) => {
-    return `/auth?redirect=${encodeURIComponent(`/jobs/${job.id}/analysis`)}`;
+    return `/jobs/${job.id}/analysis`;
   };
 
   const _handleJobClick = (job: Job) => {
