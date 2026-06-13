@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Lock, Phone, GraduationCap, Briefcase, MapPin, Award, Sparkles, TrendingUp, Target, AlertTriangle, BookOpen, CheckCircle2, XCircle, Clock, User, Star, Languages, Users, Code2, Trophy } from 'lucide-react';
+import { ArrowLeft, Loader2, Lock, Phone, GraduationCap, Briefcase, MapPin, Award, Sparkles, TrendingUp, Target, AlertTriangle, CheckCircle2, XCircle, User, Star, Languages, Users, Code2, Trophy } from 'lucide-react';
 
 interface UnlockInfo {
   unlocked_at: string;

@@ -43,7 +43,9 @@ export async function GET(request: NextRequest) {
     // 安全：返回 404 而非 403，避免暴露端点
     return NextResponse.json({ error: '接口不存在' }, { status: 404 });
   }
-  const employerId = session.employerId;
+  // 预留：按雇主维度做配额/日志/差异化排序，待 P5-D3 接入
+  const _employerId = session.employerId;
+  void _employerId;
 
   const { searchParams } = new URL(request.url);
 
