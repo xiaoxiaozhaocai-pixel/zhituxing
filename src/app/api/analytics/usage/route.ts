@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
       resumeResult,
       jobsResult,
     ] = await Promise.allSettled([
-      // 小职对话：从 messages 表
-      supabase.from('messages')
+      // 小职对话：从 chat_history 表
+      supabase.from('chat_history')
         .select('user_id', { count: 'exact', head: false })
         .gte('created_at', sinceISO),
       // 模拟面试：从 assessment_results 表（含 interview 标记）
@@ -46,13 +46,12 @@ export async function GET(request: NextRequest) {
         .select('user_id', { count: 'exact', head: false })
         .gte('created_at', sinceISO)
         .or('result_data->>type.eq.interview,result_data->>interview.not.is.null'),
-      // 简历优化：从 messages 表按关键词
-      supabase.from('messages')
+      // 简历优化：从 resume_optimizations 表
+      supabase.from('resume_optimizations')
         .select('user_id', { count: 'exact', head: false })
-        .gte('created_at', sinceISO)
-        .or('content.ilike.%简历%,content.ilike.%resume%'),
-      // 岗位浏览：从 jobs 相关事件
-      supabase.from('messages')
+        .gte('created_at', sinceISO),
+      // 岗位浏览：从 chat_history 按关键词
+      supabase.from('chat_history')
         .select('user_id', { count: 'exact', head: false })
         .gte('created_at', sinceISO)
         .or('content.ilike.%岗位%,content.ilike.%职位%,content.ilike.%求职%'),
