@@ -3,10 +3,10 @@ import { SITE_URL } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: '职搭子JD助手 - 全行业岗位智能查询',
-  description: 'AI智能解读岗位描述，一键查询全行业20,000+真实招聘JD。覆盖互联网、金融、教育等27个行业，帮你快速了解岗位要求。',
+  description: 'AI智能解读岗位描述，一键查询全行业真实招聘JD。覆盖互联网、金融、教育等27个行业，帮你快速了解岗位要求。',
   openGraph: {
     title: '职搭子JD助手 - 全行业岗位智能查询',
-    description: 'AI智能解读岗位描述，一键查询全行业20,000+真实招聘JD。覆盖互联网、金融、教育等27个行业，帮你快速了解岗位要求。',
+    description: 'AI智能解读岗位描述，一键查询全行业真实招聘JD。覆盖互联网、金融、教育等27个行业，帮你快速了解岗位要求。',
     locale: 'zh_CN',
     type: 'website',
     siteName: '职途星',

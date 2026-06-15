@@ -53,3 +53,11 @@ export const JobsListDataSchema = z.object({
 });
 export type JobsListData = z.infer<typeof JobsListDataSchema>;
 
+
+// /api/jobs/stats 契约（首页"数据信任区"动态文案用）
+export const JobsStatsDataSchema = z.object({
+  total: z.number().int().nonnegative(),
+  industries: z.number().int().nonnegative(),
+  updated_at: z.string().nullable(),
+});
+export type JobsStatsData = z.infer<typeof JobsStatsDataSchema>;

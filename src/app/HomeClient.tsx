@@ -49,7 +49,7 @@ const featureCards = [
   {
     icon: <Briefcase className="w-5 h-5" />,
     title: '岗位百科',
-    desc: '2万+真实岗位，27大行业',
+    desc: '真实岗位库，27大行业',
     href: '/jobs',
     grad: 'from-emerald-500 to-teal-600',
   },
@@ -69,17 +69,50 @@ const featureCards = [
   },
 ];
 
-const trustStats = [
-  { icon: <Building2 className="w-5 h-5" />, value: '20,000+', label: '真实岗位', desc: '覆盖27大行业' },
+// 默认值（首屏 SSR + 网络失败兜底，弹性表述避免虚假宣传）
+const DEFAULT_TRUST_STATS = [
+  { icon: <Building2 className="w-5 h-5" />, value: '4000+', label: '真实岗位', desc: '覆盖27大行业' },
   { icon: <Shield className="w-5 h-5" />, value: '100%', label: '免费使用', desc: '核心功能永久免费' },
   { icon: <Zap className="w-5 h-5" />, value: '6大', label: 'AI能力', desc: '全链路求职陪伴' },
 ];
+
+// 数字格式化：≥1000 显示 "X.X千+"，避免精确数字带来的虚假感
+function formatJobCount(n: number): string {
+  if (n >= 10000) return `${Math.floor(n / 1000) / 10}万+`;
+  if (n >= 1000) return `${Math.floor(n / 100) / 10}千+`;
+  return `${n}+`;
+}
 
 export default function HomeClient() {
   const _router = useRouter();
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [mounted, setMounted] = useState(false);
+  const [trustStats, setTrustStats] = useState(DEFAULT_TRUST_STATS);
   useEffect(() => { setMounted(true); }, []);
+
+  // 拉取真实岗位统计（失败则保留默认弹性文案，不阻塞首屏）
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/jobs/stats', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (cancelled || !res?.success || !res?.data) return;
+        const { total, industries } = res.data as { total: number; industries: number };
+        if (typeof total === 'number' && total > 0) {
+          setTrustStats((prev) => {
+            const next = [...prev];
+            next[0] = {
+              ...prev[0],
+              value: formatJobCount(total),
+              desc: industries > 0 ? `覆盖${industries}大行业` : prev[0].desc,
+            };
+            return next;
+          });
+        }
+      })
+      .catch(() => { /* 静默失败，保留默认值 */ });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white text-[#1E293B]">

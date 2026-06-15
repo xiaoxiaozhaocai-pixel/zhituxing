@@ -34,7 +34,7 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
   },
   jobs: {
     title: '💼 检测到你在找岗位信息',
-    description: '要不要帮你精准匹配职位？覆盖27大行业20000+真实JD。',
+    description: '要不要帮你精准匹配职位？覆盖27大行业真实JD。',
     actionLabel: '精准搜岗位',
     tabId: 'jobs',
   },
