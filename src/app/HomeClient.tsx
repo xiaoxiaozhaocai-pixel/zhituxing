@@ -96,15 +96,16 @@ export default function HomeClient() {
     fetch('/api/jobs/stats', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((res) => {
-        if (cancelled || !res?.success || !res?.data) return;
-        const { total, industries } = res.data as { total: number; industries: number };
+        if (cancelled || !res?.ok || !res?.data) return;
+        const { total } = res.data as { total: number };
         if (typeof total === 'number' && total > 0) {
           setTrustStats((prev) => {
             const next = [...prev];
             next[0] = {
               ...prev[0],
               value: formatJobCount(total),
-              desc: industries > 0 ? `覆盖${industries}大行业` : prev[0].desc,
+              // industries 字段当前数据完整性不足（87% JD 缺失 industry 标签），
+              // 暂不动态显示"覆盖N大行业"避免误导，保留默认弹性文案
             };
             return next;
           });
