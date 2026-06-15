@@ -13,3 +13,6 @@ tsconfig.tsbuildinfo
 # IDE配置
 .trae/
 zhituxing/
+
+# 项目使用 pnpm，package-lock.json 不应被纳入版本控制
+package-lock.json
