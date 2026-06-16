@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Eye, Lock, Cookie, ExternalLink, UserCircle, Mail } from 'lucide-react';
+import { Shield, Eye, Lock, Cookie, ExternalLink, UserCircle, Mail, Fingerprint } from 'lucide-react';
+import BiometricConsentSettings from '@/components/BiometricConsentSettings';
 
 export const metadata: Metadata = {
   title: '隐私政策 - 职途星',
@@ -150,6 +151,23 @@ export default function PrivacyPage() {
             <p className="mt-4 text-sm text-gray-500">
               我们将在收到您的请求后15个工作日内予以回复。
             </p>
+          </CardContent>
+        </Card>
+
+        {/* 八、生物识别信息管理 */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <Fingerprint className="w-6 h-6 text-blue-600" />
+              <span>八、生物识别信息管理</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 mb-4">
+              AI模拟面试功能涉及对语音、面部表情等生物识别信息的处理。根据《个人信息保护法》第29条，
+              您拥有单独的知情权和决定权，可随时查看授权状态或撤回同意。
+            </p>
+            <BiometricConsentSettings />
           </CardContent>
         </Card>
 
