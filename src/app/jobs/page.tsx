@@ -6,14 +6,16 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Send, Loader2, Briefcase, Sparkles,
+import {
+  Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
-  User, ArrowRight, RefreshCw, Link as LinkIcon,
-  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
+  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
+  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp, ExternalLink
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { SkeletonCardList } from '@/components/SkeletonCard';
@@ -72,7 +74,6 @@ interface Job {
     problem_solve?: number;
   } | null;
   raw_jd?: string; // 原始招聘JD文本
-  xiaozhi_note?: string; // 小职智能点评
 }
 
 // 聊天消息类型
@@ -83,7 +84,7 @@ interface ChatMessage {
 }
 
 export default function JobsPage() {
-  const _router = useRouter();
+  const router = useRouter();
   
   // 状态
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,7 +179,6 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, filters, searchQuery]);
 
   useEffect(() => {
@@ -227,7 +227,6 @@ export default function JobsPage() {
         }
       ]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAssistant]);
 
   // 滚动到底部
@@ -358,7 +357,7 @@ export default function JobsPage() {
                     updated[updated.length - 1] = {
                       ...updated[updated.length - 1],
                       content: fullContent
-                    } as ChatMessage;
+                    };
                     return updated;
                   });
                 }
@@ -409,14 +408,36 @@ export default function JobsPage() {
     fetchJobs();
   };
 
-  // 跳转到岗位深度分析专属页（2026-06-13 重设计：独立 /api/job-analysis + /jobs/[id]/analysis）
-  // 未登录会先到 /auth 完成登录，登录后自动回分析页
-  const getJobAnalysisUrl = (job: Job) => {
-    return `/jobs/${job.id}/analysis`;
+  // 生成岗位分析提示词
+  const generateJobAnalysisPrompt = (job: Job): string => {
+    const cleanJobName = job.name.replace(/（[^）]+）|\([^)]+\)/g, '').trim();
+    const skillsText = job.skills?.length > 0 ? job.skills.join('、') : '暂无';
+    const softSkillsText = job.softSkills && job.softSkills.length > 0 ? job.softSkills.join('、') : '暂无';
+    
+    return `请帮我深度分析以下岗位：
+
+岗位名称：${cleanJobName}
+工作城市：${job.city || '不限'}
+薪资范围：${job.salary || '面议'}
+学历要求：${job.education || '不限'}
+经验要求：${job.experience || '不限'}
+行业领域：${job.industry || '综合'}
+技能要求：${skillsText}
+软技能要求：${softSkillsText}
+${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdContent.length > 500 ? '...' : ''}` : ''}
+
+请从以下几个方面进行深度分析：
+1. 岗位前景与发展空间
+2. 技能要求解读与学习建议
+3. 面试准备重点
+4. 薪资谈判技巧
+5. 职业发展路径建议`;
   };
 
-  const _handleJobClick = (job: Job) => {
-    document.location = getJobAnalysisUrl(job);
+  // 跳转到AI助手（带完整岗位信息）
+  const handleJobClick = (job: Job) => {
+    const prompt = generateJobAnalysisPrompt(job);
+    router.push(`/assistant?bot=jobs&jobId=${job.id}&query=${encodeURIComponent(prompt)}`);
   };
 
   // 分页
@@ -465,20 +486,20 @@ export default function JobsPage() {
       </div>
 
       {/* 职业规划提示 - 紫色渐变 */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-500">
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-500">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-center gap-4 text-sm text-white">
           <span className="flex items-center gap-1">
             💡 先生成你的职业规划，获得更精准的岗位推荐
           </span>
-          <span className="text-blue-200">|</span>
+          <span className="text-purple-200">|</span>
           <span className="flex items-center gap-1">
             完善信息，精准度提升100%
           </span>
-          <Link href="/growth" className="underline hover:text-blue-200 font-medium flex items-center gap-1 ml-2">
+          <Link href="/career-planning" className="underline hover:text-purple-200 font-medium flex items-center gap-1 ml-2">
             生成规划 →
           </Link>
-          <span className="text-blue-200">|</span>
-          <Link href="/profile/info?from=/jobs" className="underline hover:text-blue-200 font-medium flex items-center gap-1">
+          <span className="text-purple-200">|</span>
+          <Link href="/profile/info?from=/jobs" className="underline hover:text-purple-200 font-medium flex items-center gap-1">
             完善信息 →
           </Link>
         </div>
@@ -668,7 +689,7 @@ export default function JobsPage() {
             <p className="text-lg font-medium text-gray-700 mb-2">暂无岗位数据，敬请期待</p>
             <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">我们正在马不停蹄更新中～先去看看AI为你匹配的岗位吧</p>
             <Link href="/match">
-              <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg px-6 py-5">
+              <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg px-6 py-5">
                 <Briefcase className="w-4 h-4 mr-2" />
                 去查看匹配推荐
               </Button>
@@ -731,26 +752,18 @@ export default function JobsPage() {
                     ))}
                   </div>
 
-                  {/* 小职点评 - 卡片内 */}
-                  {(job.xiaozhi_note || job.isFreshFriendly) && (
-                    <div className="flex items-start gap-1 mb-2 px-2 py-1.5 bg-blue-50 rounded-md text-xs text-blue-700 border border-blue-100">
-                      <span className="text-xs mt-0.5">💡</span>
-                      <span className="line-clamp-2">
-                        {job.xiaozhi_note || (job.isFreshFriendly ? '小职推荐：该岗位对应届生友好，值得投递 👀' : '')}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* AI深度分析按钮 - 原生<a>防止Turbopack优化JS onClick */}
-                  <a
-                    href={getJobAnalysisUrl(job)}
+                  {/* AI深度分析按钮 - 使用 stopPropagation 阻止事件冒泡 */}
+                  <button
                     className="flex items-center gap-1 text-[#165DFF] text-sm group-hover:text-blue-700 transition-colors font-medium hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleJobClick(job);
+                    }}
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>AI深度分析</span>
                     <ArrowRight className="w-3 h-3 ml-1" />
-                  </a>
+                  </button>
                 </CardContent>
               </Card>
             ))}
@@ -999,7 +1012,21 @@ export default function JobsPage() {
 
                 <Separator />
 
-                {/* 核心职责 - 只展示前3条 */}
+                {/* 职位描述 - 来自JD原始数据 */}
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <span className="text-base">📋</span> 职位描述
+                  </h4>
+                  {selectedJob.jdContent ? (
+                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
+                      {selectedJob.jdContent}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">暂无职位描述</p>
+                  )}
+                </div>
+
+                {/* 核心职责 - 结构化摘要 */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <span className="text-base">🎯</span> 核心职责
@@ -1013,6 +1040,8 @@ export default function JobsPage() {
                         </li>
                       ))}
                     </ul>
+                  ) : selectedJob.jdContent ? (
+                    <p className="text-sm text-gray-500">详见上方“职位描述”</p>
                   ) : (
                     <p className="text-sm text-gray-400">暂无职责描述</p>
                   )}
@@ -1051,22 +1080,6 @@ export default function JobsPage() {
                     </Badge>
                   )}
                 </div>
-
-                {/* 小职智能点评 */}
-                {(selectedJob.xiaozhi_note || selectedJob.friendliness) && (
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-50 rounded-lg p-4 border border-blue-100">
-                    <div className="flex items-start gap-2">
-                      <span className="text-lg">🤖</span>
-                      <div>
-                        <h4 className="text-sm font-semibold text-blue-700 mb-1">小职点评</h4>
-                        <p className="text-sm text-blue-800 leading-relaxed">
-                          {selectedJob.xiaozhi_note || 
-                            `该岗位${selectedJob.isFreshFriendly ? '对应届生友好' : '值得关注'}，${selectedJob.graduateFriendlyLevel ? `应届生友好度：${selectedJob.graduateFriendlyLevel}` : '建议查看详细JD了解具体要求'}。${selectedJob.friendliness ? `综合评估：${selectedJob.friendliness}` : ''}`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* 免责声明 + 原始JD折叠区域 */}
@@ -1103,14 +1116,16 @@ export default function JobsPage() {
                   <Button variant="outline" className="flex-1" onClick={() => { setSelectedJob(null); }}>
                     关闭
                   </Button>
-                  <a
-                    href={selectedJob ? getJobAnalysisUrl(selectedJob) : '#'}
-                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90 text-white rounded-md flex items-center justify-center h-10 font-medium text-sm"
-                    onClick={() => setSelectedJob(null)}
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
+                    onClick={() => {
+                      setSelectedJob(null);
+                      handleJobClick(selectedJob);
+                    }}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     AI深度分析
-                  </a>
+                  </Button>
                 </div>
                 {/* 版权声明 */}
                 <p className="text-xs text-gray-400 text-center w-full mt-2">
