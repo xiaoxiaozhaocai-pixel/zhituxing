@@ -24,7 +24,7 @@ const EMBEDDING_DIM = 1024;
 function checkAuth(request: NextRequest, url: URL): boolean {
   const headerKey = request.headers.get('x-memory-key');
   const queryKey = url.searchParams.get('key');
-  return (headerKey && headerKey === MEMORY_API_KEY) || (queryKey && queryKey === MEMORY_API_KEY);
+  return (headerKey !== null && headerKey === MEMORY_API_KEY) || (queryKey !== null && queryKey === MEMORY_API_KEY);
 }
 
 // === 工具函数 ===
