@@ -7,12 +7,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: ['/', '/api/memory', '/api/memory/query'],
         disallow: ['/api/', '/_next/', '/auth/', '/admin/', '/test-e2e/', '/test-ssr/'],
       },
       {
         userAgent: 'Baiduspider',
-        allow: '/',
+        allow: ['/', '/api/memory', '/api/memory/query'],
         disallow: ['/api/', '/_next/', '/auth/', '/admin/', '/test-e2e/', '/test-ssr/', '/profile/'],
       },
     ],
