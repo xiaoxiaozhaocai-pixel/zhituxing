@@ -1012,38 +1012,56 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
                 <Separator />
 
-                {/* 职位描述 - 来自JD原始数据 */}
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <span className="text-base">📋</span> 职位描述
+                {/* 职位要求 - 结构化拆解 */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <span className="text-base">📋</span> 职位要求
                   </h4>
-                  {selectedJob.jdContent ? (
-                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">
-                      {selectedJob.jdContent}
+                  
+                  {/* 核心职责 */}
+                  {selectedJob.coreDutyModule && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1 font-medium">核心职责</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.coreDutyModule}</p>
                     </div>
+                  )}
+                  
+                  {/* 专业要求 */}
+                  {selectedJob.majorRequire && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1 font-medium">专业要求</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.majorRequire}</p>
+                    </div>
+                  )}
+                  
+                  {/* 加分证书 */}
+                  {selectedJob.bonusSkillCert && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1 font-medium">加分证书</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.bonusSkillCert}</p>
+                    </div>
+                  )}
+                  
+                  {/* 应届友好程度 */}
+                  {selectedJob.graduateFriendlyLevel && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1 font-medium">应届友好</p>
+                      <p className="text-sm text-gray-700">{selectedJob.graduateFriendlyLevel}</p>
+                    </div>
+                  )}
+                  
+                  {/* JD原文折叠 */}
+                  {selectedJob.jdContent ? (
+                    <details className="border rounded-lg overflow-hidden mt-2">
+                      <summary className="px-3 py-2 text-xs text-gray-500 bg-gray-50 cursor-pointer hover:bg-gray-100">
+                        查看完整职位描述原文
+                      </summary>
+                      <div className="p-3 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                        {selectedJob.jdContent}
+                      </div>
+                    </details>
                   ) : (
                     <p className="text-sm text-gray-400">暂无职位描述</p>
-                  )}
-                </div>
-
-                {/* 核心职责 - 结构化摘要 */}
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <span className="text-base">🎯</span> 核心职责
-                  </h4>
-                  {selectedJob.coreDutyModule ? (
-                    <ul className="space-y-1.5 text-sm text-gray-700">
-                      {selectedJob.coreDutyModule.split(/[、，,]/).filter(Boolean).slice(0, 3).map((duty, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-blue-500 mt-0.5">•</span>
-                          <span>{duty.trim()}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : selectedJob.jdContent ? (
-                    <p className="text-sm text-gray-500">详见上方“职位描述”</p>
-                  ) : (
-                    <p className="text-sm text-gray-400">暂无职责描述</p>
                   )}
                 </div>
 
