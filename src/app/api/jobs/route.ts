@@ -327,6 +327,7 @@ export async function GET(request: NextRequest) {
           isFreshFriendly: job.isFreshFriendly,
           hardSkills: job.hardSkills?.slice(0, 5) || [],
           softSkills: job.softSkills?.slice(0, 3) || [],
+          jdContent: job.jdContent || '',
           coreDutyModule: job.coreDutyModule || '',
           majorRequire: job.majorRequire || '',
           graduateFriendlyLevel: job.graduateFriendlyLevel || '',
