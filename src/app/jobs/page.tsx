@@ -1011,48 +1011,49 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 </div>
 
                 <Separator />
-
-                {/* 职位要求 - 结构化拆解 */}
+                {/* 职位要求 - 卡片式拆解 */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <span className="text-base">📋</span> 职位要求
                   </h4>
-                  
-                  {/* 核心职责 */}
+
+                  {/* 核心职责 - 蓝色卡片 */}
                   {selectedJob.coreDutyModule && (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1 font-medium">核心职责</p>
+                    <div className="border border-blue-100 rounded-lg p-3 bg-blue-50/50">
+                      <p className="text-xs font-semibold text-blue-600 mb-1.5">🎯 核心职责</p>
                       <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.coreDutyModule}</p>
                     </div>
                   )}
-                  
-                  {/* 专业要求 */}
-                  {selectedJob.majorRequire && (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1 font-medium">专业要求</p>
-                      <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.majorRequire}</p>
-                    </div>
-                  )}
-                  
-                  {/* 加分证书 */}
-                  {selectedJob.bonusSkillCert && (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1 font-medium">加分证书</p>
-                      <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.bonusSkillCert}</p>
-                    </div>
-                  )}
-                  
-                  {/* 应届友好程度 */}
+
+                  {/* 专业要求 + 加分证书 - 双列卡片 */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {selectedJob.majorRequire && (
+                      <div className="border border-purple-100 rounded-lg p-3 bg-purple-50/50">
+                        <p className="text-xs font-semibold text-purple-600 mb-1.5">📚 专业要求</p>
+                        <p className="text-sm text-gray-700">{selectedJob.majorRequire}</p>
+                      </div>
+                    )}
+                    {selectedJob.bonusSkillCert && (
+                      <div className="border border-orange-100 rounded-lg p-3 bg-orange-50/50">
+                        <p className="text-xs font-semibold text-orange-600 mb-1.5">🏅 加分证书</p>
+                        <p className="text-sm text-gray-700">{selectedJob.bonusSkillCert}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 应届友好 - 绿色卡片 */}
                   {selectedJob.graduateFriendlyLevel && (
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1 font-medium">应届友好</p>
-                      <p className="text-sm text-gray-700">{selectedJob.graduateFriendlyLevel}</p>
+                    <div className="border border-green-100 rounded-lg p-3 bg-green-50/50">
+                      <p className="text-xs font-semibold text-green-600 mb-1.5">🎓 应届友好</p>
+                      <span className="inline-block bg-green-50 text-green-700 border border-green-200 rounded-full px-3 py-1 text-xs font-medium">
+                        {selectedJob.graduateFriendlyLevel}
+                      </span>
                     </div>
                   )}
-                  
+
                   {/* JD原文折叠 */}
                   {selectedJob.jdContent ? (
-                    <details className="border rounded-lg overflow-hidden mt-2">
+                    <details className="border rounded-lg overflow-hidden">
                       <summary className="px-3 py-2 text-xs text-gray-500 bg-gray-50 cursor-pointer hover:bg-gray-100">
                         查看完整职位描述原文
                       </summary>
@@ -1064,7 +1065,6 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     <p className="text-sm text-gray-400">暂无职位描述</p>
                   )}
                 </div>
-
                 {/* 技能要求 - 只展示前3个 */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
