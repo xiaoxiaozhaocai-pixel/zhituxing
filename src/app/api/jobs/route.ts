@@ -128,6 +128,28 @@ function formatJob(job: JobRecord) {
   return base;
 }
 
+// ============================================================
+// 安全字段白名单（未登录用户可见字段）
+// 改 formatJob 新增返回字段时，若该字段应对外开放，必须加到此数组
+// ============================================================
+const SAFE_FIELDS = [
+  'id', 'name', 'industry', 'city', 'salary', 'skills',
+  'education', 'experience', 'isFreshFriendly',
+  'hardSkills', 'softSkills', 'jdContent', 'coreDutyModule',
+  'majorRequire', 'graduateFriendlyLevel', 'bonusSkillCert',
+] as const;
+
+/** 从对象中只 pick 白名单中的字段 */
+function pickSafe(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key of SAFE_FIELDS) {
+    if (key in obj) {
+      result[key] = obj[key];
+    }
+  }
+  return result;
+}
+
 // 关键词白名单
 const KEYWORD_REGEX = /^[\w\s\u4e00-\u9fa5\-+,.]+$/;
 const MAX_KEYWORD_LENGTH = 50;
@@ -315,24 +337,13 @@ export async function GET(request: NextRequest) {
     
     const safeData = isAuthenticated 
       ? formattedData 
-      : formattedData.map((job) => ({
-          id: job.id,
-          name: job.name,
-          industry: job.industry,
-          city: job.city,
-          salary: job.salary,
-          skills: job.skills?.slice(0, 3) || [],
-          education: job.education,
-          experience: job.experience,
-          isFreshFriendly: job.isFreshFriendly,
-          hardSkills: job.hardSkills?.slice(0, 5) || [],
-          softSkills: job.softSkills?.slice(0, 3) || [],
-          jdContent: job.jdContent || '',
-          coreDutyModule: job.coreDutyModule || '',
-          majorRequire: job.majorRequire || '',
-          graduateFriendlyLevel: job.graduateFriendlyLevel || '',
-          bonusSkillCert: job.bonusSkillCert || '',
-        }));
+      : formattedData.map((job) => {
+          const picked = pickSafe(job as unknown as Record<string, unknown>);
+          if (Array.isArray(picked.skills)) picked.skills = picked.skills.slice(0, 3);
+          if (Array.isArray(picked.hardSkills)) picked.hardSkills = picked.hardSkills.slice(0, 5);
+          if (Array.isArray(picked.softSkills)) picked.softSkills = picked.softSkills.slice(0, 3);
+          return picked;
+        }) as unknown as typeof formattedData;
     
     const result: JobsListData = {
       items: safeData,
