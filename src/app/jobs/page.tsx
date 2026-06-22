@@ -6,15 +6,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
-  Send, Loader2, MessageSquare, Briefcase, PlusCircle, Sparkles,
+  Send, Loader2, Briefcase, Sparkles,
   Search, ChevronLeft, ChevronRight, Upload, MessageCircle,
-  User, ArrowRight, RefreshCw, Link2, X, AlertCircle, Link as LinkIcon, CheckCircle,
-  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp, ExternalLink
+  User, ArrowRight, RefreshCw, Link as LinkIcon,
+  MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
@@ -1028,8 +1026,8 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   {/* 专业要求 + 加分证书 - 双列卡片 */}
                   <div className="grid grid-cols-2 gap-3">
                     {selectedJob.majorRequire && (
-                      <div className="border border-purple-100 rounded-lg p-3 bg-purple-50/50">
-                        <p className="text-xs font-semibold text-purple-600 mb-1.5">📚 专业要求</p>
+                      <div className="border border-blue-200 rounded-lg p-3 bg-blue-50/50">
+                        <p className="text-xs font-semibold text-blue-600 mb-1.5">📚 专业要求</p>
                         <p className="text-sm text-gray-700">{selectedJob.majorRequire}</p>
                       </div>
                     )}
