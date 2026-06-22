@@ -17,7 +17,6 @@ const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPA_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SERVICE_ROLE_KEY || '';
 
 const EMBEDDING_MODEL = 'BAAI/bge-large-zh-v1.5';
-const EMBEDDING_DIM = 1024;
 
 // === 鉴权 ===
 

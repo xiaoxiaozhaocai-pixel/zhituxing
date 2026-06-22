@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       });
       if (!r.ok) return NextResponse.json({ status: 'error', message: await r.text() }, { status: 500 });
       let results = await r.json();
-      if (memory_type) results = results.filter((m: any) => m.memory_type === memory_type);
+      if (memory_type) results = results.filter((m: { memory_type?: string }) => m.memory_type === memory_type);
       results = results.slice(0, top_k);
       return NextResponse.json({ status: 'ok', data: results });
     } catch (e) { return NextResponse.json({ status: 'error', message: String(e) }, { status: 500 }); }
