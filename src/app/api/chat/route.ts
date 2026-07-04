@@ -38,7 +38,7 @@ import {
 } from '@/lib/context-compression';
 
 import { DISPATCH_CARDS, RAG_TABLE_CONFIG, ROLE_REINFORCEMENTS, RAG_DISPLAY_NAMES } from './config';
-import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES } from './prompts';
+import { SYSTEM_PROMPTS, EMPTY_INPUT_MESSAGES, SAFETY_RULES } from './prompts';
 import { prepareChatContext } from './chat-context';
 import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
@@ -737,6 +737,9 @@ export async function POST(request: NextRequest) {
           basePrompt = `【用户背景信息 — 平台自动注入，请直接使用，不要重新询问】\n${userContext}\n\n---\n\n${basePrompt}`;
         }
 
+        // 统一追加安全规则（从prompts.ts移出，避免7份重复）
+        const safetyRule = SAFETY_RULES[actualBotType] || SAFETY_RULES.career;
+        basePrompt += '\n\n【安全规则】' + safetyRule;
 
         
         // ============================================================
