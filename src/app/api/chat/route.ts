@@ -654,7 +654,7 @@ export async function POST(request: NextRequest) {
         // 在关键词 RAG 基础上叠加真实语义匹配结果
         // ============================================================
         let tierMatchContext = '';
-        if ((actualBotType === 'jobs' || actualBotType === 'job_match') && userId) {
+        if ((actualBotType === 'jobs' || actualBotType === 'job_match' || actualBotType === 'career') && userId) {
           try {
             const matchResults: MatchResult[] = await matchJobs({
               userId,
