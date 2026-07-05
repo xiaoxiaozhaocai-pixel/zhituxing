@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, X, Bot, Loader2 } from 'lucide-react';
@@ -72,27 +73,8 @@ export default function GUIAgentToggle() {
     }
   }, [loaded]);
 
-  /** 打开/关闭面板 */
-  const togglePanel = useCallback(async () => {
-    if (!open) {
-      // 打开面板
-      setOpen(true);
-      if (!loaded && !loading) {
-        await loadPageAgent();
-      }
-      // 给 DOM 渲染时间，然后初始化 page-agent
-      setTimeout(() => {
-        initAgent();
-      }, 500);
-    } else {
-      // 关闭面板 → 销毁 agent
-      destroyAgent();
-      setOpen(false);
-    }
-  }, [open, loaded, loading, loadPageAgent]);
-
   /** 初始化 page-agent 实例 */
-  const initAgent = useCallback(() => {
+  const initAgent = () => {
     try {
       const PageAgent = (window as any).PageAgent;
       if (!PageAgent || agentRef.current) return;
@@ -137,24 +119,43 @@ export default function GUIAgentToggle() {
       console.error('page-agent 初始化失败:', err);
       setError('初始化失败');
     }
-  }, []);
+  };
 
   /** 销毁 page-agent 实例 */
-  const destroyAgent = useCallback(() => {
+  const destroyAgent = () => {
     if (agentRef.current) {
       try {
         agentRef.current.destroy?.();
       } catch {}
       agentRef.current = null;
     }
-  }, []);
+  };
+
+  /** 打开/关闭面板 */
+  const togglePanel = useCallback(async () => {
+    if (!open) {
+      // 打开面板
+      setOpen(true);
+      if (!loaded && !loading) {
+        await loadPageAgent();
+      }
+      // 给 DOM 渲染时间，然后初始化 page-agent
+      setTimeout(() => {
+        initAgent();
+      }, 500);
+    } else {
+      // 关闭面板 → 销毁 agent
+      destroyAgent();
+      setOpen(false);
+    }
+  }, [open, loaded, loading, loadPageAgent]);
 
   // 组件卸载时清理
   useEffect(() => {
     return () => {
       destroyAgent();
     };
-  }, [destroyAgent]);
+  }, []);
 
   return (
     <>

@@ -113,7 +113,7 @@ export default function FloatingXiaoZhi() {
       setMessages([welcomeMsg]);
       saveHistory([welcomeMsg]);
     }
-  }, [isOpen, hasShownWelcome, messages.length]);
+  }, [isOpen, hasShownWelcome, messages.length, isNewUser]);
 
   // 新回复到达时更新消息列表
   useEffect(() => {
