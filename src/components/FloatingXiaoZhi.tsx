@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { MessageSquare, X, Send, Loader2, Sparkles, User, ChevronDown } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, User, ChevronDown } from 'lucide-react';
 import { useSSEStream } from '@/hooks/useSSEStream';
 
 interface Message {
@@ -12,6 +12,13 @@ interface Message {
 }
 
 const STORAGE_KEY = 'xiaozhi_fab_messages';
+
+const QUICK_ACTIONS = [
+  { icon: '🔍', label: '帮我找岗位', text: '帮我看看有哪些适合我的岗位' },
+  { icon: '📊', label: '做个能力诊断', text: '我想做个能力诊断，看看我的技能水平' },
+  { icon: '🎯', label: '模拟面试练习', text: '帮我模拟面试练练手' },
+  { icon: '💬', label: '聊聊职业方向', text: '聊聊我的职业方向该怎么规划' },
+];
 
 function getTimeGreeting(): string {
   const hour = new Date().getHours();
@@ -89,7 +96,6 @@ export default function FloatingXiaoZhi() {
     if (sseState.content && !sseState.isStreaming) {
       setMessages(prev => {
         const updated = [...prev];
-        // 替换最后一条（如果最后一条是正在流式回复的占位）
         if (updated.length > 0 && updated[updated.length - 1].role === 'assistant' && updated[updated.length - 1].content === '...') {
           updated[updated.length - 1] = { role: 'assistant', content: sseState.content, timestamp: Date.now() };
         } else {
@@ -114,11 +120,10 @@ export default function FloatingXiaoZhi() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sseState.content]);
 
-  const handleSend = useCallback(async () => {
-    const text = inputValue.trim();
+  const handleSend = useCallback(async (overrideText?: string) => {
+    const text = (overrideText ?? inputValue).trim();
     if (!text || isSending) return;
 
-    // 未登录弹引导
     if (!isLoggedIn) {
       setIsOpen(false);
       window.location.href = '/auth?redirect=/';
@@ -132,7 +137,6 @@ export default function FloatingXiaoZhi() {
     setInputValue('');
     setIsSending(true);
 
-    // 添加占位，准备接收流式回复
     setMessages(prev => [...prev, { role: 'assistant', content: '...', timestamp: Date.now() }]);
 
     try {
@@ -189,12 +193,23 @@ export default function FloatingXiaoZhi() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  // 流式内容实时显示
+  const handleQuickAction = (text: string) => {
+    handleSend(text);
+  };
+
   const streamingContent = sseState.isStreaming ? sseState.content : null;
+  const showQuickActions = messages.length === 1 && messages[0].role === 'assistant' && !isSending && !streamingContent;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-      {/* 对话窗口 */}
+    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
+      <style>{`
+        @keyframes fab-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(22,93,255,0.25), 0 0 40px rgba(22,93,255,0.08); }
+          50% { box-shadow: 0 0 30px rgba(22,93,255,0.45), 0 0 60px rgba(22,93,255,0.15); }
+        }
+        .fab-glow { animation: fab-pulse 3s ease-in-out infinite; }
+      `}</style>
+
       {isOpen && (
         <div className="w-[360px] sm:w-[400px] h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           {/* 头部 */}
@@ -261,6 +276,25 @@ export default function FloatingXiaoZhi() {
               </div>
             ))}
 
+            {/* 快捷引导卡片 */}
+            {showQuickActions && (
+              <div className="pt-1 pb-2">
+                <p className="text-[11px] text-gray-400 mb-2 text-center">试试这些👇</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {QUICK_ACTIONS.map((action) => (
+                    <button
+                      key={action.label}
+                      onClick={() => handleQuickAction(action.text)}
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 text-left shadow-sm hover:shadow-md"
+                    >
+                      <span className="text-base flex-shrink-0">{action.icon}</span>
+                      <span className="text-xs font-medium text-gray-700">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* 流式内容实时渲染 */}
             {streamingContent && (
               <div className="flex justify-start">
@@ -305,7 +339,7 @@ export default function FloatingXiaoZhi() {
                 className="flex-1 text-sm px-3.5 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 disabled:opacity-50"
               />
               <button
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={isSending || !inputValue.trim() || isLoggedIn === false}
                 className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
@@ -321,21 +355,25 @@ export default function FloatingXiaoZhi() {
         </div>
       )}
 
-      {/* FAB按钮 */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-blue-500/40 ${
-          isOpen
-            ? 'bg-gray-600 rotate-45'
-            : 'bg-gradient-to-r from-blue-500 to-blue-600'
-        }`}
-      >
-        {isOpen ? (
-          <X className="w-6 h-6 text-white" />
-        ) : (
-          <MessageSquare className="w-6 h-6 text-white" />
-        )}
-      </button>
+      {/* FAB按钮 - 加大尺寸 + 脉冲光晕 */}
+      <div className="relative">
+        {/* 光晕层 */}
+        <div className="absolute inset-0 rounded-full fab-glow" />
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`relative flex items-center justify-center w-16 h-16 rounded-full shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-blue-500/40 ${
+            isOpen
+              ? 'bg-gray-600 rotate-45'
+              : 'bg-gradient-to-r from-blue-500 to-blue-600'
+          }`}
+        >
+          {isOpen ? (
+            <X className="w-7 h-7 text-white" />
+          ) : (
+            <Sparkles className="w-7 h-7 text-white" />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
