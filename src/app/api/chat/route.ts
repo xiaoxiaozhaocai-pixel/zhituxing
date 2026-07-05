@@ -858,11 +858,12 @@ export async function POST(request: NextRequest) {
                 }
               }
               
-              // 发送 [DONE]
+              // 发送 [DONE] 后立即关闭流，不让客户端等待
               controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-              
-              // 保存对话历史 + 写入缓存 + 触发压缩（提取至 chat-history.ts）
-              const { saveResult } = await saveChatHistory(
+              controller.close();
+
+              // 保存对话历史：fire-and-forget（不阻塞流关闭）
+              saveChatHistory(
                 { userId: userId || '', conversationId: effectiveConversationId, userMessage: message, assistantResponse: fullResponse, botType: effectiveBotType || '' },
                 isCacheable && fullResponse ? cacheKey : undefined,
                 fullResponse && userId ? {
@@ -871,11 +872,7 @@ export async function POST(request: NextRequest) {
                   needsCheck: () => needsCompression(effectiveConversationId),
                   runCompression: (convId, uid) => compressConversation(convId, uid),
                 } : undefined,
-              );
-
-              // 发送保存结果事件
-              const saveEvent = `event: save_result\ndata: ${JSON.stringify({ result: saveResult, convId: effectiveConversationId })}\n\n`;
-              controller.enqueue(encoder.encode(saveEvent));
+              ).catch(e => console.error('[chat] History save error:', e));
 
                             // 测评类智能体：提取并保存结构化测评数据（fire-and-forget）
               if (effectiveBotType === 'assessment' && fullResponse && userId) {
@@ -938,7 +935,7 @@ export async function POST(request: NextRequest) {
               }
             } finally {
               clearTimeout(timeoutId);
-              controller.close();
+              try { controller.close(); } catch {}
               reader.releaseLock();
             }
           }
