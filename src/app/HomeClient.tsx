@@ -150,12 +150,6 @@ export default function HomeClient() {
             </div>
           )}
 
-          {/* 桂电专属标签 */}
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEF2FF] border border-[#165DFF]/10 text-[#165DFF] text-xs sm:text-sm font-medium mb-4 ${mounted ? 'anim-fade' : 'opacity-0'}`}>
-            <Sparkles className="w-3.5 h-3.5" />
-            桂电学生专属 · 完全免费
-          </div>
-
           {/* 主标题 */}
           <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-5 leading-[1.1] tracking-tight ${mounted ? 'anim-up' : 'opacity-0'}`}>
             <span className="text-gradient">
