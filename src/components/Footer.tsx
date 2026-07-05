@@ -75,7 +75,7 @@ export default function Footer() {
 
           {/* 智能体 */}
           <div>
-            <h4 className="text-xs font-semibold text-[#1E293B] uppercase tracking-widest mb-5">智能体</h4>
+            <h4 className="text-xs font-semibold text-[#1E293B] uppercase tracking-widest mb-5">功能</h4>
             <ul className="space-y-3">
               {agentLinks.map((l) => (
                 <li key={l.name}>

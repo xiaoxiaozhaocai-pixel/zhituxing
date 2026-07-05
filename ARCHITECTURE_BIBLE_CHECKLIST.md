@@ -21,7 +21,7 @@ errors=0
 echo "=== L1 架构圣经 ==="
 echo -n "1.1 定位文案... "; grep -q "求职服务平台\|求职平台" src/app/ -rn 2>/dev/null && echo "❌ FAIL" && ((errors++)) || echo "✅ PASS"
 echo -n "1.2 入口交互... "; grep -q "agentFeatures\|AgentCard\|agentGallery" src/ -rni 2>/dev/null && echo "❌ FAIL" && ((errors++)) || echo "✅ PASS"
-echo -n "1.3 智能体文案... "; grep -q "智能体" src/app/ --include="*.tsx" -rn 2>/dev/null && echo "❌ FAIL" && ((errors++)) || echo "✅ PASS"
+echo -n "1.3 智能体文案... "; result=$(grep "智能体" src/app/ src/components/ --include="*.tsx" -rn 2>/dev/null | grep -vE "^\s*//|/\*|\*\/|comment|Note:"); if [ -n "$result" ]; then echo "❌ FAIL" && ((errors++)); else echo "✅ PASS"; fi
 echo -n "1.4 暗色主题... "; grep -q "\.dark\|@custom-variant dark" src/app/globals.css 2>/dev/null && echo "❌ FAIL" && ((errors++)) || echo "✅ PASS"
 echo -n "1.5 内容红线... "; grep -q "答辩" src/ -rn 2>/dev/null && echo "❌ FAIL" && ((errors++)) || echo "✅ PASS"
 echo "结果: $errors 项违规"

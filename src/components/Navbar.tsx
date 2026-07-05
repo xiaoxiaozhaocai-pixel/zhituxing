@@ -160,7 +160,7 @@ function NavbarInner() {
               <div className="flex flex-col gap-0.5">
                 {/* 第一行：职搭子 | 职业规划 | 简历助手 */}
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-[#94A3B8] px-1 font-medium">智能体</span>
+                  <span className="text-[10px] text-[#94A3B8] px-1 font-medium">功能</span>
                   {agentNavItems.map((item) => {
                     const isActive = isNavItemActive(item.href, pathname, currentBot);
                     return (
@@ -181,7 +181,7 @@ function NavbarInner() {
                 </div>
                 {/* 第二行：AI模拟面试 | 考研就业决策 */}
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-transparent px-1">智能体</span>
+                  <span className="text-[10px] text-transparent px-1">功能</span>
                   {agentNavItems2.map((item) => {
                     const isActive = isNavItemActive(item.href, pathname, currentBot);
                     return (
