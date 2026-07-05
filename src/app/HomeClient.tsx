@@ -25,7 +25,7 @@ const painPoints = [
   {
     icon: <TrendingUp className="w-5 h-5" />,
     title: '考研还是直接就业？',
-    desc: '两条路的数据推演告诉你各有什么结果，不靠感觉做决定。',
+    desc: '数据推演帮你做选择，不靠感觉做决定。',
     color: 'from-blue-500 to-blue-600',
   },
 ];

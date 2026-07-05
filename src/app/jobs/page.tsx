@@ -14,6 +14,7 @@ import {
   User, ArrowRight, RefreshCw, Link as LinkIcon,
   MapPin, GraduationCap, Clock, SlidersHorizontal, ChevronDown, ChevronUp
 } from 'lucide-react';
+import GUIAgentToggle from '@/components/GUIAgent/GUIAgentToggle';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { SkeletonCardList } from '@/components/SkeletonCard';
