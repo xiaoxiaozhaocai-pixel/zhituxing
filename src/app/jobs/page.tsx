@@ -469,6 +469,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 variant="outline"
                 className="bg-white/10 border-white/30 text-white hover:bg-white/20 h-11 px-6"
                 onClick={() => setShowAssistant(true)}
+                data-gui-allowed="open-assistant"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 问职搭子
@@ -515,6 +516,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-12 text-base rounded-lg border-2 border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all duration-300"
+                data-gui-allowed="search-input"
               />
             </div>
             <Link href="/upload-jd-reward">
@@ -523,7 +525,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 上传JD领会员
               </Button>
             </Link>
-            <Button type="submit" className="h-12 px-8 bg-[#165DFF] hover:bg-[#165DFF]/90 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <Button type="submit" data-gui-allowed="search-submit" className="h-12 px-8 bg-[#165DFF] hover:bg-[#165DFF]/90 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <Search className="w-4 h-4 mr-2" />
               智能查询
             </Button>
@@ -536,6 +538,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
           <button
             onClick={() => setFilterOpen(!filterOpen)}
             className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-sm border border-gray-200"
+            data-gui-allowed="mobile-filter-toggle"
           >
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-gray-500" />
@@ -570,6 +573,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 onChange={(e) => handleFilterChange('industry', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
+                data-gui-allowed="filter-industry"
               >
                 {industries.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
@@ -585,6 +589,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 onChange={(e) => handleFilterChange('city', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
+                data-gui-allowed="filter-city"
               >
                 {cities.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
@@ -600,6 +605,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 onChange={(e) => handleFilterChange('education', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
+                data-gui-allowed="filter-education"
               >
                 {educationOpts.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
@@ -615,6 +621,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 onChange={(e) => handleFilterChange('experience', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
+                data-gui-allowed="filter-experience"
               >
                 {experienceOpts.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
@@ -630,6 +637,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 onChange={(e) => handleFilterChange('companyType', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
+                data-gui-allowed="filter-company-type"
               >
                 {companyTypeOpts.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}{opt.count > 0 ? ` (${opt.count})` : ''}</option>
@@ -644,6 +652,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                data-gui-allowed="filter-sort"
               >
                 {sortOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -654,7 +663,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
             {/* 应届生友好 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
-              <label className="flex items-center h-10 px-3 rounded-lg border border-gray-200 hover:border-[#165DFF] cursor-pointer transition-all">
+              <label className="flex items-center h-10 px-3 rounded-lg border border-gray-200 hover:border-[#165DFF] cursor-pointer transition-all" data-gui-allowed="filter-fresh-only">
                 <input
                   type="checkbox"
                   checked={filters.freshOnly}
@@ -701,6 +710,8 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 key={job.id}
                 className="cursor-pointer border-2 border-blue-100 hover:border-[#165DFF] hover:shadow-[0_8px_24px_rgba(22,93,255,0.15)] transition-all duration-300 hover:-translate-y-2 group"
                 onClick={() => setSelectedJob(job)}
+                data-gui-allowed="job-card"
+                data-job-id={job.id}
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-3">
@@ -777,6 +788,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
               onClick={() => handlePageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
               className="border-2 hover:border-[#165DFF] transition-all"
+              data-gui-allowed="pagination-prev"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               上一页
@@ -801,6 +813,8 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     variant={pagination.page === pageNum ? "default" : "outline"}
                     onClick={() => handlePageChange(pageNum)}
                     className={`w-10 ${pagination.page === pageNum ? 'bg-[#165DFF]' : ''} border-2 hover:border-[#165DFF] transition-all`}
+                    data-gui-allowed="pagination-page"
+                    data-page={pageNum}
                   >
                     {pageNum}
                   </Button>
@@ -813,6 +827,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
               className="border-2 hover:border-[#165DFF] transition-all"
+              data-gui-allowed="pagination-next"
             >
               下一页
               <ChevronRight className="w-4 h-4 ml-1" />
