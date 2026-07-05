@@ -211,6 +211,55 @@ export default function HomeClient() {
       </section>
 
       {/* ============================================================
+          小职品牌展示区 — 「主入口」品牌锚点
+          ============================================================ */}
+      <section className="py-8 sm:py-10">
+        <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#EEF2FF] via-white to-[#F5F3FF] border border-[#E2E8F0] p-7 sm:p-10">
+            {/* 装饰光斑 */}
+            <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#165DFF]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#3D7FFF]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-[#165DFF]/3 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+              {/* 左侧：品牌形象 */}
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center text-white shadow-xl shadow-[#165DFF]/20 transition-transform duration-500 hover:scale-110 cursor-default">
+                  <MessageSquare className="w-10 h-10 sm:w-12 sm:h-12" />
+                </div>
+              </div>
+
+              {/* 中间：品牌文案 */}
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="text-xl sm:text-2xl font-bold text-[#1E293B] mb-1.5 heading-tight">
+                  我叫小职，你的AI朋友
+                </h3>
+                <p className="text-[#64748B] text-sm sm:text-base mb-3 max-w-md mx-auto sm:mx-0">
+                  懂桂电学生的AI朋友，陪你走好求职每一步。
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                  <span className="px-3 py-1 rounded-full bg-[#EEF2FF] text-[#165DFF] text-xs font-medium">免费使用</span>
+                  <span className="px-3 py-1 rounded-full bg-[#EEF2FF] text-[#165DFF] text-xs font-medium">24小时在线</span>
+                  <span className="px-3 py-1 rounded-full bg-[#EEF2FF] text-[#165DFF] text-xs font-medium">桂电专属</span>
+                </div>
+              </div>
+
+              {/* 右侧：CTA */}
+              <div className="flex-shrink-0">
+                <Link href="/assistant?bot=career">
+                  <button className="btn-gradient px-6 py-3 rounded-2xl font-semibold text-sm flex items-center gap-2 whitespace-nowrap shadow-lg shadow-[#165DFF]/20 hover:shadow-xl hover:shadow-[#165DFF]/30 transition-all duration-300">
+                    <MessageSquare className="w-4 h-4" />
+                    找小职聊聊
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
           功能展示 — Bento Grid
           ============================================================ */}
       <section className="py-12 sm:py-16 bg-gradient-to-b from-[#F8FAFC] to-white">
