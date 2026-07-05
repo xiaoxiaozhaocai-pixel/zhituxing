@@ -13,19 +13,19 @@ const painPoints = [
   {
     icon: <Compass className="w-5 h-5" />,
     title: '我到底适合做什么？',
-    desc: '专业不对口、兴趣不清晰？小职帮你一步步理清思路。',
+    desc: '专业不对口、兴趣不清晰？桂电的课表不会告诉你答案，但小职可以帮你一步步理清。',
     color: 'from-blue-500 to-blue-600',
   },
   {
     icon: <Search className="w-5 h-5" />,
     title: '投了很多简历没回音',
-    desc: '不用盲投，小职精准匹配帮你提升回复率。',
+    desc: '简历石沉大海不一定是你不行，可能是没投对方向。小职先帮你找到匹配的岗位再投。',
     color: 'from-orange-500 to-red-500',
   },
   {
     icon: <TrendingUp className="w-5 h-5" />,
     title: '考研还是直接就业？',
-    desc: '数据推演帮你做选择，不靠感觉做决定。',
+    desc: '两条路的数据推演告诉你各有什么结果，不靠感觉做决定。',
     color: 'from-blue-500 to-blue-600',
   },
 ];
@@ -150,6 +150,12 @@ export default function HomeClient() {
             </div>
           )}
 
+          {/* 桂电专属标签 */}
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEF2FF] border border-[#165DFF]/10 text-[#165DFF] text-xs sm:text-sm font-medium mb-4 ${mounted ? 'anim-fade' : 'opacity-0'}`}>
+            <Sparkles className="w-3.5 h-3.5" />
+            桂电学生专属 · 完全免费
+          </div>
+
           {/* 主标题 */}
           <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-5 leading-[1.1] tracking-tight ${mounted ? 'anim-up' : 'opacity-0'}`}>
             <span className="text-gradient">
@@ -158,8 +164,8 @@ export default function HomeClient() {
           </h1>
           
           <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-8 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
-            我是小职，你的AI职业规划师 👋<br />
-            不用焦虑，一步步陪你走。
+            我是小职，桂电人自己的AI求职伙伴 👋<br />
+            从迷茫到清晰，一步步陪你走。
           </p>
 
           {/* CTA 按钮组 */}

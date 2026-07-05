@@ -20,9 +20,9 @@ import HomeClient from './HomeClient';
  * 改成 `force-static` + `revalidate = 86400` 走 ISR 即可。
  */
 export const metadata = {
-  title: '先想清楚，再投简历 — 职途星',
+  title: '先想清楚，再投简历 — 职途星 | 桂电学生专属AI求职伙伴',
   description:
-    '大学生求职第一站。小职AI帮你做职业规划、技能匹配、模拟面试，从迷茫到清晰，不盲投不焦虑。免费使用，覆盖27大行业4000+真实岗位。',
+    '桂电学生专属AI求职伙伴。小职帮你做职业规划、技能匹配、模拟面试，从迷茫到清晰，不盲投不焦虑。免费使用，覆盖27大行业4000+真实岗位。',
 };
 
 export const dynamic = 'force-static';
