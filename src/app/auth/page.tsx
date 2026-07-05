@@ -163,6 +163,7 @@ function AuthContent() {
       const data = await res.json();
       if (data.success) {
         setSuccess('注册成功！');
+        sessionStorage.setItem('fresh_registration', 'true');
         setLoginSuccess(true);
       } else {
         setError(friendlyError(data.error || data.message));

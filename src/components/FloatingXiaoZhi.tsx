@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { X, Send, Loader2, Sparkles, User, ChevronDown } from 'lucide-react';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -13,11 +13,13 @@ interface Message {
 
 const STORAGE_KEY = 'xiaozhi_fab_messages';
 
-const QUICK_ACTIONS = [
-  { icon: '🔍', label: '帮我找岗位', text: '帮我看看有哪些适合我的岗位' },
-  { icon: '📊', label: '做个能力诊断', text: '我想做个能力诊断，看看我的技能水平' },
-  { icon: '🎯', label: '模拟面试练习', text: '帮我模拟面试练练手' },
-  { icon: '💬', label: '聊聊职业方向', text: '聊聊我的职业方向该怎么规划' },
+const QUICK_ACTIONS_ALL = [
+  { icon: '📊', label: '做个能力诊断', text: '我想做个能力诊断，看看我的技能水平', priority: 'new' },
+  { icon: '🔍', label: '帮我找岗位', text: '帮我看看有哪些适合我的岗位', priority: 'returning' },
+  { icon: '🎯', label: '模拟面试练习', text: '帮我模拟面试练练手', priority: 'returning' },
+  { icon: '💬', label: '聊聊职业方向', text: '聊聊我的职业方向该怎么规划', priority: 'returning' },
+  { icon: '🎯', label: '模拟面试练习', text: '帮我模拟面试练练手', priority: 'new' },
+  { icon: '🔍', label: '帮我找岗位', text: '帮我看看有哪些适合我的岗位', priority: 'new' },
 ];
 
 function getTimeGreeting(): string {
@@ -51,13 +53,29 @@ export default function FloatingXiaoZhi() {
   const [isSending, setIsSending] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
+
+  // 动态快捷卡片
+  const quickActions = useMemo(() => {
+    const all = QUICK_ACTIONS_ALL;
+    if (isNewUser) return all.filter(a => a.priority === 'new');
+    return all.filter(a => a.priority === 'returning');
+  }, [isNewUser]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [sseState, sseActions] = useSSEStream();
 
-  // 初始化：检测登录状态 + 加载历史
+  // 初始化：检测登录状态 + 检测新注册 + 加载历史
   useEffect(() => {
+    // 检测新注册标记
+    const freshReg = sessionStorage.getItem('fresh_registration');
+    if (freshReg === 'true') {
+      setIsNewUser(true);
+      sessionStorage.removeItem('fresh_registration');
+      setIsOpen(true);
+    }
+
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => setIsLoggedIn(!!d.ok))
@@ -81,11 +99,17 @@ export default function FloatingXiaoZhi() {
     if (isOpen && !hasShownWelcome && messages.length === 0) {
       setHasShownWelcome(true);
       const greeting = getTimeGreeting();
-      const welcomeMsg: Message = {
-        role: 'assistant',
-        content: `👋 ${greeting}！我是小职，你的桂电学长兼AI朋友~\n\n有啥想聊的？找工作、选方向、还是单纯唠嗑，都行😄`,
-        timestamp: Date.now(),
-      };
+      const welcomeMsg: Message = isNewUser
+        ? {
+            role: 'assistant',
+            content: `🎉 欢迎加入职途星！我是小职，你的桂电学长兼AI朋友~\n\n第一步，先做个能力诊断？让我了解你的技能水平，后面推荐才更准👇`,
+            timestamp: Date.now(),
+          }
+        : {
+            role: 'assistant',
+            content: `👋 ${greeting}！我是小职，你的桂电学长兼AI朋友~\n\n有啥想聊的？找工作、选方向、还是单纯唠嗑，都行😄`,
+            timestamp: Date.now(),
+          };
       setMessages([welcomeMsg]);
       saveHistory([welcomeMsg]);
     }
@@ -281,7 +305,7 @@ export default function FloatingXiaoZhi() {
               <div className="pt-1 pb-2">
                 <p className="text-[11px] text-gray-400 mb-2 text-center">试试这些👇</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {QUICK_ACTIONS.map((action) => (
+                  {quickActions.map((action) => (
                     <button
                       key={action.label}
                       onClick={() => handleQuickAction(action.text)}
