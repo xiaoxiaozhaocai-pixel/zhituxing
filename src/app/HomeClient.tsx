@@ -138,7 +138,7 @@ export default function HomeClient() {
                 <>
                   <CheckCircle2 className="w-4 h-4 text-[#165DFF]" />
                   欢迎回来{user?.nickname ? `，${user.nickname}` : ''}！
-                  <Link href="/assistant?bot=career" className="font-semibold text-[#165DFF] hover:underline ml-1">继续规划 →</Link>
+                  <Link href="/chat" className="font-semibold text-[#165DFF] hover:underline ml-1">继续规划 →</Link>
                 </>
               ) : (
                 <>
@@ -164,7 +164,7 @@ export default function HomeClient() {
 
           {/* CTA 按钮组 */}
           <div className={`flex flex-col sm:flex-row items-center justify-center gap-3 mb-12 ${mounted ? 'anim-up-d2' : 'opacity-0'}`}>
-            <Link href="/assistant?bot=career">
+            <Link href="/chat">
               <button className="btn-gradient px-8 py-3.5 rounded-2xl font-semibold text-base flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" />
                 找小职聊聊
@@ -246,7 +246,7 @@ export default function HomeClient() {
 
               {/* 右侧：CTA */}
               <div className="flex-shrink-0">
-                <Link href="/assistant?bot=career">
+                <Link href="/chat">
                   <button className="btn-gradient px-6 py-3 rounded-2xl font-semibold text-sm flex items-center gap-2 whitespace-nowrap shadow-lg shadow-[#165DFF]/20 hover:shadow-xl hover:shadow-[#165DFF]/30 transition-all duration-300">
                     <MessageSquare className="w-4 h-4" />
                     找小职聊聊
@@ -362,7 +362,7 @@ export default function HomeClient() {
           <p className="text-white/70 text-lg mb-8 max-w-lg mx-auto">
             完全免费，马上开聊。让小职帮你找到方向。
           </p>
-          <Link href="/assistant?bot=career">
+          <Link href="/chat">
             <button className="bg-white text-[#165DFF] hover:bg-[#F8FAFC] px-10 py-4 rounded-2xl font-bold text-base transition-all duration-300 hover:scale-105 shadow-2xl shadow-black/20 flex items-center gap-2 mx-auto">
               <Compass className="w-5 h-5" />
               找小职聊聊
