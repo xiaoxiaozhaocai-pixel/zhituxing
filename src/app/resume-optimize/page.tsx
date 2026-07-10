@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import ResumeScoreCard from '@/components/resume/ResumeScoreCard';
 
 const positions = [
   'Java开发工程师',
@@ -283,10 +284,20 @@ export default function ResumeOptimizePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [optimizationResult, setOptimizationResult] = useState<{
+  interface ScoreResult {
+  overallScore: number;
+  summary: string;
+  dimensions: Array<{ name: string; score: number; maxScore: number; weight: number; comment: string }>;
+  improvements: string[];
+  radarData: Record<string, number>;
+}
+
+const [optimizationResult, setOptimizationResult] = useState<{
     id: string;
     suggestions: Array<{ type: string; title: string; suggestion: string }>;
   } | null>(null);
+  const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
+  const [isScoring, setIsScoring] = useState(false);
   const [recentRecords, setRecentRecords] = useState<OptimizationRecord[]>([]);
   const [myResumes, setMyResumes] = useState<ResumeItem[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -415,6 +426,33 @@ export default function ResumeOptimizePage() {
       alert('优化失败，请稍后重试');
     } finally {
       setIsOptimizing(false);
+    }
+  };
+
+  // 简历评分
+  const handleGetScore = async () => {
+    if (!user || !resumeContent.trim()) return;
+    setIsScoring(true);
+    try {
+      const response = await fetch('/api/resume/score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id
+        },
+        body: JSON.stringify({
+          resumeData: { content: resumeContent },
+          targetJob: targetPosition || undefined
+        })
+      });
+      const data = await response.json();
+      if (data.overallScore !== undefined) {
+        setScoreResult(data);
+      }
+    } catch (err) {
+      console.error('[score] Error:', err);
+    } finally {
+      setIsScoring(false);
     }
   };
 
@@ -656,6 +694,27 @@ export default function ResumeOptimizePage() {
                   >
                     查看详情 <ArrowRight className="w-4 h-4 ml-1.5" />
                   </Button>
+                </div>
+
+                {/* 简历评分 */}
+                <div className="pt-4 border-t border-gray-100">
+                  <Button
+                    variant="outline"
+                    className="w-full text-[#165DFF] border-[#165DFF]/30 hover:bg-[#165DFF]/5 rounded-xl transition-all"
+                    onClick={handleGetScore}
+                    disabled={isScoring}
+                  >
+                    {isScoring ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> 评分中...</>
+                    ) : (
+                      <><TrendingUp className="w-4 h-4 mr-2" /> 查看简历评分</>
+                    )}
+                  </Button>
+                  {scoreResult && (
+                    <div className="mt-4">
+                      <ResumeScoreCard result={scoreResult} targetJob={targetPosition} />
+                    </div>
+                  )}
                 </div>
               </div>
             )}

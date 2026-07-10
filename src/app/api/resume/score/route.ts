@@ -1,7 +1,11 @@
 /**
- * 简历综合评分 API — DeepSeek 直连，3-5s 响应
+ * 简历综合评分 API v2 — 6维度结构化评估
  * POST /api/resume/score
- * Body: { resumeData: { basic, education, experience, projects, skills, content } }
+ * 
+ * 输入：{ resumeData, targetJob? }
+ * 输出：{ overallScore, summary, dimensions[], improvements[], radarData }
+ * 
+ * 参考：北森面试评价表（十分制/评价维度/自动计分）+ 职途星C端优化方案
  */
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -9,19 +13,32 @@ export const runtime = 'nodejs';
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY!;
 const DEEPSEEK_MODEL = process.env.MODEL || 'deepseek-chat';
 
-const SCORE_PROMPT = `你是简历评分专家。根据提供的简历内容，从以下5个维度打分（每项1-10分），并给出总分（百分制）和一句话总结。
+const SCORE_PROMPT = `你是专业简历评估专家。
+请根据提供的简历内容，从以下6个维度进行结构化评分（每项1-10分），并给出总分（百分制）。
 
-必须返回严格 JSON 格式（不要markdown包裹）：
+评分维度说明：
+1. 教育背景 - 学校层次、专业对口度、学历匹配度
+2. 技能匹配 - 硬技能(工具/证书/语言)与目标岗位的契合度
+3. 项目经验 - 项目复杂度、角色贡献、成果量化程度
+4. 实习经历 - 行业对齐度、岗位对齐度、实习时长与深度
+5. 岗位匹配度 - 综合评估与目标岗位的适配程度（若无目标岗位则为通用匹配度）
+6. 综合竞争力 - 上述维度的加权综合评估
+
+每个维度需附具体评语(comment)和权重(weight, 总和=1.0)。
+
+返回严格 JSON（不要markdown包裹）：
 {
   "overallScore": 72,
-  "summary": "简历整体结构清晰，但实习经历缺乏量化成果，建议补充数据支撑",
+  "summary": "一句话总体评价",
   "dimensions": [
-    {"name": "内容完整度", "score": 8, "maxScore": 10},
-    {"name": "量化程度", "score": 5, "maxScore": 10},
-    {"name": "关键词覆盖", "score": 7, "maxScore": 10},
-    {"name": "格式规范", "score": 8, "maxScore": 10},
-    {"name": "ATS兼容性", "score": 6, "maxScore": 10}
-  ]
+    {"name": "教育背景", "score": 8, "maxScore": 10, "weight": 0.15, "comment": "评语"},
+    {"name": "技能匹配", "score": 6, "maxScore": 10, "weight": 0.20, "comment": "评语"},
+    {"name": "项目经验", "score": 7, "maxScore": 10, "weight": 0.25, "comment": "评语"},
+    {"name": "实习经历", "score": 5, "maxScore": 10, "weight": 0.20, "comment": "评语"},
+    {"name": "岗位匹配度", "score": 7, "maxScore": 10, "weight": 0.20, "comment": "评语"},
+    {"name": "综合竞争力", "score": 6, "maxScore": 10, "weight": 0.00, "comment": "评语"}
+  ],
+  "improvements": ["改进建议1", "改进建议2", "改进建议3"]
 }`;
 
 function buildResumeText(resumeData: Record<string, unknown>): string {
@@ -32,20 +49,20 @@ function buildResumeText(resumeData: Record<string, unknown>): string {
   }
   const education = resumeData.education as Record<string, string>[] | undefined;
   if (education?.length) {
-    parts.push(`教育经历：${education.map((e: Record<string, string>) => `${e.school} ${e.major} ${e.degree} ${e.time}`).join('；')}`);
+    parts.push(`教育经历：${education.map(e => `${e.school} ${e.major} ${e.degree || ''} ${e.time || ''}${e.gpa ? ` GPA:${e.gpa}` : ''}`).join('；')}`);
   }
   const experience = resumeData.experience as Record<string, unknown>[] | undefined;
   if (experience?.length) {
-    parts.push(`实习经历：${experience.map((e: Record<string, unknown>) => {
+    parts.push(`实习经历：${experience.map(e => {
       const desc = Array.isArray(e.description) ? (e.description as string[]).join(' ') : '';
-      return `${e.company} ${e.role} ${e.time} ${desc}`;
+      return `${e.company} ${e.role} ${e.time || ''} ${desc}`;
     }).join('；')}`);
   }
   const projects = resumeData.projects as Record<string, unknown>[] | undefined;
   if (projects?.length) {
-    parts.push(`项目经历：${projects.map((p: Record<string, unknown>) => {
+    parts.push(`项目经历：${projects.map(p => {
       const desc = Array.isArray(p.description) ? (p.description as string[]).join(' ') : '';
-      return `${p.company} ${p.role} ${p.time} ${desc}`;
+      return `${p.name || p.company} ${p.role} ${p.time || ''} ${desc}`;
     }).join('；')}`);
   }
   const skills = resumeData.skills as string[] | undefined;
@@ -60,30 +77,36 @@ function buildResumeText(resumeData: Record<string, unknown>): string {
 
 export async function POST(request: Request) {
   try {
-    const { resumeData } = await request.json();
+    const { resumeData, targetJob } = await request.json();
 
     if (!resumeData) {
       return Response.json({ error: '请提供简历数据' }, { status: 400 });
     }
 
     const resumeText = buildResumeText(resumeData);
+    const contextTarget = targetJob || '通用岗位';
 
     if (!resumeText.trim()) {
       return Response.json({
         overallScore: 0,
         summary: '简历内容为空，请先填写基本信息',
         dimensions: [
-          { name: '内容完整度', score: 0, maxScore: 10 },
-          { name: '量化程度', score: 0, maxScore: 10 },
-          { name: '关键词覆盖', score: 0, maxScore: 10 },
-          { name: '格式规范', score: 0, maxScore: 10 },
-          { name: 'ATS兼容性', score: 0, maxScore: 10 },
+          { name: '教育背景', score: 0, maxScore: 10, weight: 0.15, comment: '' },
+          { name: '技能匹配', score: 0, maxScore: 10, weight: 0.20, comment: '' },
+          { name: '项目经验', score: 0, maxScore: 10, weight: 0.25, comment: '' },
+          { name: '实习经历', score: 0, maxScore: 10, weight: 0.20, comment: '' },
+          { name: '岗位匹配度', score: 0, maxScore: 10, weight: 0.20, comment: '' },
+          { name: '综合竞争力', score: 0, maxScore: 10, weight: 0.00, comment: '' },
         ],
+        improvements: ['请先填写简历内容'],
+        radarData: {},
       });
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    const userPrompt = `目标岗位：${contextTarget}\n\n请对以下简历进行综合评分：\n\n${resumeText.slice(0, 2500)}`;
 
     const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
@@ -95,10 +118,10 @@ export async function POST(request: Request) {
         model: DEEPSEEK_MODEL,
         messages: [
           { role: 'system', content: SCORE_PROMPT },
-          { role: 'user', content: `请对以下简历进行综合评分：\n\n${resumeText.slice(0, 2000)}` },
+          { role: 'user', content: userPrompt },
         ],
         temperature: 0.3,
-        max_tokens: 500,
+        max_tokens: 800,
       }),
       signal: controller.signal,
     });
@@ -118,17 +141,30 @@ export async function POST(request: Request) {
       const jsonStr = raw.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
       result = JSON.parse(jsonStr);
     } catch {
-      result = {
+      return Response.json({
         overallScore: 0,
-        summary: '评分解析异常',
+        summary: '评分解析异常，请重试',
         dimensions: [
-          { name: '内容完整度', score: 0, maxScore: 10 },
-          { name: '量化程度', score: 0, maxScore: 10 },
-          { name: '关键词覆盖', score: 0, maxScore: 10 },
-          { name: '格式规范', score: 0, maxScore: 10 },
-          { name: 'ATS兼容性', score: 0, maxScore: 10 },
+          { name: '教育背景', score: 0, maxScore: 10, weight: 0.15, comment: '' },
+          { name: '技能匹配', score: 0, maxScore: 10, weight: 0.20, comment: '' },
+          { name: '项目经验', score: 0, maxScore: 10, weight: 0.25, comment: '' },
+          { name: '实习经历', score: 0, maxScore: 10, weight: 0.20, comment: '' },
+          { name: '岗位匹配度', score: 0, maxScore: 10, weight: 0.20, comment: '' },
+          { name: '综合竞争力', score: 0, maxScore: 10, weight: 0.00, comment: '' },
         ],
-      };
+        improvements: ['评分异常，请重新提交'],
+        radarData: {},
+      });
+    }
+
+    // 补全 radarData
+    if (result.dimensions && !result.radarData) {
+      result.radarData = {};
+      for (const d of result.dimensions) {
+        if (d.name && d.name !== '综合竞争力') {
+          result.radarData[d.name] = d.score;
+        }
+      }
     }
 
     return Response.json(result);
