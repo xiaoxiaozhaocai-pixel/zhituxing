@@ -1,11 +1,12 @@
 -- Migration: 简历综合评分结果表
 -- 用途：存储每次简历评分结果，用于呈现雷达图+历史趋势+B端画像
 -- 依赖：auth.users, public.resumes
+-- 注意：resumes.id 是 BIGINT 类型，非 UUID
 
 CREATE TABLE IF NOT EXISTS user_resume_scores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  resume_id UUID REFERENCES public.resumes(id) ON DELETE SET NULL,
+  resume_id BIGINT REFERENCES public.resumes(id) ON DELETE SET NULL,
   target_job VARCHAR(200),
   overall_score NUMERIC(4,1) NOT NULL,
   dimensions JSONB NOT NULL,
@@ -22,16 +23,19 @@ CREATE INDEX IF NOT EXISTS idx_resume_scores_created_at ON user_resume_scores(cr
 ALTER TABLE user_resume_scores ENABLE ROW LEVEL SECURITY;
 
 -- 用户只能看自己的评分
+DROP POLICY IF EXISTS "Users can view own scores" ON user_resume_scores;
 CREATE POLICY "Users can view own scores"
   ON user_resume_scores FOR SELECT
   USING (auth.uid() = user_id);
 
 -- 用户只能插入自己的评分
+DROP POLICY IF EXISTS "Users can insert own scores" ON user_resume_scores;
 CREATE POLICY "Users can insert own scores"
   ON user_resume_scores FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
 -- service_role 完全访问（管理后台/B端用）
+DROP POLICY IF EXISTS "Service role full access" ON user_resume_scores;
 CREATE POLICY "Service role full access"
   ON user_resume_scores FOR ALL
   TO service_role
