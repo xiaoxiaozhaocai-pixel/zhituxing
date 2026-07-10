@@ -38,10 +38,10 @@ export default function SkillTagInput({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [domains, setDomains] = useState<CategoryGroup[]>([]);
-  const [categories, setCategories] = useState<CategoryGroup[]>([]);
+  const [_categories, _setCategories] = useState<CategoryGroup[]>([]);
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showCategories, setShowCategories] = useState(false);
+  const [_showCategories, _setShowCategories] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 初始加载所有技能
@@ -52,7 +52,7 @@ export default function SkillTagInput({
         const json: TagsResponse = await res.json();
         if (json.success) {
           setDomains(json.data.domains);
-          setCategories(json.data.categories);
+          _setCategories(json.data.categories);
         }
       } catch (err) {
         console.error('加载技能标签失败:', err);

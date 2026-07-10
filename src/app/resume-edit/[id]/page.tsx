@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import SkillTagInput from '@/components/resume/SkillTagInput';
 import { Loader2, Save, ArrowLeft, FileText, CheckCircle2, AlertCircle, Sparkles, Lightbulb, AlertTriangle, ChevronDown, ChevronUp, ArrowRight, Target } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';

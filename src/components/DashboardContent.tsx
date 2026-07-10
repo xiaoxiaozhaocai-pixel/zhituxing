@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,8 +16,8 @@ interface DashboardUser {
 }
 
 interface ResumeScoreLatest {
-  overall_score: number; dimensions: any[]; improvements: any[];
-  radar_data: any; summary: string; target_job: string; created_at: string;
+  overall_score: number; dimensions: Record<string, unknown>[]; improvements: string[];
+  radar_data: Record<string, unknown> | Record<string, unknown>[]; summary: string; target_job: string; created_at: string;
 }
 
 interface ResumeScoreHistoryItem {
@@ -26,7 +26,7 @@ interface ResumeScoreHistoryItem {
 
 interface InterviewItem {
   id: string; created_at: string; target_job: string;
-  overall_score: number | null; result_data: any;
+  overall_score: number | null; result_data: Record<string, unknown>;
 }
 
 interface RecommendedJob {
@@ -103,7 +103,7 @@ function UserCard({ user }: { user: DashboardUser }) {
 function ScoreRadarCard({ latest }: { latest: ResumeScoreLatest }) {
   const radarSource = latest.radar_data || latest.dimensions || [];
   const radarData = Array.isArray(radarSource)
-    ? radarSource.map((d: any) => ({
+    ? radarSource.map((d: Record<string, unknown>) => ({
         name: d.name || d.dimension || '',
         value: typeof d.score === 'number' ? d.score : typeof d.value === 'number' ? d.value : 0,
       }))
@@ -217,7 +217,7 @@ export default function DashboardContent() {
       const json = await res.json();
       if (json.success) setData(json.data);
       else setError(json.error || '加载失败');
-    } catch (err) {
+    } catch {
       setError('网络请求失败');
     } finally {
       setLoading(false);
