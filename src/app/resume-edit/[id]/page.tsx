@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Save, ArrowLeft, FileText, CheckCircle2, AlertCircle, Sparkles, Lightbulb, AlertTriangle, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import SkillTagInput from '@/components/resume/SkillTagInput';
+import { Loader2, Save, ArrowLeft, FileText, CheckCircle2, AlertCircle, Sparkles, Lightbulb, AlertTriangle, ChevronDown, ChevronUp, ArrowRight, Target } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ResumeSection {
@@ -71,7 +73,19 @@ export default function ResumeEditPage() {
   const [school, setSchool] = useState('');
   const [major, setMajor] = useState('');
   const [graduation, setGraduation] = useState('');
-  const [skillsText, setSkillsText] = useState('');
+  const [skillsList, setSkillsList] = useState<string[]>([]);
+
+  // 完整度计算
+  const completeness = useCallback(() => {
+    let score = 0;
+    if (basicName || phone || email || school || major || graduation) score += 20;
+    if (resume?.sections?.education && resume.sections.education.length > 0) score += 20;
+    if (skillsList.length > 0) score += 20;
+    if (resume?.sections?.experience && resume.sections.experience.length > 0) score += 20;
+    if (resume?.sections?.projects && resume.sections.projects.length > 0) score += 20;
+    return score;
+  }, [basicName, phone, email, school, major, graduation, skillsList, resume]);
+  const completenessScore = completeness();
 
   // 加载已有简历
   useEffect(() => {
@@ -97,7 +111,7 @@ export default function ResumeEditPage() {
             setGraduation(r.sections.basic.graduation || '');
           }
           if (r.sections?.skills) {
-            setSkillsText(r.sections.skills.join('、'));
+            setSkillsList(r.sections.skills);
           }
         }
       } catch (err) {
@@ -125,7 +139,7 @@ export default function ResumeEditPage() {
         education: resume?.sections?.education || [],
         experience: resume?.sections?.experience || [],
         projects: resume?.sections?.projects || [],
-        skills: skillsText.split(/[、,，]/).map(s => s.trim()).filter(Boolean),
+        skills: skillsList,
       };
 
       const res = await fetch(`/api/resume/${resumeId}`, {
@@ -135,6 +149,42 @@ export default function ResumeEditPage() {
       });
       const json = await res.json();
       if (json.success) {
+        // 同步技能标签到 user_profiles
+        try {
+          const tagsRes = await fetch('/api/skills/tags');
+          const tagsJson = await tagsRes.json();
+          if (tagsJson.success) {
+            const categorySkills = new Map<string, string[]>();
+            for (const cat of (tagsJson.data.categories || [])) {
+              for (const s of cat.skills) {
+                if (!categorySkills.has(cat.name)) categorySkills.set(cat.name, []);
+                categorySkills.get(cat.name)!.push(s);
+              }
+            }
+            const hardSkills: string[] = [];
+            const softSkills: string[] = [];
+            const hardCategories = ['编程语言', '开发框架', '数据库', '工具', '技术栈', '云服务', '数据分析', '人工智能', '机器学习', '网络安全', '前端开发', '后端开发', '移动开发', 'DevOps'];
+            for (const skill of skillsList) {
+              let foundCategory = '';
+              for (const [cat, skills] of categorySkills) {
+                if (skills.includes(skill)) { foundCategory = cat; break; }
+              }
+              if (hardCategories.includes(foundCategory)) {
+                hardSkills.push(skill);
+              } else {
+                softSkills.push(skill);
+              }
+            }
+            await fetch('/api/user/profile', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ hard_skills: hardSkills, soft_skills: softSkills }),
+            });
+          }
+        } catch (e) {
+          console.error('同步技能到user_profiles失败:', e);
+        }
+
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 3000);
       } else {
@@ -145,7 +195,7 @@ export default function ResumeEditPage() {
     } finally {
       setSaving(false);
     }
-  }, [resumeName, content, basicName, phone, email, school, major, graduation, skillsText, resumeId, resume]);
+  }, [resumeName, content, basicName, phone, email, school, major, graduation, skillsList, resumeId, resume]);
 
 
   // AI 综合评分
@@ -158,7 +208,7 @@ export default function ResumeEditPage() {
         education: resume.sections?.education || [],
         experience: resume.sections?.experience || [],
         projects: resume.sections?.projects || [],
-        skills: skillsText.split(/[、,，]/).map((s: string) => s.trim()).filter(Boolean),
+        skills: skillsList,
         content,
       };
       const resp = await fetch('/api/resume/score', {
@@ -173,7 +223,7 @@ export default function ResumeEditPage() {
       }
     } catch { /* silent */ }
     finally { setScoreLoading(false); }
-  }, [resume, basicName, school, major, graduation, skillsText, content]);
+  }, [resume, basicName, school, major, graduation, skillsList, content]);
 
   useEffect(() => {
     if (resume && !scoreLoading && overallScore === 0) fetchScore();
@@ -186,7 +236,7 @@ export default function ResumeEditPage() {
     setAnalysisError('');
     setAppliedRewrite(false);
     let text = '';
-    if (type === 'skills') text = skillsText;
+    if (type === 'skills') text = skillsList.join('、');
     else if (type === 'content') text = content;
     else {
       const arr = resume?.sections?.[type as keyof typeof resume.sections] as Array<Record<string,unknown>> | undefined;
@@ -209,7 +259,7 @@ export default function ResumeEditPage() {
 
   const applyRewrite = () => {
     if (!analysis?.rewritten) return;
-    if (analyzing === '技能标签') setSkillsText(analysis.rewritten);
+    if (analyzing === '技能标签') setSkillsList(analysis.rewritten.split(/[、,，]/).map(s => s.trim()).filter(Boolean));
     else if (analyzing === '简历正文') setContent(analysis.rewritten);
     else setContent((prev: string) => prev + '\n\n【AI 优化】' + analysis.rewritten);
     setAppliedRewrite(true);
@@ -253,6 +303,26 @@ export default function ResumeEditPage() {
             </Link>
             <div className="h-5 w-px bg-gray-200" />
             <h1 className="font-bold text-[#1a1a1a] text-sm">编辑简历</h1>
+            {/* 完整度进度条 */}
+            <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-100">
+              <div className="flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5 text-[#165DFF]" />
+                <span className="text-xs text-[#888]">完整度</span>
+              </div>
+              <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    completenessScore >= 80 ? 'bg-green-500' : completenessScore >= 60 ? 'bg-[#FF7D00]' : completenessScore >= 40 ? 'bg-[#165DFF]' : 'bg-gray-300'
+                  }`}
+                  style={{ width: `${completenessScore}%` }}
+                />
+              </div>
+              <span className={`text-xs font-semibold min-w-[2.5rem] text-right ${
+                completenessScore >= 80 ? 'text-green-600' : completenessScore >= 60 ? 'text-[#FF7D00]' : 'text-[#888]'
+              }`}>
+                {completenessScore}%
+              </span>
+            </div>
             {resume.is_default && (
               <Badge className="bg-[#165DFF]/8 text-[#165DFF] border-0 text-xs font-medium px-2 py-0.5 rounded-full">
                 默认
@@ -315,12 +385,12 @@ export default function ResumeEditPage() {
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-x-3 gap-y-2.5 pb-4">
                 {[
-                  { label: '姓名', value: basicName, setter: setBasicName, placeholder: '你的姓名', type: 'text' },
-                  { label: '手机', value: phone, setter: setPhone, placeholder: '手机号', type: 'tel' },
-                  { label: '邮箱', value: email, setter: setEmail, placeholder: '邮箱地址', type: 'email' },
-                  { label: '学校', value: school, setter: setSchool, placeholder: '学校全称', type: 'text' },
-                  { label: '专业', value: major, setter: setMajor, placeholder: '专业名称', type: 'text' },
-                  { label: '毕业时间', value: graduation, setter: setGraduation, placeholder: '2027年7月', type: 'text' },
+                  { label: '姓名', value: basicName, setter: setBasicName, placeholder: '你的姓名', type: 'text', hint: '' },
+                  { label: '手机', value: phone, setter: setPhone, placeholder: '手机号', type: 'tel', hint: '' },
+                  { label: '邮箱', value: email, setter: setEmail, placeholder: '邮箱地址', type: 'email', hint: '' },
+                  { label: '学校', value: school, setter: setSchool, placeholder: '学校全称', type: 'text', hint: '例如：桂林电子科技大学' },
+                  { label: '专业', value: major, setter: setMajor, placeholder: '专业名称', type: 'text', hint: '例如：人力资源管理' },
+                  { label: '毕业时间', value: graduation, setter: setGraduation, placeholder: '2027年7月', type: 'text', hint: '例如：2024-2028' },
                 ].map((field) => (
                   <div key={field.label} className="space-y-1">
                     <label className="text-xs text-[#aaa]">{field.label}</label>
@@ -330,31 +400,23 @@ export default function ResumeEditPage() {
                       placeholder={field.placeholder}
                       className="h-9 text-sm border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg"
                     />
+                    {field.hint && <p className="text-[10px] text-gray-300 pl-0.5">{field.hint}</p>}
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            {/* 技能标签 */}
+            {/* 技能标签 - 结构化录入 */}
             <Card className="shadow-sm border-0 overflow-hidden">
               <div className="h-0.5 bg-gradient-to-r from-[#165DFF]/30 to-transparent" />
               <CardContent className="p-4 space-y-2">
                 <label className="text-xs font-semibold text-[#888] block uppercase tracking-wide">技能标签</label>
-                <Input
-                  value={skillsText}
-                  onChange={e => setSkillsText(e.target.value)}
-                  placeholder="Python、SQL、Excel、团队协作"
-                  className="border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg text-sm"
+                <SkillTagInput
+                  value={skillsList}
+                  onChange={setSkillsList}
+                  placeholder="搜索并选择技能标签..."
                 />
-                {skillsText && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {skillsText.split(/[、,，]/).filter(Boolean).map((s, i) => (
-                      <Badge key={i} className="bg-[#165DFF]/6 text-[#165DFF] border-0 text-xs font-normal rounded-full px-2.5 py-0.5">
-                        {s.trim()}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                <p className="text-[11px] text-gray-400">从预设技能库中搜索添加，支持多选</p>
               </CardContent>
             </Card>
 
@@ -556,15 +618,15 @@ export default function ResumeEditPage() {
                     </div>
 
                     {/* 技能标签 */}
-                    {skillsText && (
+                    {skillsList.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-sm font-bold text-[#1a1a1a] mb-3 pb-1.5 border-b-2 border-[#165DFF] inline-block">
                           专业技能
                         </h3>
                         <div className="flex flex-wrap gap-1.5 mt-2">
-                          {skillsText.split(/[、,，]/).filter(Boolean).map((s, i) => (
+                          {skillsList.map((s, i) => (
                             <span key={i} className="px-2.5 py-0.5 bg-[#165DFF]/6 text-[#165DFF] text-xs rounded-full font-medium">
-                              {s.trim()}
+                              {s}
                             </span>
                           ))}
                         </div>
@@ -659,7 +721,7 @@ export default function ResumeEditPage() {
                     )}
 
                     {/* 空状态 */}
-                    {!skillsText && !resume?.sections?.education?.length && !resume?.sections?.experience?.length && !resume?.sections?.projects?.length && !content && (
+                    {skillsList.length === 0 && !resume?.sections?.education?.length && !resume?.sections?.experience?.length && !resume?.sections?.projects?.length && !content && (
                       <div className="flex flex-col items-center justify-center py-24 text-[#ddd]">
                         <FileText className="w-16 h-16 mb-4 opacity-20" />
                         <p className="text-sm">在左侧填写信息，这里会实时预览</p>
