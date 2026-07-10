@@ -46,7 +46,6 @@ const moreNavItems = [
 
 const agentNavItems = [
   { name: '职搭子', href: '/assistant', icon: <Bot className="w-4 h-4" /> },
-  { name: '求职档案', href: '/dashboard', icon: <User className="w-4 h-4" /> },
   { name: '职业规划', href: '/career-planning', icon: <Compass className="w-4 h-4" /> },
   { name: '简历助手', href: '/resume-optimize', icon: <FileText className="w-4 h-4" /> },
 ];

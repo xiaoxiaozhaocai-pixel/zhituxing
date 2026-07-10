@@ -40,6 +40,7 @@ import { Bell,
   ArrowRight,
   FolderOpen } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
+import DashboardContent from '@/components/DashboardContent';
 import GrowthCompanionCard from '@/components/GrowthCompanionCard';
 import GrowthTimeline from '@/components/GrowthTimeline';
 
@@ -50,6 +51,7 @@ const menuItems = [
   { id: 'membership', label: '我的会员', icon: Crown, color: '#FF7D00' },
   { id: 'reports', label: '我的报告', icon: FileText, color: '#165DFF' },
   { id: 'growth', label: '成长记录', icon: Sparkles, color: '#165DFF' },
+  { id: 'dashboard', label: '求职档案', icon: Briefcase, color: '#165DFF' },
   { id: 'favorites', label: '我的收藏', icon: Heart, color: '#EF4444' },
   { id: 'invite', label: '我的邀请', icon: Users, color: '#165DFF' },
   { id: 'settings', label: '账号设置', icon: Settings, color: '#6B7280' },
@@ -1318,6 +1320,8 @@ function ProfileContent() {
             />
           </div>
         );
+      case 'dashboard':
+        return <DashboardContent />;
       case 'favorites':
         return <FavoritesPanel userId={user.id} />;
       case 'invite':
