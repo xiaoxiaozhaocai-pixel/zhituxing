@@ -175,6 +175,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
       messages,
       temperature: 0.1,
       maxTokens: 2048,
+      returnUsage: true,
     });
 
     if (!result.content) {
