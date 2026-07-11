@@ -1,17 +1,22 @@
-﻿'use client';
+'use client';
 
-import { useState, useEffect, type ChangeEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, Plus, Upload, Zap, TrendingUp, Eye, PenTool, MessageSquare, MessageCircle, ChevronDown, ChevronUp, Copy, Send } from 'lucide-react';
+import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useMembership } from '@/contexts/MembershipContext';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +24,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { ResumeRadar } from '@/components/resume/ResumeRadar';
 import ResumeScoreCard from '@/components/resume/ResumeScoreCard';
+import { toast } from 'sonner';
 
 const positions = [
   'Java开发工程师',
@@ -47,276 +54,48 @@ interface OptimizationRecord {
   created_at: string;
 }
 
-interface ResumeItem {
-  id: string;
+interface ScoreDimension {
   name: string;
-  template_id: string;
-  sections: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
+  score: number;
+  comment: string;
+  weight: number;
 }
 
-interface SuggestionItem {
-  type: string;
-  title: string;
-  suggestion: string;
-}
-
-interface ChatMsg {
-  role: 'user' | 'assistant';
-  content: string;
-  rewriteSnippet?: string | null;
-}
-
-function SuggestionCard({
-  item,
-  originalContent,
-  targetPosition,
-}: {
-  item: SuggestionItem;
-  originalContent: string;
-  targetPosition: string;
-}) {
-  const config = item.type === 'highlight'
-    ? { bg: 'bg-green-50/80', border: 'border-l-green-400', badge: 'bg-green-100 text-green-700', label: '✨ 亮点', accent: 'text-green-700' }
-    : item.type === 'improvement'
-    ? { bg: 'bg-orange-50/80', border: 'border-l-orange-400', badge: 'bg-orange-100 text-orange-700', label: '🔧 待改进', accent: 'text-orange-700' }
-    : { bg: 'bg-blue-50/80', border: 'border-l-blue-400', badge: 'bg-blue-100 text-blue-700', label: '💡 建议', accent: 'text-blue-700' };
-
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [input, setInput] = useState('');
-  const [sending, setSending] = useState(false);
-  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-
-  const quickPrompts = ['举个具体例子', '帮我改写一段', '这条怎么落地'];
-
-  const stripRewriteBlock = (text: string): string =>
-    text.replace(/```改写\s*[\s\S]*?```/g, '').trim();
-
-  const send = async (textOverride?: string) => {
-    const content = (textOverride ?? input).trim();
-    if (!content || sending) return;
-    const next: ChatMsg[] = [...messages, { role: 'user', content }];
-    setMessages(next);
-    setInput('');
-    setSending(true);
-    try {
-      const res = await fetch('/api/resume/refine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          suggestionTitle: item.title,
-          suggestionContent: item.suggestion,
-          suggestionType: item.type,
-          originalContent,
-          targetPosition,
-          messages: next,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMessages([
-          ...next,
-          {
-            role: 'assistant',
-            content: data.data.reply || '',
-            rewriteSnippet: data.data.rewriteSnippet || null,
-          },
-        ]);
-      } else {
-        setMessages([
-          ...next,
-          { role: 'assistant', content: '出错了：' + (data.error || '未知错误') },
-        ]);
-      }
-    } catch {
-      setMessages([
-        ...next,
-        { role: 'assistant', content: '网络错误，请重试' },
-      ]);
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleCopy = (text: string, idx: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIdx(idx);
-    setTimeout(() => setCopiedIdx(null), 2000);
-  };
-
-  return (
-    <Card className={`shadow-sm border-0 border-l-[3px] ${config.border} ${config.bg} hover:shadow-md transition-all duration-200`}>
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <Badge className={`${config.badge} border-0 text-xs font-medium shrink-0`}>
-            {config.label}
-          </Badge>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-semibold text-[#1a1a1a] mb-1">{item.title}</h4>
-            <p className="text-sm text-[#555] leading-relaxed">{item.suggestion}</p>
-
-            <button
-              type="button"
-              onClick={() => setChatOpen((v) => !v)}
-              className={`mt-3 inline-flex items-center gap-1.5 text-xs font-medium ${config.accent} hover:opacity-75 transition-opacity`}
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              {chatOpen ? '收起深聊' : '💬 跟小职深聊'}
-              {chatOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-
-            {chatOpen && (
-              <div className="mt-3 pt-3 border-t border-gray-200/70 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                {messages.length === 0 && (
-                  <div>
-                    <p className="text-[11px] text-[#999] mb-1.5">试试这些问题：</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {quickPrompts.map((q) => (
-                        <button
-                          key={q}
-                          type="button"
-                          onClick={() => send(q)}
-                          disabled={sending}
-                          className="px-2.5 py-1 text-xs rounded-full bg-white border border-gray-200 hover:border-[#165DFF]/40 hover:text-[#165DFF] text-[#666] transition-colors disabled:opacity-50"
-                        >
-                          {q}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {messages.length > 0 && (
-                  <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
-                    {messages.map((m, mi) => (
-                      <div key={mi} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[88%] ${m.role === 'user' ? 'order-2' : ''}`}>
-                          <div
-                            className={`text-xs leading-relaxed rounded-2xl px-3.5 py-2 ${
-                              m.role === 'user'
-                                ? 'bg-[#165DFF] text-white rounded-br-sm'
-                                : 'bg-white border border-gray-200 text-[#333] rounded-bl-sm'
-                            }`}
-                          >
-                            <div className="whitespace-pre-wrap break-words">
-                              {m.role === 'assistant' ? stripRewriteBlock(m.content) : m.content}
-                            </div>
-                          </div>
-
-                          {m.role === 'assistant' && m.rewriteSnippet && (
-                            <div className="mt-2 rounded-xl border-2 border-[#165DFF]/30 bg-gradient-to-br from-[#f0f5ff] to-white p-3 shadow-sm">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-[11px] font-semibold text-[#165DFF] flex items-center gap-1">
-                                  <Sparkles className="w-3 h-3" />
-                                  可直接复制的改写
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCopy(m.rewriteSnippet!, mi)}
-                                  className="inline-flex items-center gap-1 text-[11px] text-[#165DFF] hover:text-[#3D7FFF] font-medium"
-                                >
-                                  {copiedIdx === mi ? (
-                                    <><CheckCircle className="w-3 h-3" /> 已复制</>
-                                  ) : (
-                                    <><Copy className="w-3 h-3" /> 一键复制</>
-                                  )}
-                                </button>
-                              </div>
-                              <pre className="text-xs leading-relaxed text-[#1a1a1a] whitespace-pre-wrap break-words font-sans">
-{m.rewriteSnippet}
-                              </pre>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {sending && (
-                      <div className="flex justify-start">
-                        <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-3.5 py-2 text-xs text-[#999] flex items-center gap-1.5">
-                          <Loader2 className="w-3 h-3 animate-spin" /> 小职思考中…
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-1">
-                  <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        send();
-                      }
-                    }}
-                    placeholder={messages.length === 0 ? '或直接输入你的问题…' : '继续追问…'}
-                    disabled={sending}
-                    className="text-xs h-9 rounded-xl border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/10"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => send()}
-                    disabled={sending || !input.trim()}
-                    className="h-9 px-3.5 rounded-xl bg-[#165DFF] hover:bg-[#3D7FFF] text-white shadow-sm"
-                  >
-                    {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+interface ScoreResult {
+  overall_score: number;
+  dimensions: ScoreDimension[];
+  improvements: string[];
+  radar_data: Record<string, number>;
 }
 
 export default function ResumeOptimizePage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const { isMember } = useMembership();
+  const { user, loading, quota } = useAuth();
   const [resumeContent, setResumeContent] = useState('');
   const [targetPosition, setTargetPosition] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
-  interface ScoreResult {
-  overallScore: number;
-  summary: string;
-  dimensions: Array<{ name: string; score: number; maxScore: number; weight: number; comment: string }>;
-  improvements: string[];
-  radarData: Record<string, number>;
-}
-
-const [optimizationResult, setOptimizationResult] = useState<{
+  const [optimizationResult, setOptimizationResult] = useState<{
     id: string;
     suggestions: Array<{ type: string; title: string; suggestion: string }>;
   } | null>(null);
-  const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
-  const [isScoring, setIsScoring] = useState(false);
   const [recentRecords, setRecentRecords] = useState<OptimizationRecord[]>([]);
-  const [myResumes, setMyResumes] = useState<ResumeItem[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [isScoring, setIsScoring] = useState(false);
+  const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
 
+  // 未登录跳转登录页
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth');
     }
   }, [user, loading, router]);
 
+  // 获取最近的优化记录
   useEffect(() => {
     if (user) {
-// eslint-disable-next-line
       fetchRecentRecords();
-// eslint-disable-next-line
-      fetchMyResumes();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchRecentRecords = async () => {
@@ -328,7 +107,7 @@ const [optimizationResult, setOptimizationResult] = useState<{
       });
       const data = await response.json();
       if (data.success) {
-        setRecentRecords(data.data || []);
+        setRecentRecords(data.data.records);
       }
     } catch (error) {
       console.error('获取记录失败:', error);
@@ -337,60 +116,11 @@ const [optimizationResult, setOptimizationResult] = useState<{
     }
   };
 
-  const fetchMyResumes = async () => {
-    if (!user) return;
-    try {
-      const response = await fetch('/api/resume', { credentials: 'include' });
-      const data = await response.json();
-      if (data.success) {
-        setMyResumes(data.data || []);
-      }
-    } catch (error) {
-      console.error('获取简历列表失败:', error);
-    }
-  };
-
-  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    const MAX_SIZE = 10 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      setUploadError('文件不能超过10MB');
-      return;
-    }
-    
-    const allowed = ['.pdf', '.docx', '.doc', '.txt'];
-    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!allowed.includes(ext)) {
-      setUploadError('支持 PDF、DOCX、DOC、TXT 格式');
-      return;
-    }
-    
-    setIsUploading(true);
-    setUploadError('');
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/upload/parse', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (!res.ok) {
-        setUploadError(data.error || '解析失败');
-      } else {
-        setResumeContent(data.text);
-      }
-    } catch {
-      setUploadError('上传失败，请检查网络');
-    } finally {
-      setIsUploading(false);
-      e.target.value = '';
-    }
-  };
-
   const handleOptimize = async () => {
     if (!user) return;
     
-    if (!isMember && recentRecords.length >= 3) {
+    // 非会员限制
+    if (!quota?.is_member && recentRecords.length >= 3) {
       setShowUpgradeDialog(true);
       return;
     }
@@ -429,28 +159,32 @@ const [optimizationResult, setOptimizationResult] = useState<{
     }
   };
 
-  // 简历评分
-  const handleGetScore = async () => {
-    if (!user || !resumeContent.trim()) return;
+  const handleScore = async () => {
+    if (!resumeContent.trim() || !targetPosition) return;
     setIsScoring(true);
     try {
-      const response = await fetch('/api/resume/score', {
+      const res = await fetch('/api/resume/score', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': user.id
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          resumeData: { content: resumeContent },
-          targetJob: targetPosition || undefined
+          resume_text: resumeContent,
+          target_job: targetPosition
         })
       });
-      const data = await response.json();
-      if (data.overallScore !== undefined) {
-        setScoreResult(data);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || '评分请求失败');
+        return;
       }
-    } catch (err) {
-      console.error('[score] Error:', err);
+      const data = await res.json();
+      if (data.success) {
+        setScoreResult(data.data);
+      } else {
+        toast.error(data.error || '评分失败，请稍后重试');
+      }
+    } catch (e) {
+      console.error('评分失败:', e);
+      toast.error('评分失败，请稍后重试');
     } finally {
       setIsScoring(false);
     }
@@ -458,11 +192,8 @@ const [optimizationResult, setOptimizationResult] = useState<{
 
   if (loading || dataLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-blue-50/30 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-[#165DFF] mx-auto mb-4" />
-          <p className="text-[#666666] text-sm">加载中...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
       </div>
     );
   }
@@ -471,397 +202,316 @@ const [optimizationResult, setOptimizationResult] = useState<{
     return null;
   }
 
+  const isMember = quota?.is_member;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f8fafd] via-white to-[#f0f5ff]/40">
-      {/* ========== Hero 区 ========== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0a3d8f] via-[#165DFF] to-[#4d8aff] text-white">
-        {/* 装饰性模糊光斑 */}
-        <div className="absolute top-0 -left-20 w-[400px] h-[400px] bg-[#5b9aff] rounded-full blur-[120px] opacity-30 pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[350px] h-[350px] bg-[#3D7FFF] rounded-full blur-[100px] opacity-25 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#165DFF] rounded-full blur-[150px] opacity-20 pointer-events-none" />
-        
-        {/* 网格纹理 */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
-          backgroundSize: '60px 60px'
-        }} />
-        
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-24">
-          <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-            {/* 标签 */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#60e06e] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#60e06e]" />
-              </span>
-              <span className="text-sm font-medium text-white/90">AI 智能驱动</span>
-              <Sparkles className="w-3.5 h-3.5 text-[#FFD700]" />
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                简历智能优化
+              </h1>
+              <p className="text-gray-600">
+                AI智能分析，量身定制简历优化建议
+              </p>
             </div>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-5 tracking-tight">
-              简历
-              <span className="bg-gradient-to-r from-[#FFD700] via-[#FFB800] to-[#FF9A00] bg-clip-text text-transparent"> 智能优化</span>
-            </h1>
-            <p className="text-base md:text-lg text-white/75 leading-relaxed max-w-xl mb-10">
-              粘贴简历内容，选择目标岗位，AI 深度分析并给出专业优化建议，让 HR 一眼看到你
-            </p>
-
-            {/* 统计 */}
-            <div className="flex items-center gap-8 md:gap-12 text-white/60 text-sm">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white mb-0.5">30s</div>
-                <div className="text-xs">快速响应</div>
-              </div>
-              <div className="w-px h-10 bg-white/15" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white mb-0.5">3+</div>
-                <div className="text-xs">维度分析</div>
-              </div>
-              <div className="w-px h-10 bg-white/15" />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white mb-0.5">98%</div>
-                <div className="text-xs">用户好评</div>
-              </div>
-            </div>
+            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
+              完全免费使用
+            </Badge>
           </div>
         </div>
 
-        {/* 底部波浪过渡 */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 60V30C240 0 480 0 720 30C960 60 1200 60 1440 30V60H0Z" fill="#f8fafd" />
-          </svg>
-        </div>
-      </section>
-
-      {/* ========== AI 能力三列卡 ========== */}
-      <section className="max-w-6xl mx-auto px-6 -mt-6 relative z-10 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[
-            { step: '01', icon: FileText, title: '智能解析', desc: '自动识别简历结构，精准提取教育、实习、项目等关键模块', color: '#165DFF' },
-            { step: '02', icon: PenTool, title: '精准优化', desc: '基于目标岗位JD逐项比对，给出具体可操作的改进方案', color: '#3D7FFF' },
-            { step: '03', icon: MessageSquare, title: 'HR视角点评', desc: '模拟真实HR快速筛选逻辑，一针见血指出亮点与硬伤', color: '#5b9aff' },
-          ].map((item) => (
-            <Card key={item.title} className="group relative shadow-lg hover:shadow-xl border-0 bg-white overflow-hidden transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, ${item.color}, ${item.color}88)` }} />
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${item.color}15, ${item.color}08)` }}>
-                    <item.icon className="w-6 h-6" style={{ color: item.color }} />
-                  </div>
-                  <span className="text-3xl font-black text-gray-100 group-hover:text-gray-200 transition-colors select-none">{item.step}</span>
-                </div>
-                <h3 className="text-base font-semibold text-[#1a1a1a] mb-2 group-hover:text-[#165DFF] transition-colors">{item.title}</h3>
-                <p className="text-sm text-[#777] leading-relaxed">{item.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* ========== 主内容区 ========== */}
-      <section className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Upload Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* 优化表单 */}
-            <Card className="shadow-md border-0 overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-[#165DFF] via-[#3D7FFF] to-[#5b9aff]" />
-              <CardHeader className="pb-3 pt-5">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2 text-[#1a1a1a]">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
-                  </div>
-                  开始优化
+            <Card className="border-2 border-gray-100">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#165DFF]" />
+                  上传简历内容
                 </CardTitle>
-                <CardDescription className="text-sm text-[#888]">
-                  上传或粘贴简历，选择目标岗位，AI 即刻分析
+                <CardDescription>
+                  将简历内容粘贴到下方，或直接描述您的经历
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 pb-6">
-                {/* 简历内容 */}
+              <CardContent className="space-y-4">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-[#333]">简历内容</label>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-[#aaa]">{resumeContent.length} 字</span>
-                      <label className="flex items-center gap-1.5 text-xs text-[#165DFF] hover:text-[#3D7FFF] cursor-pointer transition-colors font-medium">
-                        <Upload className="w-3.5 h-3.5" />
-                        {isUploading ? '解析中...' : '上传简历文件'}
-                        <input
-                          type="file"
-                          accept=".pdf,.docx,.doc,.txt"
-                          onChange={handleFileUpload}
-                          disabled={isUploading}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  {uploadError && (
-                    <div className="mb-2 text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{uploadError}</div>
-                  )}
-                  {isUploading && (
-                    <div className="mb-2 flex items-center gap-2 text-xs text-[#165DFF] bg-blue-50 px-3 py-2 rounded-lg">
-                      <Loader2 className="w-3 h-3 animate-spin" /> 正在解析简历文件...
-                    </div>
-                  )}
-                  <Textarea
-                    placeholder="上传 PDF/Word 简历自动解析，或直接粘贴文本…&#10;&#10;📌 个人信息  📌 教育背景  📌 实习经历  📌 项目经历  📌 技能证书"
-                    className="min-h-[220px] resize-y text-sm leading-relaxed border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/10 rounded-xl transition-all"
-                    value={resumeContent}
-                    onChange={(e) => { setResumeContent(e.target.value); setUploadError(''); }}
-                  />
-                </div>
-                {/* 目标岗位：快捷选择 + 自由输入 */}
-                <div>
-                  <label className="text-sm font-medium text-[#333] mb-2 block">目标岗位</label>
-                  <div className="flex flex-wrap gap-2 mb-2.5">
-                    {positions.slice(0, 9).map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setTargetPosition(p)}
-                        className={`px-3 py-1.5 text-xs rounded-full border transition-all duration-200 ${
-                          targetPosition === p
-                            ? 'bg-[#165DFF] text-white border-[#165DFF] shadow-sm'
-                            : 'bg-white text-[#666] border-gray-200 hover:border-[#165DFF]/50 hover:text-[#165DFF]'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                  <Input
-                    placeholder="或直接输入，如：前端开发实习生、产品助理..."
-                    value={targetPosition}
-                    onChange={(e) => setTargetPosition(e.target.value)}
-                    className="rounded-xl border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/10 h-11"
-                  />
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    目标岗位
+                  </label>
+                  <Select value={targetPosition} onValueChange={setTargetPosition}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="请选择目标岗位" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {positions.map((pos) => (
+                        <SelectItem key={pos} value={pos}>
+                          {pos}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {/* 操作按钮 */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    简历内容
+                  </label>
+                  <Textarea
+                    placeholder="请粘贴您的简历内容，包括：
+- 基本信息（姓名、联系方式、教育背景）
+- 工作经历（公司、职位、时间、工作内容）
+- 项目经验（项目名称、职责、成果）
+- 技能特长（专业技能、语言能力等）"
+                    value={resumeContent}
+                    onChange={(e) => setResumeContent(e.target.value)}
+                    className="min-h-[300px] font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    {resumeContent.length} 字，建议至少100字以获得更准确的优化建议
+                  </p>
+                </div>
+
+                {!isMember && (
+                  <div className="p-4 bg-[#FF7D00]/10 rounded-lg border border-[#FF7D00]/30">
+                    <p className="text-sm text-[#FF7D00]">
+                      <strong>会员特权：</strong>开通会员可无限次使用简历优化，获得完整优化建议和优化后简历模板
+                    </p>
+                    <Button
+                      className="mt-2 bg-[#FF7D00] hover:bg-[#e67000] text-white"
+                      size="sm"
+                      onClick={() => router.push('/membership')}
+                    >
+                      开通会员
+                    </Button>
+                  </div>
+                )}
+
                 <Button
-                  className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF] hover:to-[#165DFF] text-white font-semibold shadow-lg shadow-[#165DFF]/25 hover:shadow-xl hover:shadow-[#165DFF]/30 transition-all duration-300 rounded-xl h-11"
-                  disabled={!resumeContent.trim() || !targetPosition.trim() || isOptimizing}
+                  className="w-full bg-[#165DFF] hover:bg-[#165DFF]/90"
                   onClick={handleOptimize}
+                  disabled={isOptimizing || !resumeContent.trim() || !targetPosition}
                 >
                   {isOptimizing ? (
-                    <><Loader2 className="w-4 h-4 animate-spin mr-2" /> 分析优化中…</>
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      AI正在优化中...
+                    </>
                   ) : (
-                    <><Sparkles className="w-4 h-4 mr-2" /> 立即优化</>
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      开始智能优化
+                    </>
                   )}
                 </Button>
-                {!isMember && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 bg-[#FFF7ED] rounded-xl border border-[#FF7D00]/15">
-                    <Crown className="w-4 h-4 text-[#FF7D00] shrink-0" />
-                    <p className="text-xs text-[#8B6914]">
-                      免费用户可优化 <span className="font-semibold">3 次</span>，
-                      <button onClick={() => setShowUpgradeDialog(true)} className="text-[#FF7D00] hover:underline font-semibold ml-1">
-                        升级会员
-                      </button>
-                      不限次数
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* 优化结果 */}
-            {optimizationResult && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                    <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                  </div>
-                  <h3 className="text-base font-semibold text-[#1a1a1a]">
-                    优化建议
-                    <span className="text-sm font-normal text-[#999] ml-2">共 {optimizationResult.suggestions.length} 条</span>
-                  </h3>
-                </div>
-                {optimizationResult.suggestions.map((item, idx) => (
-                  <SuggestionCard
-                    key={idx}
-                    item={item}
-                    originalContent={resumeContent}
-                    targetPosition={targetPosition}
-                  />
-                ))}
-                <div className="flex justify-end pt-2">
-                  <Button
-                    variant="outline"
-                    className="text-[#165DFF] border-[#165DFF]/30 hover:bg-[#165DFF]/5 hover:border-[#165DFF]/50 rounded-xl transition-all"
-                    onClick={() => router.push(`/resume-optimize/${optimizationResult.id}`)}
-                  >
-                    查看详情 <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </Button>
-                </div>
-
-                {/* 简历评分 */}
-                <div className="pt-4 border-t border-gray-100">
-                  <Button
-                    variant="outline"
-                    className="w-full text-[#165DFF] border-[#165DFF]/30 hover:bg-[#165DFF]/5 rounded-xl transition-all"
-                    onClick={handleGetScore}
-                    disabled={isScoring}
-                  >
-                    {isScoring ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> 评分中...</>
-                    ) : (
-                      <><TrendingUp className="w-4 h-4 mr-2" /> 查看简历评分</>
-                    )}
-                  </Button>
-                  {scoreResult && (
-                    <div className="mt-4">
-                      <ResumeScoreCard result={scoreResult} targetJob={targetPosition} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ========== 右侧边栏 ========== */}
-          <div className="space-y-4">
-            {/* 最近记录 */}
-            <Card className="shadow-sm border-0">
-              <CardHeader className="pb-2 pt-5">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#666]">
-                  <Clock className="w-4 h-4 text-[#aaa]" />
-                  最近优化
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pb-4">
-                {recentRecords.length > 0 ? (
-                  <div className="space-y-1">
-                    {recentRecords.slice(0, 5).map((record) => (
-                      <button
-                        key={record.id}
-                        onClick={() => router.push(`/resume-optimize/${record.id}`)}
-                        className="w-full text-left p-2.5 rounded-lg hover:bg-[#165DFF]/4 transition-all group"
-                      >
-                        <p className="text-sm font-medium text-[#1a1a1a] group-hover:text-[#165DFF] truncate transition-colors">
-                          {record.target_position}
-                        </p>
-                        <p className="text-xs text-[#aaa] mt-0.5">
-                          {new Date(record.created_at).toLocaleDateString('zh-CN')}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-[#ccc] text-center py-6">暂无优化记录</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* 我的简历 */}
-            <Card className="shadow-sm border-0">
-              <CardHeader className="pb-2 pt-5">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#666]">
-                  <FileText className="w-4 h-4 text-[#aaa]" />
-                  我的简历
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pb-4">
-                {myResumes.length > 0 ? (
-                  <div className="space-y-1">
-                    {myResumes.slice(0, 5).map((resume) => (
-                      <button
-                        key={resume.id}
-                        onClick={() => router.push(`/resume-edit/${resume.id}`)}
-                        className="w-full text-left p-2.5 rounded-lg hover:bg-[#165DFF]/4 transition-all group"
-                      >
-                        <p className="text-sm text-[#1a1a1a] group-hover:text-[#165DFF] truncate transition-colors">
-                          {resume.name || '未命名简历'}
-                        </p>
-                        <p className="text-xs text-[#aaa] mt-0.5">
-                          {new Date(resume.updated_at).toLocaleDateString('zh-CN')}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-[#ccc] text-center py-6">暂无简历</p>
-                )}
-                <Link
-                  href="/resume-builder"
-                  className="flex items-center justify-center gap-1.5 text-xs text-[#165DFF] hover:text-[#3D7FFF] font-medium pt-2 transition-colors"
+                <Button
+                  className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white mt-4"
+                  onClick={handleScore}
+                  disabled={isScoring || !resumeContent.trim() || !targetPosition}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  创建新简历
-                </Link>
+                  {isScoring ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      AI评分中...
+                    </>
+                  ) : (
+                    <>
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      开始简历评分
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
 
-            {/* 升级会员卡 */}
-            {!isMember && (
-              <Card className="shadow-md border-0 overflow-hidden bg-gradient-to-br from-[#FFF7ED] via-[#FFF1E0] to-[#FFE8CC]">
-                <div className="h-1 bg-gradient-to-r from-[#FF7D00] to-[#FFB800]" />
-                <CardContent className="p-5 pt-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-5 h-5 text-[#FF7D00]" />
-                    <span className="font-bold text-sm text-[#1a1a1a]">升级会员</span>
+            {/* Optimization Result */}
+            {optimizationResult && (
+              <Card className="border-2 border-[#165DFF]/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#165DFF]" />
+                    优化建议
+                  </CardTitle>
+                  <CardDescription>
+                    针对「{targetPosition}」岗位的专业优化建议
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {optimizationResult.suggestions.map((item, index) => (
+                      <div key={index} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-[#165DFF]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-4 h-4 text-[#165DFF]" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{item.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{item.suggestion}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs text-[#8B6914] mb-4 leading-relaxed">
-                    不限次数优化 · 全部模板 · HR深度点评 · 竞争力排名
-                  </p>
-                  <Button
-                    size="sm"
-                    className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A00] hover:from-[#FF7D00] hover:to-[#FF7D00] text-white font-semibold rounded-xl shadow-md shadow-[#FF7D00]/20"
-                    onClick={() => setShowUpgradeDialog(true)}
-                  >
-                    立即升级 <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-                  </Button>
+
+                  <div className="mt-6 pt-6 border-t">
+                    <p className="text-sm text-gray-600 mb-4">
+                      完整的优化后简历模板和面试准备建议已生成
+                    </p>
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => router.push(`/resume-optimize/${optimizationResult.id}`)}
+                      >
+                        查看完整报告
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                      <Button
+                        className="bg-[#FF7D00] hover:bg-[#e67000] text-white"
+                        onClick={() => setShowUpgradeDialog(true)}
+                      >
+                        获取完整优化简历
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
+            {scoreResult && (
+              <Card className="border-2 border-[#165DFF]/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-[#165DFF]" />
+                    简历结构化评分
+                  </CardTitle>
+                  <CardDescription>
+                    针对&ldquo;{targetPosition}&rdquo;岗位的多维度评分结果
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left: Radar Chart */}
+                    <div className="bg-white/70 backdrop-blur rounded-2xl border border-[#165DFF]/20 p-4">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-3 text-center">
+                        能力雷达图
+                      </h4>
+                      <ResumeRadar
+                        data={scoreResult.dimensions.map((d) => ({
+                          name: d.name,
+                          score: d.score,
+                        }))}
+                      />
+                    </div>
+                    {/* Right: Score Card */}
+                    <ResumeScoreCard data={scoreResult} />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+          </div>
+
+          {/* Right: Recent Records */}
+          <div>
+            <Card className="border-2 border-gray-100">
+              <CardHeader>
+                <CardTitle className="text-lg">最近优化记录</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {recentRecords.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">暂无优化记录</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentRecords.map((record) => (
+                      <div
+                        key={record.id}
+                        className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/resume-optimize/${record.id}`)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-900">
+                            {record.target_position}
+                          </span>
+                          <Badge variant={record.status === 'completed' ? 'default' : 'secondary'} className="text-xs">
+                            {record.status === 'completed' ? '已完成' : '处理中'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {new Date(record.created_at).toLocaleDateString('zh-CN')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Tips */}
+            <Card className="mt-4 border-2 border-[#165DFF]/20 bg-gradient-to-br from-[#165DFF]/5 to-white">
+              <CardContent className="p-4">
+                <h4 className="font-medium text-gray-900 mb-2">优化小贴士</h4>
+                <ul className="text-sm text-gray-600 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    简历内容越详细，优化建议越精准
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    使用STAR法则描述工作成果
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    针对不同岗位准备差异化简历
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
+                    量化工作成果更有说服力
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ========== 升级弹窗 ========== */}
+      {/* Upgrade Dialog */}
       <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <DialogContent className="sm:max-w-md rounded-2xl overflow-hidden p-0">
-          <div className="bg-gradient-to-br from-[#FFF7ED] to-white p-6">
-            <DialogHeader className="mb-4">
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF7D00] to-[#FFB800] flex items-center justify-center">
-                  <Crown className="w-4 h-4 text-white" />
-                </div>
-                升级会员
-              </DialogTitle>
-              <DialogDescription className="text-sm text-[#8B6914]">
-                解锁简历优化的全部高级能力
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { icon: Zap, text: '不限次数优化' },
-                  { icon: Eye, text: 'HR视角深度点评' },
-                  { icon: PenTool, text: '全部模板样式' },
-                  { icon: TrendingUp, text: '竞争力排名分析' },
-                ].map((item) => (
-                  <div key={item.text} className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-[#FF7D00]/10 shadow-sm">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#FF7D00]/10 to-[#FFB800]/10 flex items-center justify-center shrink-0">
-                      <item.icon className="w-3.5 h-3.5 text-[#FF7D00]" />
-                    </div>
-                    <span className="text-xs font-medium text-[#1a1a1a]">{item.text}</span>
-                  </div>
-                ))}
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-[#FF7D00]" />
+              开通会员解锁完整功能
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+              <p>您本月的免费简历优化次数已用完</p>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <p className="font-medium text-gray-900">会员专属权益</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>无限次简历优化</li>
+                  <li>完整优化后简历模板</li>
+                  <li>AI模拟面试无限次</li>
+                  <li>职业规划报告生成</li>
+                </ul>
               </div>
-              <Button
-                className="w-full bg-gradient-to-r from-[#FF7D00] to-[#FF9A00] hover:from-[#FF7D00] hover:to-[#FF7D00] text-white font-semibold rounded-xl h-11 shadow-lg shadow-[#FF7D00]/25"
-                onClick={() => {
-                  setShowUpgradeDialog(false);
-                  router.push('/pricing');
-                }}
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                查看会员方案
-              </Button>
-            </div>
-          </div>
+              <div className="flex gap-3 pt-2">
+                <Button
+                  className="flex-1 bg-[#FF7D00] hover:bg-[#e67000] text-white"
+                  onClick={() => router.push('/membership')}
+                >
+                  立即开通会员
+                </Button>
+                <Button variant="outline" onClick={() => setShowUpgradeDialog(false)}>
+                  稍后再说
+                </Button>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
         </DialogContent>
       </Dialog>
     </div>

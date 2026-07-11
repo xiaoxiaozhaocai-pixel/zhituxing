@@ -1,229 +1,197 @@
 'use client';
 
-import React from 'react';
-import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-} from 'recharts';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Lightbulb, TrendingUp, AlertCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface Dimension {
   name: string;
   score: number;
-  maxScore: number;
-  weight: number;
   comment: string;
+  weight: number;
 }
 
-interface ScoreResult {
-  overallScore: number;
-  summary: string;
-  dimensions: Dimension[];
-  improvements: string[];
-  radarData: Record<string, number>;
+interface ResumeScoreCardProps {
+  data: {
+    overall_score: number;
+    dimensions: Dimension[];
+    improvements: string[];
+  };
+  className?: string;
 }
 
-interface Props {
-  result: ScoreResult;
-  targetJob?: string;
+/** 星级评价 */
+function getStarRating(score: number): { stars: string; label: string } {
+  if (score >= 9) return { stars: '⭐⭐⭐⭐⭐', label: '卓越' };
+  if (score >= 7) return { stars: '⭐⭐⭐⭐', label: '优秀' };
+  if (score >= 5) return { stars: '⭐⭐⭐', label: '一般' };
+  return { stars: '⭐⭐', label: '需提升' };
 }
 
-const RADAR_COLORS = {
-  grid: '#E5E7EB',
-  fill: '#165DFF',
-  stroke: '#165DFF',
-  text: '#6B7280',
-};
-
-const BAR_COLORS = [
-  '#165DFF', // primary blue
-  '#3D7FFF',
-  '#36B37E', // green
-  '#FF7D00', // membership gold
-  '#8B5CF6', // purple
-  '#F59E0B', // amber
-];
-
-function getScoreLevel(score: number): { label: string; color: string; bg: string } {
-  if (score >= 8.5) return { label: '优秀', color: 'text-green-600', bg: 'bg-green-50' };
-  if (score >= 7) return { label: '良好', color: 'text-blue-600', bg: 'bg-blue-50' };
-  if (score >= 5) return { label: '一般', color: 'text-orange-600', bg: 'bg-orange-50' };
-  return { label: '待提升', color: 'text-red-600', bg: 'bg-red-50' };
+/** 进度条颜色渐变类名 */
+function getProgressColor(score: number): string {
+  if (score >= 8) return 'bg-gradient-to-r from-green-400 to-green-500';
+  if (score >= 6) return 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]';
+  return 'bg-gradient-to-r from-amber-400 to-red-400';
 }
 
-function RadarChartCard({ radarData }: { radarData: Record<string, number> }) {
-  const chartData = Object.entries(radarData).map(([name, score]) => ({
-    dimension: name,
-    score,
-    fullMark: 10,
-  }));
+/** 改进建议优先级图标 */
+function getImprovementIcon(index: number): string {
+  if (index < 3) return '🔴';
+  if (index < 6) return '🟡';
+  return '⚪';
+}
 
-  if (chartData.length === 0) return null;
+function DimensionScoreBar({ dimension }: { dimension: Dimension }) {
+  const [expanded, setExpanded] = useState(false);
+  const displayScore = Math.round(dimension.score * 10) / 10;
 
   return (
-    <div className="w-full h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="70%">
-          <PolarGrid stroke={RADAR_COLORS.grid} />
-          <PolarAngleAxis
-            dataKey="dimension"
-            tick={{ fill: RADAR_COLORS.text, fontSize: 12 }}
-          />
-          <PolarRadiusAxis
-            angle={90}
-            domain={[0, 10]}
-            tick={{ fill: RADAR_COLORS.text, fontSize: 10 }}
-            tickCount={6}
-          />
-          <Radar
-            name="评分"
-            dataKey="score"
-            stroke={RADAR_COLORS.stroke}
-            fill={RADAR_COLORS.fill}
-            fillOpacity={0.15}
-            strokeWidth={2}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
+    <div className="space-y-1.5">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between group cursor-pointer text-left"
+      >
+        <span className="text-sm font-medium text-gray-700 truncate flex items-center gap-1.5">
+          {dimension.name}
+          <svg
+            className={cn(
+              'w-3.5 h-3.5 text-gray-400 transition-transform duration-200',
+              expanded && 'rotate-180'
+            )}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
+        <span className={cn(
+          'text-sm font-semibold tabular-nums',
+          dimension.score >= 8 ? 'text-green-600' :
+          dimension.score >= 6 ? 'text-[#165DFF]' :
+          'text-amber-600'
+        )}>
+          {displayScore}
+        </span>
+      </button>
 
-function DimensionBarChart({ dimensions }: { dimensions: Dimension[] }) {
-  const chartData = dimensions
-    .filter(d => d.name !== '综合竞争力')
-    .map(d => ({ name: d.name, score: d.score }));
+      <Progress
+        value={dimension.score * 10}
+        className="h-2 bg-gray-100 rounded-full"
+        indicatorClassName={cn('rounded-full', getProgressColor(dimension.score))}
+      />
 
-  return (
-    <div className="w-full h-48 mt-4">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 0, right: 30, left: 70, bottom: 0 }}
-        >
-          <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 11 }} />
-          <YAxis
-            type="category"
-            dataKey="name"
-            tick={{ fontSize: 11 }}
-            width={65}
-          />
-          <Tooltip
-            formatter={(value: number) => [`${value}/10`, '评分']}
-            contentStyle={{ fontSize: 12 }}
-          />
-          <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={18}>
-            {chartData.map((_, idx) => (
-              <Cell key={idx} fill={BAR_COLORS[idx % BAR_COLORS.length]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-export default function ResumeScoreCard({ result, targetJob }: Props) {
-  const level = getScoreLevel(result.overallScore / 10);
-
-  return (
-    <Card className="border border-blue-100 shadow-sm">
-      <CardHeader className="pb-3 border-b border-blue-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#165DFF]" />
-            <CardTitle className="text-lg">简历综合评分</CardTitle>
-          </div>
-          {targetJob && (
-            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-              {targetJob}
-            </Badge>
-          )}
+      {/* 展开评语 */}
+      {expanded && dimension.comment && (
+        <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 mt-1 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
+          {dimension.comment}
         </div>
-      </CardHeader>
-      <CardContent className="pt-4">
-        {/* 总分 */}
-        <div className="flex items-center justify-center mb-4">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center ${level.bg} border-2 border-[#165DFF]/20`}>
-            <div className="text-center">
-              <div className={`text-3xl font-bold ${level.color}`}>
-                {result.overallScore}
-              </div>
-              <div className="text-[10px] text-gray-400">/100</div>
+      )}
+    </div>
+  );
+}
+
+export default function ResumeScoreCard({ data, className }: ResumeScoreCardProps) {
+  const { overall_score, dimensions, improvements } = data;
+  const { stars, label } = getStarRating(overall_score);
+  const displayTotal = Math.round(overall_score * 10) / 10;
+
+  return (
+    <Card className={cn(
+      'bg-white/80 backdrop-blur-md rounded-2xl shadow-lg shadow-[#165DFF]/5 border-0 overflow-hidden',
+      className
+    )}>
+      {/* 顶部彩色装饰条 */}
+      <div className="h-1.5 bg-gradient-to-r from-[#165DFF] via-[#3D7FFF] to-blue-300" />
+
+      <CardContent className="p-6 space-y-6">
+        {/* ===== 总分区 ===== */}
+        <div className="bg-white/70 backdrop-blur rounded-2xl border border-[#165DFF]/20 p-5">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* 大号分数 */}
+            <div className="flex items-baseline gap-1">
+              <span className="text-5xl font-bold text-gray-900 tabular-nums">
+                {displayTotal}
+              </span>
+              <span className="text-base text-gray-400 font-medium">/ 10</span>
+            </div>
+
+            {/* 分隔线（PC） */}
+            <div className="hidden sm:block w-px h-12 bg-gray-200" />
+
+            {/* 星级 + 标签 */}
+            <div className="flex flex-col items-center sm:items-start">
+              <span className="text-2xl tracking-wider">{stars}</span>
+              <span className={cn(
+                'mt-0.5 text-sm font-medium px-2.5 py-0.5 rounded-full',
+                overall_score >= 9 ? 'bg-green-50 text-green-700' :
+                overall_score >= 7 ? 'bg-blue-50 text-[#165DFF]' :
+                overall_score >= 5 ? 'bg-amber-50 text-amber-700' :
+                'bg-red-50 text-red-600'
+              )}>
+                {label}
+              </span>
+            </div>
+
+            {/* 右侧填充 */}
+            <div className="hidden sm:block flex-1" />
+
+            {/* 维度数信息 */}
+            <div className="text-xs text-gray-400 text-center sm:text-right">
+              <div>{dimensions.length} 个评估维度</div>
+              <div>{improvements.length} 条改进建议</div>
             </div>
           </div>
-          <div className="ml-4 flex-1">
-            <div className={`text-sm font-medium ${level.color}`}>{level.label}</div>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              {result.summary}
-            </p>
+        </div>
+
+        {/* ===== 维度评分条区 ===== */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#165DFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            维度评分
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            {dimensions.map((dim, idx) => (
+              <DimensionScoreBar key={idx} dimension={dim} />
+            ))}
           </div>
         </div>
 
-        {/* 雷达图 */}
-        <RadarChartCard radarData={result.radarData} />
+        {/* ===== 分隔线 ===== */}
+        <div className="border-t border-gray-100" />
 
-        {/* 维度柱状图 */}
-        <DimensionBarChart dimensions={result.dimensions} />
+        {/* ===== 改进建议区 ===== */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#165DFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            改进建议
+          </h3>
 
-        {/* 维度详情 */}
-        <div className="mt-4 space-y-2">
-          {result.dimensions
-            .filter(d => d.name !== '综合竞争力')
-            .map((dim, idx) => (
-              <div key={idx} className="p-3 rounded-lg bg-gray-50/80">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-700">{dim.name}</span>
-                  <span className="text-xs font-bold" style={{ color: BAR_COLORS[idx % BAR_COLORS.length] }}>
-                    {dim.score}/10
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${(dim.score / 10) * 100}%`,
-                      backgroundColor: BAR_COLORS[idx % BAR_COLORS.length],
-                    }}
-                  />
-                </div>
-                {dim.comment && (
-                  <p className="text-[11px] text-gray-400 mt-1">{dim.comment}</p>
+          <ol className="space-y-2">
+            {improvements.map((item, idx) => (
+              <li
+                key={idx}
+                className={cn(
+                  'flex items-start gap-3 text-sm rounded-lg p-3 transition-colors',
+                  idx < 3 ? 'bg-red-50/60' :
+                  idx < 6 ? 'bg-amber-50/60' :
+                  'bg-gray-50/60'
                 )}
-              </div>
+              >
+                <span className="text-base leading-5 flex-shrink-0 mt-0.5">
+                  {getImprovementIcon(idx)}
+                </span>
+                <span className="text-gray-700 leading-relaxed">{item}</span>
+              </li>
             ))}
+          </ol>
         </div>
-
-        {/* 改进建议 */}
-        {result.improvements && result.improvements.length > 0 && (
-          <div className="mt-4 p-3 rounded-lg bg-amber-50/80 border border-amber-100">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Lightbulb className="w-4 h-4 text-amber-600" />
-              <span className="text-xs font-medium text-amber-700">改进建议</span>
-            </div>
-            <ul className="space-y-1">
-              {result.improvements.map((item, idx) => (
-                <li key={idx} className="flex items-start gap-1.5">
-                  <AlertCircle className="w-3 h-3 text-amber-500 mt-0.5 shrink-0" />
-                  <span className="text-xs text-amber-800">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
