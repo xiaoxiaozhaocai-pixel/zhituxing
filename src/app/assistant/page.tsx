@@ -228,7 +228,7 @@ const bots: BotConfig[] = [
 ✨ **我能帮你：**
 • 🤔 聊聊桂电的校园生活、专业选择、就业方向
 • 🎯 帮你分析适合什么岗位、考研还是就业
-• 🔗 调度职途星其他智能体帮你解决具体问题
+• 🔗 调度职途星其他功能/能力帮你解决具体问题
 • 📊 结合真实数据给你靠谱建议
 • 💬 就是单纯想找人说说话也行~
 
@@ -384,6 +384,7 @@ function AssistantContent() {
   }, [activeBot, currentBot.welcomeMessage]);
 
   // 解析 URL 参数：bot + query（只执行一次）
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const bot = searchParams.get('bot');
     if (bot && !pendingQuery) {
@@ -655,7 +656,7 @@ function AssistantContent() {
       const decoder = new TextDecoder();
       let fullContent = '';
       let sseBuffer = '';
-      let firstTokenTimer = setTimeout(() => {
+      const firstTokenTimer = setTimeout(() => {
         // 15秒未收到第一个token
         setMessages(prev => {
           const newMsgs = [...prev];
@@ -946,6 +947,7 @@ function AssistantContent() {
   };
 
   // 处理 pendingQuery（从 URL 解析的岗位分析请求）
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (pendingQuery && !isLoading && messages.length > 0) {
       const queryToSend = pendingQuery;
@@ -1000,11 +1002,11 @@ function AssistantContent() {
             AI职业助手
           </h1>
           <p className="text-gray-600 text-sm">
-            七大智能体协同服务，助你求职无忧
+            小职的七大能力协同服务，助你求职无忧
           </p>
         </div>
 
-        {/* 智能体Tab选择器 */}
+        {/* 功能/能力Tab选择器 */}
         <div className="bot-tabs mb-4">
           <div className="flex gap-2 p-1 bg-gray-100 rounded-xl overflow-x-auto">
             {bots.map((bot) => (

@@ -39,7 +39,7 @@ function truncateResumeText(text: string, maxChars: number = 8000): string {
  * Clean and parse LLM JSON response
  * Removes markdown code block wrappers and attempts to fix common formatting issues
  */
-function parseLLMResponse(content: string): any {
+function parseLLMResponse(content: string): Record<string, unknown> {
   // Remove markdown code block markers
   let cleaned = content.trim();
   
@@ -80,7 +80,7 @@ function parseLLMResponse(content: string): any {
 /**
  * Validate the parsed score data structure
  */
-function validateScoreData(data: any): boolean {
+function validateScoreData(data: Record<string, unknown>): boolean {
   if (!data || typeof data !== 'object') return false;
   if (typeof data.overall_score !== 'number') return false;
   if (!Array.isArray(data.dimensions)) return false;
@@ -186,7 +186,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
     }
 
     // 8. Parse LLM response
-    let scoreData: any;
+    let scoreData: Record<string, unknown>;
     try {
       scoreData = parseLLMResponse(result.content);
     } catch (parseError) {
@@ -208,7 +208,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
 
     // 10. Build radar data
     const radarData: Record<string, number> = {};
-    const dimensionsWithWeight = scoreData.dimensions.map((dim: any) => {
+    const dimensionsWithWeight = (scoreData.dimensions as Array<Record<string, number>>).map((dim: any) => {
       radarData[dim.name] = dim.score;
       return {
         name: dim.name,
@@ -224,7 +224,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
 
     // 11. Calculate weighted overall score (use LLM's if provided, otherwise calculate)
     const overallScore = scoreData.overall_score || 
-      Math.round(dimensionsWithWeight.reduce((sum: number, dim: any) => sum + dim.score * dim.weight, 0) * 10) / 10;
+      Math.round(dimensionsWithWeight.reduce((sum: number, dim: Record<string, number>) => sum + dim.score * dim.weight, 0) * 10) / 10;
 
     // 12. Store in database
     const { data: dbResult, error: dbError } = await supabase

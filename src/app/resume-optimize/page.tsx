@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, FileText, Sparkles, Crown, CheckCircle, ArrowRight, Clock, BarChart3 } from 'lucide-react';
@@ -83,21 +81,6 @@ export default function ResumeOptimizePage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [isScoring, setIsScoring] = useState(false);
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
-
-  // 未登录跳转登录页
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth');
-    }
-  }, [user, loading, router]);
-
-  // 获取最近的优化记录
-  useEffect(() => {
-    if (user) {
-      fetchRecentRecords();
-    }
-  }, [user]);
-
   const fetchRecentRecords = async () => {
     if (!user) return;
     setDataLoading(true);
@@ -115,6 +98,22 @@ export default function ResumeOptimizePage() {
       setDataLoading(false);
     }
   };
+  // 未登录跳转登录页
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
+  // 获取最近的优化记录
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (user) {
+      fetchRecentRecords();
+    }
+  }, [user]);
+
+
+
 
   const handleOptimize = async () => {
     if (!user) return;
