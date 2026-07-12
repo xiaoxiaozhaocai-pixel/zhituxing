@@ -6,7 +6,10 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, CheckCircle2, AlertCircle, Download } from 'lucide-react';
+import { Loader2, Send, FileText, Eye, MessageCircle, ArrowRight, History, Save, CheckCircle2, AlertCircle, Download, X, Target, Sparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 
 // 简历结构化字段
@@ -41,6 +44,21 @@ export default function ResumeBuilderPage() {
   const resumeRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const [scoreSuggestions, setScoreSuggestions] = useState<string[]>([]);
+
+  // ===== P2.3 技能匹配状态 =====
+  const [showSkillMatch, setShowSkillMatch] = useState(false);
+  const [jobTitle, setJobTitle] = useState('');
+  const [skillMatchResult, setSkillMatchResult] = useState<{required:string[];matched:string[];missing:string[];match_rate:number} | null>(null);
+  const [isSkillMatching, setIsSkillMatching] = useState(false);
+  const [skillMatchError, setSkillMatchError] = useState('');
+
+  // ===== P4 能力翻译状态 =====
+  const [showTranslate, setShowTranslate] = useState(false);
+  const [translateInput, setTranslateInput] = useState('');
+  const [targetIndustry, setTargetIndustry] = useState('');
+  const [translateResult, setTranslateResult] = useState<{original:string;translated:string;gaps:string[]} | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState('');
 
   // 按关键词匹配评分建议到对应section
   const getSectionSuggestions = useCallback((section: string): string[] => {
@@ -183,7 +201,111 @@ export default function ResumeBuilderPage() {
     } catch { /* 不是有效的 JSON，忽略 */ }
   }, []);
 
-  const handleSend = async () => {
+  // ===== P2.3 技能匹配 =====
+  const handleSkillMatch = async () => {
+    if (!jobTitle.trim() || !user) return;
+    setIsSkillMatching(true);
+    setSkillMatchError('');
+    setSkillMatchResult(null);
+    try {
+      const res = await fetch(`/api/skill-tags/match?job_description=${encodeURIComponent(jobTitle.trim())}`);
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || '请求失败');
+      }
+      const data = await res.json();
+      if (data.success && data.data) {
+        setSkillMatchResult(data.data);
+      } else {
+        throw new Error(data.error || '数据异常');
+      }
+    } catch (err) {
+      setSkillMatchError(err instanceof Error ? err.message : '技能匹配失败');
+    } finally {
+      setIsSkillMatching(false);
+    }
+  };
+
+  const handleAddMissingSkill = async (skillName: string) => {
+    if (!user) return;
+    try {
+      const tagRes = await fetch(`/api/skill-tags?search=${encodeURIComponent(skillName)}`);
+      const tagData = await tagRes.json();
+      if (!tagData.success || !tagData.data || tagData.data.length === 0) return;
+      const skillId = tagData.data[0].id;
+
+      const userSkillRes = await fetch('/api/user/skill-tags');
+      const userSkillData = await userSkillRes.json();
+      const existingIds: number[] = (userSkillData.success ? userSkillData.data || [] : []).map(
+        (s: { skill_id: number }) => s.skill_id
+      );
+
+      const allIds = [...new Set([...existingIds, skillId])];
+      await fetch('/api/user/skill-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skill_ids: allIds }),
+      });
+
+      setSkillMatchResult(prev => {
+        if (!prev) return prev;
+        const newMatched = [...prev.matched, skillName];
+        return {
+          ...prev,
+          matched: newMatched,
+          missing: prev.missing.filter(s => s !== skillName),
+          match_rate: Math.round((newMatched.length / prev.required.length) * 100),
+        };
+      });
+    } catch {
+      console.error('添加技能失败');
+    }
+  };
+
+  // ===== P4 能力翻译 =====
+  const handleTranslate = async () => {
+    if (!translateInput.trim() || !user) return;
+    setIsTranslating(true);
+    setTranslateError('');
+    setTranslateResult(null);
+    try {
+      const res = await fetch('/api/resume/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          experience: translateInput.trim(),
+          target_industry: targetIndustry || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || '请求失败');
+      }
+      const data = await res.json();
+      if (data.success && data.data) {
+        setTranslateResult(data.data);
+      } else {
+        throw new Error(data.error || '数据异常');
+      }
+    } catch (err) {
+      setTranslateError(err instanceof Error ? err.message : '翻译失败');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleReplaceExperience = () => {
+    if (!translateResult) return;
+    setResume(prev => {
+      const newExp = [...prev.experience];
+      if (newExp.length === 0) return prev;
+      const lines = translateResult.translated.split('\n').filter(Boolean);
+      newExp[0] = { ...newExp[0], description: lines };
+      return { ...prev, experience: newExp };
+    });
+    setShowTranslate(false);
+  };
+    const handleSend = async () => {
     if (!input.trim() || isStreaming || !user) return;
     
     const userMsg = input.trim();
@@ -277,6 +399,20 @@ export default function ResumeBuilderPage() {
           <Button variant="ghost" size="sm" onClick={() => setResume(emptyResume)}>
             <History className="h-4 w-4 mr-1" /> 清空简历
           </Button>
+          <Dialog open={showSkillMatch} onOpenChange={setShowSkillMatch}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Target className="h-4 w-4 mr-1" /> 技能匹配
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          <Dialog open={showTranslate} onOpenChange={setShowTranslate}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Sparkles className="h-4 w-4 mr-1" /> 能力翻译
+              </Button>
+            </DialogTrigger>
+          </Dialog>
           <Link href="/assistant?botType=interview">
             <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
               模拟面试 <ArrowRight className="h-4 w-4 ml-1" />
@@ -494,6 +630,163 @@ export default function ResumeBuilderPage() {
           </div>
         </div>
       </div>
+
+      {/* P2.3 技能匹配弹窗 */}
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-blue-600" />
+            技能匹配度分析
+          </DialogTitle>
+          <DialogClose className="absolute right-4 top-4">
+            <X className="h-4 w-4" />
+          </DialogClose>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="输入目标岗位，如「HR实习生」"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSkillMatch()}
+            />
+            <Button onClick={handleSkillMatch} disabled={isSkillMatching || !jobTitle.trim()}>
+              {isSkillMatching ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> 分析中</>
+              ) : '查询匹配'}
+            </Button>
+          </div>
+          {skillMatchError && (
+            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{skillMatchError}</div>
+          )}
+          {skillMatchResult && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">匹配度</span>
+                <span className={`text-lg font-bold ${
+                  skillMatchResult.match_rate >= 70 ? 'text-green-600' :
+                  skillMatchResult.match_rate >= 40 ? 'text-yellow-600' : 'text-red-600'
+                }`}>{skillMatchResult.match_rate}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className={`h-2.5 rounded-full ${
+                  skillMatchResult.match_rate >= 70 ? 'bg-green-500' :
+                  skillMatchResult.match_rate >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                }`} style={{width: `${skillMatchResult.match_rate}%`}} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">已具备的技能（{skillMatchResult.matched.length}项）</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {skillMatchResult.matched.map((s, i) => (
+                    <Badge key={i} variant="secondary" className="bg-green-50 text-green-700 border-green-200">{s}</Badge>
+                  ))}
+                  {skillMatchResult.matched.length === 0 && <span className="text-xs text-gray-400">暂无</span>}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">待补充的技能（{skillMatchResult.missing.length}项）</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {skillMatchResult.missing.map((s, i) => (
+                    <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1">
+                      {s}
+                      <button
+                        onClick={() => handleAddMissingSkill(s)}
+                        className="ml-1 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >添加</button>
+                    </Badge>
+                  ))}
+                  {skillMatchResult.missing.length === 0 && <span className="text-xs text-gray-400">完美匹配！</span>}
+                </div>
+              </div>
+              {skillMatchResult.missing.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">点击「添加」可将缺失技能一键加入你的技能清单</p>
+              )}
+            </div>
+          )}
+          {!skillMatchResult && !isSkillMatching && !skillMatchError && (
+            <div className="text-center text-gray-400 py-8">
+              <Target className="h-10 w-10 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">输入目标岗位，查看你的技能匹配度</p>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+
+      {/* P4 能力翻译词典弹窗 */}
+      <DialogContent className="sm:max-w-[550px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-blue-600" />
+            能力翻译 · 口语→专业简历用语
+          </DialogTitle>
+          <DialogClose className="absolute right-4 top-4">
+            <X className="h-4 w-4" />
+          </DialogClose>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">你的口语化经历描述</label>
+            <Textarea
+              placeholder="用你自己的话说说这段经历，比如「我在学生会组织过活动，负责宣传和协调，效果还不错」..."
+              value={translateInput}
+              onChange={(e) => setTranslateInput(e.target.value)}
+              className="min-h-[100px] text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">目标行业（可选）</label>
+            <Input
+              placeholder="如：互联网、金融、快消、新能源..."
+              value={targetIndustry}
+              onChange={(e) => setTargetIndustry(e.target.value)}
+            />
+          </div>
+          <Button
+            onClick={handleTranslate}
+            disabled={isTranslating || !translateInput.trim()}
+            className="w-full"
+          >
+            {isTranslating ? (
+              <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> 翻译中...</>
+            ) : '翻译为专业简历用语'}
+          </Button>
+          {translateError && (
+            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">{translateError}</div>
+          )}
+          {translateResult && (
+            <div className="space-y-3 border rounded-lg p-4 bg-gray-50">
+              <div>
+                <p className="text-xs text-gray-400 mb-1">原始描述</p>
+                <p className="text-sm text-gray-600 bg-white p-2 rounded border">{translateResult.original}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-1">专业简历描述</p>
+                <div className="text-sm text-gray-800 bg-white p-2 rounded border whitespace-pre-wrap">
+                  {translateResult.translated}
+                </div>
+              </div>
+              {translateResult.gaps.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">建议补充突出</p>
+                  <div className="flex flex-wrap gap-1">
+                    {translateResult.gaps.map((g, i) => (
+                      <Badge key={i} variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">{g}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => { setShowTranslate(false); }}>
+                  关闭
+                </Button>
+                <Button size="sm" onClick={handleReplaceExperience}>
+                  替换当前经历描述
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
 
       {/* 移动端标签切换 */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex">
