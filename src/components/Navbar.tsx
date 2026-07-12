@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap} from 'lucide-react';
+import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap, BarChart3} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -35,6 +35,7 @@ function isNavItemActive(href: string, pathname: string, currentBot: string | nu
 
 const mainNavItems = [
   { name: '首页', href: '/', icon: <Home className="w-4 h-4" /> },
+  { name: '求职档案', href: '/dashboard', icon: <BarChart3 className="w-4 h-4" /> },
 ];
 const moreNavItems = [
   { name: '会员中心', href: '/membership', icon: <Crown className="w-4 h-4" /> },
