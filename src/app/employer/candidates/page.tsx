@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 import {
   Loader2, Search, Briefcase, GraduationCap, MapPin, Award, Sparkles,
-  Lock, Unlock, ArrowLeft, ArrowRight, X, Coins,
+  Lock, Unlock, ArrowLeft, ArrowRight, X, Coins, MessageSquare,
 } from 'lucide-react';
 
 interface Candidate {
@@ -59,6 +60,8 @@ export default function CandidatesPage() {
 
   // 解锁弹窗
   const [unlockTarget, setUnlockTarget] = useState<Candidate | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showPushDialog, setShowPushDialog] = useState(false);
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -120,12 +123,23 @@ export default function CandidatesPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">¥10/条 · 24 小时内重复查看免费</p>
         </div>
-        {balance !== null && (
+        <div className="flex items-center gap-3">
+          {selectedIds.size > 0 && (
+            <button
+              onClick={() => setShowPushDialog(true)}
+              className="px-3 py-1.5 text-sm bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-md shadow-md shadow-[#165DFF]/20 hover:opacity-90 transition flex items-center gap-1.5"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              批量推送（{selectedIds.size}）
+            </button>
+          )}
+          {balance !== null && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FF7D00]/10 border border-[#FF7D00]/20">
             <Coins className="w-4 h-4 text-[#FF7D00]" />
             <span className="text-sm">余额 <span className="font-semibold text-[#FF7D00]">{balance}</span> 条</span>
           </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* 筛选条 */}
@@ -206,12 +220,46 @@ export default function CandidatesPage() {
         <div className="text-center py-20 text-gray-400">没有符合条件的候选人</div>
       ) : (
         <>
-          <div className="text-xs text-gray-500">
-            共 {data.total} 名候选人，第 {data.page}/{data.total_pages} 页
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-3.5 h-3.5 rounded border-gray-300 text-[#165DFF] focus:ring-[#165DFF]"
+                  checked={data.items.length > 0 && selectedIds.size === data.items.length}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedIds(new Set(data.items.map((c: Candidate) => c.user_id)));
+                    } else {
+                      setSelectedIds(new Set());
+                    }
+                  }}
+                />
+                全选
+              </label>
+              {selectedIds.size > 0 && (
+                <span className="text-xs font-medium text-[#165DFF]">
+                  已选 {selectedIds.size} 人
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-gray-500">
+              共 {data.total} 名候选人，第 {data.page}/{data.total_pages} 页
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {data.items.map((c) => (
-              <CandidateCard key={c.user_id} c={c} onUnlock={() => setUnlockTarget(c)} />
+              <CandidateCard
+                key={c.user_id}
+                c={c}
+                selected={selectedIds.has(c.user_id)}
+                onToggleSelect={() => {
+                  const next = new Set(selectedIds);
+                  if (next.has(c.user_id)) { next.delete(c.user_id); } else { next.add(c.user_id); }
+                  setSelectedIds(next);
+                }}
+                onUnlock={() => setUnlockTarget(c)}
+              />
             ))}
           </div>
           {/* 分页 */}
@@ -237,6 +285,16 @@ export default function CandidatesPage() {
         </>
       )}
 
+      {/* 批量推送弹窗 */}
+      {showPushDialog && selectedIds.size > 0 && (
+        <BatchPushDialog
+          selectedIds={selectedIds}
+          candidates={data?.items || []}
+          onClose={() => setShowPushDialog(false)}
+          onSuccess={() => setSelectedIds(new Set())}
+        />
+      )}
+
       {/* 解锁弹窗 */}
       {unlockTarget && (
         <UnlockDialog
@@ -252,10 +310,32 @@ export default function CandidatesPage() {
   );
 }
 
-function CandidateCard({ c, onUnlock }: { c: Candidate; onUnlock: () => void }) {
+function CandidateCard({ c, selected, onToggleSelect, onUnlock }: {
+  c: Candidate;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onUnlock: () => void;
+}) {
   return (
-    <div className="bg-white/90 backdrop-blur-sm border border-gray-100 rounded-xl p-4 hover:border-[#165DFF]/30 hover:shadow-lg hover:shadow-[#165DFF]/5 transition hover:-translate-y-0.5 flex flex-col">
-      <div className="flex items-start justify-between mb-2">
+    <div className={cn(
+        "bg-white/90 backdrop-blur-sm border rounded-xl p-4 transition hover:-translate-y-0.5 flex flex-col",
+        selected ? "border-[#165DFF] ring-1 ring-[#165DFF]/30" : "border-gray-100 hover:border-[#165DFF]/30 hover:shadow-lg hover:shadow-[#165DFF]/5"
+      )}>
+      <div className="flex items-start gap-2 mb-2">
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+          className={cn(
+            "mt-0.5 flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition",
+            selected ? "bg-[#165DFF] border-[#165DFF]" : "border-gray-300 hover:border-[#165DFF]"
+          )}
+        >
+          {selected && (
+            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </button>
+        <div className="flex-1">
         <div>
           <div className="font-semibold text-gray-900">{c.nickname || '匿名候选人'}</div>
           <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
@@ -274,6 +354,7 @@ function CandidateCard({ c, onUnlock }: { c: Candidate; onUnlock: () => void }) 
               测评 {c.assessment_overall_score}
             </span>
           )}
+        </div>
         </div>
       </div>
       <div className="text-xs text-gray-600 mb-1.5 flex items-center gap-1">
@@ -468,6 +549,118 @@ function UnlockDialog({
               </div>
             </>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BatchPushDialog({
+  selectedIds,
+  candidates,
+  onClose,
+  onSuccess,
+}: {
+  selectedIds: Set<string>;
+  candidates: Candidate[];
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; count?: number; error?: string } | null>(null);
+
+  async function handlePush() {
+    if (!message.trim()) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      const r = await fetch('/api/employer/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          candidate_user_ids: Array.from(selectedIds),
+          message: message.trim(),
+        }),
+      });
+      const j = await r.json();
+      if (r.ok && j.success) {
+        setResult({ ok: true, count: j.data.pushed_count });
+        setTimeout(() => { onSuccess(); onClose(); }, 1500);
+      } else {
+        setResult({ ok: false, error: j.error || '推送失败' });
+      }
+    } catch {
+      setResult({ ok: false, error: '网络错误' });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const selectedNames = candidates
+    .filter((c) => selectedIds.has(c.user_id))
+    .map((c) => c.nickname || '匿名');
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-[#165DFF]" />
+            批量推送消息
+          </h3>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-2">
+              发送给 {selectedIds.size} 位候选人
+            </div>
+            <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1">
+              {selectedNames.slice(0, 20).map((name) => (
+                <span key={name} className="text-xs px-2 py-0.5 rounded-full bg-[#165DFF]/10 text-[#165DFF]">
+                  {name}
+                </span>
+              ))}
+              {selectedNames.length > 20 && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                  +{selectedNames.length - 20} 人
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">推送消息</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="输入你想发送给候选人的消息..."
+              rows={4}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-[#165DFF] outline-none resize-none"
+            />
+          </div>
+
+          {result && (
+            <div className={`text-sm px-3 py-2 rounded-lg ${result.ok ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+              {result.ok ? `成功推送给 ${result.count} 位候选人` : result.error}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button onClick={onClose} disabled={loading}
+              className="flex-1 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-50">
+              取消
+            </button>
+            <button onClick={handlePush} disabled={loading || !message.trim()}
+              className="flex-1 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg shadow-md shadow-[#165DFF]/20 hover:opacity-90 disabled:opacity-50 transition flex items-center justify-center gap-1.5">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+              确认推送
+            </button>
+          </div>
         </div>
       </div>
     </div>

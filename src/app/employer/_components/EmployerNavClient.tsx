@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Coins, LayoutDashboard, Users, Receipt, LogOut, BarChart3 } from 'lucide-react';
+import { Coins, LayoutDashboard, Users, Receipt, LogOut, BarChart3, BookOpen } from 'lucide-react';
 
 interface EmployerMe {
   employer_id: string;
@@ -16,6 +16,7 @@ interface EmployerMe {
 const NAV = [
   { href: '/employer/dashboard', label: '工作台', icon: LayoutDashboard },
   { href: '/employer/candidates', label: '候选人', icon: Users },
+  { href: '/employer/training', label: '培养通道', icon: BookOpen },
   { href: '/employer/analytics', label: '数据看板', icon: BarChart3 },
   { href: '/employer/billing', label: '账户', icon: Receipt },
 ];
