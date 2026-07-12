@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,20 @@ export default function ResumeBuilderPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const [scoreSuggestions, setScoreSuggestions] = useState<string[]>([]);
+
+  // 按关键词匹配评分建议到对应section
+  const getSectionSuggestions = useCallback((section: string): string[] => {
+    const keywordMap: Record<string, string[]> = {
+      education: ['教育', '学校', '专业', '学历', '学位', '毕业'],
+      experience: ['经历', '实习', '工作', '经验'],
+      projects: ['项目', '项目经验', '项目经历'],
+      skills: ['技能', '技术', '工具', '语言', '证书'],
+    };
+    const keywords = keywordMap[section] || [];
+    return scoreSuggestions.filter(s => keywords.some(kw => s.includes(kw)));
+  }, [scoreSuggestions]);
 
   useEffect(() => {
     if (!loading && !user) router.push('/auth');
@@ -61,6 +75,34 @@ export default function ResumeBuilderPage() {
       })
       .catch(() => {});
   }, [user]);
+
+  // 获取最新评分建议
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/resume/score/history?limit=1', {
+      headers: { 'x-user-id': user.id }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.records?.length > 0) {
+          const latest = data.data.records[0];
+          if (latest.improvements?.length > 0) {
+            setScoreSuggestions(latest.improvements);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [user]);
+
+  // 处理 focus 参数滚动到对应区域
+  useEffect(() => {
+    const focus = searchParams.get('focus');
+    if (focus && resumeRef.current) {
+      setTimeout(() => {
+        resumeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
+    }
+  }, [searchParams]);
 
   // 保存简历
   const handleSave = async () => {
@@ -309,6 +351,16 @@ export default function ResumeBuilderPage() {
                 {/* 基本信息 */}
                 {resume.basic.name && (
                   <div className="text-center mb-6">
+                    {scoreSuggestions.length > 0 && (
+                      <div className="mb-4 p-3 bg-blue-50/80 border border-blue-100 rounded-lg text-xs text-blue-700 leading-relaxed">
+                        {scoreSuggestions.map((s, i) => (
+                          <div key={i} className="flex items-start gap-1.5 mb-1 last:mb-0">
+                            <span>💡</span>
+                            <span>评分建议：{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">{resume.basic.name || '姓名'}</h1>
                     <div className="text-sm text-gray-500 space-x-3">
                       {resume.basic.phone && <span>📱 {resume.basic.phone}</span>}
@@ -325,6 +377,16 @@ export default function ResumeBuilderPage() {
                 {/* 教育经历 */}
                 {resume.education.length > 0 && (
                   <Section title="教育经历">
+                    {getSectionSuggestions('education').length > 0 && (
+                      <div className="mb-3 p-3 bg-blue-50/80 border border-blue-100 rounded-lg text-xs text-blue-700 leading-relaxed">
+                        {getSectionSuggestions('education').map((s, i) => (
+                          <div key={i} className="flex items-start gap-1.5 mb-1 last:mb-0">
+                            <span>💡</span>
+                            <span>评分建议：{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {resume.education.map((edu, i) => (
                       <div key={i} className="mb-3">
                         <div className="flex justify-between text-sm">
@@ -341,6 +403,16 @@ export default function ResumeBuilderPage() {
                 {/* 实习/工作经历 */}
                 {resume.experience.length > 0 && (
                   <Section title="实习经历">
+                    {getSectionSuggestions('experience').length > 0 && (
+                      <div className="mb-3 p-3 bg-blue-50/80 border border-blue-100 rounded-lg text-xs text-blue-700 leading-relaxed">
+                        {getSectionSuggestions('experience').map((s, i) => (
+                          <div key={i} className="flex items-start gap-1.5 mb-1 last:mb-0">
+                            <span>💡</span>
+                            <span>评分建议：{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {resume.experience.map((exp, i) => (
                       <div key={i} className="mb-4">
                         <div className="flex justify-between text-sm">
@@ -360,6 +432,16 @@ export default function ResumeBuilderPage() {
                 {/* 项目经历 */}
                 {resume.projects.length > 0 && (
                   <Section title="项目经历">
+                    {getSectionSuggestions('projects').length > 0 && (
+                      <div className="mb-3 p-3 bg-blue-50/80 border border-blue-100 rounded-lg text-xs text-blue-700 leading-relaxed">
+                        {getSectionSuggestions('projects').map((s, i) => (
+                          <div key={i} className="flex items-start gap-1.5 mb-1 last:mb-0">
+                            <span>💡</span>
+                            <span>评分建议：{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {resume.projects.map((proj, i) => (
                       <div key={i} className="mb-4">
                         <div className="flex justify-between text-sm">
@@ -379,6 +461,16 @@ export default function ResumeBuilderPage() {
                 {/* 技能 */}
                 {resume.skills.length > 0 && (
                   <Section title="专业技能">
+                    {getSectionSuggestions('skills').length > 0 && (
+                      <div className="mb-3 p-3 bg-blue-50/80 border border-blue-100 rounded-lg text-xs text-blue-700 leading-relaxed">
+                        {getSectionSuggestions('skills').map((s, i) => (
+                          <div key={i} className="flex items-start gap-1.5 mb-1 last:mb-0">
+                            <span>💡</span>
+                            <span>评分建议：{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       {resume.skills.map((skill, i) => (
                         <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">

@@ -406,6 +406,17 @@ export default function ResumeOptimizePage() {
                     {/* Right: Score Card */}
                     <ResumeScoreCard data={scoreResult} />
                   </div>
+
+                  {/* 评分→编辑闭环：去优化按钮 */}
+                  <div className="flex justify-center mt-6 pt-4 border-t border-gray-100">
+                    <Button
+                      className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white px-8 hover:shadow-lg hover:shadow-[#165DFF]/20 transition-all"
+                      onClick={() => router.push("/resume-builder?focus=experience")}
+                    >
+                      去优化
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
