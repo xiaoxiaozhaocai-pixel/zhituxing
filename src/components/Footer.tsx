@@ -38,6 +38,7 @@ export default function Footer() {
     { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-3.5 h-3.5" /> },
     { name: '联系我们', href: '/contact', icon: <Phone className="w-3.5 h-3.5" /> },
     { name: '高校合作', href: '/university', icon: <Building2 className="w-3.5 h-3.5" /> },
+    { name: '企业服务', href: '/enterprise', icon: <Building2 className="w-3.5 h-3.5" /> },
   ];
 
   return (

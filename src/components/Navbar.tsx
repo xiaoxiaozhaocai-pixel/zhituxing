@@ -42,6 +42,7 @@ const moreNavItems = [
   { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-4 h-4" /> },
   { name: '联系我们', href: '/contact', icon: <Phone className="w-4 h-4" /> },
   { name: '高校合作', href: '/university', icon: <Building2 className="w-4 h-4" /> },
+  { name: '企业服务', href: '/enterprise', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 
