@@ -362,3 +362,4 @@ export const useStore = create<Store>((set) => ({
 4. **使用 TypeScript** 进行类型安全开发
 5. **使用 `@/` 路径别名** 导入模块（已配置）
 
+# 盲评卡片MVP - Zeabur deploy trigger
