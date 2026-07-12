@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     if (userSkillError) throw userSkillError;
 
     const userSkillNames = new Set(
-      (userSkills || []).map((s: { skill_tags: { name: string } }) => s.skill_tags.name)
+      (userSkills || []).map((s: { skill_tags: { name: string }[] }) => s.skill_tags[0]?.name || '')
     );
 
     // 2. 获取所有技能标签库
