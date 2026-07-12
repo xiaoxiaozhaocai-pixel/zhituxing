@@ -19,7 +19,7 @@ async function saveStructuredData(
 
     let table = '';
     let dataField = 'result_data';
-    if (dataType === 'interview_result' || botType === 'interview') {
+    if (dataType === 'interview_result' || dataType === 'interview_feedback' || botType === 'interview') {
       table = 'interview_results';
     } else if (dataType === 'career_plan' || botType === 'career') {
       table = 'career_plans';

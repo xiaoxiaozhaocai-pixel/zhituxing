@@ -75,15 +75,15 @@ const jobsWelcome = `👋 你好！我是「职途星——职搭子」，大学
 
 const interviewWelcome = `👋你好！我是职途星AI面试官，将为你还原真实的企业校招全流程面试。
 
-【面试模式选择】我们提供两种面试模式，请选择:
-1. 文字面试：纯文字对话形式
-2. 视频面试：AI面试官以视频形象出现，配合语音提问
+我们提供四种面试类型:
+🤝 常规面试 — 真实校招全流程模拟
+⚡ 压力面试 — 高压追问，测试抗压能力
+👥 无领导小组讨论 — 模拟群面，一人分饰多角
+🌍 英文面试 — 全英文模拟，提升国际竞争力
 
-请你提供以下信息:
-1. 面试模式
-2. 你应聘的岗位全称
-3. 该岗位的完整官方JD
-4. 你的个人求职简历`;
+同时支持三种风格切换：温和 / 严格 / 压力
+
+请从上方选择面试类型，然后开始练习~`;
 
 const careerWelcome = `👋 你好！我是「职途星——你的AI职业生涯规划助手」，专为大学生打造的个性化职业规划工具，所有建议均基于全行业真实招聘数据。
 ✨ 我能帮你做什么：
@@ -277,6 +277,8 @@ function AssistantContent() {
   
   // 面试模式状态
   const [interviewMode, setInterviewMode] = useState<'text' | 'video' | null>(null);
+  // 面试类型状态（P6.2新增）
+  const [interviewType, setInterviewType] = useState<'standard' | 'pressure' | 'group' | 'english' | null>(null);
   
   // 文件上传状态
   const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
@@ -499,6 +501,16 @@ function AssistantContent() {
     setUploadedFile(null);
   };
 
+  // 面试类型选择处理（P6.2新增）
+  const handleInterviewTypeSelect = (type: 'standard' | 'pressure' | 'group' | 'english') => {
+    setInterviewType(type);
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `✅ 已选择「${type === 'standard' ? '常规面试' : type === 'pressure' ? '压力面试' : type === 'group' ? '无领导小组讨论' : '英文面试'}」\n\n请选择面试模式：\n1. 文字面试 — 纯文字对话形式\n2. 视频面试 — AI面试官以视频形象出现（即将上线）`,
+      timestamp: new Date()
+    }]);
+  };
+
   // 面试模式选择处理
   const handleInterviewModeSelect = (mode: 'text' | 'video') => {
     if (mode === 'video') {
@@ -517,6 +529,7 @@ function AssistantContent() {
   // 退出面试模式
   const handleExitInterviewMode = () => {
     setInterviewMode(null);
+    setInterviewType(null);
   };
 
   const sendMessage = async (messageText: string) => {
@@ -597,7 +610,8 @@ function AssistantContent() {
         requestBody = {
           message: messageText,
           sessionId: localStorage.getItem('interviewSessionId') || undefined,
-          jobType: localStorage.getItem('interviewJobType') || undefined
+          jobType: localStorage.getItem('interviewJobType') || undefined,
+          interview_type: interviewType || 'standard'
         };
       } else if (isPartner) {
         apiUrl = '/api/partner';
@@ -730,7 +744,8 @@ function AssistantContent() {
                       // 将结构化数据以JSON块形式追加到文本末尾，AIResponseRenderer会自动解析
                       newMsgs[newMsgs.length - 1] = {
                         ...last,
-                        content: last.content + '\n\n' + JSON.stringify({ type: parsed.type, ...parsed.data }),
+                        content: last.content + '\n\n' + JSON.stringify({
+                        type: parsed.type, ...parsed.data }),
                       };
                     }
                     return newMsgs;
@@ -1140,10 +1155,68 @@ function AssistantContent() {
           </div>
 
           {/* ============================================================ */}
-          {/* 问题2修复：面试模式选择 UI */}
+          {/* P6.2: 面试类型选择 UI — 先选类型再选模式 */}
           {/* ============================================================ */}
-          {activeBot === 'interview' && !interviewMode && messages.length <= 1 && (
+          {activeBot === 'interview' && !interviewType && messages.length <= 1 && (
             <div className="p-4 border-b bg-gradient-to-r from-green-50 to-white">
+              <p className="text-sm font-medium text-gray-700 mb-3">选择面试类型：</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleInterviewTypeSelect('standard')}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-xl transition-all disabled:opacity-50 text-sm"
+                >
+                  <span>🤝</span>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">常规面试</div>
+                    <div className="text-[10px] text-gray-500">全流程模拟</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleInterviewTypeSelect('pressure')}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-xl transition-all disabled:opacity-50 text-sm"
+                >
+                  <span>⚡</span>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">压力面试</div>
+                    <div className="text-[10px] text-gray-500">抗压测试</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleInterviewTypeSelect('group')}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-xl transition-all disabled:opacity-50 text-sm"
+                >
+                  <span>👥</span>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">无领导小组</div>
+                    <div className="text-[10px] text-gray-500">群面模拟</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleInterviewTypeSelect('english')}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-xl transition-all disabled:opacity-50 text-sm"
+                >
+                  <span>🌍</span>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">英文面试</div>
+                    <div className="text-[10px] text-gray-500">全英文</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 面试模式选择 — 类型选完后显示 */}
+          {activeBot === 'interview' && interviewType && !interviewMode && messages.length <= 2 && (
+            <div className="p-4 border-b bg-gradient-to-r from-green-50 to-white">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                  {interviewType === 'standard' ? '🤝 常规面试' : interviewType === 'pressure' ? '⚡ 压力面试' : interviewType === 'group' ? '👥 无领导小组' : '🌍 英文面试'}
+                </span>
+              </div>
               <p className="text-sm font-medium text-gray-700 mb-3">选择面试模式：</p>
               <div className="flex gap-3">
                 <button
@@ -1167,12 +1240,16 @@ function AssistantContent() {
             </div>
           )}
 
-          {/* 面试模式已选中提示 */}
+          {/* 面试模式/类型已选中提示 */}
           {activeBot === 'interview' && interviewMode && (
             <div className="px-4 py-2 bg-green-50 border-b border-green-100 flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-green-700">
                 <CheckCircle className="w-4 h-4" />
-                <span>当前模式：<strong>{interviewMode === 'text' ? '文字面试' : '视频面试'}</strong></span>
+                <span>
+                  {interviewType === 'group' ? '👥' : interviewType === 'pressure' ? '⚡' : interviewType === 'english' ? '🌍' : '🤝'}
+                  {' '}<strong>{interviewType === 'standard' ? '常规面试' : interviewType === 'pressure' ? '压力面试' : interviewType === 'group' ? '无领导小组' : '英文面试'}</strong>
+                  {' | '}<strong>{interviewMode === 'text' ? '文字面试' : '视频面试'}</strong>
+                </span>
               </div>
               <button
                 onClick={handleExitInterviewMode}

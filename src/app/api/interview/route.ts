@@ -30,8 +30,10 @@ import {
 import type { ChatMessage } from '@/lib/types';
 import {
   type InterviewStyle,
+  type InterviewType,
   INTERVIEW_STYLES,
-  buildStylePrompt,
+  INTERVIEW_TYPES,
+  buildInterviewSystemPrompt,
   buildDebriefPrompt,
   detectDebriefIntent,
   detectStyleSwitch,
@@ -46,13 +48,16 @@ const USE_DEEPSEEK = process.env.DEEPSEEK_ENABLED === 'true';
 // 面试官开场白（多风格）
 const DEMO_INTERVIEW_INTRO = `👋 嘿，我是小职～
 
-模拟面试已就绪，我准备了三种风格陪你练：
+模拟面试已就绪！我支持四种面试类型：
 
-🤝 **温和模式** — 像朋友一样聊天，给足鼓励和引导
-🎯 **严格模式** — 专业严谨，追问细节和数据
-⚡ **压力模式** — 高压追问，提前适应最难面试
+🤝 **常规面试** — 真实校招全流程模拟
+⚡ **压力面试** — 高压追问，测试抗压能力
+👥 **无领导小组讨论** — 模拟群面，一人分饰多角
+🌍 **英文面试** — 全英文模拟，提升国际竞争力
 
-回复「温和」「严格」或「压力」选择风格，或者直接告诉我你想面试的岗位，我默认用温和模式开始～
+同时三种风格任你切换：温和 / 严格 / 压力
+
+告诉我你想面试什么岗位，我默认用【常规面试+温和模式】开始～
 `;
 
 // fallback 预设回复
@@ -118,7 +123,7 @@ const SSE_HEADERS = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, conversationId, style: reqStyle, mode: reqMode } = body;
+    const { message, conversationId, style: reqStyle, mode: reqMode, interview_type: reqInterviewType } = body;
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
@@ -129,6 +134,9 @@ export async function POST(request: NextRequest) {
 
     // 多风格支持：默认温和模式
     const style: InterviewStyle = (['warm', 'strict', 'pressure'].includes(reqStyle) ? reqStyle : 'warm') as InterviewStyle;
+
+    // 面试类型（P6.2新增）：常规/压力/无领导/英文
+    const interviewType: InterviewType = (['standard', 'pressure', 'group', 'english'].includes(reqInterviewType) ? reqInterviewType : 'standard') as InterviewType;
 
     // 检测是否切换风格
     const styleSwitch = detectStyleSwitch(message);
@@ -186,9 +194,9 @@ export async function POST(request: NextRequest) {
         // 构建系统提示词：面试模式 vs 本尊点评
         let systemPrompt: string;
         if (isDebrief) {
-          systemPrompt = buildDebriefPrompt(effectiveStyle, ragContext);
+          systemPrompt = buildDebriefPrompt(interviewType, effectiveStyle, ragContext);
         } else {
-          systemPrompt = buildStylePrompt(effectiveStyle, ragContext);
+          systemPrompt = buildInterviewSystemPrompt(interviewType, effectiveStyle, ragContext);
         }
         
         // 构建 DeepSeek 消息
