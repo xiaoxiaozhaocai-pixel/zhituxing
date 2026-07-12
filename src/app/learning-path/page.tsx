@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
 import {
   Route, BookOpen, Target, Clock, CheckCircle2, Circle,
   ArrowRight, AlertTriangle, Lightbulb, ChevronRight, Crown
@@ -409,6 +410,33 @@ export default function LearningPathPage() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* 互动课程入口 */}
+              <Card className="border-blue-100 bg-gradient-to-br from-blue-50/60 to-white">
+                <CardHeader>
+                  <CardTitle className="text-blue-700 flex items-center gap-1">
+                    <BookOpen className="w-4 h-4" /> 互动课程
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-500 mb-4">让小职根据你的技能缺口和面试表现，现讲一门针对性课程</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: '技能补强课', desc: '针对技能缺口精准提升', topic: 'skill_gap' },
+                      { label: 'STAR法则实战', desc: '面试结构化表达法', topic: 'star' },
+                      { label: '面试通关技巧', desc: '全流程面试攻略', topic: 'interview' },
+                      { label: '简历打磨课', desc: '写出HR眼前一亮的简历', topic: 'resume' },
+                    ].map((c) => (
+                      <Link key={c.topic} href={`/assistant?bot=course&topic=${c.topic}`}>
+                        <div className="p-3 rounded-lg bg-white border border-blue-100 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
+                          <div className="text-sm font-medium text-gray-800">{c.label}</div>
+                          <div className="text-xs text-gray-400 mt-1">{c.desc}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         )}

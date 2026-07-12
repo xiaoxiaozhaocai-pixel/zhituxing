@@ -270,11 +270,18 @@ export default function InterviewResultsPage() {
                                   </div>
                                 </div>
                               )}
-                              <Link href="/assistant?bot=interview">
-                                <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
-                                  再来一次
-                                </Button>
-                              </Link>
+                              <div className="flex items-center gap-2">
+                                <Link href="/assistant?bot=interview">
+                                  <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
+                                    再来一次
+                                  </Button>
+                                </Link>
+                                <Link href="/learning-path">
+                                  <Button size="sm" variant="outline" className="border-[#165DFF] text-[#165DFF]">
+                                    查看相关学习路径
+                                  </Button>
+                                </Link>
+                              </div>
                             </div>
                           )}
                         </div>

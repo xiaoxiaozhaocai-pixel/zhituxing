@@ -38,7 +38,7 @@ import { Bell,
   Briefcase,
   Brain,
   ArrowRight,
-  FolderOpen } from 'lucide-react';
+  FolderOpen, Route } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 import DashboardContent from '@/components/DashboardContent';
 import GrowthCompanionCard from '@/components/GrowthCompanionCard';
@@ -54,6 +54,7 @@ const menuItems = [
   { id: 'dashboard', label: '求职档案', icon: Briefcase, color: '#165DFF' },
   { id: 'favorites', label: '我的收藏', icon: Heart, color: '#EF4444' },
   { id: 'interview', label: '面试记录', icon: BarChart3, color: '#165DFF' },
+  { id: 'learning-path', label: '学习路径', icon: Route, color: '#165DFF' },
   { id: 'invite', label: '我的邀请', icon: Users, color: '#165DFF' },
   { id: 'settings', label: '账号设置', icon: Settings, color: '#6B7280' },
   { id: 'logout', label: '退出登录', icon: LogOut, color: '#EF4444', isLogout: true },
@@ -1393,6 +1394,8 @@ function ProfileContent() {
                   onClick={() => {
                     if (item.id === 'interview') {
                       router.push('/profile/interview-results');
+                    } else if (item.id === 'learning-path') {
+                      router.push('/learning-path');
                     } else {
                       setActiveTab(item.id);
                     }
