@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Eye, Lock, Cookie, ExternalLink, UserCircle, Mail, Fingerprint } from 'lucide-react';
+import { Shield, Eye, Lock, Cookie, ExternalLink, UserCircle, Mail, Fingerprint, Database } from 'lucide-react';
 import BiometricConsentSettings from '@/components/BiometricConsentSettings';
+import DataContributionToggle from '@/components/DataContributionToggle';
 
 export const metadata: Metadata = {
   title: '隐私政策 - 职途星',
@@ -29,19 +30,24 @@ const sections = [
       '个性化和改善您的使用体验，提供精准的岗位推荐和学习建议',
       '发送与服务相关的通知（如测评完成提醒、会员到期提醒）',
       '安全防护、欺诈预防和违规行为检测',
+      '模型优化：在您另行授权后，将脱敏、聚合后的使用数据用于训练和优化AI模型，提升小职的回答质量和匹配精准度。此用途独立于个性化推荐，不影响您的基础服务体验。您可随时在下方"数据贡献设置"中开启或关闭此授权',
       '匿名化数据分析，用于产品优化和服务改进',
     ],
   },
   {
     icon: <Lock className="w-6 h-6 text-blue-600" />,
-    title: '三、数据安全',
-    content: `我们采用行业标准的加密技术和安全措施保护您的个人信息：`,
+    title: '三、数据处理与模型训练',
+    content: `我们采用行业标准的加密技术和安全措施保护您的个人信息。对于您授权用于模型训练的数据，我们遵循以下原则：`,
     list: [
       '数据传输加密：全站HTTPS/TLS加密传输',
       '数据库加密存储：敏感信息采用AES-256加密',
       '访问控制：严格的权限管理和身份验证',
       '安全审计：定期进行安全漏洞扫描和渗透测试',
       '数据备份：多地冗余备份，确保数据不丢失',
+      '数据脱敏：所有用于模型训练的数据均经过脱敏处理，移除个人标识信息（如姓名、手机号、邮箱等）',
+      '聚合训练：仅使用聚合后的统计特征进行模型训练，不涉及个人原始数据或对话内容',
+      '训练隔离：训练数据集与生产运行数据物理隔离，杜绝数据回溯到个人用户',
+      '效果透明：模型优化提升的是服务整体质量，不改变对您个人数据的处理方式',
     ],
   },
   {
@@ -92,7 +98,7 @@ export default function PrivacyPage() {
             <h1 className="text-3xl sm:text-4xl font-bold">隐私政策</h1>
           </div>
           <p className="text-blue-100 text-lg">
-            最后更新日期：2025年1月1日
+            最后更新日期：2026年7月13日
           </p>
           <p className="text-blue-100 mt-2">
             我们重视并保护您的隐私。本政策说明我们如何收集、使用和保护您的个人信息。
@@ -168,6 +174,23 @@ export default function PrivacyPage() {
               您拥有单独的知情权和决定权，可随时查看授权状态或撤回同意。
             </p>
             <BiometricConsentSettings />
+          </CardContent>
+        </Card>
+
+        {/* 九、数据贡献设置 */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <Database className="w-6 h-6 text-blue-600" />
+              <span>九、数据贡献设置</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 mb-4">
+              为持续改进小职的AI能力，我们邀请您贡献脱敏后的匿名使用数据用于模型训练。
+              此功能与个性化推荐完全独立，关闭不影响您的基础服务体验。
+            </p>
+            <DataContributionToggle />
           </CardContent>
         </Card>
 
