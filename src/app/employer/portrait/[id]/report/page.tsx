@@ -37,9 +37,11 @@ export default function PortraitReportPage() {
         const cData = await cRes.json();
         
         if (cData.ok) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
           const evaluated = (cData.data.items || []).filter((c: any) => c.evaluation);
           setData({
             portrait: pRes.data.item,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
             candidates: evaluated.map((c: any) => ({
               name: c.name,
               education: c.education,

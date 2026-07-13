@@ -232,7 +232,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <div className="text-center py-12 text-gray-400">
             <Briefcase className="w-10 h-10 mx-auto mb-2 text-gray-300" />
             <p>暂无匹配结果</p>
-            <p className="text-xs mt-1">点击"触发匹配"开始匹配候选人</p>
+            <p className="text-xs mt-1">点击&quot;触发匹配&quot;开始匹配候选人</p>
           </div>
         ) : (
           <div className="space-y-2">

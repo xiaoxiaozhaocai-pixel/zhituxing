@@ -86,6 +86,7 @@ function parseSalary(text: string | null): { salaryMin: number | null; salaryMax
 // 方式: API (s.gxrc.com/api/Position/Search)
 // ========================
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchGxrcViaApi(page: number, pageSize: number): Promise<any[]> {
   try {
     const res = await fetch('https://s.gxrc.com/api/Position/Search', {
@@ -110,6 +111,7 @@ async function fetchGxrcViaApi(page: number, pageSize: number): Promise<any[]> {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapGxrcApiItem(item: any): Record<string, unknown> {
   const salaryRange = item.payPackage || '';
   const desc = (item.description || '').substring(0, 2000);

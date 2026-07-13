@@ -46,18 +46,25 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
     return m;
   };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const skillDist = dist(evals?.map((e: any) => e.skill_level));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const expDist = dist(evals?.map((e: any) => e.exp_level));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const softDist = dist(evals?.map((e: any) => e.soft_level));
 
   // 初步组态线索（仅当 ≥5 人已评）
-  let insights: string[] = [];
+  const insights: string[] = [];
   const n = portrait.evaluated_count;
 
   if (n >= 5) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     const skillHigh = evals!.filter((e: any) => e.skill_level >= 4).length;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     const expHigh = evals!.filter((e: any) => e.exp_level >= 4).length;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     const softHigh = evals!.filter((e: any) => e.soft_level >= 4).length;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allHigh = evals!.filter((e: any) => e.skill_level >= 4 && e.exp_level >= 4 && e.soft_level >= 4).length;
 
     if (skillHigh > n * 0.6) insights.push('技能高(Skill≥4)的候选人占多数，技能可能是基础门槛');

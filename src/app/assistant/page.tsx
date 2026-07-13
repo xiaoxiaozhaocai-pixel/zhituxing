@@ -383,10 +383,10 @@ function AssistantContent() {
         timestamp: new Date()
       }]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBot, currentBot.welcomeMessage]);
 
   // 解析 URL 参数：bot + query（只执行一次）
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const bot = searchParams.get('bot');
     if (bot && !pendingQuery) {
@@ -962,7 +962,6 @@ function AssistantContent() {
   };
 
   // 处理 pendingQuery（从 URL 解析的岗位分析请求）
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (pendingQuery && !isLoading && messages.length > 0) {
       const queryToSend = pendingQuery;
@@ -971,6 +970,7 @@ function AssistantContent() {
         sendMessage(queryToSend);
       }, 500);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuery, isLoading, messages.length]);
 
   const handleTabChange = (botId: string) => {

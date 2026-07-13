@@ -208,6 +208,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
 
     // 10. Build radar data
     const radarData: Record<string, number> = {};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dimensionsWithWeight = (scoreData.dimensions as Array<Record<string, number>>).map((dim: any) => {
       radarData[dim.name] = dim.score;
       return {

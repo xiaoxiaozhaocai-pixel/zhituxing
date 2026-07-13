@@ -105,11 +105,11 @@ export default function ResumeOptimizePage() {
     }
   }, [user, loading, router]);
   // 获取最近的优化记录
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (user) {
       fetchRecentRecords();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
 
