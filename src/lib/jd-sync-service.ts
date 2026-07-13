@@ -1,3 +1,4 @@
+/* * @deprecated - 此管道已废弃。替代方案: src/lib/jd-sync.ts */
 /**
  * 官方公开招聘API全量接入与JD自动同步服务
  * 数据来源：支持6大官方公开招聘API，每日自动增量更新
@@ -41,7 +42,7 @@ const API_CONFIG: ApiConfig[] = [
     url: 'https://job.ncss.cn/api/job/open/list',
     params: (page: number) => ({ pageNum: page, pageSize: 100, jobType: 1, education: 3 }),
     source: '国家24365就业平台',
-    enabled: true,
+    enabled: false,
     pages: 10
   },
   {
@@ -50,7 +51,7 @@ const API_CONFIG: ApiConfig[] = [
     url: 'https://job.mohrss.gov.cn/api/job/search',
     params: (page: number) => ({ page: page, size: 100, jobType: '校招', education: '本科' }),
     source: '中国公共招聘网',
-    enabled: true,
+    enabled: false,
     pages: 10
   },
   {
@@ -59,7 +60,7 @@ const API_CONFIG: ApiConfig[] = [
     url: 'https://www.gxrc.com/api/job/search',
     params: (page: number) => ({ page: page, size: 50, type: '校招', area: '广西' }),
     source: '广西人才网上',
-    enabled: true,
+    enabled: false,
     pages: 10
   },
   {
@@ -68,7 +69,7 @@ const API_CONFIG: ApiConfig[] = [
     url: 'https://www.iguopin.com/api/job/list',
     params: (page: number) => ({ page: page, size: 100, jobType: '校招', education: '本科' }),
     source: '国聘网',
-    enabled: true,
+    enabled: false,
     pages: 10
   },
   {
@@ -77,7 +78,7 @@ const API_CONFIG: ApiConfig[] = [
     url: 'https://www.chinahr.com/api/job/search',
     params: (page: number) => ({ page: page, size: 100, type: '校招', education: '本科及以上' }),
     source: '中国研究生招聘网',
-    enabled: true,
+    enabled: false,
     pages: 10
   },
   {
@@ -86,7 +87,7 @@ const API_CONFIG: ApiConfig[] = [
     url: 'https://job.gxedu.gov.cn/api/job/list',
     params: (page: number) => ({ page: page, size: 50, type: '校招', area: '广西' }),
     source: '广西高校毕业生就业网',
-    enabled: true,
+    enabled: false,
     pages: 5
   }
 ];

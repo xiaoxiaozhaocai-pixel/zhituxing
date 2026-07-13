@@ -15,11 +15,12 @@ export async function POST(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const limit = Math.min(500, parseInt(searchParams.get('limit') || '100'));
+  const limit = Math.min(300, parseInt(searchParams.get('limit') || '100'));
   const dryRun = searchParams.get('dryRun') === 'true';
+  const source = searchParams.get('source') || 'gxrc';
 
   try {
-    const result = await syncOfficialJobs({ limit, dryRun });
+    const result = await syncOfficialJobs({ limit, dryRun, source: source as 'gxrc' | 'shixiseng' | 'all' });
     return NextResponse.json({ code: 200, data: result });
   } catch (err) {
     console.error('cron jd-sync error:', err);
