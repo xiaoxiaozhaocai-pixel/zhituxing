@@ -116,7 +116,7 @@ function createDeepSeekAssessmentStream(
           { role: 'user' as const, content: userMessage },
         ];
 
-        const response = await fetch('https://api.deepseek.com/chat/completions', {
+        const response = await fetch(`${LLM_BASE_URL}/chat/completions`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,

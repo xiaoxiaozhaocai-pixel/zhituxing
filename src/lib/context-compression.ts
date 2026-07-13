@@ -1,4 +1,5 @@
 // lib/context-compression.ts
+import { LLM_BASE_URL } from '@/lib/llm-router';
 // 三层混合上下文压缩：画像锚定 + 增量摘要 + 最近N轮原文
 // 目标：节省约73% token 消耗
 
@@ -244,7 +245,7 @@ async function callDeepSeekForSummary(prompt: string): Promise<string | null> {
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      const response = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,7 +4,8 @@
  */
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
-const DEEPSEEK_BASE_URL = 'https://api.deepseek.com/chat/completions';
+import { LLM_BASE_URL } from '@/lib/llm-router';
+const LLM_CHAT_URL = `${LLM_BASE_URL}/chat/completions`;
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || process.env.MODEL || 'deepseek-chat';
 
 export interface ChatMessage {
@@ -58,7 +59,7 @@ export async function deepSeekChat(
     throw new Error('DEEPSEEK_API_KEY not configured');
   }
 
-  const response = await fetch(DEEPSEEK_BASE_URL, {
+  const response = await fetch(LLM_CHAT_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,

@@ -8,6 +8,7 @@
  * 写入策略：fire-and-forget，不阻塞用户响应；只更新有新值的字段，不覆盖已有数据
  */
 
+import { LLM_BASE_URL } from '@/lib/llm-router';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 // ============================================================
@@ -83,7 +84,7 @@ async function extractWithDeepSeek(userMessage: string, assistantResponse: strin
     .replace('{assistantResponse}', assistantResponse);
 
   try {
-    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const res = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

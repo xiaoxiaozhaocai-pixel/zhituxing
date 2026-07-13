@@ -3,7 +3,9 @@
  * 封装对 DeepSeek API 的调用，支持主对话和压缩摘要两种场景
  */
 
-const DS_API_BASE = 'https://api.deepseek.com/v1/chat/completions';
+import { LLM_BASE_URL } from '@/lib/llm-router';
+
+const DS_API_BASE = `${LLM_BASE_URL}/v1/chat/completions`;
 
 function getApiKey(): string {
   const key = process.env.DEEPSEEK_API_KEY;
