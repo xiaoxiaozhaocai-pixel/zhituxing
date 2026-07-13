@@ -38,7 +38,7 @@ import { Bell,
   Briefcase,
   Brain,
   ArrowRight,
-  FolderOpen, Route } from 'lucide-react';
+  FolderOpen, Route, BarChart3 } from 'lucide-react';
 import { groupSkillsByCategory, PROFICIENCY_CONFIG, type SkillForSave } from '@/lib/skill-portrait-parser';
 import DashboardContent from '@/components/DashboardContent';
 import GrowthCompanionCard from '@/components/GrowthCompanionCard';
