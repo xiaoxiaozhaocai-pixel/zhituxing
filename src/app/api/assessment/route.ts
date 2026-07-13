@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { LLM_BASE_URL } from '@/lib/llm-router';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,

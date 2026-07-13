@@ -6,6 +6,8 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+import { LLM_BASE_URL } from '@/lib/llm-router';
+
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY!;
 const DEEPSEEK_MODEL = process.env.MODEL || 'deepseek-chat';
 
