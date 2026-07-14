@@ -142,8 +142,8 @@ const bots: BotConfig[] = [
     name: 'AI职业规划',
     description: '制定专属成长路径',
     icon: <Sparkles className="w-5 h-5" />,
-    color: 'text-[#722ED1]',
-    gradient: 'from-purple-500 to-purple-600',
+    color: 'text-[#165DFF]',
+    gradient: 'from-blue-500 to-blue-600',
     welcomeMessage: careerWelcome + disclaimerText,
     quickQuestions: [
       '计算机专业职业规划',
@@ -157,8 +157,8 @@ const bots: BotConfig[] = [
     name: 'AI模拟面试',
     description: 'AI模拟真实面试',
     icon: <GraduationCap className="w-5 h-5" />,
-    color: 'text-[#00B42A]',
-    gradient: 'from-green-500 to-green-600',
+    color: 'text-[#165DFF]',
+    gradient: 'from-blue-500 to-blue-600',
     welcomeMessage: interviewWelcome + disclaimerText,
     quickQuestions: [
       '帮我模拟面试HR岗位',
@@ -220,7 +220,7 @@ const bots: BotConfig[] = [
     description: 'AI灵魂｜你的桂电学长',
     icon: <Sparkles className="w-5 h-5" />,
     color: 'text-[#165DFF]',
-    gradient: 'from-blue-400 to-indigo-500',
+    gradient: 'from-[#165DFF] to-[#3D7FFF]',
     welcomeMessage: `👋 嘿！我是小职，你的桂电学长兼AI朋友~
 
 我是职途星的大脑，也是你求职路上的好搭档。不管你是大一的迷茫新生，还是大三正在找实习的大朋友——找我聊聊准没错！
@@ -992,18 +992,18 @@ function AssistantContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 职业规划免费提示 */}
-      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-50/80 border-b border-blue-100">
         <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-purple-700">
+            <span className="text-blue-700">
               AI职业规划永久免费
             </span>
             <span className="text-gray-300">|</span>
-            <span className="text-purple-700">
+            <span className="text-blue-700">
               无限次生成完整报告
             </span>
           </div>
-          <Link href="/career-planning" className="text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1">
+          <Link href="/career-planning" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
             立即生成
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -1066,7 +1066,7 @@ function AssistantContent() {
 
         {/* 聊天区域 */}
         <Card className="border-2 overflow-hidden flex flex-col" style={{
-          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#722ED1'
+          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#3D7FFF' : '#165DFF'
         }}>
           {/* 快捷问题 */}
           {messages.length <= 1 && (
@@ -1450,11 +1450,11 @@ function AssistantContent() {
             <span>全行业岗位百科</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-600"></div>
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <span>模拟面试官</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></div>
+            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <span>职业生涯规划</span>
           </div>
           <div className="flex items-center gap-2">
