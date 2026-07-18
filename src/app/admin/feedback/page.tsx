@@ -54,7 +54,7 @@ export default function AdminFeedbackPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchFeedbacks();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

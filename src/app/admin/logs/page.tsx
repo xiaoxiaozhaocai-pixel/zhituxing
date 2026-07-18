@@ -68,7 +68,7 @@ export default function LogsPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);

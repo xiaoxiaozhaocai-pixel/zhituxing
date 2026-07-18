@@ -35,7 +35,7 @@ export default function AdminReferralsPage() {
   const [editingReferral, setEditingReferral] = useState<Partial<Referral>>({});
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchReferrals();
   }, []);
 

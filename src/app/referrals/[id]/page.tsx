@@ -50,7 +50,7 @@ export default function ReferralDetailPage() {
 
   useEffect(() => {
     if (params.id) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchReferral();
     }
 // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -155,7 +155,7 @@ export default function AdminUniversitiesPage() {
 
   // 跳转详情
   const goDetail = (id: number) => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     window.location.href = `/admin/universities/${id}`;
   };
 

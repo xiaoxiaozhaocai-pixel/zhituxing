@@ -39,9 +39,9 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchStats();
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     checkHealth();
   }, []);
 

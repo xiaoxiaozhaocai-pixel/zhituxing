@@ -52,7 +52,7 @@ export default function InvitePage() {
   // 获取邀请数据
   useEffect(() => {
     if (user) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchInviteData();
     }
   }, [user]);

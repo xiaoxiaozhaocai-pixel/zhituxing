@@ -17,7 +17,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
   const [showGuideBar, setShowGuideBar] = useState(false);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     checkUserProfile();
   }, []);
 

@@ -34,7 +34,7 @@ export default function ReferralsPage() {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchReferrals();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCity]);

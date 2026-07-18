@@ -37,7 +37,7 @@ export default function ResumeDetailPage() {
 
   useEffect(() => {
     if (user && params.id) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchDetail();
     }
 // eslint-disable-next-line react-hooks/exhaustive-deps

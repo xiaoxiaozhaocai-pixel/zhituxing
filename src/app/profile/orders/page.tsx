@@ -46,7 +46,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     if (isAuthenticated) fetchOrders();
   }, [isAuthenticated]);
 

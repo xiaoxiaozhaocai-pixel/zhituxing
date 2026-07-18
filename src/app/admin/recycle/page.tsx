@@ -53,7 +53,7 @@ export default function RecyclePage() {
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; id: string; action: string; item: RecycleItem } | null>(null);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, tableFilter]);
@@ -237,7 +237,7 @@ export default function RecyclePage() {
                     const Icon = tableIcons[item.original_table] || Trash2;
                     const data = typeof item.deleted_data === 'string' ? JSON.parse(item.deleted_data) : item.deleted_data;
                     const title = data?.title || data?.job_name || `ID: ${item.original_id}`;
-// eslint-disable-next-line
+                    // eslint-disable-next-line react-hooks/purity
                     const isExpiringSoon = new Date(item.expire_at).getTime() - Date.now() < 24 * 60 * 60 * 1000;
                     
                     return (

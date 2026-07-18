@@ -23,7 +23,7 @@ export default function FeatureFlagsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchFlags();
   }, []);
 

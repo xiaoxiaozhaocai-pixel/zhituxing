@@ -88,7 +88,7 @@ export default function ReportPage() {
 
   useEffect(() => {
     if (user && params.id) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchReport();
     }
 // eslint-disable-next-line react-hooks/exhaustive-deps

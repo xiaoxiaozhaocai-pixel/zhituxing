@@ -44,7 +44,7 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchSettings();
   }, []);
 

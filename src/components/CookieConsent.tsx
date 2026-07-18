@@ -34,7 +34,7 @@ const CookieConsent = () => {
   // Handle SSR hydration - only check storage after mount
   useEffect(() => {
     setMounted(true);
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     const hasConsent = checkExistingConsent();
     if (!hasConsent) {
       setShowBanner(true);

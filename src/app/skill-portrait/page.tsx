@@ -620,7 +620,7 @@ export default function SkillPortraitPage() {
       return;
     }
     if (user) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchExistingProfile();
     }
   }, [user, authLoading, router]);

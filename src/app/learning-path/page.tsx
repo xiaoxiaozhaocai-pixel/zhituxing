@@ -74,7 +74,7 @@ export default function LearningPathPage() {
 
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchLearningData();
 
       // 埋点：查看学习路径

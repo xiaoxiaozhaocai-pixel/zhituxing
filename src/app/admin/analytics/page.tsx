@@ -77,7 +77,7 @@ function PieChart({ data }: { data: DistributionItem[] }) {
     const pct = Number(d.count) / total;
     const angle = pct * 360;
     const startAngle = cumAngle;
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     cumAngle += angle;
     const endAngle = cumAngle;
     const largeArc = angle > 180 ? 1 : 0;
@@ -271,7 +271,7 @@ export default function AdminAnalyticsPage() {
   const [days, setDays] = useState(30);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     loadDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);

@@ -34,7 +34,7 @@ export default function ResourcesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchArticles();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory]);

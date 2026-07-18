@@ -135,7 +135,7 @@ export default function ArticleDetailPage() {
 
   useEffect(() => {
     if (params.id) {
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
       fetchComments();
     }
 // eslint-disable-next-line react-hooks/exhaustive-deps

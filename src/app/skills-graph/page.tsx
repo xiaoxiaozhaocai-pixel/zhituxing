@@ -187,7 +187,7 @@ export default function SkillsGraphPage() {
             const dx = a.x - b.x;
             const dy = a.y - b.y;
             const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
             const minDist = getNodeRadius(a) + getNodeRadius(b) + 16;
             if (dist < minDist * 2) {
               const force = (2000 * alpha) / Math.max(dist * dist, minDist * minDist);

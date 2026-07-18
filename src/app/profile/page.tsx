@@ -507,7 +507,7 @@ function MessagesPanel({ userId }: { userId: string }) {
       setLoading(false);
       return;
     }
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchNotifications();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
@@ -721,7 +721,7 @@ function ReportsPanel({ userId }: { userId: string }) {
       setLoading(false);
       return;
     }
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchReports();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
@@ -810,7 +810,7 @@ function FavoritesPanel({ userId }: { userId: string }) {
       setLoading(false);
       return;
     }
-// eslint-disable-next-line
+// eslint-disable-next-line react-hooks/immutability
     fetchFavorites();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
