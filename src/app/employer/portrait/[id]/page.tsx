@@ -93,7 +93,7 @@ export default function BlindReviewPage() {
     } else {
       setSkillVal(0); setExpVal(0); setSoftVal(0); setNotes('');
     }
-  }, [current?.id]);
+  }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async () => {
     if (!current || skillVal === 0 || expVal === 0 || softVal === 0) return;

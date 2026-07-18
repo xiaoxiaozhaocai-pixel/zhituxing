@@ -57,7 +57,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadPost(); loadMatches(); }, [id]);
+  useEffect(() => { loadPost(); loadMatches(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMatch = async () => {
     setMatching(true);
