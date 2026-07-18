@@ -192,7 +192,7 @@ export async function POST(
   });
 }
 
-async function runMatch(post: Record<string, unknown>, employerId: string): Promise<{ success: boolean; count?: number; error?: string }> {
+async function runMatch(post: Record<string, unknown>, _employerId: string): Promise<{ success: boolean; count?: number; error?: string }> {
   try {
     const supabase = getSupabaseAdmin();
     const postId = post.id as number;
@@ -282,7 +282,7 @@ async function runMatch(post: Record<string, unknown>, employerId: string): Prom
       DO UPDATE SET match_score = EXCLUDED.match_score, matched_at = NOW()
     `;
 
-    const upsertResult = await execSql(upsertSql);
+    await execSql(upsertSql);
     
     // Update the updated_at of the job post
     await supabase

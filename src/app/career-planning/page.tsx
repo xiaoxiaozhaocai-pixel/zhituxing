@@ -19,11 +19,6 @@ import {
   Sparkles,
   Loader2,
   FileText,
-  ArrowRight,
-  TrendingUp,
-  Briefcase,
-  MapPin,
-  GraduationCap,
   ChevronRight,
   Lightbulb,
 } from 'lucide-react';

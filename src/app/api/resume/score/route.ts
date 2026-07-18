@@ -53,7 +53,7 @@ function parseLLMResponse(content: string): Record<string, unknown> {
   // Try direct parse first
   try {
     return JSON.parse(cleaned);
-  } catch (e) {
+  } catch {
     // Attempt fixes for common issues
     let fixed = cleaned;
     
@@ -71,7 +71,7 @@ function parseLLMResponse(content: string): Record<string, unknown> {
     
     try {
       return JSON.parse(fixed);
-    } catch (e2) {
+    } catch {
       throw new Error('Failed to parse LLM response as JSON');
     }
   }
@@ -228,7 +228,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
       Math.round(dimensionsWithWeight.reduce((sum: number, dim: Record<string, number>) => sum + dim.score * dim.weight, 0) * 10) / 10;
 
     // 12. Store in database
-    const { data: dbResult, error: dbError } = await supabase
+    const { error: dbError } = await supabase
       .from('user_resume_scores')
       .insert({
         user_id: userId,

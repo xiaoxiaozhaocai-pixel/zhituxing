@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Check, Users, Target, TrendingUp, Shield, Sparkles, BarChart3, Search, Zap, Building2, ChevronRight, Star, Award, Clock, Compass } from 'lucide-react';
+import { ArrowRight, Check, Users, Target, TrendingUp, Sparkles, BarChart3, Search, Zap, Building2, ChevronRight, Award, Clock } from 'lucide-react';
 
 // ─── 数据 ──────────────────────────────────────────────
 

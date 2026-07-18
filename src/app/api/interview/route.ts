@@ -32,7 +32,6 @@ import {
   type InterviewStyle,
   type InterviewType,
   INTERVIEW_STYLES,
-  INTERVIEW_TYPES,
   buildInterviewSystemPrompt,
   buildDebriefPrompt,
   detectDebriefIntent,

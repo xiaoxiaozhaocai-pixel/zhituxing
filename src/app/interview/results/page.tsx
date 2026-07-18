@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, TrendingUp, Calendar, Target, BarChart3 } from 'lucide-react';
+import { Loader2, ArrowLeft, TrendingUp, Calendar, Target } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ResumeRadar } from '@/components/resume/ResumeRadar';
 
@@ -42,13 +42,7 @@ export default function InterviewResultsPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    if (user) {
-      fetchFeedbacks();
-    }
-  }, [user]);
-
-  const fetchFeedbacks = async () => {
+  const fetchFeedbacks = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/interview/feedback');
@@ -61,7 +55,13 @@ export default function InterviewResultsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchFeedbacks();
+    }
+  }, [user, fetchFeedbacks]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-50';

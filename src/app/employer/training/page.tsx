@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Loader2, Plus, GraduationCap, Clock, Target, Users, BookOpen, X, Sparkles,
+  Loader2, Plus, GraduationCap, Clock, Target, BookOpen, X, Sparkles,
 } from 'lucide-react';
 
 interface TrainingTrack {

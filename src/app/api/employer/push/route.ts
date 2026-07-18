@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '无效的请求数据' }, { status: 400 });
   }
 
-  const { candidate_user_ids, message, job_ids } = body;
+  const { candidate_user_ids, message, job_ids: _job_ids } = body;
 
   if (!candidate_user_ids || !Array.isArray(candidate_user_ids) || candidate_user_ids.length === 0) {
     return NextResponse.json({ error: 'candidate_user_ids 必须为非空数组' }, { status: 400 });

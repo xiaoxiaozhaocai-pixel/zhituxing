@@ -54,7 +54,7 @@ export default function NewPortraitPage() {
       if (!importData.ok) { setError(importData.data?.message || '导入失败'); setCreating(false); return; }
 
       router.push(`/employer/portrait/${portraitId}`);
-    } catch (e) {
+    } catch {
       setError('网络错误，请重试');
       setCreating(false);
     }

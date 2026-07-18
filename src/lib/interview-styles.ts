@@ -90,7 +90,7 @@ export function buildInterviewSystemPrompt(
   ragContext: string
 ): string {
   const typeConfig = INTERVIEW_TYPES[interviewType];
-  const styleConfig = INTERVIEW_STYLES[style];
+  const _styleConfig = INTERVIEW_STYLES[style];
 
   let typeRules = '';
   switch (interviewType) {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, BarChart3, TrendingUp, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, BarChart3, TrendingUp, Users } from 'lucide-react';
 
 interface ReportData {
   portrait: {
@@ -17,6 +17,39 @@ interface ReportData {
 }
 
 const LEVEL_SCORES = [0, 10, 30, 55, 75, 95]; // v2 encoding scores
+
+function DistributionBar({ label, data }: { label: string; data: number[] }) {
+  const max = Math.max(...data, 1);
+  return (
+    <div className="mb-3">
+      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <span className="font-medium">{label}</span>
+      </div>
+      <div className="flex gap-1 h-5">
+        {data.slice(1).map((v, i) => (
+          <div key={i} className="flex-1 flex flex-col justify-end">
+            {v > 0 && (
+              <div
+                className="w-full rounded-t-sm bg-gradient-to-t from-[#165DFF] to-[#3D7FFF]"
+                style={{ height: `${(v / max) * 100}%`, opacity: 0.3 + i * 0.15 }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-1 text-[10px] text-gray-400 mt-0.5">
+        {['极低','低','中','高','极高'].map((l, i) => (
+          <div key={i} className="flex-1 text-center">{l}</div>
+        ))}
+      </div>
+      <div className="flex gap-1 text-[10px] text-gray-500 mt-0.5">
+        {data.slice(1).map((v, i) => (
+          <div key={i} className="flex-1 text-center">{v}人</div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function PortraitReportPage() {
   const params = useParams();
@@ -97,45 +130,12 @@ export default function PortraitReportPage() {
 
   // Find patterns (simplified group analysis)
   const highSkill = data.candidates.filter(c => c.skill_level >= 4).length;
-  const highExp = data.candidates.filter(c => c.exp_level >= 4).length;
-  const highSoft = data.candidates.filter(c => c.soft_level >= 4).length;
+  const _highExp = data.candidates.filter(c => c.exp_level >= 4).length;
+  const _highSoft = data.candidates.filter(c => c.soft_level >= 4).length;
   const allHigh = data.candidates.filter(c => c.skill_level >= 4 && c.exp_level >= 4 && c.soft_level >= 4).length;
-  const skillExp = data.candidates.filter(c => c.skill_level >= 4 && c.exp_level >= 4).length;
+  const _skillExp = data.candidates.filter(c => c.skill_level >= 4 && c.exp_level >= 4).length;
   const skillSoft = data.candidates.filter(c => c.skill_level >= 4 && c.soft_level >= 4).length;
   const expSoft = data.candidates.filter(c => c.exp_level >= 4 && c.soft_level >= 4).length;
-
-  const DistributionBar = ({ label, data }: { label: string; data: number[] }) => {
-    const max = Math.max(...data, 1);
-    return (
-      <div className="mb-3">
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-          <span className="font-medium">{label}</span>
-        </div>
-        <div className="flex gap-1 h-5">
-          {data.slice(1).map((v, i) => (
-            <div key={i} className="flex-1 flex flex-col justify-end">
-              {v > 0 && (
-                <div
-                  className="w-full rounded-t-sm bg-gradient-to-t from-[#165DFF] to-[#3D7FFF]"
-                  style={{ height: `${(v / max) * 100}%`, opacity: 0.3 + i * 0.15 }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-1 text-[10px] text-gray-400 mt-0.5">
-          {['极低','低','中','高','极高'].map((l, i) => (
-            <div key={i} className="flex-1 text-center">{l}</div>
-          ))}
-        </div>
-        <div className="flex gap-1 text-[10px] text-gray-500 mt-0.5">
-          {data.slice(1).map((v, i) => (
-            <div key={i} className="flex-1 text-center">{v}人</div>
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div>

@@ -112,8 +112,6 @@ ${conversationText}
     // 收集完整输出以保存到数据库
     const reader = stream.getReader();
     const decoder = new TextDecoder();
-    let fullResponse = '';
-
     const responseStream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder();
@@ -122,7 +120,6 @@ ${conversationText}
             const { done, value } = await reader.read();
             if (done) break;
             const chunk = decoder.decode(value, { stream: true });
-            fullResponse += chunk;
 
             // 提取 JSON 部分
             const dataMatch = chunk.match(/<<DATA:type=interview_feedback>>([\s\S]*?)<</);

@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { use } from 'react';
 import {
   ArrowLeft, Loader2, Briefcase, RefreshCw,
-  Send, Eye, PauseCircle, XCircle, PlayCircle, Check,
+  Send, PauseCircle, XCircle, PlayCircle,
   Settings,
 } from 'lucide-react';
 

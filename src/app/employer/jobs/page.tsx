@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Plus, Loader2, Briefcase, Search, ChevronRight,
-  Clock, Users,
+  Plus, Loader2, Briefcase, ChevronRight,
+  Clock,
 } from 'lucide-react';
 
 interface JobPost {
