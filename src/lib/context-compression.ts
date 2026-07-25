@@ -252,7 +252,7 @@ async function callDeepSeekForSummary(prompt: string): Promise<string | null> {
           'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'deepseek-v4-flash',
           messages: [
             {
               role: 'system',

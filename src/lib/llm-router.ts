@@ -37,9 +37,9 @@ export function getRouteConfig(type: RouteType = 'chat'): RouteConfig {
 
   // 路由策略：按请求类型分配不同模型
   const modelMap: Record<RouteType, string> = {
-    'chat': process.env.LLM_MODEL_CHAT || process.env.LLM_MODEL || 'deepseek-chat',
-    'premium': process.env.LLM_MODEL_PREMIUM || process.env.LLM_MODEL || 'deepseek-chat',
-    'summary': process.env.LLM_MODEL_SUMMARY || process.env.LLM_MODEL || 'deepseek-chat',
+    'chat': process.env.LLM_MODEL_CHAT || process.env.LLM_MODEL || 'deepseek-v4-flash',
+    'premium': process.env.LLM_MODEL_PREMIUM || process.env.LLM_MODEL || 'deepseek-v4-flash',
+    'summary': process.env.LLM_MODEL_SUMMARY || process.env.LLM_MODEL || 'deepseek-v4-flash',
   };
 
   return {

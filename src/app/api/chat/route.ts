@@ -601,6 +601,11 @@ export async function POST(request: NextRequest) {
     // ============================================================
     if (resolvedBotType === 'career_paths') {
       const engineResult = handleCareerPathsQuery(message || '');
+      
+      // [DIAGNOSTIC] 忽略以确认实际值
+      const _diag = `DEEPSEEK=${USE_DEEPSEEK}, resolvedBotType=${resolvedBotType}, needsMoreInfo=${engineResult.needsMoreInfo}`;
+      console.log(`[career_paths] ${_diag}`);
+      
       if (!engineResult.needsMoreInfo && engineResult.report) {
         // 直接返回引擎结果
         const report = engineResult.report;

@@ -124,7 +124,7 @@ function createDeepSeekAssessmentStream(
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
+            model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash',
             messages,
             temperature: 0.7,
             max_tokens: 4000,

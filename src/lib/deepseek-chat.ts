@@ -7,7 +7,7 @@ import { LLM_BASE_URL } from '@/lib/llm-router';
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
 const LLM_CHAT_URL = `${LLM_BASE_URL}/chat/completions`;
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || process.env.MODEL || 'deepseek-chat';
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || process.env.MODEL || 'deepseek-v4-flash';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';

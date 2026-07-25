@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 import { LLM_BASE_URL } from '@/lib/llm-router';
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY!;
-const DEEPSEEK_MODEL = process.env.MODEL || 'deepseek-chat';
+const DEEPSEEK_MODEL = process.env.MODEL || 'deepseek-v4-flash';
 
 const SECTION_PROMPTS: Record<string, string> = {
   education: `你是简历优化专家。分析这段"教育经历"给出精准反馈。

@@ -82,7 +82,7 @@ async function insertChatHistory(params: SaveHistoryParams): Promise<string> {
 /**
  * 写入 AI 响应缓存（fire-and-forget）
  */
-export function writeAICache(cacheKey: string, response: string, model = 'deepseek-chat') {
+export function writeAICache(cacheKey: string, response: string, model = 'deepseek-v4-flash') {
   const sql = `INSERT INTO public.ai_cache (cache_key, response, model) VALUES ('${escapeSql(cacheKey)}', '${escapeSql(response)}', '${escapeSql(model)}') ON CONFLICT (cache_key) DO NOTHING;`;
   fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/rpc/exec', {
     method: 'POST',

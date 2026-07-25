@@ -151,7 +151,7 @@ export async function compressConversation(
       compressed_token_count: originalTokens,
       summary_token_count: summaryTokens,
       compression_ratio: originalTokens > 0 ? summaryTokens / originalTokens : 0,
-      compression_model: 'deepseek-chat',
+      compression_model: 'deepseek-v4-flash',
       trigger_type: 'round',
     });
 
