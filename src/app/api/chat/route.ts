@@ -634,26 +634,23 @@ export async function POST(request: NextRequest) {
         });
         return new Response(stream, { headers: SSE_HEADERS });
       }
-      // 信息不全
+      // 信息不全 → 直接返回追问，不降级到 DeepSeek
+      // 原因：用户缺学校等关键信息，不需要 AI 介入，引擎自己就能生成追问
+      // 降级到 DeepSeek 可能导致 DeepSeek 失败 → 回退 Coze Bot → 默认打招呼消息
       const missingReply = engineResult.reply;
       console.log(`[career_paths] Incomplete profile: "${missingReply.slice(0, 60)}..."`);
-      
-      if (!USE_DEEPSEEK) {
-        // DeepSeek 不可用时，直接返回追问，不让用户看到默认打招呼
-        const encoder = new TextEncoder();
-        const segs = missingReply.match(/[^。！？\n]+[。！？\n]?/g) || [missingReply];
-        const stream = new ReadableStream({
-          async start(controller) {
-            for (const seg of segs) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
-            }
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
+      const encoder = new TextEncoder();
+      const segs = missingReply.match(/[^。！？\n]+[。！？\n]?/g) || [missingReply];
+      const stream = new ReadableStream({
+        async start(controller) {
+          for (const seg of segs) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
           }
-        });
-        return new Response(stream, { headers: SSE_HEADERS });
-      }
-      // 有 DeepSeek → 降级到 DeepSeek，用 career_paths 的 system prompt 引导用户补充
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { headers: SSE_HEADERS });
     }
 
     // ============================================================
