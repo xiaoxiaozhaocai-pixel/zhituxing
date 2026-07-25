@@ -60,7 +60,7 @@ function describeRequired(condition: RouteCondition): string {
  * 获取条件的编码值（用于对比）
  */
 function getProfileFieldValue(profile: EncodedProfile, field: string): number | string {
-  const val = (profile as any)[field];
+  const val = (profile as unknown as Record<string, number | string>)[field];
   return val !== undefined ? val : '';
 }
 

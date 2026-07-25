@@ -26,12 +26,12 @@ export default function CareerPathsPage() {
           const result = getMatchReport(encoded);
           setReport(result);
           setLoading(false);
-        } catch (e) {
+        } catch {
           setError('匹配计算失败，请检查输入信息');
           setLoading(false);
         }
       }, 300);
-    } catch (e) {
+    } catch {
       setError('输入信息有误，请重试');
       setLoading(false);
     }

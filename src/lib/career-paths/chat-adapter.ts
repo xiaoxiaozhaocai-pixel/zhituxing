@@ -1,13 +1,13 @@
 // 职途星组态引擎 · 小职对话适配器
 // 从自然语言提取画像 → 跑引擎 → 格式化输出
 
-import { RawProfile, EncodedProfile, MatchReport, FIELD_LABELS } from '@/lib/career-paths/types';
+import { RawProfile, EncodedProfile, MatchReport } from '@/lib/career-paths/types';
 import { encodeProfile } from '@/lib/career-paths/engine/condition_encoder';
 import { getMatchReport } from '@/lib/career-paths/engine/rule_engine';
 
 /** 从自然语言文本提取画像字段 */
 export function extractProfileFromText(text: string): Partial<RawProfile> {
-  const lower = text.toLowerCase();
+  const _lower = text.toLowerCase();
   const profile: Partial<RawProfile> = {};
 
   // === 学校 ===
@@ -109,7 +109,7 @@ export function getMissingFields(profile: Partial<RawProfile>): string[] {
 }
 
 /** 将匹配报告格式化为小职的对话式回复 */
-export function formatReportForChat(report: MatchReport, raw: RawProfile): string {
+export function formatReportForChat(report: MatchReport, _raw: RawProfile): string {
   const { summary, routes } = report;
 
   // 最佳路径
