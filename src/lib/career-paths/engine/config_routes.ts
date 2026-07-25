@@ -90,6 +90,48 @@ export const CONFIG: ConfigData = {
       },
     },
     {
+      route_id: 'MFG-EMB-A1',
+      name: '制造业·嵌入式/硬件工程师',
+      templates: ['default'],
+      conditions: {
+        MAJ_CAT: { operator: 'in', value: ['EE-电子', 'EE-通信', 'IT-物联网', 'ME-自动化', 'ME-电气'] },
+        INT_NUM: { operator: '>=', value: 0.50 },
+        SKILL_SET: { operator: '>=', value: 0.50 },
+      },
+      meta: {
+        coverage: 0.30,
+        consistency: 0.80,
+        job_types: ['嵌入式工程师', '硬件工程师', '单片机工程师', 'PCB工程师', '固件工程师'],
+        scenario: '桂电电子信息类第二大方向。电子/通信/物联网/自动化专业 + 至少1段实习 + 基础硬技能 → 嵌入式/硬件开发岗',
+        gap_advice: {
+          MAJ_CAT: '嵌入式开发通常需要电子/通信/自动化类专业背景，跨专业需大量项目积累',
+          INT_NUM: '建议补充1段嵌入式/硬件开发相关实习',
+          SKILL_SET: '建议掌握C语言/嵌入式开发/电路设计（Altium Designer）/RTOS等核心技能',
+        },
+      },
+    },
+    {
+      route_id: 'MFG-SCM-A1',
+      name: '制造业·供应链/采购',
+      templates: ['default'],
+      conditions: {
+        MAJ_CAT: { operator: 'in', value: ['ME-机械', 'ME-机电', 'ME-电气', 'ME-自动化', 'MGMT-工管', 'MGMT-电商', 'MGMT-工业工程'] },
+        INT_NUM: { operator: '>=', value: 0.50 },
+        SKILL_SET: { operator: '>=', value: 0.50 },
+      },
+      meta: {
+        coverage: 0.12,
+        consistency: 0.70,
+        job_types: ['采购工程师', '供应链专员', '物流管理', '计划员', 'Sourcing专员'],
+        scenario: '制造业核心职能方向。工科/管理类专业 + 有实习 + 基础技能 → 供应链/采购岗，冠宇等制造企业刚需',
+        gap_advice: {
+          MAJ_CAT: '供应链/采购不限专业，但工科和管理类更受青睐',
+          INT_NUM: '建议找1段制造业采购/供应链相关实习',
+          SKILL_SET: '建议了解ERP系统（SAP/用友）、采购谈判、供应商管理、物流基础等',
+        },
+      },
+    },
+    {
       route_id: 'IT-DEV-A1',
       name: 'IT/互联网·后端/全栈开发',
       templates: ['default'],
@@ -132,6 +174,27 @@ export const CONFIG: ConfigData = {
       },
     },
     {
+      route_id: 'IT-DA-A1',
+      name: 'IT/互联网·数据分析师',
+      templates: ['default'],
+      conditions: {
+        MAJ_CAT: { operator: 'in', value: ['IT-计算机', 'IT-软件', 'IT-人工智能', 'MGMT-工管', 'MGMT-电商', 'MGMT-会计'] },
+        INT_QLT: { operator: '>=', value: 0.50 },
+        SKILL_SET: { operator: '>=', value: 0.50 },
+      },
+      meta: {
+        coverage: 0.15,
+        consistency: 0.72,
+        job_types: ['数据分析师', '商业分析师', 'BI工程师', '数据运营', '数据分析专员'],
+        scenario: 'IT与管理交叉方向，桂电热门。计算机/软件/管理类专业 + 高质量实习 + 数据处理技能 → 数据分析岗',
+        gap_advice: {
+          MAJ_CAT: '数据分析不限专业，但计算机/统计/管理类专业更常见',
+          INT_QLT: '建议找1段数据分析相关实习，互联网/咨询公司最佳',
+          SKILL_SET: '建议掌握SQL/Python/Excel数据分析、BI工具（Tableau/PowerBI）、统计学基础',
+        },
+      },
+    },
+    {
       route_id: 'IT-PM-A1',
       name: 'IT/互联网·产品/运营',
       templates: ['default'],
@@ -157,9 +220,9 @@ export const CONFIG: ConfigData = {
       name: '销售/营销·通用路径',
       templates: ['default'],
       conditions: {
-        MAJ_CAT: { operator: 'in', value: ['MGMT-HR', 'MGMT-工管', 'MGMT-电商', 'MGMT-会计', 'LA-英语', 'LA-日语', '其他'] },
-        INT_NUM: { operator: '>=', value: 0.25 },
-        SKILL_SET: { operator: '>=', value: 0.25 },
+        MAJ_CAT: { operator: 'in', value: ['MGMT-HR', 'MGMT-工管', 'MGMT-电商', 'MGMT-会计', 'LA-英语', 'LA-日语', 'ART-设计'] },
+        INT_NUM: { operator: '>=', value: 0.50 },
+        SKILL_SET: { operator: '>=', value: 0.50 },
       },
       meta: {
         coverage: 0.15,
@@ -191,6 +254,27 @@ export const CONFIG: ConfigData = {
           MAJ_CAT: 'HR/行政对口专业为管理类、外语类',
           INT_NUM: '建议找1段HR/行政相关实习，了解HR六大模块基础',
           SKILL_SET: '建议掌握招聘系统(ATS)、Excel数据处理、劳动法基础等HR技能',
+        },
+      },
+    },
+    {
+      route_id: 'MGMT-PM-A1',
+      name: '管理/通用·项目管理/PMO',
+      templates: ['default'],
+      conditions: {
+        MAJ_CAT: { operator: 'in', value: ['MGMT-工管', 'MGMT-工业工程', 'IT-计算机', 'IT-软件', 'ME-机械', 'ME-机电'] },
+        INT_NUM: { operator: '>=', value: 0.50 },
+        SKILL_SET: { operator: '>=', value: 0.50 },
+      },
+      meta: {
+        coverage: 0.10,
+        consistency: 0.68,
+        job_types: ['项目经理', '项目助理', 'PMO专员', '项目协调员'],
+        scenario: '工科与管理交叉方向。管理/工业工程/IT/机械类专业 + 有实习 + 通用技能 → 项目管理岗，制造业和IT行业均有需求',
+        gap_advice: {
+          MAJ_CAT: '项目管理不限专业，管理/工业工程/IT类更常见',
+          INT_NUM: '建议找1段项目管理相关实习或参与过完整项目周期',
+          SKILL_SET: '建议了解PMP框架/敏捷开发/项目计划编制/跨部门沟通等PM核心技能',
         },
       },
     },
