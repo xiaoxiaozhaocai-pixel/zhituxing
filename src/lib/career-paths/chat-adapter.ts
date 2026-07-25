@@ -45,12 +45,15 @@ export function extractProfileFromText(text: string): Partial<RawProfile> {
   else profile.degree = '本科';
 
   // === 实习数量 ===
-  const numMatch = text.match(/(\d+)\s*段?\s*实习/);
+  // 匹配各种格式: "1段实习" "有一段大厂实习" "有2段" "三段" "两段实习"
+  // 先试数字版（"1段大厂实习"）
+  const numMatch = text.match(/(?:有)?(\d+)\s*段.*?实习/);
   if (numMatch) {
     profile.internshipCount = Math.min(parseInt(numMatch[1]), 5);
-  } else if (/有实习|实习过|一段实习|1段/.test(text)) {
+  } else if (/有.*?实习|实习过|一段|1段|有一/.test(text)) {
+    // "有一段大厂实习"、"有实习"、"1段实习"、"一段实习"
     profile.internshipCount = 1;
-  } else if (/多段|两段|2段/.test(text)) {
+  } else if (/两段|2段/.test(text)) {
     profile.internshipCount = 2;
   } else if (/三段|3段/.test(text)) {
     profile.internshipCount = 3;
