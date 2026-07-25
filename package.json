@@ -109,7 +109,7 @@
   "pnpm": {
     "overrides": {
       "fast-xml-parser": ">=5.3.5",
-      "postcss": ">=8.5.15",
+      "postcss": ">=8.5.18",
       "esbuild": ">=0.28.1"
     }
   }
