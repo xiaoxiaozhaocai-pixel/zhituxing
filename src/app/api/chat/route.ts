@@ -548,11 +548,11 @@ export async function POST(request: NextRequest) {
         ['interview', ['面试', '模拟面试', '面经', '面试官', '面试技巧', '自我介绍', 'hr面', '业务面', '群面', '无领导小组']],
         ['decision', ['考研', '考研vs就业', '纠结', '犹豫', '选择', '考研还是', '读研', '考公', '考编', '要不要']],
         ['career', ['规划', '职业规划', '前景', '迷茫', '发展', '成长', '晋升']],
-        ['career_paths', ['求职方向', '适合什么', '适合哪条路', '职业匹配', '路径匹配', '推荐方向', '帮我看看适合', '看我适合', '能做什么工作', '找什么工作', '什么方向', '什么岗位适合我', '专业匹配']],
+        ['career_paths', ['求职方向', '适合什么', '适合哪条路', '职业匹配', '路径匹配', '推荐方向', '帮我看看适合', '看我适合', '能做什么工作', '找什么工作', '什么方向', '什么岗位适合我', '专业匹配', 'HR专业', '人力专业', '计算机专业', '电子信息专业']],
         ['assessment', ['测评', '评估', '测试', '水平', '能力', '做题', '题目', '考核', '测一下', '水平测试']],
         ['job_match', ['匹配岗位', '推荐岗位', '帮我匹配', '岗位推荐', '内推', '适合我的岗位', '找适合的岗位', '匹配一下岗位']],
         ['competency', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
-        ['jobs', ['岗位', '招聘', '职位', '求职', '找工作', '薪资', '工资', 'JD', '人资', 'hr', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招']],
+        ['jobs', ['岗位', '职位', '求职', '找工作', '薪资', '工资', 'JD', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招', '内推']],
       ];
       
       // 统计每个意图的命中关键词数
@@ -568,8 +568,17 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      // 按分数排序
-      intentScores.sort((a, b) => b[1] - a[1]);
+      // 按分数排序，同分时按优先级：career_paths > job_match > assessment > interview > decision > career > competency > jobs
+      const INTENT_PRIORITY: Record<string, number> = {
+        'career_paths': 8, 'job_match': 7, 'assessment': 6,
+        'interview': 5, 'decision': 4, 'career': 3,
+        'competency': 2, 'jobs': 1,
+      };
+      intentScores.sort((a, b) => {
+        const scoreDiff = b[1] - a[1];
+        if (scoreDiff !== 0) return scoreDiff;
+        return (INTENT_PRIORITY[b[0]] || 0) - (INTENT_PRIORITY[a[0]] || 0);
+      });
       
       const topIntent = intentScores[0];
       
