@@ -45,6 +45,12 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     tabId: 'jobs',
     url: '/resume',
   },
+  career_paths: {
+    title: '🎯 检测到你在找求职方向',
+    description: '要不要做个求职方向匹配？基于12条桂电学生路径，看看你最适合哪条。',
+    actionLabel: '查看匹配结果',
+    tabId: 'career-paths',
+  },
   skill: {
     title: '🔧 检测到你想提升技能',
     description: '要不要做个技能画像分析？找到你的优势和短板。',
@@ -72,6 +78,7 @@ export const RAG_TABLE_CONFIG: Record<string, string[]> = {
   xiaozhi_chat: ['guet_knowledge'],
   xiaozhi: ['guet_knowledge', 'job_descriptions', 'career_paths', 'skill_taxonomy', 'learning_resources'],
   resume: ['job_descriptions', 'skill_taxonomy'],
+  career_paths: ['guet_knowledge', 'job_descriptions'],
   skill: ['skill_taxonomy', 'job_descriptions', 'career_paths'],
 };
 
@@ -88,6 +95,7 @@ export const ROLE_REINFORCEMENTS: Record<string, string> = {
   xiaozhi: '',
   xiaozhi_chat: '',
   resume: '\n【角色重申】你只负责简历优化和JD对标，不做职业规划或面试模拟。',
+  career_paths: '\n【角色重申】你只负责求职方向匹配，不出具体职业规划或面试建议。',
   skill: '\n【角色重申】你只负责技能梳理和差距分析，不做职业规划或面试模拟。',
 };
 
@@ -104,5 +112,6 @@ export const RAG_DISPLAY_NAMES: Record<string, Record<string, string>> = {
   xiaozhi_chat: { guet_knowledge: '桂电知识' },
   xiaozhi: { guet_knowledge: '桂电知识', job_descriptions: '岗位信息', career_paths: '职业发展路径', skill_taxonomy: '技能要求', learning_resources: '学习资源' },
   resume: { job_descriptions: '岗位JD参考', skill_taxonomy: '技能关键词' },
+  career_paths: { guet_knowledge: '桂电知识', job_descriptions: '就业岗位参考' },
   skill: { skill_taxonomy: '技能分类参考', job_descriptions: '岗位对标', career_paths: '发展路径参考' },
 };

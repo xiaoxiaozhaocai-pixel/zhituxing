@@ -44,6 +44,7 @@ import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
 import { matchJobs, type MatchResult } from '@/lib/matching-service';
+import { handleCareerPathsQuery } from '@/lib/career-paths/chat-adapter';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -546,7 +547,8 @@ export async function POST(request: NextRequest) {
       const INTENT_KEYWORDS: [string, string[]][] = [
         ['interview', ['面试', '模拟面试', '面经', '面试官', '面试技巧', '自我介绍', 'hr面', '业务面', '群面', '无领导小组']],
         ['decision', ['考研', '考研vs就业', '纠结', '犹豫', '选择', '考研还是', '读研', '考公', '考编', '要不要']],
-        ['career', ['规划', '职业规划', '方向', '前景', '迷茫', '适合', '发展', '路径', '成长', '晋升']],
+        ['career', ['规划', '职业规划', '前景', '迷茫', '发展', '成长', '晋升']],
+        ['career_paths', ['求职方向', '适合什么', '适合哪条路', '职业匹配', '路径匹配', '推荐方向', '帮我看看适合', '看我适合', '能做什么工作', '找什么工作', '什么方向', '什么岗位适合我', '专业匹配']],
         ['assessment', ['测评', '评估', '测试', '水平', '能力', '做题', '题目', '考核', '测一下', '水平测试']],
         ['job_match', ['匹配岗位', '推荐岗位', '帮我匹配', '岗位推荐', '内推', '适合我的岗位', '找适合的岗位', '匹配一下岗位']],
         ['competency', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
@@ -581,6 +583,45 @@ export async function POST(request: NextRequest) {
         resolvedBotType = 'xiaozhi_chat';
         console.log(`[xiaozhi] No dispatch needed, using chat mode`);
       }
+    }
+
+    // ============================================================
+    // 求职方向匹配引擎（career_paths）— 优先于 DeepSeek
+    // 用户一次给齐信息 → 直接跑引擎返回结果
+    // 信息不全 → 降级到 DeepSeek 问用户补充
+    // ============================================================
+    if (resolvedBotType === 'career_paths') {
+      const engineResult = handleCareerPathsQuery(message || '');
+      if (!engineResult.needsMoreInfo && engineResult.report) {
+        // 直接返回引擎结果
+        const report = engineResult.report;
+        const responseText = engineResult.reply;
+
+        // 包装成 SSE 流返回
+        const encoder = new TextEncoder();
+        const segs = responseText.match(/[^。！？\n]+[。！？\n]?/g) || [responseText];
+        const stream = new ReadableStream({
+          async start(controller) {
+            for (const seg of segs) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+            }
+            // 推送 dispatch 事件给前端展示 action card
+            const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
+              intent: 'career_paths',
+              title: '🎯 你的求职方向匹配结果',
+              description: `最佳路径：${report.summary.best_route}，共 ${report.summary.strong_match} 条强匹配`,
+              actionLabel: '查看详细路径',
+              tabId: 'career-paths',
+            })}\n\n`;
+            controller.enqueue(encoder.encode(dispatchEvent));
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          }
+        });
+        return new Response(stream, { headers: SSE_HEADERS });
+      }
+      // 信息不全 → 降级到 DeepSeek，用 career_paths 的 system prompt 引导用户补充
+      console.log(`[career_paths] Incomplete profile, falling back to DeepSeek for Q&A`);
     }
 
     // ============================================================
