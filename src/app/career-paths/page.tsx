@@ -99,7 +99,17 @@ export default function CareerPathsPage() {
             {/* 路径卡片列表 */}
             <div className="space-y-3">
               {report.routes.map((route, i) => (
-                <RouteCard key={route.route_id} result={route} rank={i + 1} />
+                <div key={route.route_id} className="relative">
+                  {/* 多条强匹配时，第一条标为最推荐 */}
+                  {i === 0 && report.summary.strong_match >= 2 && (
+                    <div className="absolute -top-2.5 left-4 z-10">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white shadow-md">
+                        ⭐ 最推荐
+                      </span>
+                    </div>
+                  )}
+                  <RouteCard result={route} rank={i + 1} />
+                </div>
               ))}
             </div>
           </div>

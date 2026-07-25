@@ -160,14 +160,38 @@ function matchRoute(route: RouteConfig, profile: EncodedProfile): RouteMatchResu
 }
 
 /**
+ * 计算专业对口度得分（同等匹配度下的二次排序用）
+ * 有 MAJ_CAT 条件的路径 → 用户专业命中 → 对口度高
+ * 范围越窄（类别少）说明越精准
+ */
+function calcRelevanceScore(route: RouteMatchResult, profile: EncodedProfile): number {
+  const majCatCondition = route.conditions['MAJ_CAT'];
+  if (!majCatCondition) return 0;
+
+  if (majCatCondition.operator === 'in') {
+    const allowed = majCatCondition.value as string[];
+    if (allowed.includes(profile.MAJ_CAT)) {
+      // 范围越窄越精准：1 + 1/(类别数+1) ∈ (1.0, 1.5)
+      return 1 + (1 / (allowed.length + 1));
+    }
+  }
+
+  return 0;
+}
+
+/**
  * 主入口：执行完整匹配
  * 输入编码后的画像，输出完整的匹配报告
  */
 export function runEngine(profile: EncodedProfile): MatchReport {
   const routes = CONFIG.routes.map((route) => matchRoute(route, profile));
 
-  // 按匹配度降序排序
-  routes.sort((a, b) => b.match_rate - a.match_rate);
+  // 先按匹配度降序，同等匹配度下按专业对口度降序
+  routes.sort((a, b) => {
+    const rateDiff = b.match_rate - a.match_rate;
+    if (rateDiff !== 0) return rateDiff;
+    return calcRelevanceScore(b, profile) - calcRelevanceScore(a, profile);
+  });
 
   const summary: MatchSummary = {
     strong_match: routes.filter((r) => r.verdict === 'strong_match').length,

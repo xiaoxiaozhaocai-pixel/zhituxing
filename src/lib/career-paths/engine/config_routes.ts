@@ -157,6 +157,7 @@ export const CONFIG: ConfigData = {
       name: '销售/营销·通用路径',
       templates: ['default'],
       conditions: {
+        MAJ_CAT: { operator: 'in', value: ['MGMT-HR', 'MGMT-工管', 'MGMT-电商', 'MGMT-会计', 'LA-英语', 'LA-日语', '其他'] },
         INT_NUM: { operator: '>=', value: 0.25 },
         SKILL_SET: { operator: '>=', value: 0.25 },
       },
@@ -164,8 +165,9 @@ export const CONFIG: ConfigData = {
         coverage: 0.15,
         consistency: 0.65,
         job_types: ['销售工程师', '客户经理', '市场营销', '渠道销售', '商务拓展'],
-        scenario: '不限专业不限分类，最低门槛路径。有实习经历 + 基础沟通/办公技能 → 销售/营销岗',
+        scenario: '经管/文法类专业 + 有实习 + 基础技能 → 销售/营销岗，排除了纯工科和IT类专业的误匹配',
         gap_advice: {
+          MAJ_CAT: '销售岗位不限专业，但经管/文法类更常见，工科和IT类专业建议优先走技术路径',
           INT_NUM: '建议找1段销售/市场类实习积累经验',
           SKILL_SET: '建议提升沟通表达、Office办公、客户关系管理等软技能',
         },
