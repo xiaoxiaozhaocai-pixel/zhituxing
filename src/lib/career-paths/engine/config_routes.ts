@@ -136,7 +136,7 @@ export const CONFIG: ConfigData = {
       name: 'IT/互联网·产品/运营',
       templates: ['default'],
       conditions: {
-        MAJ_CAT: { operator: 'in', value: ['MGMT-HR', 'MGMT-工管', 'MGMT-电商', 'MGMT-会计', 'LA-英语', 'LA-日语', 'ART-设计', 'MGMT-工业工程', '其他'] },
+        MAJ_CAT: { operator: 'in', value: ['MGMT-HR', 'MGMT-工管', 'MGMT-电商', 'MGMT-会计', 'LA-英语', 'LA-日语', 'ART-设计', 'MGMT-工业工程'] },
         INT_QLT: { operator: '>=', value: 0.50 },
         SKILL_SET: { operator: '>=', value: 0.50 },
       },
