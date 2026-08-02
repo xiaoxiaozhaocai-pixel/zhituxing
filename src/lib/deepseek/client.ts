@@ -38,7 +38,7 @@ export interface ChatResult {
  * 通用聊天调用
  */
 export async function chatWithDS(opts: ChatOptions): Promise<ChatResult> {
-  const { messages, model = 'deepseek-chat', temperature = 0.7, max_tokens = 4096 } = opts;
+  const { messages, model = 'deepseek-v4-flash', temperature = 0.7, max_tokens = 4096 } = opts;
 
   const res = await fetch(DS_API_BASE, {
     method: 'POST',
@@ -63,7 +63,7 @@ export async function chatWithDS(opts: ChatOptions): Promise<ChatResult> {
 
 /**
  * 摘要压缩调用
- * 固定使用 deepseek-chat，低温度保证一致性
+ * 固定使用 deepseek-v4-flash，低温度保证一致性
  */
 export async function generateSummary(prompt: string): Promise<string> {
   const res = await fetch(DS_API_BASE, {

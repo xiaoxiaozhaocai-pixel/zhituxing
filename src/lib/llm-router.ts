@@ -15,7 +15,7 @@
 export const LLM_BASE_URL = process.env.LLM_BASE_URL || 'https://api.deepseek.com';
 
 /** 默认使用的模型 */
-export const LLM_DEFAULT_MODEL = process.env.LLM_MODEL || 'deepseek-chat';
+export const LLM_DEFAULT_MODEL = process.env.LLM_MODEL || 'deepseek-v4-flash';
 
 /**
  * 智能路由：根据请求类型返回对应的 base URL + 模型
