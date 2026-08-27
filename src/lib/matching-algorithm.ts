@@ -854,3 +854,266 @@ function mapLanguageLevelToNumber(level: string): number {
   };
   return map[level] || 3;
 }
+
+// ============================================================
+// 5. 组态匹配 + 双维错位诊断（判断力第一波 · L2 组态升级）
+// ============================================================
+
+/** 组态错位维度缺口项 */
+export interface DimensionGapItem {
+  key: 'education' | 'major' | 'skill' | 'intern' | 'school';
+  label: string;
+  status: 'pass' | 'gap' | 'na';
+  gapText: string;
+}
+
+/** 组态匹配结果 */
+export interface CohortFitResult {
+  /** 能不能：suitable=可投 / needs_effort=补一补可投 / not_suitable=暂不建议 */
+  overall: 'suitable' | 'needs_effort' | 'not_suitable';
+  /** 路径匹配度 0-100 */
+  pathFit: number;
+  /** 命中的组态通过路径 */
+  passPaths: string[];
+  /** 差多少：各维度缺口明细 */
+  gaps: DimensionGapItem[];
+  /** 综合建议 */
+  advice: string;
+}
+
+/** 组态画像输入（从 user profile / skills 提取） */
+export interface CohortInput {
+  degree?: string;
+  major?: string;
+  grade?: string;
+  skills: UserSkill[];
+  hasIntern?: boolean;
+}
+
+const DEGREE_LEVELS: Record<string, number> = {
+  '高中': 1, '中专': 2, '大专': 3, '本科': 4, '硕士': 5, '博士': 6,
+};
+
+function degreeLevel(degree?: string): number {
+  if (!degree) return 0;
+  return DEGREE_LEVELS[degree] || 0;
+}
+
+function parseJdDegreeLevel(jdEdu?: string): number {
+  if (!jdEdu) return 0;
+  if (jdEdu.includes('不限')) return 0;
+  for (const [k, v] of Object.entries(DEGREE_LEVELS)) {
+    if (jdEdu.includes(k)) return v;
+  }
+  // "统招本科及以上" 兜底
+  if (jdEdu.includes('本科')) return 4;
+  return 0;
+}
+
+/** 专业大类归类 */
+function classifyMajor(major?: string): string {
+  if (!major) return 'other';
+  const m = major.toLowerCase();
+  const rules: Array<[string, string[]]> = [
+    ['计算机', ['计算机', '软件', '电子信息', '人工智能', '大数据', '网络', '信息安全', '物联网']],
+    ['人力', ['人力资源管理', '人力资源', '工商管理']],
+    ['财会', ['会计', '财务', '审计', '金融', '经济', '财会']],
+    ['营销', ['市场营销', '市场', '广告', '营销', '电子商务']],
+    ['语言', ['英语', '外语', '翻译', '日语', '俄语', '法语']],
+    ['机械', ['机械', '自动化', '机电', '车辆', '材料成型']],
+    ['材料', ['材料', '化学', '化工', '能源', '动力']],
+    ['电子', ['电子', '电气', '微电子', '通信工程']],
+    ['管理', ['管理', '物流', '供应链', '运营']],
+  ];
+  for (const [cat, kws] of rules) {
+    if (kws.some(kw => m.includes(kw))) return cat;
+  }
+  return 'other';
+}
+
+/** 组态评估上下文 */
+interface CohortEvalContext {
+  degLevel: number;
+  jdDegLevel: number;
+  majorCat: string;
+  majorMatch: boolean;
+  skillCoverage: number;
+  skillGapCount: number;
+  hasIntern: boolean;
+}
+
+interface CohortPath {
+  name: string;
+  label: string;
+  test: (c: CohortEvalContext) => boolean;
+}
+
+function buildCohortPaths(): CohortPath[] {
+  return [
+    {
+      name: 'A_gate',
+      label: '门槛型 · 学历+技能到位',
+      test: (c) => (c.jdDegLevel === 0 || c.degLevel >= c.jdDegLevel) && c.skillCoverage >= 0.5,
+    },
+    {
+      name: 'B_potential',
+      label: '潜力型 · 差一步但可培养',
+      test: (c) => (c.jdDegLevel === 0 || c.degLevel >= c.jdDegLevel - 1) && c.skillCoverage >= 0.3 && (c.hasIntern || c.majorMatch),
+    },
+    {
+      name: 'C_transfer',
+      label: '转轨型 · 专业错位但技能够',
+      test: (c) => c.skillCoverage >= 0.4 && (c.majorCat === 'other' || !c.majorMatch),
+    },
+  ];
+}
+
+/**
+ * 组态匹配 + 双维错位诊断
+ *
+ * 「能不能」：fsQCA 式多条件组合判断用户是否具备进入该岗位路径的基本组态
+ * 「差多少」：逐维度量化缺口（学历/专业/技能/实习）
+ */
+export function evaluateCohortFit(
+  jd: Record<string, unknown>,
+  input: CohortInput
+): CohortFitResult {
+  const jdEducation = (jd.education as string) || '';
+  const jdMajorReq = (jd.major_require as string) || '';
+  const jdSkillsStr = buildJdSkillsForFit(jd);
+
+  const degLevel = degreeLevel(input.degree);
+  const jdDegLevel = parseJdDegreeLevel(jdEducation);
+
+  const majorCat = classifyMajor(input.major);
+  const majorMatch = matchMajorCategory(majorCat, `${jd.job_title || ''} ${(jd.industry as string) || ''} ${jdMajorReq}`);
+
+  const jdSkills = parseJobSkills(jdSkillsStr);
+  const { coverage, gapCount } = computeSkillCoverage(input.skills, jdSkills);
+
+  const ctx: CohortEvalContext = {
+    degLevel,
+    jdDegLevel,
+    majorCat,
+    majorMatch,
+    skillCoverage: coverage,
+    skillGapCount: gapCount,
+    hasIntern: !!input.hasIntern,
+  };
+
+  const paths = buildCohortPaths();
+  const passPaths = paths.filter(p => p.test(ctx)).map(p => p.label);
+
+  const gaps: DimensionGapItem[] = [];
+  gaps.push(buildEducationGap(degLevel, jdDegLevel));
+  gaps.push(buildMajorGap(majorMatch, majorCat));
+  gaps.push(buildSkillGap(gapCount));
+  gaps.push(buildInternGap(!!input.hasIntern));
+
+  const totalGaps = gaps.filter(g => g.status === 'gap').length;
+  let overall: CohortFitResult['overall'];
+  if (passPaths.length > 0 && totalGaps === 0) {
+    overall = 'suitable';
+  } else if (passPaths.length > 0) {
+    overall = 'needs_effort';
+  } else {
+    overall = 'not_suitable';
+  }
+
+  const pathFit = Math.round(
+    Math.min(100, coverage * 100 * 0.55 + (jdDegLevel === 0 || degLevel >= jdDegLevel ? 100 : 40) * 0.3 + (majorMatch ? 100 : 50) * 0.15)
+  );
+
+  const advice = buildFitAdvice(overall, gaps, passPaths, pathFit);
+
+  return { overall, pathFit, passPaths, gaps, advice };
+}
+
+// --- 内部辅助 ---
+
+function buildJdSkillsForFit(jd: Record<string, unknown>): string {
+  const parts: string[] = [];
+  const hard = jd.hard_skills;
+  const soft = jd.soft_skills;
+  if (Array.isArray(hard)) parts.push(hard.join(", "));
+  else if (typeof hard === "string") parts.push(hard);
+  if (Array.isArray(soft)) parts.push(soft.join(", "));
+  else if (typeof soft === "string") parts.push(soft);
+  if (jd.major_require) parts.push(String(jd.major_require));
+  return parts.join(", ");
+}
+
+function matchMajorCategory(cat: string, searchText: string): boolean {
+  if (!searchText) return cat === 'other';
+  const t = searchText.toLowerCase();
+  const map: Record<string, string[]> = {
+    '计算机': ['开发', '工程师', 'java', 'python', '前端', '后端', '运维', '软件', '人工智能', '数据'],
+    '人力': ['招聘', '人事', '人力资源', 'hr', '行政'],
+    '财会': ['财务', '审计', '税务', '会计', '金融', '银行'],
+    '营销': ['运营', '市场', '销售', '营销', '推广', '新媒体', '品牌'],
+    '语言': ['翻译', '外贸', '英语', '海外', '国际'],
+    '机械': ['机械', '制造', '工艺', '设计', '自动化', '设备'],
+    '材料': ['材料', '化学', '化工', '电池', '能源', '研发'],
+    '电子': ['电子', '电气', '嵌入式', '电路', '硬件'],
+    '管理': ['管理', '物流', '供应链', '运营', '项目'],
+  };
+  const kws = map[cat] || [];
+  return kws.some(k => t.includes(k));
+}
+
+function computeSkillCoverage(skills: UserSkill[], jdSkills: JobSkillRequirement[]): { coverage: number; gapCount: number } {
+  if (jdSkills.length === 0) return { coverage: 1, gapCount: 0 };
+  const userNames = skills.map(s => normalizeSkillName(s.name));
+  let matched = 0;
+  for (const req of jdSkills) {
+    const n = normalizeSkillName(req.name);
+    if (userNames.includes(n) || userNames.some(u => u.includes(n) || n.includes(u))) matched++;
+  }
+  return {
+    coverage: matched / jdSkills.length,
+    gapCount: Math.max(0, jdSkills.length - matched),
+  };
+}
+
+function buildEducationGap(userLevel: number, jdLevel: number): DimensionGapItem {
+  if (jdLevel === 0) return { key: 'education', label: '学历', status: 'pass', gapText: '不限学历' };
+  if (userLevel === 0) return { key: 'education', label: '学历', status: 'na', gapText: '学历未填写，建议补充' };
+  if (userLevel >= jdLevel) return { key: 'education', label: '学历', status: 'pass', gapText: '达标' };
+  const diff = jdLevel - userLevel;
+  return { key: 'education', label: '学历', status: 'gap', gapText: `差 ${diff} 档` };
+}
+
+function buildMajorGap(majorMatch: boolean, cat: string): DimensionGapItem {
+  if (cat === 'other') return { key: 'major', label: '专业', status: 'na', gapText: '专业泛用' };
+  if (majorMatch) return { key: 'major', label: '专业', status: 'pass', gapText: '专业对口' };
+  return { key: 'major', label: '专业', status: 'gap', gapText: '专业错位，需对方认可' };
+}
+
+function buildSkillGap(gapCount: number): DimensionGapItem {
+  if (gapCount === 0) return { key: 'skill', label: '核心技能', status: 'pass', gapText: '覆盖到位' };
+  return { key: 'skill', label: '核心技能', status: 'gap', gapText: `还差 ${gapCount} 项` };
+}
+
+function buildInternGap(hasIntern: boolean): DimensionGapItem {
+  return hasIntern
+    ? { key: 'intern', label: '实习经历', status: 'pass', gapText: '有相关经验' }
+    : { key: 'intern', label: '实习经历', status: 'gap', gapText: '实习较薄弱' };
+}
+
+function buildFitAdvice(
+  overall: string,
+  gaps: DimensionGapItem[],
+  passPaths: string[],
+  pathFit: number
+): string {
+  const gapLabels = gaps.filter(g => g.status === 'gap').map(g => g.label);
+
+  if (overall === 'suitable') {
+    return `你的画像基本达标该岗位路径（${pathFit}分）。可直接投递，建议作为匹配池里的高优先目标。`;
+  }
+  if (overall === 'needs_effort') {
+    const lack = gapLabels.length > 0 ? `重点补：${gapLabels.join('、')}` : '再强化一下核心技能即可';
+    return `离这条路径还有一步（${pathFit}分），${lack}，补上就能投。`;
+  }
+  return `当前画像与这条岗位路径匹配度偏低（${pathFit}分），暂不建议盲投。建议先做认知校正，换个更适合的方向，或针对性补足后再投。`;
+}

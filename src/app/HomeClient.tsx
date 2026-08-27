@@ -4,141 +4,113 @@ import { useState, useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Compass, TrendingUp, Briefcase, CheckCircle2, ArrowRight,
+import {
+  Compass, TrendingUp, Briefcase, CheckCircle2, ArrowRight,
   Sparkles, Building2, Mic, Search, Shield, Zap, FileText,
-  MessageSquare } from 'lucide-react';
+  MessageSquare, Target, Layers,
+} from 'lucide-react';
+
+// ============================================================
+// 数据：痛点共鸣 + 5核心链路 + 数据信任
+// ============================================================
 
 const painPoints = [
   {
     icon: <Compass className="w-5 h-5" />,
     title: '我到底适合做什么？',
-    desc: '专业不对口、兴趣不清晰？桂电的课表不会告诉你答案，但小职可以帮你一步步理清。',
-    color: 'from-blue-500 to-blue-600',
+    desc: '专业不对口、兴趣不清晰？小职陪你一步步理清方向。',
+    color: 'from-blue-500 to-indigo-600',
   },
   {
     icon: <Search className="w-5 h-5" />,
     title: '投了很多简历没回音',
-    desc: '简历石沉大海不一定是你不行，可能是没投对方向。小职先帮你找到匹配的岗位再投。',
+    desc: '不用盲投，小职做认知校正+精准匹配，帮你少走弯路。',
     color: 'from-orange-500 to-red-500',
   },
   {
     icon: <TrendingUp className="w-5 h-5" />,
     title: '考研还是直接就业？',
-    desc: '数据推演帮你做选择，不靠感觉做决定。',
-    color: 'from-blue-500 to-blue-600',
+    desc: '用你的真实画像做推演，不靠拍脑袋做决定。',
+    color: 'from-violet-500 to-purple-600',
   },
 ];
 
-const featureCards = [
+const corePaths = [
   {
-    icon: <TrendingUp className="w-5 h-5" />,
-    title: '我的成长',
-    desc: '职业规划、测评、评估一站查看',
-    href: '/growth',
-    grad: 'from-blue-500 to-cyan-500',
-    featured: true,
-  },
-  {
-    icon: <Search className="w-5 h-5" />,
-    title: '岗位匹配',
-    desc: '精准推荐，告别海投',
-    href: '/match',
-    grad: 'from-blue-500 to-cyan-500',
-  },
-  {
-    icon: <Briefcase className="w-5 h-5" />,
-    title: '岗位百科',
-    desc: '真实岗位库，27大行业',
-    href: '/jobs',
-    grad: 'from-emerald-500 to-teal-600',
-  },
-  {
-    icon: <Mic className="w-5 h-5" />,
-    title: 'AI模拟面试',
-    desc: '实战演练，从容应对',
-    href: '/assistant?bot=interview',
-    grad: 'from-rose-500 to-pink-600',
+    icon: <Compass className="w-5 h-5" />,
+    title: '认知校正',
+    desc: '先搞清楚你到底适合什么方向，不盲目开跑',
+    href: '/career-planning',
+    color: 'from-blue-500 to-indigo-600',
   },
   {
     icon: <FileText className="w-5 h-5" />,
-    title: '简历优化',
-    desc: '智能诊断+一键优化',
+    title: '简历评估',
+    desc: '诊断简历，让你投出去更有针对性',
     href: '/resume-optimize',
-    grad: 'from-sky-500 to-blue-600',
+    color: 'from-sky-500 to-blue-600',
+  },
+  {
+    icon: <Shield className="w-5 h-5" />,
+    title: '能力翻译',
+    desc: '把专业与经历，翻译成岗位听得懂的语言',
+    href: '/skill-portrait',
+    color: 'from-cyan-500 to-teal-600',
+  },
+  {
+    icon: <Mic className="w-5 h-5" />,
+    title: '模拟面试',
+    desc: '实战演练，从容应对面试官',
+    href: '/assistant?bot=interview',
+    color: 'from-rose-500 to-pink-600',
+  },
+  {
+    icon: <Target className="w-5 h-5" />,
+    title: '岗位匹配',
+    desc: '基于你的画像，精准推荐，告别海投',
+    href: '/match',
+    color: 'from-emerald-500 to-teal-600',
   },
 ];
 
-// 默认值（首屏 SSR + 网络失败兜底，弹性表述避免虚假宣传）
-const DEFAULT_TRUST_STATS = [
-  { icon: <Building2 className="w-5 h-5" />, value: '4000+', label: '真实岗位', desc: '覆盖27大行业' },
+const trustStats = [
+  { icon: <Building2 className="w-5 h-5" />, value: '20,000+', label: '真实岗位', desc: '覆盖27大行业' },
   { icon: <Shield className="w-5 h-5" />, value: '100%', label: '免费使用', desc: '核心功能永久免费' },
-  { icon: <Zap className="w-5 h-5" />, value: '6大', label: 'AI能力', desc: '全链路求职陪伴' },
+  { icon: <Zap className="w-5 h-5" />, value: '全链路', label: '求职陪伴', desc: '先想清楚，再投简历' },
 ];
 
-// 数字格式化：≥1000 显示 "X.X千+"，避免精确数字带来的虚假感
-function formatJobCount(n: number): string {
-  if (n >= 10000) return `${Math.floor(n / 1000) / 10}万+`;
-  if (n >= 1000) return `${Math.floor(n / 100) / 10}千+`;
-  return `${n}+`;
-}
+// ============================================================
+// 首页组件 — 主界面：小职对话 = 唯一主入口；5核心链路；岗位信息
+// ============================================================
 
 export default function HomeClient() {
-  const _router = useRouter();
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [mounted, setMounted] = useState(false);
-  const [trustStats, setTrustStats] = useState(DEFAULT_TRUST_STATS);
   useEffect(() => { setMounted(true); }, []);
-
-  // 拉取真实岗位统计（失败则保留默认弹性文案，不阻塞首屏）
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/jobs/stats', { cache: 'no-store' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((res) => {
-        if (cancelled || !res?.ok || !res?.data) return;
-        const { total } = res.data as { total: number };
-        if (typeof total === 'number' && total > 0) {
-          setTrustStats((prev) => {
-            const next = [...prev];
-            next[0] = {
-              ...prev[0],
-              value: formatJobCount(total),
-              // industries 字段当前数据完整性不足（87% JD 缺失 industry 标签），
-              // 暂不动态显示"覆盖N大行业"避免误导，保留默认弹性文案
-            };
-            return next;
-          });
-        }
-      })
-      .catch(() => { /* 静默失败，保留默认值 */ });
-    return () => { cancelled = true; };
-  }, []);
 
   return (
     <div className="min-h-screen bg-white text-[#1E293B]">
 
       {/* ============================================================
-          HERO — 有机装饰 + 玻璃卡片
+          HERO — 小职对话（唯一主入口，人格化定式）
           ============================================================ */}
-      <section className="relative pt-20 sm:pt-28 pb-16 sm:pb-20 overflow-hidden">
-        {/* 有机形状装饰 */}
+      <section className="relative pt-16 sm:pt-24 pb-14 sm:pb-16 overflow-hidden">
+        {/* 有机装饰 */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] blob-primary -translate-y-1/4 translate-x-1/4 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] blob-accent translate-y-1/4 -translate-x-1/4 pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] blob-warm -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
-        
+
         {/* 网格纹理 */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(22,93,255,0.02)_1px,transparent_1px),linear-gradient(to_right,rgba(22,93,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
 
         <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 text-center relative z-10">
           {/* 登录横幅 */}
           {mounted && !authLoading && (
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-6 ${isAuthenticated ? 'text-[#165DFF]' : 'text-amber-700'}`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 ${isAuthenticated ? 'text-[#165DFF]' : 'text-amber-700'}`}>
               {isAuthenticated ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-[#165DFF]" />
-                  欢迎回来{user?.nickname ? `，${user.nickname}` : ''}！
-                  <Link href="/chat" className="font-semibold text-[#165DFF] hover:underline ml-1">继续规划 →</Link>
+                  欢迎回来{user?.nickname ? `，${user.nickname}` : ''}，继续和小职聊聊
                 </>
               ) : (
                 <>
@@ -156,26 +128,54 @@ export default function HomeClient() {
               先想清楚<br className="sm:hidden" />再投简历
             </span>
           </h1>
-          
-          <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-8 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
-            我是小职，桂电人自己的AI求职伙伴 👋<br />
-            从迷茫到清晰，一步步陪你走。
+
+          <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-10 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
+            我是小职，你的AI职业规划师 👋<br />
+            不用焦虑，一步步陪你走。
           </p>
 
-          {/* CTA 按钮组 */}
-          <div className={`flex flex-col sm:flex-row items-center justify-center gap-3 mb-12 ${mounted ? 'anim-up-d2' : 'opacity-0'}`}>
-            <Link href="/chat">
-              <button className="btn-gradient px-8 py-3.5 rounded-2xl font-semibold text-base flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                找小职聊聊
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </Link>
-            <Link href="/jobs">
-              <button className="px-8 py-3.5 rounded-2xl font-semibold text-base text-[#475569] bg-[#F1F5F9] hover:bg-[#E2E8F0] transition-all duration-300 flex items-center gap-2">
-                <Briefcase className="w-5 h-5" />
-                浏览岗位
-              </button>
+          {/* ============================================================
+              小职对话 — 唯一主入口（人格化对话框）
+              ============================================================ */}
+          <Link href="/chat" className={`block max-w-2xl mx-auto mb-14 ${mounted ? 'anim-up-d2' : 'opacity-0'}`}>
+            <div className="group relative rounded-3xl bg-white/70 backdrop-blur-sm border border-[#E2E8F0] shadow-xl shadow-[#165DFF]/5 hover:shadow-2xl hover:shadow-[#165DFF]/10 hover:-translate-y-1 transition-all duration-300 p-7 sm:p-9 text-left overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 blob-primary opacity-20 pointer-events-none" />
+
+              <div className="relative z-10 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center text-white shadow-lg shadow-[#165DFF]/25 group-hover:scale-105 transition-transform duration-300">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-[#165DFF] text-sm font-semibold">小职对话 · 起点</div>
+                  <div className="text-[#64748B] text-xs">从这里开始，让我真正懂你</div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-[#165DFF] ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+
+              <div className="relative z-10 mt-5 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0] p-5">
+                <p className="text-[#334155] text-base sm:text-lg leading-relaxed">
+                  “我该找什么方向的工作？帮我看看我的简历适合什么岗位？”
+                </p>
+                <p className="mt-3 text-[#94A3B8] text-sm">
+                  小职会先做<strong className="text-[#165DFF]">认知校正</strong>，再给你<strong className="text-[#165DFF]">路径建议</strong>和<strong className="text-[#165DFF]">岗位匹配</strong>
+                </p>
+              </div>
+
+              <div className="relative z-10 mt-4 flex items-center justify-between text-sm">
+                <span className="text-[#94A3B8]">点击开始对话</span>
+                <span className="inline-flex items-center gap-1 text-[#165DFF] font-semibold">
+                  找小职聊聊 <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </div>
+          </Link>
+
+          {/* 岗位信息入口（原有，不新增） */}
+          <div className={`flex items-center justify-center gap-2 ${mounted ? 'anim-up-d3' : 'opacity-0'}`}>
+            <Link href="/jobs" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-[#475569] bg-[#F1F5F9] hover:bg-[#E2E8F0] transition-all duration-300">
+              <Briefcase className="w-4 h-4" />
+              浏览岗位信息
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -211,87 +211,43 @@ export default function HomeClient() {
       </section>
 
       {/* ============================================================
-          小职品牌展示区 — 「主入口」品牌锚点
-          ============================================================ */}
-      <section className="py-8 sm:py-10">
-        <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#EEF2FF] via-white to-[#F5F3FF] border border-[#E2E8F0] p-7 sm:p-10">
-            {/* 装饰光斑 */}
-            <div className="absolute -top-24 -right-24 w-72 h-72 bg-[#165DFF]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-[#3D7FFF]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-[#165DFF]/3 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-              {/* 左侧：品牌形象 */}
-              <div className="flex-shrink-0">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center text-white shadow-xl shadow-[#165DFF]/20 transition-transform duration-500 hover:scale-110 cursor-default">
-                  <MessageSquare className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-              </div>
-
-              {/* 中间：品牌文案 */}
-              <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-xl sm:text-2xl font-bold text-[#1E293B] mb-1.5 heading-tight">
-                  我叫小职，你的AI朋友
-                </h3>
-                <p className="text-[#64748B] text-sm sm:text-base mb-3 max-w-md mx-auto sm:mx-0">
-                  懂桂电学生的AI朋友，陪你走好求职每一步。
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                  <span className="px-3 py-1 rounded-full bg-[#EEF2FF] text-[#165DFF] text-xs font-medium">免费使用</span>
-                  <span className="px-3 py-1 rounded-full bg-[#EEF2FF] text-[#165DFF] text-xs font-medium">24小时在线</span>
-                  <span className="px-3 py-1 rounded-full bg-[#EEF2FF] text-[#165DFF] text-xs font-medium">桂电专属</span>
-                </div>
-              </div>
-
-              {/* 右侧：CTA */}
-              <div className="flex-shrink-0">
-                <Link href="/chat">
-                  <button className="btn-gradient px-6 py-3 rounded-2xl font-semibold text-sm flex items-center gap-2 whitespace-nowrap shadow-lg shadow-[#165DFF]/20 hover:shadow-xl hover:shadow-[#165DFF]/30 transition-all duration-300">
-                    <MessageSquare className="w-4 h-4" />
-                    找小职聊聊
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          功能展示 — Bento Grid
+          5 核心链路 — 从「我知道焦虑」到「我带你走」
           ============================================================ */}
       <section className="py-12 sm:py-16 bg-gradient-to-b from-[#F8FAFC] to-white">
         <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3 heading-tight">
-            6大AI能力，全链路陪你求职
+            5条核心链路，陪你走完求职全程
           </h2>
           <p className="text-[#64748B] text-center mb-10 max-w-md mx-auto">
-            从迷茫到入职，每一步都有AI
+            每一步都有小职，不用自己瞎折腾
           </p>
-          
-          <div className="bento-grid">
-            {featureCards.map((card, i) => (
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {corePaths.map((item, i) => (
               <Link
                 key={i}
-                href={card.href}
-                className={`bento-card group ${card.featured ? 'bento-featured' : ''}`}
+                href={item.href}
+                className={`bento-card group ${i === 0 ? 'bento-featured' : ''}`}
               >
-                {/* 编号水印 */}
-                <span className="absolute top-4 right-5 text-6xl font-black text-[#F1F5F9] select-none pointer-events-none group-hover:text-[#E2E8F0] transition-colors">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${card.grad} flex items-center justify-center text-white shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300 relative z-10`}>
-                  {card.icon}
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300 relative z-10`}>
+                  {item.icon}
                 </div>
-                <h3 className="text-lg font-bold text-[#1E293B] mb-1.5 relative z-10">{card.title}</h3>
-                <p className="text-[#64748B] text-sm leading-relaxed relative z-10">{card.desc}</p>
+                <h3 className="text-base font-bold text-[#1E293B] mb-1.5 relative z-10">{item.title}</h3>
+                <p className="text-[#64748B] text-sm leading-relaxed relative z-10">{item.desc}</p>
                 <div className="mt-4 flex items-center gap-1 text-sm font-medium text-[#165DFF] opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-10">
-                  开始使用 <ArrowRight className="w-3.5 h-3.5" />
+                  开始 <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </Link>
             ))}
+          </div>
+
+          {/* 求职工具库引导（收纳其余能力，入口统一收敛） */}
+          <div className="mt-8 flex justify-center">
+            <Link href="/growth" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] transition-all duration-300">
+              <Layers className="w-4 h-4" />
+              更多求职工具库
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </section>
@@ -317,58 +273,23 @@ export default function HomeClient() {
       </section>
 
       {/* ============================================================
-          会员预告
+          收尾 CTA — 柔和引导，回到唯一主入口
           ============================================================ */}
-      <section className="py-12 sm:py-16">
-        <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#EEF2FF] via-white to-[#F5F3FF] border border-[#E2E8F0] p-8 sm:p-12 text-center">
-            <div className="absolute top-0 right-0 w-48 h-48 blob-primary opacity-50 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 blob-accent opacity-40 pointer-events-none" />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-sm font-medium mb-5">
-                <Sparkles className="w-4 h-4" /> 会员专属
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1E293B] mb-3 heading-tight">
-                解锁小职完全体
-              </h2>
-              <p className="text-[#64748B] mb-7 max-w-lg mx-auto">
-                无限AI对话 · 完整岗位匹配 · 学习路径规划 · 面试模拟……
-              </p>
-              <Link href="/membership">
-                <button className="btn-member px-8 py-3.5 rounded-2xl font-semibold text-base flex items-center gap-2 mx-auto">
-                  <Sparkles className="w-5 h-5" />
-                  查看会员方案
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          CTA 区
-          ============================================================ */}
-      <section className="py-16 sm:py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#165DFF] via-[#3D7FFF] to-[#6366F1]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:48px_48px]" />
-        <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full blur-3xl" />
-        
-        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 heading-tight">
-            交个朋友？
-          </h2>
-          <p className="text-white/70 text-lg mb-8 max-w-lg mx-auto">
-            完全免费，马上开聊。让小职帮你找到方向。
+      <section className="py-10 sm:py-12">
+        <div className="max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
+          <p className="text-[#64748B] mb-5 text-base">
+            不用想那么多，先跟小职聊两句。
           </p>
           <Link href="/chat">
-            <button className="bg-white text-[#165DFF] hover:bg-[#F8FAFC] px-10 py-4 rounded-2xl font-bold text-base transition-all duration-300 hover:scale-105 shadow-2xl shadow-black/20 flex items-center gap-2 mx-auto">
-              <Compass className="w-5 h-5" />
+            <button className="btn-gradient px-8 py-3.5 rounded-2xl font-semibold text-base flex items-center gap-2 mx-auto">
+              <MessageSquare className="w-5 h-5" />
               找小职聊聊
               <ArrowRight className="w-4 h-4" />
             </button>
           </Link>
+          <p className="mt-5 text-[#94A3B8] text-sm">
+            完全免费 · 马上开聊 · 让小职帮你找到方向
+          </p>
         </div>
       </section>
     </div>

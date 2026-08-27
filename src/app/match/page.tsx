@@ -33,6 +33,7 @@ interface MatchJobResult {
   requiredGaps: string[];
   learningPath: { phase: string; skills: string[]; estimatedDays: number }[];
   salary: { estimatedMin: number; estimatedMax: number; estimatedMedian: number };
+  cohort?: CohortResult | null;
 }
 
 interface UnderratedJob {
@@ -43,7 +44,80 @@ interface UnderratedJob {
   industry?: string;
 }
 
+interface CohortGapItem {
+  key: string;
+  label: string;
+  status: 'pass' | 'gap' | 'na';
+  gapText: string;
+}
+
+interface CohortResult {
+  overall: 'suitable' | 'needs_effort' | 'not_suitable';
+  pathFit: number;
+  passPaths: string[];
+  gaps: CohortGapItem[];
+  advice: string;
+}
+
 type SortKey = 'matchScore' | 'salary' | 'city';
+
+// 组态诊断「能不能」徽章样式映射
+const COHORT_BADGE: Record<CohortResult['overall'], { label: string; className: string; dot: string }> = {
+  suitable: { label: '可投', className: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500' },
+  needs_effort: { label: '补一补可投', className: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+  not_suitable: { label: '暂不建议', className: 'bg-slate-100 text-slate-500 border-slate-200', dot: 'bg-slate-400' },
+};
+
+/** 组态诊断摘要卡（能不能徽章 + 一句话建议） */
+function CohortSummary({ cohort }: { cohort: CohortResult }) {
+  const badge = COHORT_BADGE[cohort.overall] ?? COHORT_BADGE.not_suitable;
+  return (
+    <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50/70 p-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${badge.className}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+          {badge.label}
+        </span>
+        <span className="text-xs text-gray-500">组态匹配 {cohort.pathFit} 分</span>
+      </div>
+      <p className="mt-2 text-sm text-gray-600 leading-relaxed">{cohort.advice}</p>
+    </div>
+  );
+}
+
+/** 组态诊断「差多少」双维错位缺口块（展开区） */
+function CohortGaps({ cohort }: { cohort: CohortResult }) {
+  const statusCls: Record<string, string> = {
+    pass: 'bg-green-50 text-green-700 border-green-200',
+    gap: 'bg-amber-50 text-amber-700 border-amber-200',
+    na: 'bg-slate-50 text-slate-500 border-slate-200',
+  };
+  const statusIcon: Record<string, string> = {
+    pass: '✓',
+    gap: '!',
+    na: '·',
+  };
+  return (
+    <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+      <h4 className="text-sm font-medium text-indigo-700 mb-3 flex items-center gap-1">
+        组态诊断 · 差多少
+      </h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {cohort.gaps.map((g) => (
+          <div key={g.key} className={`rounded-lg border px-3 py-2 flex items-center gap-2 ${statusCls[g.status] ?? statusCls.na}`}>
+            <span className={`w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold ${
+              g.status === 'pass' ? 'bg-green-500 text-white' : g.status === 'gap' ? 'bg-amber-500 text-white' : 'bg-slate-400 text-white'
+            }`}>{statusIcon[g.status] ?? '·'}</span>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold">{g.label}</div>
+              <div className="text-[11px] opacity-80 truncate">{g.gapText}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function MatchPage() {
   const { user, isAuthenticated } = useAuth();
@@ -383,9 +457,15 @@ export default function MatchPage() {
                       </Button>
                     </div>
 
+                    {/* 组态诊断「能不能」摘要 */}
+                    {item.cohort && <CohortSummary cohort={item.cohort} />}
+
                     {/* 展开详情 */}
                     {isExpanded && (
                       <div className="mt-5 pt-5 border-t border-gray-100 space-y-5">
+                        {/* 组态诊断「差多少」双维错位缺口 */}
+                        {item.cohort && <CohortGaps cohort={item.cohort} />}
+
                         {/* 匹配技能 */}
                         <div>
                           <h4 className="text-sm font-medium text-green-700 mb-2 flex items-center gap-1">

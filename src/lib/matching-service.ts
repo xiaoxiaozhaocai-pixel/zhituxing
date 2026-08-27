@@ -17,7 +17,10 @@ import {
   extractUserSkillsFromAbilityBackground,
   parseUserSkillsFromText,
   parseSalaryRange,
-  type UserSkill
+  evaluateCohortFit,
+  type UserSkill,
+  type CohortInput,
+  type CohortFitResult
 } from '@/lib/matching-algorithm';
 
 // ============================================================
@@ -61,6 +64,8 @@ export interface MatchResult {
     education?: string;
     experience?: string;
   };
+  /** 组态匹配 + 双维错位诊断（判断力 L2） */
+  cohort?: CohortFitResult;
 }
 
 export interface MatchRequest {
@@ -133,17 +138,23 @@ interface UserProfile {
   grade?: string;          // 年级
   abilityBackground?: Record<string, unknown>;
   skillsText?: string;
+  hasIntern?: boolean;     // 是否有实习经历
 }
 
 async function getUserProfile(userId: string): Promise<UserProfile> {
   const supabase = getSupabaseAdmin();
   const { data } = await supabase
     .from('user_profiles')
-    .select('education, major, preferred_city, grade, ability_background, skills')
+    .select('education, major, preferred_city, grade, ability_background, skills, internship_experience')
     .eq('id', userId)
     .single();
 
   if (!data) return {};
+
+  // 实习经历：优先取 internship_experience 数组长度；为空则看 ability_background 是否含实习
+  const internArr = Array.isArray(data.internship_experience) ? data.internship_experience : [];
+  const bgHasIntern = detectInternFromBackground(data.ability_background);
+  const hasIntern = internArr.length > 0 || bgHasIntern;
 
   return {
     education: data.education || undefined,
@@ -152,7 +163,17 @@ async function getUserProfile(userId: string): Promise<UserProfile> {
     grade: data.grade || undefined,
     abilityBackground: data.ability_background as Record<string, unknown> | undefined,
     skillsText: data.skills || undefined,
+    hasIntern,
   };
+}
+
+/** 从 ability_background 中判断是否有实习经历 */
+function detectInternFromBackground(
+  background?: Record<string, unknown>
+): boolean {
+  if (!background || typeof background !== 'object') return false;
+  const text = JSON.stringify(background).toLowerCase();
+  return /实习|intern/.test(text);
 }
 
 function getUserSkills(
@@ -240,7 +261,7 @@ async function enrichJDs(
   const supabase = getSupabaseAdmin();
   const { data: fullJDs } = await supabase
     .from('job_descriptions')
-    .select('id, company, hard_skills, soft_skills, major_require')
+    .select('id, company, hard_skills, soft_skills, major_require, education, experience')
     .in('id', ids);
 
   if (!fullJDs || fullJDs.length === 0) return candidates;
@@ -249,7 +270,7 @@ async function enrichJDs(
   return candidates.map(c => {
     const full = fullMap.get(c.id);
     if (!full) return c;
-    return { ...c, company: full.company, hard_skills: full.hard_skills, soft_skills: full.soft_skills, major_require: full.major_require };
+    return { ...c, company: full.company, hard_skills: full.hard_skills, soft_skills: full.soft_skills, major_require: full.major_require, education: full.education, experience: full.experience };
   });
 }
 
@@ -380,6 +401,16 @@ function scoreJob(
     return estimateSalaryRange(totalScore, parsed.min, parsed.max);
   })();
 
+  // 组态匹配 + 双维错位诊断（判断力 L2）
+  const cohortInput: CohortInput = {
+    degree: profile.education,
+    major: profile.major,
+    grade: profile.grade,
+    skills: userSkills,
+    hasIntern: profile.hasIntern,
+  };
+  const cohort = evaluateCohortFit(jd, cohortInput);
+
   return {
     jobId: jd.id as string | number,
     jobTitle: (jd.job_title as string) || '未知岗位',
@@ -408,6 +439,7 @@ function scoreJob(
       education: jd.education as string,
       experience: jd.experience as string,
     },
+    cohort,
   };
 }
 

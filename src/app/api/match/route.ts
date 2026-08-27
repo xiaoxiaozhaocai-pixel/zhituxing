@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
         estimatedMax: r.salaryEstimation?.estimatedMax ?? 0,
         estimatedMedian: r.salaryEstimation?.estimatedMedian ?? 0,
       },
+      cohort: r.cohort ?? null,
     }));
 
     return jsonOk(MatchGetDataSchema, {
@@ -146,6 +147,7 @@ export async function POST(request: NextRequest) {
       matched_skills: r.matchedSkills,
       gap_skills: r.skillGaps,
       fresh_graduate_friendly: null,
+      cohort: r.cohort ?? null,
     }));
 
     return jsonOk(MatchPostDataSchema, {

@@ -14,6 +14,24 @@
 
 import { z } from 'zod';
 
+/** 组态诊断的单维度缺口（学历/专业/技能/实习） */
+export const MatchCohortGapSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  status: z.enum(['pass', 'gap', 'na']),
+  gapText: z.string(),
+});
+
+/** 组态匹配 + 双维错位诊断（判断力 L2） */
+export const MatchCohortSchema = z.object({
+  overall: z.enum(['suitable', 'needs_effort', 'not_suitable']),
+  pathFit: z.number(),
+  passPaths: z.array(z.string()),
+  gaps: z.array(MatchCohortGapSchema),
+  advice: z.string(),
+});
+
+
 // ============================================================
 // POST /api/match — 请求 + 响应
 // ============================================================
@@ -39,6 +57,7 @@ export const MatchPostItemSchema = z.object({
   matched_skills: z.array(z.string()),
   gap_skills: z.array(z.string()),
   fresh_graduate_friendly: z.boolean().nullable(),
+  cohort: MatchCohortSchema.nullable().optional(),
 });
 export type MatchPostItem = z.infer<typeof MatchPostItemSchema>;
 
@@ -65,6 +84,7 @@ export const MatchJobSchema = z.object({
   requiredSkills: z.array(z.string()),
 });
 
+
 export const MatchGetItemSchema = z.object({
   job: MatchJobSchema,
   matchScore: z.number(),
@@ -78,6 +98,7 @@ export const MatchGetItemSchema = z.object({
     estimatedMax: z.number(),
     estimatedMedian: z.number(),
   }),
+  cohort: MatchCohortSchema.nullable().optional(),
 });
 export type MatchGetItem = z.infer<typeof MatchGetItemSchema>;
 
