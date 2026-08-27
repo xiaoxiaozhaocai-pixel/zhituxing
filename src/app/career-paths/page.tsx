@@ -1,7 +1,7 @@
 // 职途星组态引擎 · 主页面
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { RawProfile, EncodedProfile, MatchReport } from '@/lib/career-paths/types';
 import { encodeProfile } from '@/lib/career-paths/engine/condition_encoder';
 import { getMatchReport } from '@/lib/career-paths/engine/rule_engine';
@@ -13,6 +13,15 @@ export default function CareerPathsPage() {
   const [report, setReport] = useState<MatchReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [majorFromUrl, setMajorFromUrl] = useState('');
+
+  // 支持从认知校正跳转带入专业（/career-paths?major=xxx）
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const m = new URLSearchParams(window.location.search).get('major');
+      if (m) setMajorFromUrl(m);
+    }
+  }, []);
 
   const handleSubmit = useCallback((raw: RawProfile) => {
     setLoading(true);
@@ -64,7 +73,7 @@ export default function CareerPathsPage() {
 
         {/* 表单 / 结果切换 */}
         {!report ? (
-          <ProfileForm onSubmit={handleSubmit} loading={loading} />
+          <ProfileForm onSubmit={handleSubmit} loading={loading} initialMajor={majorFromUrl} />
         ) : (
           <div className="space-y-4">
             {/* 重新开始 */}

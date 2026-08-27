@@ -1,24 +1,32 @@
 // 职途星组态引擎 · 画像输入表单
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RawProfile } from '@/lib/career-paths/types';
 
 interface ProfileFormProps {
   onSubmit: (profile: RawProfile) => void;
   loading: boolean;
+  initialMajor?: string;
 }
 
-export default function ProfileForm({ onSubmit, loading }: ProfileFormProps) {
+export default function ProfileForm({ onSubmit, loading, initialMajor }: ProfileFormProps) {
   const [form, setForm] = useState<RawProfile>({
     school: '',
-    major: '',
+    major: initialMajor || '',
     degree: '本科',
     internshipCount: 0,
     internshipQuality: '无',
     skills: [],
   });
   const [skillInput, setSkillInput] = useState('');
+
+  // 支持从认知校正跳转带入专业（?major=xxx）
+  useEffect(() => {
+    if (initialMajor) {
+      setForm((f) => ({ ...f, major: initialMajor }));
+    }
+  }, [initialMajor]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

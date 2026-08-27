@@ -323,7 +323,16 @@ export default function CareerPlanningPage() {
                       {cogResult.jobDirections.map((d, i) => (
                         <div key={i} className="rounded-xl border border-[#E2E8F0] p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-[#1E293B]">{d.job}</span>
+                            {d.route_id ? (
+                          <Link
+                            href={`/career-paths?major=${encodeURIComponent(cogResult.major)}`}
+                            className="font-semibold text-[#1E293B] underline decoration-[#165DFF]/30 underline-offset-4 hover:text-[#165DFF] transition"
+                          >
+                            {d.job} →
+                          </Link>
+                        ) : (
+                          <span className="font-semibold text-[#1E293B]">{d.job}</span>
+                        )}
                             <span className={`px-2.5 py-1 text-xs rounded-full ${
                               d.matchLevel === '高度对口' ? 'bg-green-50 text-green-600' :
                               d.matchLevel === '中等对口' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'
