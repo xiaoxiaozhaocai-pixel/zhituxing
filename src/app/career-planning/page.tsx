@@ -15,12 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import type { CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognitive_correction';
 import {
   Sparkles,
   Loader2,
   FileText,
   ChevronRight,
   Lightbulb,
+  Compass,
 } from 'lucide-react';
 
 export default function CareerPlanningPage() {
@@ -33,6 +35,9 @@ export default function CareerPlanningPage() {
   const [targetJob, setTargetJob] = useState('');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cogResult, setCogResult] = useState<CognitiveCorrectionResult | null>(null);
+  const [cogLoading, setCogLoading] = useState(false);
+  const [cogError, setCogError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!major.trim() || !grade) {
@@ -67,6 +72,37 @@ export default function CareerPlanningPage() {
       setError('网络错误，请稍后重试');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleCognitiveCheck = async () => {
+    if (!major.trim() || !grade) {
+      setCogError('请填写专业和年级');
+      return;
+    }
+
+    setCogLoading(true);
+    setCogError(null);
+    setCogResult(null);
+
+    try {
+      const res = await fetch('/api/career-planning/cognitive-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ major: major.trim(), grade }),
+      });
+
+      const data = await res.json();
+
+      if (data.code === 200 && data.data) {
+        setCogResult(data.data);
+      } else {
+        setCogError(data.message || '认知校正失败，请重试');
+      }
+    } catch {
+      setCogError('网络错误，请稍后重试');
+    } finally {
+      setCogLoading(false);
     }
   };
 
@@ -209,6 +245,26 @@ export default function CareerPlanningPage() {
                 )}
 
                 <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-semibold py-4 border-[#165DFF]/30 text-[#165DFF] hover:bg-[#165DFF]/5"
+                  onClick={handleCognitiveCheck}
+                  disabled={cogLoading}
+                  type="button"
+                >
+                  {cogLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      认知校正中...
+                    </>
+                  ) : (
+                    <>
+                      <Compass className="w-5 h-5 mr-2" />
+                      先看清方向：认知校正你能投什么
+                    </>
+                  )}
+                </Button>
+
+                <Button
                   className="w-full btn-gradient rounded-xl font-semibold text-base py-6"
                   onClick={handleGenerate}
                   disabled={generating}
@@ -228,6 +284,79 @@ export default function CareerPlanningPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* 认知校正结果展示 */}
+          {(cogResult || cogError) && (
+            <div className="mt-8">
+              {cogError && (
+                <Card className="border-red-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{cogError}</div>
+                  </CardContent>
+                </Card>
+              )}
+              {cogResult && (
+                <Card className="border-[#165DFF]/20 shadow-lg shadow-[#165DFF]/5">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-[#165DFF]/10 flex items-center justify-center">
+                        <Compass className="w-5 h-5 text-[#165DFF]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#1E293B]">认知校正：你学的「{cogResult.major}」能投这些</h3>
+                        <p className="text-sm text-[#64748B] mt-1">{cogResult.summary}</p>
+                      </div>
+                    </div>
+
+                    {cogResult.derivedSkills.length > 0 && (
+                      <div className="mb-5">
+                        <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide mb-2">从课程反推的核心能力</p>
+                        <div className="flex flex-wrap gap-2">
+                          {cogResult.derivedSkills.map((sk, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-[#165DFF]/8 text-[#165DFF] text-xs rounded-full">{sk}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {cogResult.jobDirections.map((d, i) => (
+                        <div key={i} className="rounded-xl border border-[#E2E8F0] p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-[#1E293B]">{d.job}</span>
+                            <span className={`px-2.5 py-1 text-xs rounded-full ${
+                              d.matchLevel === '高度对口' ? 'bg-green-50 text-green-600' :
+                              d.matchLevel === '中等对口' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'
+                            }`}>{d.matchLevel}</span>
+                          </div>
+                          <p className="text-sm text-[#64748B] leading-relaxed">{d.why}</p>
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {d.skills.map((sk, j) => (
+                              <span key={j} className="px-2 py-0.5 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-200">{sk}</span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {cogResult.actions.length > 0 && (
+                      <div className="mt-5">
+                        <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide mb-2">给你的行动建议</p>
+                        <ul className="space-y-2">
+                          {cogResult.actions.map((a, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-[#475569]">
+                              <span className="text-[#165DFF] mt-0.5">›</span>
+                              <span>{a}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
           {/* Link to reports */}
           <div className="text-center mt-8">
