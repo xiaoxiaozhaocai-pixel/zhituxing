@@ -361,6 +361,26 @@ export default function CareerPlanningPage() {
                         </ul>
                       </div>
                     )}
+
+                    <div className="mt-6">
+                      <Button
+                        onClick={handleGenerate}
+                        disabled={generating}
+                        className="w-full btn-gradient rounded-xl font-semibold text-base py-5"
+                      >
+                        {generating ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                            AI 正在生成...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-5 h-5 mr-2" />
+                            基于这个方向，生成完整职业规划报告
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )}
