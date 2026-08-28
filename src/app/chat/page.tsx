@@ -1730,7 +1730,7 @@ function ChatContent() {
               小职的人设
             </DialogTitle>
             <DialogDescription>
-              给"小职"换一种说话方式。风格可以换，但判断力和真实可信的底线不会变。
+              给“小职”换一种说话方式。风格可以换，但判断力和真实可信的底线不会变。
             </DialogDescription>
           </DialogHeader>
 

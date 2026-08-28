@@ -157,12 +157,11 @@ export function listPersonas() {
  * 生成人格化兜底回复（零模型成本，本地启发式）。
  * @param persona 已归一化的人格
  * @param scenario 兜底场景：chat(闲聊/寒暄)、empty(空输入)、fail(链路失败)、no_data(数据缺失)、unknown(识别不到)
- * @param userMessage 用户原话（可选，用于兜底回应更贴合）
+ * @param _userMessage 用户原话（预留，当前未用于兜底贴合）
  */
-export function personaFallbackReply(persona: PersonaProfile, scenario: string, userMessage?: string): string {
+export function personaFallbackReply(persona: PersonaProfile, scenario: string, _userMessage?: string): string {
   const d = persona.dims;
   const emoji = persona.emoji;
-  const name = persona.name;
 
   // 按场景组织兜底内容骨架
   let body = '';

@@ -58,7 +58,7 @@ export default function CareerPlanningPage() {
   const [glossaryLoading, setGlossaryLoading] = useState(false);
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
   const [capJobs, setCapJobs] = useState<{ id: string; name: string; category: string }[]>([]);
-  const [capJobsLoading, setCapJobsLoading] = useState(false);
+  const [, setCapJobsLoading] = useState(false);
   const [capTargetJob, setCapTargetJob] = useState('');
   const [capExperience, setCapExperience] = useState('');
   const [capResult, setCapResult] = useState<CapabilityReport | null>(null);
