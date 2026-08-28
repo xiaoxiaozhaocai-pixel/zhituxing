@@ -47,6 +47,7 @@ import { matchJobs, type MatchResult } from '@/lib/matching-service';
 import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery } from '@/lib/career-paths/chat-adapter';
 import { analyzeNarrative } from '@/lib/career-paths/engine/narrative';
 import { walkTruthfulness } from '@/lib/career-paths/engine/truthfulness';
+import { resolvePersona, personaFallbackReply, personaPromptFragment, type PersonaProfile } from '@/lib/career-paths/engine/persona';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -446,6 +447,10 @@ export async function POST(request: NextRequest) {
     const parsed = await parseRequestBody(request, ChatRequestSchema);
     if (!parsed.ok) return parsed.response;
     const { message, botType } = parsed.data;
+    // C 人格兜底层：解析前端携带的人格配置
+    const persona: PersonaProfile | null = parsed.data.persona
+      ? resolvePersona(parsed.data.persona)
+      : null;
     // conversationId 允许 null（前端会显式传 null），统一收敛成 undefined
     const conversationId = parsed.data.conversationId ?? undefined;
 
@@ -457,7 +462,10 @@ export async function POST(request: NextRequest) {
     // 安全检查：空消息校验 - 返回 SSE 格式友好提示（按 botType 定制）
     // ============================================================
     if (!message || !message.trim()) {
-      const emptyContent = EMPTY_INPUT_MESSAGES[effectiveBotType] || '请输入您的问题，我会为您解答。';
+      // 空输入：优先用小职人格有温度地接住，避免冷冰冰模板；非 xiaozhi 仍用原语义提示
+      const emptyContent = (persona && effectiveBotType === 'xiaozhi')
+        ? personaFallbackReply(persona, 'empty')
+        : (EMPTY_INPUT_MESSAGES[effectiveBotType] || '请输入您的问题，我会为您解答。');
       const encoder = new TextEncoder();
       const stream = new ReadableStream({
         start(controller) {
@@ -572,7 +580,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const fallbackText = getFallbackResponse(botType, message);
+    const baseFallbackText = getFallbackResponse(botType, message);
+    // C 人格兜底层：链路失败/无数据时，用人格化小职兜底话术替代冷模板，保证有温度
+    const fallbackText = persona
+      ? personaFallbackReply(persona, 'fail', message)
+      : baseFallbackText;
 
     // ===========================
     // DeepSeek + RAG 分支（当 DEEPSEEK_ENABLED=true 时优先使用）
@@ -929,6 +941,11 @@ export async function POST(request: NextRequest) {
           basePrompt = SYSTEM_PROMPTS.xiaozhi_wrapper! + (SYSTEM_PROMPTS[actualBotType]! || SYSTEM_PROMPTS.career!);
         } else {
           basePrompt = SYSTEM_PROMPTS[actualBotType] || SYSTEM_PROMPTS.career!;
+        }
+
+        // C 人格兜底层：小职闲聊时注入用户选的人格约束，让整段对话保持温度（不为空不覆盖专业内核）
+        if (persona && effectiveBotType === 'xiaozhi') {
+          basePrompt = personaPromptFragment(persona) + '\n\n' + basePrompt;
         }
         
         // 注入用户上下文到 system prompt（所有智能体共享）

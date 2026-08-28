@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import {Send, User as UserIcon, Loader2, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer, Share2, CheckSquare, Square, Trash2, MessageSquare} from 'lucide-react';
+import {Send, User as UserIcon, Loader2, Sparkles, AlertCircle, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, ChevronUp, ChevronDown, Download, FileText as FileTextIcon, File, Printer, Share2, CheckSquare, Square, Trash2, MessageSquare, Smile} from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -134,6 +134,17 @@ function ChatContent() {
   const [jdLoading, setJdLoading] = useState(false);
   const [tabsCollapsed, setTabsCollapsed] = useState(false);
   const [jdError, setJdError] = useState('');
+  // C 人格兜底层：小职人格设置
+  const [personaPreset, setPersonaPreset] = useState('cool_senior');
+  const [personaDesc, setPersonaDesc] = useState('');
+  const [showPersonaDialog, setShowPersonaDialog] = useState(false);
+  // 预设人格卡（本地定义，与后端 persona.ts 对齐）
+  const personaCards = [
+    { id: 'cool_senior', name: '冷酷学长', emoji: '🧊', tagline: '理性直接，一针见血，不废话' },
+    { id: 'warm_junior', name: '热情学弟', emoji: '🔥', tagline: '自来熟，会鼓励，像兄弟一样靠谱' },
+    { id: 'gentle_senior_sis', name: '纯情学姐', emoji: '🌸', tagline: '耐心温柔，听你说完，慢慢帮你理清' },
+    { id: 'strict_teacher', name: '严肃老师', emoji: '📘', tagline: '严谨规划，有章法，帮你把路铺清楚' },
+  ];
   
   // 登录弹窗状态
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -153,6 +164,17 @@ function ChatContent() {
   
   // 待发送的 query 参数（从 URL 解析）
   const [pendingQuery, setPendingQuery] = useState<string | null>(null);
+
+  // C 人格兜底层：把当前人格设置存入 localStorage（供请求携带）
+  const applyPersona = useCallback(() => {
+    const payload = {
+      presetId: personaPreset,
+      ...(personaDesc.trim() ? { description: personaDesc.trim() } : {}),
+    };
+    localStorage.setItem('xiaozhi_persona', JSON.stringify(payload));
+    setShowPersonaDialog(false);
+    toast.success('小职的人设已更新');
+  }, [personaPreset, personaDesc]);
 
   // SSE流式解析hook
   const [_streamState, streamActions] = useSSEStream();
@@ -501,10 +523,19 @@ function ChatContent() {
       let apiUrl = '/api/chat';
       // 使用 null 替代 undefined，避免 JSON.stringify 丢失字段
       const storedConvId = localStorage.getItem(`conversationId_${activeBot}`);
+      // C 人格兜底层：读取用户选的小职人格（仅 xiaozhi 生效），供后端兜底/闲聊用
+      let personaPayload: object | undefined;
+      if (activeBot === 'xiaozhi') {
+        try {
+          const storedPersona = localStorage.getItem('xiaozhi_persona');
+          if (storedPersona) personaPayload = JSON.parse(storedPersona);
+        } catch { /* ignore */ }
+      }
       let requestBody: object = {
         message: messageText,
         botType: activeBot,
         conversationId: storedConvId || null,
+        ...(personaPayload ? { persona: personaPayload } : {}),
       };
       
       if (isInterview) {
@@ -1159,6 +1190,14 @@ function ChatContent() {
           {/* 操作按钮组（有对话内容时显示） */}
           {messages.length > 1 && (
             <div className="flex items-center gap-2">
+              {/* 小职人格按钮 */}
+              <button
+                onClick={() => setShowPersonaDialog(true)}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all"
+              >
+                <Smile className="w-4 h-4" />
+                小职人格
+              </button>
               {/* 选择消息按钮 */}
               <button
                 onClick={toggleSelectMode}
@@ -1677,6 +1716,60 @@ function ChatContent() {
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               确认清空
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* C 人格兜底层：小职人格设置弹窗 */}
+      <Dialog open={showPersonaDialog} onOpenChange={setShowPersonaDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Smile className="w-5 h-5 text-[#165DFF]" />
+              小职的人设
+            </DialogTitle>
+            <DialogDescription>
+              给"小职"换一种说话方式。风格可以换，但判断力和真实可信的底线不会变。
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* 预设人格卡 */}
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {personaCards.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPersonaPreset(p.id)}
+                className={`text-left p-3 rounded-lg border transition-all ${
+                  personaPreset === p.id
+                    ? 'border-[#165DFF] bg-blue-50 ring-1 ring-[#165DFF]'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-2 font-medium text-gray-900">
+                  <span className="text-lg">{p.emoji}</span>
+                  {p.name}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">{p.tagline}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* 一句话人设 */}
+          <div className="mt-3">
+            <label className="text-sm font-medium text-gray-700">一句话人设（可选）</label>
+            <Input
+              value={personaDesc}
+              onChange={(e) => setPersonaDesc(e.target.value)}
+              placeholder="例如：话少但一针见血的"
+              className="mt-1"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowPersonaDialog(false)}>取消</Button>
+            <Button onClick={applyPersona} className="bg-[#165DFF] hover:bg-[#3D7FFF] text-white">
+              确认生效
             </Button>
           </div>
         </DialogContent>

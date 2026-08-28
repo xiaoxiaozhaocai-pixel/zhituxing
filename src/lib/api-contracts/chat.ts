@@ -43,5 +43,16 @@ export const ChatRequestSchema = z.object({
   botType: z.string().optional(),
   conversationId: z.string().nullable().optional(),
   jobId: z.string().nullable().optional(),  // 岗位百科深度优化跳转时携带
+  // C 人格兜底层：前端携带用户选的小职人格（可选），route 在兜底/闲聊时注入人格化回应
+  persona: z.object({
+    presetId: z.string().optional(),
+    dims: z.object({
+      warmth: z.number().optional(),
+      directness: z.number().optional(),
+      encouragement: z.number().optional(),
+      humor: z.number().optional(),
+    }).optional(),
+    description: z.string().optional(),
+  }).optional(),
 });
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
