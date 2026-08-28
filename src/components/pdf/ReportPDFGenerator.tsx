@@ -125,7 +125,7 @@ function generateReportHTML(title: string, content: string, type: string): strin
   });
 
   const logoText = '职途星';
-  const logoSubtext = '你的AI职业规划助手';
+  const logoSubtext = '你的AI朋友';
 
   let typeLabel = '';
   if (type === 'career') typeLabel = '职业规划报告';

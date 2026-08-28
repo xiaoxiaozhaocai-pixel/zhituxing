@@ -331,7 +331,7 @@ export default function CareerPlanningPage() {
               AI 职业规划
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-[#1E293B] tracking-tight mb-3">
-              30秒生成专属职业规划报告
+              陪你厘清方向，生成专属职业规划报告
             </h1>
             <p className="text-[#64748B] text-base max-w-lg mx-auto">
               基于你的专业、年级和偏好，AI 智能分析最适合你的岗位方向和发展路径
@@ -342,7 +342,7 @@ export default function CareerPlanningPage() {
           <div className="grid grid-cols-3 gap-3 mb-10 max-w-lg mx-auto">
             {[
               { icon: '🎯', label: '精准匹配', desc: '岗位推荐' },
-              { icon: '📊', label: '6维诊断', desc: '能力画像' },
+              { icon: '📊', label: '能力画像', desc: '多维度分析' },
               { icon: '📅', label: '行动清单', desc: '6个月计划' },
             ].map((s) => (
               <div key={s.label} className="bg-white/80 rounded-2xl border border-[#E2E8F0] p-3 text-center hover:shadow-md transition-all">

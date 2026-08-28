@@ -17,10 +17,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#165DFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#0F172A' },
-  ],
+  themeColor: '#165DFF',
 };
 
 export const metadata: Metadata = {
@@ -56,7 +53,7 @@ export const metadata: Metadata = {
     locale: 'zh_CN',
     type: 'website',
     siteName: '职途星',
-    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - 懂桂电学生的AI求职伙伴' }],
+    images: [{ url: 'https://s.coze.cn/image/9JW8vCo1HrY/', width: 1200, height: 630, alt: '职途星 - 懂桂电学生的AI朋友' }],
   },
   twitter: {
     card: 'summary_large_image',

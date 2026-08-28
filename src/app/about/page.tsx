@@ -16,7 +16,7 @@ const highlights = [
   {
     icon: <Sparkles className="w-6 h-6" />,
     title: 'AI 驱动',
-    description: '基于大模型智能分析4000+真实岗位数据，精准匹配你的专业和技能'
+    description: '基于大模型智能分析20000+真实JD数据，精准匹配你的专业和技能'
   },
   {
     icon: <Shield className="w-6 h-6" />,
@@ -32,7 +32,7 @@ const highlights = [
 
 const features = [
   { icon: <MessageSquare className="w-5 h-5" />, name: 'AI职业规划', desc: '基于真实岗位数据的个性化职业方向推荐' },
-  { icon: <Briefcase className="w-5 h-5" />, name: '岗位匹配', desc: '4000+岗位智能筛选，精准匹配你的条件' },
+  { icon: <Briefcase className="w-5 h-5" />, name: '岗位匹配', desc: '20000+真实JD智能筛选，精准匹配你的条件' },
   { icon: <Target className="w-5 h-5" />, name: '能力测评', desc: '多维度评估硬技能、软技能与职业性格' },
   { icon: <Sparkles className="w-5 h-5" />, name: '模拟面试', desc: 'AI模拟真实面试场景，告别面试紧张' },
 ];
@@ -48,7 +48,7 @@ export default function AboutPage() {
             广西 · 桂林电子科技大学
           </div>
           <h1 className="text-3xl md:text-5xl font-bold mb-6">
-            让每个大学生<br />都有专属的AI求职伙伴
+            让每个大学生<br />都有专属的AI朋友
           </h1>
           <p className="text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
             职途星由桂电学生团队打造，致力于用AI技术降低求职信息差，

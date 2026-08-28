@@ -996,11 +996,11 @@ function AssistantContent() {
         <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-blue-700">
-              AI职业规划永久免费
+              AI职业规划免费体验
             </span>
             <span className="text-gray-300">|</span>
             <span className="text-blue-700">
-              无限次生成完整报告
+              完整报告会员专享
             </span>
           </div>
           <Link href="/career-planning" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">

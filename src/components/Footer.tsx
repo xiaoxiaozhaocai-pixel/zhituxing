@@ -58,7 +58,7 @@ export default function Footer() {
               </div>
               <div>
                 <div className="text-base font-bold text-[#1E293B] tracking-tight">职途星</div>
-                <div className="text-[10px] text-[#94A3B8] -mt-0.5">AI职业规划助手</div>
+                <div className="text-[10px] text-[#94A3B8] -mt-0.5">懂桂电学生的AI朋友</div>
               </div>
             </Link>
             <p className="text-[#64748B] text-sm leading-relaxed mb-5 max-w-sm">

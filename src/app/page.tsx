@@ -22,7 +22,7 @@ import HomeClient from './HomeClient';
 export const metadata = {
   title: '先想清楚，再投简历 — 职途星',
   description:
-    '桂电学生专属AI求职伙伴。小职帮你做职业规划、技能匹配、模拟面试，从迷茫到清晰，不盲投不焦虑。免费使用，覆盖27大行业4000+真实岗位。',
+    '桂电学生专属的AI朋友。小职陪你做职业规划、技能匹配、模拟面试，从迷茫到清晰，不盲投不焦虑。基础功能免费，覆盖27大行业20000+真实JD。',
 };
 
 export const dynamic = 'force-static';

@@ -192,14 +192,14 @@ function getFallbackResponse(botType?: string, message?: string): string {
   }
 
     if (botType === 'xiaozhi' || msgLower.includes('小职')) {
-    return `嗨～我是小职，你的AI求职伙伴！✨
+    return `嗨～我是小职，你的AI朋友！✨
 
 我可以陪你聊天、帮你改简历、模拟面试、做职业规划、做能力诊断……
 
 💬 有什么想聊的？或者直接告诉我你需要什么帮助～`;
   }
 
-  return `👋 你好呀！我是小职，你的AI求职伙伴～
+  return `👋 你好呀！我是小职，你的AI朋友～
 
 🔍 **我可以帮您查询：**
 

@@ -74,8 +74,8 @@ const corePaths = [
 ];
 
 const trustStats = [
-  { icon: <Building2 className="w-5 h-5" />, value: '20,000+', label: '真实岗位', desc: '覆盖27大行业' },
-  { icon: <Shield className="w-5 h-5" />, value: '100%', label: '免费使用', desc: '核心功能永久免费' },
+  { icon: <Building2 className="w-5 h-5" />, value: '20,000+', label: '真实JD', desc: '覆盖27大行业' },
+  { icon: <Shield className="w-5 h-5" />, value: '免费', label: '基础对话', desc: '高级分析会员专享' },
   { icon: <Zap className="w-5 h-5" />, value: '全链路', label: '求职陪伴', desc: '先想清楚，再投简历' },
 ];
 
@@ -130,7 +130,7 @@ export default function HomeClient() {
           </h1>
 
           <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-10 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
-            我是小职，你的AI职业规划师 👋<br />
+            我是小职，你的AI朋友 👋<br />
             不用焦虑，一步步陪你走。
           </p>
 
@@ -190,7 +190,7 @@ export default function HomeClient() {
             小职知道你在焦虑什么 🤔
           </h2>
           <p className="text-[#64748B] text-center mb-10 max-w-md mx-auto">
-            你不是一个人，每个大学生都经历过这些
+            你不是一个人，桂电的学姐学长也都经历过这些
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {painPoints.map((item, i) => (
@@ -288,7 +288,7 @@ export default function HomeClient() {
             </button>
           </Link>
           <p className="mt-5 text-[#94A3B8] text-sm">
-            完全免费 · 马上开聊 · 让小职帮你找到方向
+            免费开聊 · 马上体验 · 让小职帮你找到方向
           </p>
         </div>
       </section>

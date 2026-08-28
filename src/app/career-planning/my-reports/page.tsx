@@ -153,7 +153,7 @@ export default function MyReportsPage() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">还没有职业规划报告</h3>
                     <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                      30秒生成专属职业规划，基于你的专业、年级和兴趣，精准匹配最适合你的岗位
+                      生成你的专属职业规划，基于专业、年级和兴趣，精准匹配最适合你的岗位
                     </p>
                     <Link href="/career-planning">
                       <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white px-8 py-6 text-lg font-bold shadow-lg shadow-purple-500/30">
@@ -161,7 +161,7 @@ export default function MyReportsPage() {
                         立即生成我的规划
                       </Button>
                     </Link>
-                    <p className="text-sm text-gray-400 mt-4">永久免费 · 无次数限制 · 30秒出结果</p>
+                    <p className="text-sm text-gray-400 mt-4">免费体验 · 陪你厘清方向</p>
                   </CardContent>
                 </Card>
               ) : (

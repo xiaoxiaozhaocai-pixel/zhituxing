@@ -69,7 +69,7 @@ const disclaimerText = `
 ---
 📋 免责声明：本报告基于AI技术生成，仅供职业规划参考，不构成任何求职决策建议。所有岗位信息均来自国聘网、国家24365大学生就业服务平台、中国公共招聘网、广西人才网等合规招聘平台，具体要求以企业官方发布为准。`;
 
-const xiaozhiWelcome = `嗨～我是小职，你的AI求职伙伴！✨
+const xiaozhiWelcome = `嗨～我是小职，你的AI朋友！✨
 
 我可以陪你聊天、帮你查岗位、改简历、模拟面试、做职业规划、做能力诊断……
 
@@ -80,7 +80,7 @@ const bots: BotConfig[] = [
   {
     id: 'xiaozhi',
     name: '小职',
-    description: '你的AI求职伙伴',
+    description: '你的AI朋友',
     icon: <MessageSquare className="w-5 h-5" />,
     color: 'text-[#165DFF]',
     gradient: 'from-blue-500 to-blue-600',
@@ -1160,11 +1160,11 @@ function ChatContent() {
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-blue-700">
-              AI职业规划永久免费
+              AI职业规划免费体验
             </span>
             <span className="text-gray-300">|</span>
             <span className="text-blue-700">
-              无限次生成完整报告
+              完整报告会员专享
             </span>
           </div>
           <Link href="/growth" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">

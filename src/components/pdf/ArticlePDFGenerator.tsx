@@ -76,7 +76,7 @@ export default function ArticlePDFGenerator({
             </div>
             <div>
               <div style="font-size: 18px; font-weight: bold; color: #165DFF;">职途星</div>
-              <div style="font-size: 10px; color: #999;">你的AI职业规划助手</div>
+              <div style="font-size: 10px; color: #999;">你的AI朋友</div>
             </div>
             <div style="margin-left: auto; text-align: right;">
               <div style="font-size: 12px; color: #666;">${categoryMap[articleCategory] || '求职干货'}</div>

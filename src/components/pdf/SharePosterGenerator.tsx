@@ -119,7 +119,7 @@ export default function SharePosterGenerator({
     // 底部文案
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '22px sans-serif';
-    ctx.fillText('扫码使用职途星AI职业规划助手', 375, 1150);
+    ctx.fillText('扫码使用职途星AI朋友', 375, 1150);
     
     ctx.font = '18px sans-serif';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';

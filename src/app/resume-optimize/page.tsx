@@ -218,7 +218,7 @@ export default function ResumeOptimizePage() {
               </p>
             </div>
             <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
-              完全免费使用
+              基础功能免费使用
             </Badge>
           </div>
         </div>

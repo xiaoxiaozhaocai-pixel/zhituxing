@@ -87,7 +87,7 @@ function getCareerFallback(major: string, grade: string, city: string): string {
 
 ---
 
-*本报告由职途星AI职业规划助手生成，仅供参考*`;
+*本报告由职途星小职生成，仅供参考*`;
 }
 
 // SSE 流式响应头

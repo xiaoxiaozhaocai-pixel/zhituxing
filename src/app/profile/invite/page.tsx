@@ -340,7 +340,7 @@ export default function InvitePage() {
               <span className="text-2xl font-bold">职</span>
             </div>
             <h3 className="text-2xl font-bold mb-2">职途星</h3>
-            <p className="mb-4 text-white/80">你的AI职业规划助手</p>
+            <p className="mb-4 text-white/80">你的AI朋友</p>
             <div className="w-40 h-40 bg-white rounded-lg flex flex-col items-center justify-center mb-4">
               <span className="text-gray-600 text-sm mb-2">邀请码</span>
               <span className="text-2xl font-bold text-[#165DFF] tracking-wider">{inviteCode}</span>
@@ -354,7 +354,7 @@ export default function InvitePage() {
                 // 分享功能
                 if (navigator.share) {
                   navigator.share({
-                    title: '职途星 - AI职业规划助手',
+                    title: '职途星 - 懂桂电学生的AI朋友',
                     text: `我的邀请码是 ${inviteCode}，注册职途星双方都能获得免费AI次数！`,
                     url: `${window.location.origin}/auth?invite_code=${inviteCode}`
                   });
