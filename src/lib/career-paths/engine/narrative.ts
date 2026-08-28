@@ -148,35 +148,35 @@ function signalDepth(text: string): 'weak' | 'mid' | 'strong' {
  */
 function translateExperience(original: string): TranslationSuggestion {
   const depth = signalDepth(original);
-  let translated = original.trim();
+  let translated = '';
   let rationale = '';
 
+  // 铁律：绝不把「参与/协助」拔高成「独立负责/负责」——那属于编造事实，直接违背 A4 四真红线。
+  // 弱/中信号只给「改写框架 + 补全占位」，让用户补真实的方法与结果，而不是替他编。
   if (depth === 'strong') {
-    // 已经有方法+结果，只做表达规范化
-    translated = original
-      .replace(/我/g, '')
-      .replace(/^参与/gi, '参与')
-      .replace(/协助/gi, '参与')
-      .trim();
+    // 已有方法+结果，只做表达规范化，去掉冗余主语
+    translated = original.replace(/我/g, '').replace(/^参与/gi, '').trim();
     rationale = TRANSLATION_TEMPLATE.strong;
   } else if (depth === 'mid') {
-    // 有方法或结果之一，补全缺失要素的提示
+    // 有方法或结果之一，补全缺失要素的提示（不编造、不拔高角色）
     const hasMethod = /用|通过|基于|借助|采用|做了|实现|完成|负责|主导|运用|分析|优化|搭建|推动/.test(original);
+    const hasResult = /率|量|额|个|倍|次|元|人|%|提升|下降|降低|节省|增长|达成|入职|入选|中标|上线|从.{0,6}(到|降|升)/.test(original);
+    const base = original.replace(/我/g, '').trim();
     if (!hasMethod) {
       rationale = '已有结果，但缺「用了什么方法/工具」。补上方法论让表达更可信：例如「用DOE/SPC/数据分析」把模糊动作变成可核验的专业动作。';
-    } else {
+      translated = `${base}（建议补：用了什么方法/工具，例：用DOE/数据分析支撑）`;
+    } else if (!hasResult) {
       rationale = '已有方法，但缺「结果是什么/影响是什么」。补一个可核算的结果：例如「不良率降至2%」「响应时间缩短30%」。没有真实数字就删掉结果句，避免编造。';
+      translated = `${base}（建议补：可核算结果，例：效率提升X%）`;
+    } else {
+      rationale = TRANSLATION_TEMPLATE.mid;
+      translated = base;
     }
-    // 给一个规范化改写框架（只重组结构，不编数据）
-    translated = original.replace(/参与|协助/g, '独立负责').replace(/^我/g, '');
   } else {
-    rationale = '这是「弱信号」——能说清做了什么事，但没体现方法论和结果，企业眼里值不了高分。改写方向：把「协助处理异常」→「参与产线异常根因分析，用DOE验证XX对Y的影响，不良率下降X%」。先补真实方法，再补真实结果。';
-    // 把「参与/协助 + 主体」改成更明确的第一人称动作，避免「参与了工程师」这种不通顺
-    translated = original
-      .replace(/协助[\u4e00-\u9fa5A-Za-z]+处理|参与[\u4e00-\u9fa5A-Za-z]+处理/g, '参与处理')
-      .replace(/我(参与了|协助了|参与了)/g, '协助')
-      .replace(/^我/g, '')
-      .trim();
+    // 弱信号：保留真实边界，给改写框架（不编造、不拔高角色）
+    const base = original.replace(/我/g, '').trim();
+    rationale = '这是「弱信号」——能说清做了什么事，但没体现方法论和结果，企业眼里值不了高分。改写方向：把「协助处理异常」→「参与产线异常根因分析，用DOE验证XX对Y的影响，不良率下降X%」。先补真实方法，再补真实结果；若确实只是协助/参与，就如实写「协助/参与」，千万别写成「负责」。';
+    translated = `${base}（建议补：用了什么方法 + 结果影响，例：用XX分析XX，产出XX）`;
   }
 
   return { original: original.trim(), translated, rationale };
