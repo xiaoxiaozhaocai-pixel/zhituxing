@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import type { CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognitive_correction';
+import type { InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
 import {
   Sparkles,
   Loader2,
@@ -23,6 +24,7 @@ import {
   ChevronRight,
   Lightbulb,
   Compass,
+  Radar,
 } from 'lucide-react';
 
 export default function CareerPlanningPage() {
@@ -38,6 +40,9 @@ export default function CareerPlanningPage() {
   const [cogResult, setCogResult] = useState<CognitiveCorrectionResult | null>(null);
   const [cogLoading, setCogLoading] = useState(false);
   const [cogError, setCogError] = useState<string | null>(null);
+  const [radarResult, setRadarResult] = useState<InterviewRadarReport | null>(null);
+  const [radarLoading, setRadarLoading] = useState(false);
+  const [radarError, setRadarError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!major.trim() || !grade) {
@@ -103,6 +108,36 @@ export default function CareerPlanningPage() {
       setCogError('网络错误，请稍后重试');
     } finally {
       setCogLoading(false);
+    }
+  };
+
+  const handleInterviewRadar = async () => {
+    if (!targetIndustry.trim() && !major.trim()) {
+      setRadarError('请填写目标行业或你的专业');
+      return;
+    }
+    setRadarLoading(true);
+    setRadarError(null);
+    setRadarResult(null);
+    try {
+      const res = await fetch('/api/career-planning/interview-radar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          industry: targetIndustry.trim() || undefined,
+          major: major.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setRadarResult(data.data);
+      } else {
+        setRadarError(data.error || data.message || '面试雷达失败，请重试');
+      }
+    } catch {
+      setRadarError('网络错误，请稍后重试');
+    } finally {
+      setRadarLoading(false);
     }
   };
 
@@ -265,6 +300,26 @@ export default function CareerPlanningPage() {
                 </Button>
 
                 <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-semibold py-4 border-[#3D7FFF]/30 text-[#3D7FFF] hover:bg-[#3D7FFF]/5"
+                  onClick={handleInterviewRadar}
+                  disabled={radarLoading}
+                  type="button"
+                >
+                  {radarLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      雷达拆解中...
+                    </>
+                  ) : (
+                    <>
+                      <Radar className="w-5 h-5 mr-2" />
+                      面试行业雷达：提前知道会被问什么
+                    </>
+                  )}
+                </Button>
+
+                <Button
                   className="w-full btn-gradient rounded-xl font-semibold text-base py-6"
                   onClick={handleGenerate}
                   disabled={generating}
@@ -380,6 +435,100 @@ export default function CareerPlanningPage() {
                           </>
                         )}
                       </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* 面试行业雷达结果展示 */}
+          {(radarResult || radarError) && (
+            <div className="mt-8">
+              {radarError && (
+                <Card className="border-red-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{radarError}</div>
+                  </CardContent>
+                </Card>
+              )}
+              {radarResult && (
+                <Card className="border-[#3D7FFF]/20 shadow-lg shadow-[#3D7FFF]/5">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-[#3D7FFF]/10 flex items-center justify-center">
+                        <Radar className="w-5 h-5 text-[#3D7FFF]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#1E293B]">面试雷达：{radarResult.matchedIndustry}</h3>
+                        <p className="text-sm text-[#64748B] mt-1">{radarResult.summary}</p>
+                        {radarResult.majorImplication && (
+                          <p className="text-sm text-[#3D7FFF] mt-2">{radarResult.majorImplication}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 考察重点 */}
+                    <div className="mb-5">
+                      <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide mb-3">考察重点（按权重）</p>
+                      <div className="space-y-3">
+                        {radarResult.radar.focus.map((f, i) => (
+                          <div key={i} className="rounded-xl border border-[#E2E8F0] p-4">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-semibold text-[#1E293B] text-sm">{f.module}</span>
+                              <span className="px-2 py-0.5 text-xs bg-[#3D7FFF]/8 text-[#3D7FFF] rounded-full">权重 {f.weight}%</span>
+                            </div>
+                            <p className="text-sm text-[#64748B] mb-2">{f.how}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {f.questions.map((q, j) => (
+                                <span key={j} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-200">{q}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 高频问题+潜台词 */}
+                    <div className="mb-5">
+                      <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide mb-3">高频问题 + 潜台词</p>
+                      <div className="space-y-3">
+                        {radarResult.radar.questions.map((q, i) => (
+                          <div key={i} className="rounded-xl border border-[#E2E8F0] p-4">
+                            <p className="text-sm font-semibold text-[#1E293B] mb-1">{q.question}</p>
+                            <p className="text-xs text-[#3D7FFF] mb-2">潜台词：{q.subtext}</p>
+                            <p className="text-sm text-[#64748B]">建议：{q.tip}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 雷区 */}
+                    <div className="mb-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide">这个行业的雷区</p>
+                      </div>
+                      <ul className="space-y-2">
+                        {radarResult.radar.redFlags.map((r, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-[#B91C1C]">
+                            <span className="mt-0.5">⚠</span>
+                            <span>{r}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* 准备建议 */}
+                    <div>
+                      <p className="text-xs font-medium text-[#94A3B8] uppercase tracking-wide mb-2">给你的准备建议</p>
+                      <ul className="space-y-2">
+                        {radarResult.radar.prepTips.map((t, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-[#475569]">
+                            <span className="text-[#3D7FFF] mt-0.5">›</span>
+                            <span>{t}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </CardContent>
                 </Card>
