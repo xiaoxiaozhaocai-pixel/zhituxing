@@ -574,6 +574,312 @@ const JOBS: JobEntry[] = [
       '元器件': '学元器件选型 + 做一份 BOM（约3天）',
     },
   },
+  {
+    id: 'telecom_engineer',
+    name: '通信工程师',
+    category: '通信/ICT',
+    aliases: ['通信', '通信工程师', '通信技术', '网络优化', '无线通信'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '移动通信网络架构（无线/核心网/承载网）',
+          '5G 关键技术（Massive MIMO/网络切片/毫米波）',
+          '通信协议（LTE/5G NR）与传输交换基础',
+          '网络测试与优化（路测/信令分析/KPI）',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          '通信原理 / 信号与系统基础',
+          'MATLAB 仿真（信道建模/信号处理）',
+          '网络优化（路测/信令/KPI 分析）',
+          '传输与交换（光通信/数据交换）',
+          'Python 数据处理与脚本',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '问题定位（信号→参数→系统分层排障）',
+          '数据驱动（用 KPI/指标说话）',
+          '现场沟通（项目/基站/客户）',
+          '抗压（项目驻场/外场测试）',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '参与网络优化/测试项目，有量化结论',
+          '独立撰写测试或优化报告',
+          '有 5G 相关课程设计/仿真项目',
+        ],
+      },
+    ],
+    recommendCompanies: ['华为', '中兴', '中国移动', '中国电信', '烽火通信', '海能达'],
+    studyPaths: {
+      '通信原理': '复习通信原理 + 做一个通信系统仿真（约2周）',
+      'MATLAB': '学 MATLAB 仿真 + 做 5G 信道建模（约2周）',
+      '网络优化': '学路测/信令分析 + 模拟 KPI 调优（约1周）',
+      'Python': '用 Python 处理一份 KPI 数据并画图（约1周）',
+    },
+  },
+  {
+    id: 'frontend_developer',
+    name: '前端开发工程师',
+    category: '互联网/软件',
+    aliases: ['前端', '前端开发', 'Web前端', '前端工程师', '大前端'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          'Web 基础（HTML/CSS/JS）',
+          '主流框架（React/Vue）',
+          '构建与部署流程',
+          '浏览器原理与前端工程化',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'HTML/CSS/JavaScript 基础',
+          'React 或 Vue 框架',
+          'TypeScript 类型系统',
+          '接口对接（fetch/axios）与状态管理',
+          'Git 协作与版本控制',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '需求理解（产品→交互→还原）',
+          '跨团队协作（设计/后端）',
+          '细节与视觉还原',
+          '自学适应新技术',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立完成可运行/可访问的前端项目',
+          '参与真实需求迭代（有上线/联调）',
+          '有性能或交互优化案例',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '腾讯', '美团', '网易', '微众银行', '大疆'],
+    studyPaths: {
+      'React': '学 React + 做一个可运行的页面（约2周）',
+      'TypeScript': '学 TS + 重构一个 JS 项目（约1周）',
+      'Git': '学分支/合并 + 用 Git 托管项目（约2天）',
+      'CSS': '学 Flex/Grid + 还原一个页面（约1周）',
+    },
+  },
+  {
+    id: 'supply_chain_specialist',
+    name: '供应链/采购专员',
+    category: '制造/供应链',
+    aliases: ['供应链', '采购', '供应链专员', '采购工程师', '物控'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '供应链全流程（计划/采购/生产/物流/仓储）',
+          '供应商管理与开发',
+          '采购成本与交期控制',
+          'ERP/MES 系统与物料管理',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          '采购流程与供应商开发',
+          '成本分析（采购/库存）',
+          'ERP 系统（SAP/用友/金蝶）',
+          'Excel 数据分析（透视表）',
+          '合同与交期管理',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '谈判与沟通（供应商/内部）',
+          '成本与风险意识',
+          '跨部门协调（产/销/采/仓）',
+          '细致与责任心',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '参与采购/供应商项目',
+          '会用 ERP 或有成本优化案例',
+          '实习中有供应链流程经验',
+        ],
+      },
+    ],
+    recommendCompanies: ['比亚迪', '立讯精密', '富士康', '冠宇电池', '华为（供应链）', '顺丰'],
+    studyPaths: {
+      'ERP': '学一款 ERP + 录入一套模拟数据（约1周）',
+      '成本分析': '学采购成本拆解 + 做一个案例（约1周）',
+      'Excel': '学透视表 + 做一份库存分析（约2天）',
+      '合同': '学采购合同要点（约3天）',
+    },
+  },
+  {
+    id: 'automation_engineer',
+    name: '自动化控制工程师',
+    category: '制造/自动化',
+    aliases: ['自动化', '自动化工程师', '电气自动化', '控制工程师', 'PLC'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '自动化系统构成（传感器/PLC/伺服/机器人）',
+          '产线自动控制与电气图纸',
+          '工业通信（Modbus/Profinet）',
+          '安全与规范意识',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'PLC 编程（西门子/三菱）',
+          '电气设计（Eplan/AutoCAD Electrical）',
+          '运动控制（伺服/变频）',
+          '传感器与执行器选型',
+          'HMI 组态与梯形图/结构化文本',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '现场调试与排故',
+          '工程思维（分层定位/系统排查）',
+          '跨部门协调（设备/工艺/品质）',
+          '安全操作规范',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立完成 PLC 调试',
+          '有产线改造/自动化项目',
+          '会电气图纸与编程',
+        ],
+      },
+    ],
+    recommendCompanies: ['汇川技术', '大族激光', '比亚迪', '立讯精密', '富士康', '中控技术'],
+    studyPaths: {
+      'PLC': '学西门子 PLC + 做一个控制案例（约3周）',
+      '电气设计': '学 Eplan/电气图纸（约2周）',
+      '运动控制': '学伺服/变频 + 做一个仿真（约2周）',
+      'C语言': '复习 C + 写控制程序（约2周）',
+    },
+  },
+  {
+    id: 'algorithm_engineer',
+    name: '算法工程师',
+    category: 'AI/数据',
+    aliases: ['算法', '算法工程师', 'AI', '机器学习', '深度学习'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '机器学习 / 深度学习基础',
+          'NLP / CV 主流任务',
+          '模型训练与部署',
+          '数据与特征工程',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'Python 编程',
+          '机器学习（sklearn/基础模型）',
+          '深度学习框架（PyTorch/TensorFlow）',
+          '数据处理与特征构建',
+          '模型评估与调优',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '理论研究与落地的平衡',
+          '数据敏感与业务理解',
+          '跨团队协作（产品/后端）',
+          '持续学习新技术',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '可复现的算法项目',
+          '竞赛/论文/开源经历',
+          '模型部署到真实场景',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '华为', '腾讯', '科大讯飞', '大疆', '商汤科技'],
+    studyPaths: {
+      'Python': '复习 Python + 写数据处理脚本（约1周）',
+      '机器学习': '学 sklearn + 做一个分类任务（约2周）',
+      'PyTorch': '学深度学习 + 做一个小模型（约3周）',
+      '论文复现': '复现一篇算法论文（约3周）',
+    },
+  },
+  {
+    id: 'hr_specialist',
+    name: 'HR人事专员',
+    category: '职能/HR',
+    aliases: ['HR', '人事', '人事专员', 'HR专员', '招聘专员'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '人力资源六大模块（招聘/培训/绩效/薪酬/员工关系）',
+          '招聘全流程与人才画像',
+          '劳动法规基础',
+          'HR 系统 / ATS',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          '招聘流程与面试组织',
+          '简历筛选与人才评估',
+          '员工关系与社保办理',
+          'Excel / HR SaaS 系统',
+          '劳动法常识与制度起草',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '沟通与同理心（候选人与员工）',
+          '组织协调能力',
+          '数据敏感（报表/看板）',
+          '保密与职业操守',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '参与校园招聘/面试环节',
+          '有 HR 实习或招聘支持经历',
+          '会做薪资/考勤报表',
+        ],
+      },
+    ],
+    recommendCompanies: ['比亚迪', '立讯精密', '顺丰', '华为', '本地互联网公司', '各企业HR部门'],
+    studyPaths: {
+      '招聘': '学招聘全流程 + 模拟发 JD/筛选（约1周）',
+      '劳动法': '学劳动法基础条款（约3天）',
+      'Excel': '做一份考勤/薪资报表（约2天）',
+      'HR系统': '了解主流 ATS/HR SaaS（约2天）',
+    },
+  },
 ];
 
 const EMPTY_LAYER_ITEMS: CapabilityLayer[] = [
