@@ -46,10 +46,15 @@ export default function CareerPlanningPage() {
   const [radarResult, setRadarResult] = useState<InterviewRadarReport | null>(null);
   const [radarLoading, setRadarLoading] = useState(false);
   const [radarError, setRadarError] = useState<string | null>(null);
+  const [radarIndustry, setRadarIndustry] = useState('');
   const [subtextInput, setSubtextInput] = useState('');
   const [subtextResult, setSubtextResult] = useState<SubtextReport | null>(null);
   const [subtextLoading, setSubtextLoading] = useState(false);
   const [subtextError, setSubtextError] = useState<string | null>(null);
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [glossaryList, setGlossaryList] = useState<{ phrase: string; category: 'jd' | 'interview' | 'resume' | 'workplace'; categoryLabel: string; meaning: string; risk: 'low' | 'medium' | 'high'; advice: string }[]>([]);
+  const [glossaryLoading, setGlossaryLoading] = useState(false);
+  const [glossaryError, setGlossaryError] = useState<string | null>(null);
   const [pathDirection, setPathDirection] = useState('');
   const [pathSkills, setPathSkills] = useState('');
   const [pathResult, setPathResult] = useState<PathPlanReport | null>(null);
@@ -124,8 +129,9 @@ export default function CareerPlanningPage() {
   };
 
   const handleInterviewRadar = async () => {
-    if (!targetIndustry.trim() && !major.trim()) {
-      setRadarError('请填写目标行业或你的专业');
+    const industry = radarIndustry || targetIndustry.trim();
+    if (!industry && !major.trim()) {
+      setRadarError('请选择目标行业或填写你的专业');
       return;
     }
     setRadarLoading(true);
@@ -136,7 +142,7 @@ export default function CareerPlanningPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          industry: targetIndustry.trim() || undefined,
+          industry: industry || undefined,
           major: major.trim() || undefined,
         }),
       });
@@ -177,6 +183,32 @@ export default function CareerPlanningPage() {
       setSubtextError('网络错误，请稍后重试');
     } finally {
       setSubtextLoading(false);
+    }
+  };
+
+  const handleToggleGlossary = async () => {
+    if (glossaryOpen) {
+      setGlossaryOpen(false);
+      return;
+    }
+    setGlossaryOpen(true);
+    if (glossaryList.length > 0) {
+      return;
+    }
+    setGlossaryLoading(true);
+    setGlossaryError(null);
+    try {
+      const res = await fetch('/api/career-planning/subtext-detect');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setGlossaryList(data.data);
+      } else {
+        setGlossaryError(data.error || data.message || '词条库加载失败，请重试');
+      }
+    } catch {
+      setGlossaryError('网络错误，请稍后重试');
+    } finally {
+      setGlossaryLoading(false);
     }
   };
 
@@ -370,6 +402,27 @@ export default function CareerPlanningPage() {
                   )}
                 </Button>
 
+                <div className="mt-2">
+                  <Label className="text-sm font-medium text-[#475569] mb-2 block">
+                    目标行业 <span className="text-[#94A3B8]">（选择后拆该行业面试重点，可留空）</span>
+                  </Label>
+                  <Select value={radarIndustry} onValueChange={setRadarIndustry}>
+                    <SelectTrigger className="w-full rounded-xl border-[#E2E8F0] focus:border-[#3D7FFF]">
+                      <SelectValue placeholder="选择目标行业（可留空）" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="互联网/软件开发">互联网/软件开发</SelectItem>
+                      <SelectItem value="电子/半导体/芯片">电子/半导体/芯片</SelectItem>
+                      <SelectItem value="汽车/新能源车">汽车/新能源车</SelectItem>
+                      <SelectItem value="金融/银行/证券">金融/银行/证券</SelectItem>
+                      <SelectItem value="人力资源/HR">人力资源/HR</SelectItem>
+                      <SelectItem value="电商/新媒体/运营">电商/新媒体/运营</SelectItem>
+                      <SelectItem value="数据分析/BI">数据分析/BI</SelectItem>
+                      <SelectItem value="制造/智能制造/机械">制造/智能制造/机械</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <Button
                   variant="outline"
                   className="w-full rounded-xl font-semibold py-4 border-[#3D7FFF]/30 text-[#3D7FFF] hover:bg-[#3D7FFF]/5"
@@ -422,6 +475,66 @@ export default function CareerPlanningPage() {
                     </>
                   )}
                 </Button>
+
+                <Button
+                  variant="ghost"
+                  className="w-full rounded-xl font-medium py-2.5 text-sm text-[#7A5CFF] hover:bg-[#7A5CFF]/5"
+                  onClick={handleToggleGlossary}
+                  type="button"
+                >
+                  {glossaryOpen ? '收起词条库' : '查看全部黑话词条 ›'}
+                </Button>
+
+                {glossaryOpen && (
+                  <div className="mt-3 rounded-xl border border-[#7A5CFF]/20 bg-[#7A5CFF]/[0.03] p-4">
+                    {glossaryLoading ? (
+                      <div className="flex items-center justify-center py-8 text-sm text-[#94A3B8]">
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        加载词条库...
+                      </div>
+                    ) : glossaryError ? (
+                      <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{glossaryError}</div>
+                    ) : (
+                      (() => {
+                        const groups: { key: 'jd' | 'interview' | 'resume' | 'workplace'; label: string; items: typeof glossaryList }[] = [
+                          { key: 'jd', label: 'JD 里的黑话', items: glossaryList.filter((g) => g.category === 'jd') },
+                          { key: 'interview', label: '面试官的黑话', items: glossaryList.filter((g) => g.category === 'interview') },
+                          { key: 'resume', label: '简历里的黑话', items: glossaryList.filter((g) => g.category === 'resume') },
+                          { key: 'workplace', label: '职场/公司黑话', items: glossaryList.filter((g) => g.category === 'workplace') },
+                        ];
+                        return (
+                          <div className="space-y-4">
+                            {groups.map((group) => (
+                              <div key={group.key} className="space-y-2">
+                                <p className="text-xs font-semibold text-[#7A5CFF] uppercase tracking-wide">{group.label}（{group.items.length}）</p>
+                                {group.items.length === 0 ? (
+                                  <p className="text-xs text-[#94A3B8]">暂无</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {group.items.map((g, i) => (
+                                      <div key={i} className="rounded-lg bg-white border border-[#E2E8F0] p-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="font-semibold text-[#1E293B] text-sm">{g.phrase}</span>
+                                          {g.risk === 'high' && <span className="px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-full">高风险</span>}
+                                          {g.risk === 'medium' && <span className="px-2 py-0.5 text-xs bg-amber-50 text-amber-600 rounded-full">要留意</span>}
+                                          {g.risk === 'low' && <span className="px-2 py-0.5 text-xs bg-green-50 text-green-600 rounded-full">基本无坑</span>}
+                                        </div>
+                                        <p className="text-sm text-[#64748B] mb-2">{g.meaning}</p>
+                                        <div className="bg-gray-50 rounded-lg p-3 text-xs text-[#7A5CFF]">
+                                          <span className="font-medium">应对：</span>{g.advice}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-2">
                   <Label className="text-sm font-medium text-[#475569] mb-2 block">
