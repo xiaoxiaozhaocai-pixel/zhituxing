@@ -261,7 +261,8 @@ function extractExperience(text: string): string | null {
 
   // 取「:」或「：」后的正文（用户常写「帮我翻译这段经历：我在…」）
   const sepIdx = trimmed.indexOf('：') >= 0 ? trimmed.indexOf('：') : trimmed.indexOf(':');
-  let body = sepIdx >= 0 ? trimmed.slice(sepIdx + 1) : trimmed;
+  const hasSep = sepIdx >= 0;
+  let body = hasSep ? trimmed.slice(sepIdx + 1) : trimmed;
 
   // 剥掉纯指令词（只剥前缀，保留真实经历）
   body = body
@@ -269,8 +270,14 @@ function extractExperience(text: string): string | null {
     .replace(/^(翻译|包装|改写|写成|美化|优化|润色|表述|诊断|检测|分析|看看|评价|读一下|写一下)\s*(一下|这段经历|我的经历|这段|这个|上面|它|这段文字)?\s*/g, '')
     .trim();
 
-  if (body.length < 4) return trimmed;
-  return body;
+  // 信息不全：剥完后为空 / 过短 / 无冒号且仍是纯指令残留（如「帮我翻译这段经历」），
+  // 都视为用户没给经历 → 返回 null 触发追问，避免把指令本身当成经历去分析。
+  if (!body) return null;
+  if (body.length < 4) return null;
+  if (!hasSep && !/(负责|参与|完成|主导|带领|独立|获得|实现|优化|搭建|运营|设计|开发|分析|撰写|组织|统筹|处理|开展|协助|做过|实习|任职|承担|项目|课程|课题|论文|研究|系统|数据|整理|编写)/.test(body)) {
+    return null;
+  }
+  return body.replace(/^[，。、！？,.!\s]+/, '');
 }
 
 /** 从自然语言抽取目标岗位 targetJob（选填），如「投产品岗」→ 「产品」 */
