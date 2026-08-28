@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import type { CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognitive_correction';
 import type { InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
+import type { SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
 import {
   Sparkles,
   Loader2,
@@ -43,6 +45,10 @@ export default function CareerPlanningPage() {
   const [radarResult, setRadarResult] = useState<InterviewRadarReport | null>(null);
   const [radarLoading, setRadarLoading] = useState(false);
   const [radarError, setRadarError] = useState<string | null>(null);
+  const [subtextInput, setSubtextInput] = useState('');
+  const [subtextResult, setSubtextResult] = useState<SubtextReport | null>(null);
+  const [subtextLoading, setSubtextLoading] = useState(false);
+  const [subtextError, setSubtextError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!major.trim() || !grade) {
@@ -138,6 +144,33 @@ export default function CareerPlanningPage() {
       setRadarError('网络错误，请稍后重试');
     } finally {
       setRadarLoading(false);
+    }
+  };
+
+  const handleSubtextDetect = async () => {
+    if (!subtextInput.trim()) {
+      setSubtextError('请粘贴要拆解的内容');
+      return;
+    }
+    setSubtextLoading(true);
+    setSubtextError(null);
+    setSubtextResult(null);
+    try {
+      const res = await fetch('/api/career-planning/subtext-detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: subtextInput.trim() }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setSubtextResult(data.data);
+      } else {
+        setSubtextError(data.error || data.message || '潜台词拆解失败，请重试');
+      }
+    } catch {
+      setSubtextError('网络错误，请稍后重试');
+    } finally {
+      setSubtextLoading(false);
     }
   };
 
@@ -315,6 +348,39 @@ export default function CareerPlanningPage() {
                     <>
                       <Radar className="w-5 h-5 mr-2" />
                       面试行业雷达：提前知道会被问什么
+                    </>
+                  )}
+                </Button>
+
+                <div className="mt-2">
+                  <Label className="text-sm font-medium text-[#475569] mb-2 block">
+                    面试/简历潜台词拆解 <span className="text-[#94A3B8]">（粘贴 JD、简历句或面试问题）</span>
+                  </Label>
+                  <Textarea
+                    placeholder="例如：抗压能力强，弹性工作，薪资面议 / 简历写：参与项目，提升效率40% / 面试官问：你最大的缺点是什么"
+                    value={subtextInput}
+                    onChange={(e) => setSubtextInput(e.target.value)}
+                    rows={3}
+                    className="rounded-xl border-[#E2E8F0] focus:border-[#3D7FFF]"
+                  />
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-semibold py-4 border-[#7A5CFF]/30 text-[#7A5CFF] hover:bg-[#7A5CFF]/5"
+                  onClick={handleSubtextDetect}
+                  disabled={subtextLoading}
+                  type="button"
+                >
+                  {subtextLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      拆解中...
+                    </>
+                  ) : (
+                    <>
+                      <Lightbulb className="w-5 h-5 mr-2" />
+                      潜台词词条库：把黑话翻译成人话
                     </>
                   )}
                 </Button>
@@ -530,6 +596,62 @@ export default function CareerPlanningPage() {
                         ))}
                       </ul>
                     </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* 潜台词拆解结果展示 */}
+          {(subtextResult || subtextError) && (
+            <div className="mt-8">
+              {subtextError && (
+                <Card className="border-red-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{subtextError}</div>
+                  </CardContent>
+                </Card>
+              )}
+              {subtextResult && (
+                <Card className="border-[#7A5CFF]/20 shadow-lg shadow-[#7A5CFF]/5">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-[#7A5CFF]/10 flex items-center justify-center">
+                        <Lightbulb className="w-5 h-5 text-[#7A5CFF]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#1E293B]">潜台词翻译</h3>
+                        <p className="text-sm text-[#64748B] mt-1">{subtextResult.summary}</p>
+                      </div>
+                    </div>
+
+                    {subtextResult.needsMoreInfo ? (
+                      <div className="rounded-xl border border-dashed border-[#E2E8F0] p-4 text-sm text-[#94A3B8]">{subtextResult.summary}</div>
+                    ) : subtextResult.items.length > 0 ? (
+                      <div className="space-y-3">
+                        {subtextResult.items.map((it, i) => (
+                          <div key={i} className="rounded-xl border border-[#E2E8F0] p-4">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-semibold text-[#1E293B] text-sm">
+                                {it.surface || it.phrase}
+                                <span className="ml-2 text-xs font-normal text-[#94A3B8]">{it.categoryLabel}</span>
+                              </span>
+                              {it.risk === 'high' && <span className="px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-full">高风险</span>}
+                              {it.risk === 'medium' && <span className="px-2 py-0.5 text-xs bg-amber-50 text-amber-600 rounded-full">要留意</span>}
+                              {it.risk === 'low' && <span className="px-2 py-0.5 text-xs bg-green-50 text-green-600 rounded-full">基本无坑</span>}
+                            </div>
+                            <p className="text-sm text-[#64748B] mb-2">{it.meaning}</p>
+                            <div className="bg-gray-50 rounded-lg p-3 text-xs text-[#7A5CFF]">
+                              <span className="font-medium">应对：</span>{it.advice}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-[#E2E8F0] p-4 text-sm text-[#94A3B8]">
+                        没在这些文本里识别到典型黑话。想让拆解更准，可以把完整的 JD、简历或面试问题整段贴进来。
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
