@@ -321,3 +321,16 @@ export function analyzeCapabilityGap(input: {
 export function listCapabilityJobs(): { id: string; name: string; category: string }[] {
   return JOBS.map((j) => ({ id: j.id, name: j.name, category: j.category }));
 }
+
+/** 从自然语言文本里抽出命中的内置岗位名（chat 意图用）——按 name/alias 在文本里的包含关系匹配 */
+export function findJobInText(text: string): string | undefined {
+  const t = (text || '').toLowerCase();
+  if (!t) return undefined;
+  for (const job of JOBS) {
+    if (t.includes(job.name.toLowerCase())) return job.name;
+    for (const a of job.aliases) {
+      if (a && t.includes(a.toLowerCase())) return job.name;
+    }
+  }
+  return undefined;
+}

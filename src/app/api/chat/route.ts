@@ -44,7 +44,7 @@ import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
 import { matchJobs, type MatchResult } from '@/lib/matching-service';
-import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery, handleInterviewRadarChatQuery, handleSubtextChatQuery } from '@/lib/career-paths/chat-adapter';
+import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery, handleInterviewRadarChatQuery, handleSubtextChatQuery, handleCapabilityChatQuery } from '@/lib/career-paths/chat-adapter';
 import { analyzeNarrative } from '@/lib/career-paths/engine/narrative';
 import { walkTruthfulness } from '@/lib/career-paths/engine/truthfulness';
 import { resolvePersona, personaFallbackReply, personaPromptFragment, type PersonaProfile } from '@/lib/career-paths/engine/persona';
@@ -614,6 +614,7 @@ export async function POST(request: NextRequest) {
         ['truth_check', ['真实吗', '会翻车', '背调', '吹牛', '夸大', '虚构', '编造', '真实发生', '这样写行不行', '会不会被问', '经得起', '能背调', '不真实', '有没有夸大', '真实吗这段', '这段真实']],
         ['interview_radar', ['面试会问什么', '会被问什么', '会问什么', '面试重点', '考场什么', '会考什么', '考察什么', '考察重点', '重点考察', '面试雷达', '行业面试', '行业会考', '面试怎么准备', '面试方向', '面试问题', '面试会重点']],
         ['subtext_detect', ['潜台词', '黑话', '话里有话', '言外之意', '话外音', '背后意思', '翻译成人话', '真实意思', '意思是什么', '什么意思', '啥意思', '抗压能力强', '弹性工作', '薪资面议', '词条库']],
+        ['capability_dictionary', ['对标岗位', '岗位对标', '对标的岗位', '值多少', '还差什么', '差什么', '能力差距', '岗位差距', '能力对标', '能力词典', '岗位能力', '补课', '经历值多少', '岗位要求', '符不符合这个岗位', '适不适合这个岗位', '够不够这个岗位']],
       ];
       
       // 统计每个意图的命中关键词数
@@ -636,7 +637,7 @@ export async function POST(request: NextRequest) {
       
       // 按分数排序，同分时按优先级：career_paths > (job_match/narrative_check/truth_check) > assessment > interview > decision > career > competency > jobs
       const INTENT_PRIORITY: Record<string, number> = {
-        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7, 'interview_radar': 7, 'subtext_detect': 7,
+        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7, 'interview_radar': 7, 'subtext_detect': 7, 'capability_dictionary': 7,
         'assessment': 6,
         'interview': 5, 'decision': 4, 'career': 3,
         'competency': 2, 'jobs': 1,
@@ -747,6 +748,54 @@ export async function POST(request: NextRequest) {
       }
 
       // 有结果 → SSE 文本流 + dispatch 卡片事件（引导到功能页）
+      const responseText = ctx.reply;
+      const segs = responseText.match(/[^。！？\n]+[。！？\n]?/g) || [responseText];
+      const dispatchCard = DISPATCH_CARDS[resolvedBotType];
+      const stream = new ReadableStream({
+        async start(controller) {
+          for (const seg of segs) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+          }
+          if (dispatchCard) {
+            const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
+              intent: resolvedBotType,
+              title: dispatchCard.title,
+              description: dispatchCard.description,
+              actionLabel: dispatchCard.actionLabel,
+              tabId: dispatchCard.tabId,
+              url: dispatchCard.url,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(dispatchEvent));
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { headers: SSE_HEADERS });
+    }
+
+    // ============================================================
+    // 能力翻译词典 · chat 接入（横向岗位对标 + 差距诊断）
+    // 本地启发式引擎，先于 DeepSeek，零模型成本；命中即返回，不降级。
+    // ============================================================
+    if (resolvedBotType === 'capability_dictionary') {
+      const ctx = handleCapabilityChatQuery(message || '');
+      const encoder = new TextEncoder();
+
+      if (ctx.needsMoreInfo) {
+        const segs = ctx.reply.match(/[^。！？\n]+[。！？\n]?/g) || [ctx.reply];
+        const stream = new ReadableStream({
+          async start(controller) {
+            for (const seg of segs) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+            }
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          }
+        });
+        return new Response(stream, { headers: SSE_HEADERS });
+      }
+
       const responseText = ctx.reply;
       const segs = responseText.match(/[^。！？\n]+[。！？\n]?/g) || [responseText];
       const dispatchCard = DISPATCH_CARDS[resolvedBotType];

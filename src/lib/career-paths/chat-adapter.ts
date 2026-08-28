@@ -6,6 +6,7 @@ import { encodeProfile } from '@/lib/career-paths/engine/condition_encoder';
 import { getMatchReport } from '@/lib/career-paths/engine/rule_engine';
 import { interviewRadar, type InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
 import { decodeSubtext, type SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
+import { analyzeCapabilityGap, findJobInText, type CapabilityReport } from '@/lib/career-paths/engine/capability_dictionary';
 
 /** 从自然语言文本提取画像字段 */
 export function extractProfileFromText(text: string): Partial<RawProfile> {
@@ -457,4 +458,102 @@ export function handleSubtextChatQuery(text: string): {
     };
   }
   return { needsMoreInfo: false, reply: formatSubtextForChat(report), input: target, report };
+}
+
+// ============================================================
+// 能力翻译词典 · chat 接入（横向岗位对标 + 差距诊断）
+// 复用 capability_dictionary.ts 引擎：从自然语言抽目标岗位 + 经历 → analyzeCapabilityGap → 格式化回复。
+// 判断力 ≠ 打分：输出「解释 + 路径 + 建议」，零模型成本，守四真。
+// ============================================================
+
+/** 从自然语言抽取「目标岗位」：优先词典内置岗位（findJobInText），否则抽「对标/想做/目标」后的岗位短语 */
+function extractCapJobFromText(text: string): string | undefined {
+  const cleaned = (text || '').trim();
+  if (!cleaned) return undefined;
+  const builtin = findJobInText(cleaned);
+  if (builtin) return builtin;
+  // 自由岗位短语：对标XX / 想做XX / 目标XX / XX岗位 / XX工程师 / XX经理 等
+  const m = cleaned.match(/(?:对标|目标|想做|想做|投|求职|匹配|看看|分析|评估|面向|适合|意向)\s*([\u4e00-\u9fa5A-Za-z]{1,12}?(?:工程师|经理|专员|师|运营|分析|研发|岗位|岗))/);
+  if (m && m[1]) return m[1].trim();
+  // 直接「XX岗位」式
+  const m2 = cleaned.match(/([\u4e00-\u9fa5A-Za-z]{1,12}?(?:工程师|经理|专员|师|运营|分析|研发))(?:岗位|岗|方向)/);
+  if (m2 && m2[1]) return m2[1].trim();
+  return undefined;
+}
+
+/** 从自然语言抽取「经历」：引号/冒号后正文，否则剥掉岗位词 + 提问前缀 */
+function extractCapExperienceFromText(text: string, targetJob?: string): string | undefined {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return undefined;
+  // 引号内优先
+  const quoted = trimmed.match(/[“"『「]([^”"』」]{6,60})[”"』」]/);
+  if (quoted && quoted[1]) return quoted[1].trim();
+  // 冒号后正文（用户常写「对标产品经理：我做过Moka实习...」）
+  const sepIdx = trimmed.indexOf('：') >= 0 ? trimmed.indexOf('：') : trimmed.indexOf(':');
+  if (sepIdx >= 0) {
+    const body = trimmed.slice(sepIdx + 1).trim().replace(/^[。，,！!？?\s]+/, '');
+    if (body.length >= 4) return body;
+  }
+  // 剥掉岗位词 + 提问前缀
+  let body = trimmed
+    .replace(targetJob || '', '')
+    .replace(/^(帮我|请|麻烦|能不能|可以|我想|我想让你|你帮我|请问|问一下|想看看|帮我看看|看看|分析一下|评估一下|对标一下|测一下)\s*/g, '')
+    .replace(/(对标|目标|想做|求职|匹配|看看|分析|评估|面向|适合|意向|岗位|方向|值多少|还差什么|还差|差距|怎么样|如何)\s*/g, '')
+    .trim();
+  if (body.length >= 4) return body;
+  return undefined;
+}
+
+/** 把能力翻译词典报告格式化成 chat 可读文本 */
+function formatCapabilityForChat(report: CapabilityReport): string {
+  const lines: string[] = [];
+  lines.push(`🎯 能力翻译：${report.matchedJob}${report.matchedCategory ? `（${report.matchedCategory}）` : ''}`);
+  lines.push(`一句话：${report.summary}`);
+  if (!report.known) {
+    lines.push('');
+    lines.push('⚠️ 该岗位词典还没细化到行业级，先用通用四层框架对照。想更准，告诉我具体行业+岗位。');
+  }
+  lines.push('');
+  lines.push('【已有优势】');
+  if (report.advantages.length > 0) {
+    report.advantages.forEach((a) => lines.push(`• ${a}`));
+  } else {
+    lines.push('• （还没填经历，无法判断已覆盖哪些）');
+  }
+  if (report.gaps.length > 0) {
+    lines.push('');
+    lines.push('【关键差距 + 补课路径】');
+    report.gaps.forEach((g) => {
+      lines.push(`• ${g.skill}`);
+      lines.push(`  ${g.gap}`);
+      lines.push(`  💡 ${g.path}`);
+    });
+  }
+  if (report.recommendations.length > 0) {
+    lines.push('');
+    lines.push('【推荐投递】');
+    lines.push(`• ${report.recommendations.join(' / ')}`);
+  }
+  return lines.join('\n');
+}
+
+/** 能力翻译词典 chat 查询（抽岗位+经历 → analyzeCapabilityGap） */
+export function handleCapabilityChatQuery(text: string): {
+  needsMoreInfo: boolean;
+  reply: string;
+  targetJob?: string;
+  experience?: string;
+  report?: CapabilityReport;
+} {
+  const cleaned = (text || '').trim();
+  if (!cleaned) {
+    return { needsMoreInfo: true, reply: '告诉我你想对标的目标岗位（如：产品经理 / 工艺工程师），再把你那段经历发我，我帮你翻译成企业语言、标出差距和补课路径～' };
+  }
+  const targetJob = extractCapJobFromText(cleaned);
+  if (!targetJob) {
+    return { needsMoreInfo: true, reply: '我没认出你要对标的岗位。可以这样说：「对标产品经理，我做过Moka实习，用Figma做PRD」，我帮你判断经历值多少、还差什么～' };
+  }
+  const experience = extractCapExperienceFromText(cleaned, targetJob);
+  const report = analyzeCapabilityGap({ targetJob, experience });
+  return { needsMoreInfo: false, reply: formatCapabilityForChat(report), targetJob, experience, report };
 }

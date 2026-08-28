@@ -65,6 +65,13 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     tabId: 'career',
     url: '/career-planning',
   },
+  capability_dictionary: {
+    title: '🎯 检测到你想对标岗位能力',
+    description: '要不要把经历翻译成企业语言，看看离目标岗位还差什么？送你补课路径。',
+    actionLabel: '打开能力翻译词典',
+    tabId: 'career',
+    url: '/career-planning',
+  },
   skill: {
     title: '🔧 检测到你想提升技能',
     description: '要不要做个技能画像分析？找到你的优势和短板。',
