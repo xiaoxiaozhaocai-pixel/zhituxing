@@ -44,9 +44,54 @@ import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
 import { matchJobs, type MatchResult } from '@/lib/matching-service';
-import { handleCareerPathsQuery } from '@/lib/career-paths/chat-adapter';
+import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery } from '@/lib/career-paths/chat-adapter';
+import { analyzeNarrative } from '@/lib/career-paths/engine/narrative';
+import { walkTruthfulness } from '@/lib/career-paths/engine/truthfulness';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+// ============================================================
+// 表达链判断力 · chat 格式化（A3 能力翻译 / A4 真实性红线）
+// 与简历编辑器共用引擎，把结构化 report 转成小职对话式文本。
+// ============================================================
+function formatNarrativeForChat(report: ReturnType<typeof analyzeNarrative>): string {
+  const lines: string[] = [];
+  if (report.summary) lines.push(report.summary);
+  if (report.emphasis && report.emphasis.value >= 0) {
+    lines.push(`\n🎯 叙事价值：${report.emphasis.value}/100 · ${report.emphasis.placement}`);
+    if (report.emphasis.focus) lines.push(report.emphasis.focus);
+  }
+  const layers = report.layers || [];
+  if (layers.length > 0) {
+    lines.push('\n📊 能力分层（权重 = 岗位看重度）：');
+    for (const l of layers) {
+      let line = `  • ${l.label}（权重 ${l.weight}%）：${l.score}/100`;
+      if (l.signals && l.signals.length > 0) line += ` · 命中 ${l.signals.join('、')}`;
+      lines.push(line);
+      if (l.gap) lines.push(`    ⚠️ ${l.gap}`);
+    }
+  }
+  for (const t of report.translations || []) {
+    lines.push('\n✍️ 翻译建议：');
+    lines.push(`「${t.translated}」`);
+    if (t.rationale) lines.push(`  · ${t.rationale}`);
+  }
+  return lines.join('\n');
+}
+
+function formatTruthForChat(report: ReturnType<typeof walkTruthfulness>): string {
+  const lines: string[] = [];
+  if (report.summary) lines.push(report.summary);
+  if (report.verdict !== 'verifiable') {
+    lines.push('\n🔍 逐条检查：');
+    for (const r of report.risks || []) {
+      const icon = r.level === 'high' ? '🔴' : r.level === 'medium' ? '🟡' : '🟢';
+      lines.push(`${icon} ${r.why}（原文：「${r.snippet}」）`);
+      if (r.fix) lines.push(`   ➜ 建议：${r.fix}`);
+    }
+  }
+  return lines.join('\n');
+}
 
 
 
@@ -553,6 +598,8 @@ export async function POST(request: NextRequest) {
         ['job_match', ['匹配岗位', '推荐岗位', '帮我匹配', '岗位推荐', '内推', '适合我的岗位', '找适合的岗位', '匹配一下岗位']],
         ['competency', ['胜任力', '差距', '匹配度', '雷达图', '胜任', '匹配', '适不适合', '够不够']],
         ['jobs', ['岗位', '职位', '求职', '找工作', '薪资', '工资', 'JD', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招', '内推']],
+        ['narrative_check', ['翻译这段经历', '把经历写成', '能力翻译', '这段经历怎么说', '帮我包装', '包装这段经历', '表述这段经历', '体现什么能力', '这段经历价值', '翻译经历', '怎么把这段经历', '写成企业', '这段经历能体现', '怎么描述经历', '经历怎么写']],
+        ['truth_check', ['真实吗', '会翻车', '背调', '吹牛', '夸大', '虚构', '编造', '真实发生', '这样写行不行', '会不会被问', '经得起', '能背调', '不真实', '有没有夸大', '真实吗这段', '这段真实']],
       ];
       
       // 统计每个意图的命中关键词数
@@ -561,16 +608,22 @@ export async function POST(request: NextRequest) {
         return [intent, score] as [string, number];
       });
       
-      // 归一化：如果是简短消息（<10字），降低jobs的权重（避免"岗位""薪资"等短词误触发）
+      // 归一化：简短消息（<10字）降低 jobs / truth_check 权重，避免「岗位/薪资」「真实吗/真的吗」等短词误触发
       if (message.length < 10) {
-        intentScores = intentScores.map(([intent, score]) => 
-          intent === 'jobs' ? [intent, Math.max(0, score - 1)] as [string, number] : [intent, score] as [string, number]
-        );
+        intentScores = intentScores.map(([intent, score]) => {
+          if (intent === 'jobs') return [intent, Math.max(0, score - 1)] as [string, number];
+          // truth_check 命中「真实吗/真的吗/会吗」等超短词且无上下文词（经历/简历/写得）→ 降权，防止随口一词误触发 A4
+          if (intent === 'truth_check' && /(真实吗|真的吗|会吗|背调吗|吹牛吗|真实么)/.test(message) && !/(这段经历|我的经历|简历|写得|这段|上面|这样写|上面这段)/.test(message)) {
+            return [intent, Math.max(0, score - 1)] as [string, number];
+          }
+          return [intent, score] as [string, number];
+        });
       }
       
-      // 按分数排序，同分时按优先级：career_paths > job_match > assessment > interview > decision > career > competency > jobs
+      // 按分数排序，同分时按优先级：career_paths > (job_match/narrative_check/truth_check) > assessment > interview > decision > career > competency > jobs
       const INTENT_PRIORITY: Record<string, number> = {
-        'career_paths': 8, 'job_match': 7, 'assessment': 6,
+        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7,
+        'assessment': 6,
         'interview': 5, 'decision': 4, 'career': 3,
         'competency': 2, 'jobs': 1,
       };
@@ -646,6 +699,82 @@ export async function POST(request: NextRequest) {
           for (const seg of segs) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
           }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { headers: SSE_HEADERS });
+    }
+
+    // ============================================================
+    // 表达链判断力 · chat 接入（A3 能力翻译 / A4 真实性红线）
+    // 本地启发式引擎，先于 DeepSeek，零模型成本；并按四真红线联动（先 A4 后 A3）。
+    // ============================================================
+    if (resolvedBotType === 'narrative_check' || resolvedBotType === 'truth_check') {
+      const isTruth = resolvedBotType === 'truth_check';
+      const ctx = isTruth
+        ? handleTruthChatQuery(message || '')
+        : handleNarrativeChatQuery(message || '');
+      const encoder = new TextEncoder();
+
+      // 信息不全 → 只返文本追问，不降级到 DeepSeek
+      if (ctx.needsMoreInfo) {
+        const segs = ctx.reply.match(/[^。！？\n]+[。！？\n]?/g) || [ctx.reply];
+        const stream = new ReadableStream({
+          async start(controller) {
+            for (const seg of segs) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+            }
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          }
+        });
+        return new Response(stream, { headers: SSE_HEADERS });
+      }
+
+      const exp = ctx.experience || '';
+      const targetJob = ctx.targetJob;
+      const truth = walkTruthfulness(exp, targetJob);
+
+      let reportText = '';
+      let dispatchTitle = '';
+      let dispatchDescription = '';
+
+      if (isTruth) {
+        // A4 真实性红线：直接输出四真扫描
+        dispatchTitle = '⚠️ 这段经历的真实性风险';
+        dispatchDescription = `真实性风险：${truth.highCount} 处高险 / ${truth.riskCount} 处风险`;
+        reportText = formatTruthForChat(truth);
+      } else {
+        // A3 能力翻译：先 A4 质检；high_risk 则以 A4 为主，禁止美化
+        dispatchTitle = '💡 这段经历可以这样翻译';
+        if (truth.verdict === 'high_risk') {
+          dispatchDescription = `先收敛真实性风险：${truth.highCount} 处高险`;
+          reportText = `⚠️ 先别急着润色——这段经历有真实性风险。\n\n${formatTruthForChat(truth)}\n\n建议先按上面收敛成真实可背调的写法，小职再帮你翻译。`;
+        } else {
+          const narr = analyzeNarrative(exp, targetJob);
+          dispatchDescription = `叙事价值：${narr.emphasis?.value ?? '—'}/100`;
+          reportText = formatNarrativeForChat(narr);
+          if (truth.riskCount > 0) {
+            reportText += `\n\n---\n✅ 真实性红线检查：${truth.summary}`;
+          }
+        }
+      }
+
+      const segs = reportText.match(/[^。！？\n]+[。！？\n]?/g) || [reportText];
+      const stream = new ReadableStream({
+        async start(controller) {
+          for (const seg of segs) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+          }
+          const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
+            intent: resolvedBotType,
+            title: dispatchTitle,
+            description: dispatchDescription,
+            actionLabel: '查看详情',
+            tabId: 'resume-editor',
+          })}\n\n`;
+          controller.enqueue(encoder.encode(dispatchEvent));
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         }

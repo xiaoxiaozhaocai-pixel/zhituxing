@@ -238,3 +238,81 @@ export function handleCareerPathsQuery(text: string): {
 
   return { reply, needsMoreInfo: false, profile: profile as RawProfile, report };
 }
+
+// ============================================================
+// 表达链判断力 · chat 接入（A3 能力翻译 / A4 真实性红线）
+// 与简历编辑器共用同一引擎：narrative.ts / truthfulness.ts，守住四真红线。
+// 只做「从自然语言抽取经历上下文 + 判断是否可跑」，引擎调用由 chat/route.ts 组合（先 A4 后 A3）。
+// ============================================================
+
+/** 是否命中「这段经历」角色词（用于识别用户是否提供了可分析的经历） */
+function hasRoleContext(text: string): boolean {
+  return /(负责|参与|我|在.{0,8}(实习|工作|做)|协助|主导|完成|带领|独立|统筹|做过|实习|任职|承担|项目)/.test(text);
+}
+
+/**
+ * 从自然语言抽取经历描述 experience。
+ * 优先取「：/：」之后的正文；否则用整段文本（用户可能直接粘贴完整经历）。
+ * 剥离纯指令引导词（帮我翻译/帮我包装/看看/诊断等），避免污染正文。
+ */
+function extractExperience(text: string): string | null {
+  const trimmed = (text || '').trim();
+  if (!trimmed || !hasRoleContext(trimmed)) return null;
+
+  // 取「:」或「：」后的正文（用户常写「帮我翻译这段经历：我在…」）
+  const sepIdx = trimmed.indexOf('：') >= 0 ? trimmed.indexOf('：') : trimmed.indexOf(':');
+  let body = sepIdx >= 0 ? trimmed.slice(sepIdx + 1) : trimmed;
+
+  // 剥掉纯指令词（只剥前缀，保留真实经历）
+  body = body
+    .replace(/^(帮我|请|麻烦|能不能|可以|我想|我想让你|你帮我)\s*/g, '')
+    .replace(/^(翻译|包装|改写|写成|美化|优化|润色|表述|诊断|检测|分析|看看|评价|读一下|写一下)\s*(一下|这段经历|我的经历|这段|这个|上面|它|这段文字)?\s*/g, '')
+    .trim();
+
+  if (body.length < 4) return trimmed;
+  return body;
+}
+
+/** 从自然语言抽取目标岗位 targetJob（选填），如「投产品岗」→ 「产品」 */
+function extractTargetJob(text: string): string | undefined {
+  const m = (text || '').match(
+    /(?:投|目标|想做|想投|应聘|面向|去|往|考虑)\s*(?:的)?([\u4e00-\u9fa5A-Za-z]{1,15}?)(?:岗位|岗|职位|方向|职业)/,
+  );
+  return m ? m[1] : undefined;
+}
+
+/** A3：能力翻译/叙事 chat 查询（抽取上下文，引擎调用由 route 联动完成） */
+export function handleNarrativeChatQuery(text: string): {
+  needsMoreInfo: boolean;
+  reply: string;
+  experience?: string;
+  targetJob?: string;
+} {
+  const exp = extractExperience(text);
+  if (!exp) {
+    return {
+      needsMoreInfo: true,
+      reply: '把这段经历完整发我，再告诉我你想投的岗位，我帮你翻译成企业看得懂的表达～',
+    };
+  }
+  const targetJob = extractTargetJob(text);
+  return { needsMoreInfo: false, reply: '', experience: exp, targetJob };
+}
+
+/** A4：真实性红线 chat 查询（抽取上下文，引擎调用由 route 联动完成） */
+export function handleTruthChatQuery(text: string): {
+  needsMoreInfo: boolean;
+  reply: string;
+  experience?: string;
+  targetJob?: string;
+} {
+  const exp = extractExperience(text);
+  if (!exp) {
+    return {
+      needsMoreInfo: true,
+      reply: '把这段经历完整发我，我帮你做一遍真实性红线扫描，看看会不会被背调问倒～',
+    };
+  }
+  const targetJob = extractTargetJob(text);
+  return { needsMoreInfo: false, reply: '', experience: exp, targetJob };
+}
