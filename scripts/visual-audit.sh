@@ -16,7 +16,7 @@ echo ""
 EXCLUDE_DIRS='--exclude-dir=ui'
 
 # 通用豁免文件路径模式
-EXEMPT_PATHS='career-planning|admin/analytics|admin/diagnostics|admin/universities|dashboard/cost|employer/analytics|employer/dashboard|employer/candidates|admin/api/stats|admin/skills|admin/users'
+EXEMPT_PATHS='career-planning|admin/analytics|admin/diagnostics|admin/universities|dashboard/cost|employer/analytics|employer/dashboard|employer/candidates|admin/api/stats|admin/skills|admin/users|HomeClient|app/match'
 
 # 行内豁免关键词（图表/调色板/状态色语义）
 EXEMPT_LINE_KW='BOT_COLORS|palette|chart|colors\s*=|badgeColor|accentColor|interview|status_color|profile/history|lineStyle|GrowthTimeline|stroke=|fill='

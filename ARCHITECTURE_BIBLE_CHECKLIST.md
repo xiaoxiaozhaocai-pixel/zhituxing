@@ -52,6 +52,9 @@ exit $errors
 - `src/app/dashboard/cost/**` — BOT_COLORS 多色折线
 - `src/app/employer/analytics/**` · `employer/dashboard/**` · `employer/candidates/**` — 雇主端匹配度色阶 / 状态语义
 
+**2026-08-28 用户拍板豁免（L1.5待重审）：**
+- `src/app/HomeClient.tsx` — 主界面5核心链路入口卡渐变 `from-blue-500 to-indigo-600 / from-violet-500 to-purple-600`，属M1主入口收敛视觉，先豁免不强制改，后续再审
+- `src/app/match/page.tsx` — 组态匹配「双维错位诊断」展示区块 `border-indigo-100/bg-indigo-50/40/text-indigo-700`，诊断语义色，先豁免不强制改，后续再审
 **行内关键词豁免：**
 - `BOT_COLORS` `palette` `chart` `colors =` — 多色调色板
 - `accentColor` `badgeColor` `lineStyle` `stroke=` `fill=` — 图表组件入参
