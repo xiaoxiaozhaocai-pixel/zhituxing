@@ -16,9 +16,9 @@ else
   FAIL=1
 fi
 
-# 2. 首页可访问
+# 2. 首页可访问（落临时文件再 grep，避免 set -euo pipefail 下 curl|grep -q 的 SIGPIPE 误报）
 echo -n "首页... "
-if curl -sfL -m10 "$SITE/" | grep -q "职途星"; then
+if curl -sfL -m10 "$SITE/" -o /tmp/ztx_predeploy_home.html && grep -q "职途星" /tmp/ztx_predeploy_home.html; then
   echo "✅"
 else
   echo "❌"
