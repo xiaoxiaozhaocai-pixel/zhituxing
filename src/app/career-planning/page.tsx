@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import type { CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognit
 import type { InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
 import type { SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
 import type { PathPlanReport } from '@/lib/career-paths/engine/career_path_planner';
+import type { CapabilityReport } from '@/lib/career-paths/engine/capability_dictionary';
 import {
   Sparkles,
   Loader2,
@@ -28,6 +29,7 @@ import {
   Lightbulb,
   Compass,
   Radar,
+  Languages,
 } from 'lucide-react';
 
 export default function CareerPlanningPage() {
@@ -55,6 +57,13 @@ export default function CareerPlanningPage() {
   const [glossaryList, setGlossaryList] = useState<{ phrase: string; category: 'jd' | 'interview' | 'resume' | 'workplace'; categoryLabel: string; meaning: string; risk: 'low' | 'medium' | 'high'; advice: string }[]>([]);
   const [glossaryLoading, setGlossaryLoading] = useState(false);
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
+  const [capJobs, setCapJobs] = useState<{ id: string; name: string; category: string }[]>([]);
+  const [capJobsLoading, setCapJobsLoading] = useState(false);
+  const [capTargetJob, setCapTargetJob] = useState('');
+  const [capExperience, setCapExperience] = useState('');
+  const [capResult, setCapResult] = useState<CapabilityReport | null>(null);
+  const [capLoading, setCapLoading] = useState(false);
+  const [capError, setCapError] = useState<string | null>(null);
   const [pathDirection, setPathDirection] = useState('');
   const [pathSkills, setPathSkills] = useState('');
   const [pathResult, setPathResult] = useState<PathPlanReport | null>(null);
@@ -209,6 +218,57 @@ export default function CareerPlanningPage() {
       setGlossaryError('网络错误，请稍后重试');
     } finally {
       setGlossaryLoading(false);
+    }
+  };
+
+  // 能力翻译词典：加载已支持对标的内置岗位列表（供下拉选择）
+  useEffect(() => {
+    let alive = true;
+    const loadCapJobs = async () => {
+      setCapJobsLoading(true);
+      try {
+        const res = await fetch('/api/career-planning/capability-dictionary');
+        const data = await res.json();
+        if (alive && data.success && Array.isArray(data.data)) {
+          setCapJobs(data.data);
+        } else if (alive) {
+          setCapError(data.error || data.message || '岗位列表加载失败，请重试');
+        }
+      } catch {
+        if (alive) setCapError('网络错误，请刷新重试');
+      } finally {
+        if (alive) setCapJobsLoading(false);
+      }
+    };
+    loadCapJobs();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const handleAnalyzeCapability = async () => {
+    if (!capTargetJob || !capTargetJob.trim()) {
+      setCapError('请先选择或输入目标岗位');
+      return;
+    }
+    setCapLoading(true);
+    setCapError(null);
+    try {
+      const res = await fetch('/api/career-planning/capability-dictionary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetJob: capTargetJob.trim(), experience: capExperience.trim() }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setCapResult(data.data);
+      } else {
+        setCapError(data.error || data.message || '能力翻译失败，请重试');
+      }
+    } catch {
+      setCapError('网络错误，请稍后重试');
+    } finally {
+      setCapLoading(false);
     }
   };
 
@@ -538,6 +598,50 @@ export default function CareerPlanningPage() {
 
                 <div className="mt-2">
                   <Label className="text-sm font-medium text-[#475569] mb-2 block">
+                    能力翻译词典 <span className="text-[#94A3B8]">（对标目标岗位，看经历值多少、还差什么）</span>
+                  </Label>
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      placeholder="目标岗位，如：工艺工程师 / 设备工程师 / 产品经理（也可输入其他岗位）"
+                      value={capTargetJob}
+                      onChange={(e) => setCapTargetJob(e.target.value)}
+                      className="rounded-xl border-[#E2E8F0] focus:border-[#3D7FFF]"
+                    />
+                    {capJobs.length > 0 && (
+                      <p className="text-xs text-[#94A3B8]">已支持对标：{capJobs.map((j) => j.name).join(' / ')}</p>
+                    )}
+                    <Textarea
+                      placeholder="粘贴你的经历（可留空，填了才做差距诊断）：如 做过产线改善，良率92%→97%，用Minitab做DOE"
+                      value={capExperience}
+                      onChange={(e) => setCapExperience(e.target.value)}
+                      rows={3}
+                      className="rounded-xl border-[#E2E8F0] focus:border-[#3D7FFF]"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-semibold py-4 border-[#F59E0B]/30 text-[#F59E0B] hover:bg-[#F59E0B]/5"
+                  onClick={handleAnalyzeCapability}
+                  disabled={capLoading}
+                  type="button"
+                >
+                  {capLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      对标中...
+                    </>
+                  ) : (
+                    <>
+                      <Languages className="w-5 h-5 mr-2" />
+                      能力翻译：你的经历值多少、还差什么
+                    </>
+                  )}
+                </Button>
+
+                <div className="mt-2">
+                  <Label className="text-sm font-medium text-[#475569] mb-2 block">
                     成长路线 <span className="text-[#94A3B8]">（从这一步，推下一步，可留空方向/技能）</span>
                   </Label>
                   <div className="flex flex-col gap-2">
@@ -841,6 +945,121 @@ export default function CareerPlanningPage() {
                     ) : (
                       <div className="rounded-xl border border-dashed border-[#E2E8F0] p-4 text-sm text-[#94A3B8]">
                         没在这些文本里识别到典型黑话。想让拆解更准，可以把完整的 JD、简历或面试问题整段贴进来。
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* 能力翻译词典结果展示 */}
+          {(capResult || capError) && (
+            <div className="mt-8">
+              {capError && (
+                <Card className="border-red-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{capError}</div>
+                  </CardContent>
+                </Card>
+              )}
+              {capResult && (
+                <Card className="border-[#F59E0B]/20 shadow-lg shadow-[#F59E0B]/5">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-[#F59E0B]/10 flex items-center justify-center">
+                        <Languages className="w-5 h-5 text-[#F59E0B]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#1E293B]">
+                          能力翻译：{capResult.matchedJob}
+                          {capResult.matchedCategory && (
+                            <span className="ml-2 text-xs font-normal text-[#94A3B8]">{capResult.matchedCategory}</span>
+                          )}
+                        </h3>
+                        <p className="text-sm text-[#64748B] mt-1">{capResult.summary}</p>
+                      </div>
+                    </div>
+
+                    {!capResult.known && (
+                      <div className="rounded-xl border border-dashed border-[#F59E0B]/40 bg-[#F59E0B]/[0.04] px-4 py-3 text-sm text-[#B45309] mb-5">
+                        {capResult.matchedJob || '这个岗位'}的能力词典还没细化到行业级，先用通用四层框架帮你对照。想要更准的行业级拆解，告诉我具体行业+岗位（如：锂电工艺工程师 / HRTech 产品经理）。
+                      </div>
+                    )}
+
+                    {/* 能力分层 */}
+                    <div className="mb-5">
+                      <p className="text-xs font-semibold text-[#7A5CFF] uppercase tracking-wide mb-2">能力分层</p>
+                      <div className="space-y-2">
+                        {capResult.layers.map((layer) => (
+                          <div key={layer.layer} className="rounded-xl border border-[#E2E8F0] p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-semibold text-[#1E293B] text-sm">{layer.label}</span>
+                              <span className="text-xs text-[#94A3B8]">权重 {layer.weight}%</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {layer.items.map((item, i) => (
+                                <span key={i} className="px-2 py-0.5 text-xs bg-gray-50 text-[#475569] rounded-full">{item}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 无经历引导 */}
+                    {!capExperience.trim() && (
+                      <div className="rounded-xl border border-dashed border-[#E2E8F0] p-4 text-sm text-[#94A3B8] mb-5">
+                        贴一段你的经历（项目/实习/社团），我会把它翻译成企业语言，并标出与目标岗位的差距和补课路径。
+                      </div>
+                    )}
+
+                    {/* 已有优势 */}
+                    {capResult.advantages.length > 0 && (
+                      <div className="mb-5">
+                        <p className="text-xs font-semibold text-[#10B981] uppercase tracking-wide mb-2">
+                          你的经历已覆盖（{capResult.advantages.length}）
+                        </p>
+                        <div className="space-y-1.5">
+                          {capResult.advantages.map((a, i) => (
+                            <div key={i} className="flex items-start gap-2 text-sm text-[#475569]">
+                              <span className="mt-1 w-1.5 h-1.5 shrink-0 rounded-full bg-[#10B981]" />
+                              {a}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 差距与补课路径 */}
+                    {capResult.gaps.length > 0 && (
+                      <div className="mb-5">
+                        <p className="text-xs font-semibold text-[#F59E0B] uppercase tracking-wide mb-2">
+                          还差这些 · 补课路径（{capResult.gaps.length}）
+                        </p>
+                        <div className="space-y-2">
+                          {capResult.gaps.map((g, i) => (
+                            <div key={i} className="rounded-xl border border-[#E2E8F0] p-3">
+                              <p className="font-semibold text-[#1E293B] text-sm mb-1">{g.skill}</p>
+                              <p className="text-sm text-[#64748B] mb-1">{g.gap}</p>
+                              <div className="bg-amber-50 rounded-lg p-3 text-xs text-[#B45309]">
+                                <span className="font-medium">补课路径：</span>{g.path}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 推荐投递 */}
+                    {capResult.recommendations.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-[#7A5CFF] uppercase tracking-wide mb-2">推荐投递</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {capResult.recommendations.map((c, i) => (
+                            <span key={i} className="px-2 py-0.5 text-xs bg-[#7A5CFF]/10 text-[#7A5CFF] rounded-full">{c}</span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </CardContent>
