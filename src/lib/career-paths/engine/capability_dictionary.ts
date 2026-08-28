@@ -211,6 +211,369 @@ const JOBS: JobEntry[] = [
       'AI产品': '用自然语言描述 AI 功能边界，读 2 篇大模型应用案例（约1周）',
     },
   },
+  {
+    id: 'product_manager',
+    name: '互联网产品经理',
+    category: '互联网',
+    aliases: ['互联网产品经理', '产品', 'PM', '产品专员', '产品岗'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '互联网产品形态（C端/内容/工具/商业化）',
+          '用户增长与留存（AARRR / 北极星指标）',
+          '产品生命周期（需求→设计→上线→迭代）',
+          '竞品分析框架（功能/定位/用户体验对比）',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'PRD / 需求文档撰写',
+          '原型设计（Axure / Figma / 墨刀）',
+          'SQL / 数据漏斗与留存分析',
+          '埋点方案 / A-B 实验设计',
+          '用户调研 / 用户访谈 / 可用性测试',
+          'Scrum / 敏捷迭代流程',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '用户同理心（从用户视角定义需求）',
+          '跨团队协作（研发/设计/运营/市场协调）',
+          '优先级判断与取舍（价值 vs 成本）',
+          '沟通表达与文档输出能力',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '从0到1 产品上线经验（有完整链路）',
+          '数据驱动迭代案例（指标前后有量化对比）',
+          '用户访谈/可用性测试沉淀（有结论与改进）',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '腾讯', '网易', '小红书', '哔哩哔哩'],
+    studyPaths: {
+      'PRD': '学 Axure/Figma + 输出一份完整 PRD（约2周）',
+      'SQL': '学 SQL + 做一次漏斗/留存分析（约2周）',
+      '竞品分析': '拆 3 个同赛道产品的功能链路（约1周）',
+      '埋点': '了解埋点方案 + 设计一次 A/B 实验（约1周）',
+    },
+  },
+  {
+    id: 'new_media_operator',
+    name: '新媒体运营',
+    category: '互联网/新媒体',
+    aliases: ['运营', '新媒体运营', '内容运营', '用户运营', '互联网运营'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '内容平台机制（公众号/小红书/抖音/B站）',
+          '流量与转化链路（曝光→点击→互动→转化）',
+          '用户生命周期（拉新/促活/留存/转化）',
+          '算法与信息流分发逻辑',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          '内容策划/文案/排版（爆款标题与钩子）',
+          '短视频拍摄与剪辑（剪映 / PR）',
+          '数据复盘（阅读/完播/互动/转化率）',
+          '社群运营与私域工具（企微/SCRM）',
+          '广告投放（信息流 / DOU+ / 薯条）',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '网感与热点敏感度',
+          '用户同理心（站在读者视角选题）',
+          '数据复盘与迭代思维',
+          '多线程执行与抗压（内容节奏快）',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '运营账号/社群（有涨粉或互动数据）',
+          '爆款内容案例（有过万阅读/点赞）',
+          '从0做起一个内容的完整闭环',
+        ],
+      },
+    ],
+    recommendCompanies: ['小红书', '字节跳动', '网易', '哔哩哔哩', '快手'],
+    studyPaths: {
+      '内容策划': '选题→写→排版，做 10 篇内容并复盘数据（约2周）',
+      '短视频': '学剪映 + 做 5 条短视频（约1周）',
+      '数据复盘': '用平台后台学看数据并做复盘报告（约1周）',
+      '社群运营': '学私域工具 + 实操一次群运营（约1周）',
+    },
+  },
+  {
+    id: 'java_backend',
+    name: 'Java后端开发工程师',
+    category: '软件开发',
+    aliases: ['Java', 'Java开发', '后端开发', '后端工程师', 'Java工程师'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '互联网后端架构（微服务/分布式/高并发）',
+          'HTTP / RESTful 协议与接口设计',
+          '常见业务域（电商/支付/内容/企业服务）',
+          '开发与部署流程（Git / 版本管理 / 上线）',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'Java 集合 / 并发 / JVM',
+          'Spring Boot / Spring Cloud / MyBatis',
+          'MySQL 索引 / 事务 / 锁 / 优化',
+          'Redis 缓存与缓存策略',
+          '消息队列（Kafka / RabbitMQ）',
+          '基础算法与数据结构',
+          'Linux / Docker 基础',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '代码规范与可读性',
+          '问题排查（日志/调试/定位根因）',
+          '团队协作与 Code Review',
+          '自驱学习新技术',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立完成可运行后端项目（CRUD + 接口）',
+          '性能优化 / 并发处理案例（带量化）',
+          '参与真实团队项目（有 Git 协作记录）',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '腾讯', '网易', '美团', '京东'],
+    studyPaths: {
+      'Spring': '学 Spring Boot + 做一个 CRUD 后端（约1周）',
+      'MySQL': '学索引/事务/优化 + 做一次慢查询优化（约1周）',
+      'Redis': '学缓存策略 + 做一个缓存案例（约3天）',
+      '算法': '刷 LeetCode 50 题 + 掌握常用算法（约2周）',
+    },
+  },
+  {
+    id: 'qa_engineer',
+    name: '软件测试开发工程师',
+    category: '软件开发/测试',
+    aliases: ['测试', '软件测试', 'QA', '测试开发', '测试工程师'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '软件研发流程（需求→开发→测试→上线）',
+          '测试类型（功能/接口/性能/安全/回归）',
+          '缺陷管理与质量指标（覆盖率/漏测率）',
+          '敏捷与迭代测试节奏',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          '测试用例设计（等价类/边界值/判定表）',
+          '接口测试（Postman / Jmeter）',
+          '自动化测试（Selenium / Python / Pytest）',
+          'SQL 与数据库验证',
+          'Linux 命令与环境搭建',
+          '性能测试（Jmeter / Locust）',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '细心与严谨（不放过边界）',
+          '缺陷表达与沟通（重复性强/复现路径清晰）',
+          '逆向思维（站在找 bug 视角）',
+          '跨团队协作与推动修复',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立负责模块测试（有问题排查记录）',
+          '自动化脚本沉淀（可复用脚本）',
+          '功能/性能测试报告（带量化数据）',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '网易', '腾讯', '京东', '华为'],
+    studyPaths: {
+      '用例设计': '学等价类/边界值 + 写 20 条用例（约3天）',
+      'Selenium': '学 Selenium + 做一个自动化脚本（约1周）',
+      '接口测试': '学 Postman/Jmeter + 跑一个接口项目（约1周）',
+      'Jmeter': '学性能测试 + 做一个压测报告（约1周）',
+    },
+  },
+  {
+    id: 'data_analyst',
+    name: '数据分析师',
+    category: '互联网/数据',
+    aliases: ['数据分析', '数据', '分析师', '商业分析师'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '业务指标体系（GMV/留存/DAU/转化率）',
+          '数据产品形态（报表/看板/异动归因）',
+          '常见业务域（电商/内容/增长）',
+          'AARRR 增长模型',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'SQL（多表/聚合/窗口函数）',
+          'Excel 高阶（透视表/函数）',
+          'Python 数据处理（Pandas / NumPy）',
+          '统计与 A-B 测试',
+          '可视化（Tableau / PowerBI / 图表）',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '业务理解与指标口径对齐',
+          '数据驱动决策（用数据说服）',
+          '结论表达与呈现能力',
+          '问题拆解（MECE 框架）',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立完成数据分析报告（有业务结论）',
+          '搭建看板/可视化（有落地）',
+          '用数据驱动的业务改进案例（带量化）',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '滴滴', '阿里巴巴', '美团', '京东'],
+    studyPaths: {
+      'SQL': '学 SQL 窗口函数 + 做 20 道练习题（约1周）',
+      'Pandas': '学 Pandas 数据清洗 + 一个分析案例（约1周）',
+      'AB测试': '了解 A-B 测试原理 + 设计一次实验（约3天）',
+      'Tableau': '学 Tableau + 做一个交互看板（约1周）',
+    },
+  },
+  {
+    id: 'embedded_software',
+    name: '嵌入式软件工程师',
+    category: '电子/嵌入式',
+    aliases: ['嵌入式', '嵌入式软件', '嵌入式开发', '单片机', '底层开发'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '嵌入式系统架构（MCU / SoC / 驱动 / RTOS）',
+          '智能硬件/物联网产品（车载/工业/穿戴）',
+          '开发流程（交叉编译/烧录/调试）',
+          '嵌入式 C/C++ 应用场景',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'C / C++ 语言（指针/内存/结构体）',
+          'STM32 / MCU 开发（GPIO/UART/SPI/I2C/ADC/TIM）',
+          'RTOS（FreeRTOS 任务/信号量/队列）',
+          '通信协议（UART/I2C/SPI/CAN）',
+          '开发环境（Keil/STM32CubeIDE + J-Link）',
+          'Linux 驱动基础',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '软硬件协同思维',
+          '问题定位（示波器/逻辑分析仪）',
+          '代码规范与注释文档',
+          '动手能力（焊接/万用表）',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立完成嵌入式项目（小车/传感器采集等）',
+          '底层驱动调试经验',
+          '参与智能硬件/车载项目',
+        ],
+      },
+    ],
+    recommendCompanies: ['大疆', '海康威视', '华为', '小米', '汇川技术'],
+    studyPaths: {
+      'C': '学 C 指针/结构体 + 做一个小程序（约2周）',
+      'STM32': '学 STM32 + 做一个外设控制项目（约2周）',
+      'RTOS': '学 FreeRTOS 任务调度 + 做一个多任务案例（约1周）',
+      'Linux': '学交叉编译 + 做一个驱动小实验（约2周）',
+    },
+  },
+  {
+    id: 'hardware_engineer',
+    name: '硬件工程师',
+    category: '电子/硬件',
+    aliases: ['硬件', '硬件工程师', 'PCB', '硬件开发', '电路设计'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '电子产品开发流程（原理图/PCB/打样/调试/量产）',
+          '常用元器件与选型',
+          '电磁兼容（EMC）基础',
+          '硬件可靠性（温漂/静电/抗干扰）',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          '数电/模电基础',
+          '原理图设计（Altium Designer / Cadence）',
+          'PCB 布局布线（阻抗/信号完整性）',
+          '元器件选型与 BOM',
+          '示波器/万用表/逻辑分析仪使用',
+          '电路焊接与调试',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '仿真与验证思维（先建模/搭板再测）',
+          '跨团队沟通（结构/软件/生产）',
+          '严谨与细节（容差/可靠性）',
+          '成本与可制造性意识',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立完成硬件项目（设计→打样→调试）',
+          '原理图/PCB 布线经验',
+          '参与量产项目（有 EMC/可靠性改进）',
+        ],
+      },
+    ],
+    recommendCompanies: ['大疆', '华为', '海康威视', '小米', '立讯精密'],
+    studyPaths: {
+      '数电模电': '复习数电/模电 + 做一个电路设计小项目（约2周）',
+      'Altium': '学 Altium Designer + 画一块 PCB（约2周）',
+      '示波器': '学示波器/万用表使用 + 测一个电路（约1周）',
+      '元器件': '学元器件选型 + 做一份 BOM（约3天）',
+    },
+  },
 ];
 
 const EMPTY_LAYER_ITEMS: CapabilityLayer[] = [

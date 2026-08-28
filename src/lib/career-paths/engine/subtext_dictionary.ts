@@ -88,6 +88,55 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '狼性文化': { category: 'workplace', surface: '公司标榜「狼性文化」', meaning: '可能是高强度竞争、淘汰制、目标导向压人。', risk: 'high', advice: '了解考核与淘汰机制，评估自己能否扛住高压。' },
   '躺平': { category: 'workplace', surface: '同事说「躺平」', meaning: '反讽内卷或工作没奔头，也可能是对现状的无奈。', risk: 'low', advice: '结合团队真实氛围判断，别被一句话带偏。' },
   '个人能力突出': { category: 'workplace', surface: '写的是「招个人能力突出」', meaning: '暗示团队弱、缺协作、你要能冲锋陷阵独当一面。', risk: 'medium', advice: '问清团队配置与跨部门协作，别当孤鸟。' },
+
+  // ============ JD 黑话 增补 ============
+  '吃苦耐劳': { category: 'jd', surface: '写的是「吃苦耐劳」', meaning: '多半是工作强度大、环境苦、加班多，用「吃苦」代替福利。', risk: 'medium', advice: '问清工作环境与强度，评估能否接受，别把「吃苦」当勋章。' },
+  '有热情': { category: 'jd', surface: '写的是「有热情、有活力」', meaning: '往往是缺人、杂活多，或想用热情换取廉价劳动力。', risk: 'medium', advice: '问清岗位职责与团队规模，判断是否以「热情」掩盖短板。' },
+  '学习能力强': { category: 'jd', surface: '写的是「学习能力强」', meaning: '暗示你可能经验不足，或公司不想给培训，要你自学扛事。', risk: 'medium', advice: '问清培训与带教机制，别让「学习」变成自己扛。' },
+  '年轻有活力': { category: 'jd', surface: '写的是「年轻有活力」', meaning: '可能想用年轻人好带、能吃苦、薪资低，性价比高。', risk: 'high', advice: '问清薪酬与晋升机制，评估职业回报，别被当廉价燃料。' },
+  '底薪+提成': { category: 'jd', surface: '写的是「底薪+提成」', meaning: '底薪往往很低，收入主要靠提成，销售性质强、波动大。', risk: 'medium', advice: '问清底薪构成、提成比例与结算方式，算清真实保底收入。' },
+  '接受小白': { category: 'jd', surface: '写的是「接受小白、零经验」', meaning: '要么岗位门槛低、竞争激烈，要么培训流于形式、易流失。', risk: 'medium', advice: '问清带教与培训内容，评估是否真能学到东西、有成长。' },
+  '综合薪资': { category: 'jd', surface: '写的是「综合薪资」', meaning: '常把提成/补贴/奖金算进「综合」，实际月薪可能低于想象。', risk: 'high', advice: '问清固定薪资与浮动占比，算清保底收入，别被「综合」带偏。' },
+  '成长空间': { category: 'jd', surface: '写的是「成长空间、晋升快」', meaning: '公司小、盘子小，靠「成长」补薪酬，晋升未必真实现。', risk: 'medium', advice: '问清晋升标准与真实案例，别只听「有机会」。' },
+  '氛围好': { category: 'jd', surface: '写的是「氛围好、不加班」', meaning: '可能确实轻松，也可能是没业务、将倒闭前的虚假繁荣。', risk: 'low', advice: '结合公司业务状态判断，别被「氛围」迷惑，多问实际节奏。' },
+  '扁平化管理': { category: 'jd', surface: '写的是「扁平化管理」', meaning: '往往人少、没人带、直属老板拍板，职能界限模糊。', risk: 'medium', advice: '问清团队规模与汇报结构，评估能否适应无带教状态。' },
+  '弹性上班': { category: 'jd', surface: '写的是「弹性上下班」', meaning: '上班弹性、下班固定加班，实际并不轻松。', risk: 'medium', advice: '问清上下班时间与加班补偿，别被「弹性」带偏。' },
+  '五险一金': { category: 'jd', surface: '写的是「五险一金」', meaning: '这是基本保障，重点是问清缴纳基数与是否足额。', risk: 'low', advice: '问清缴纳基数与比例，避免「有」而「不足额」的情况。' },
+  '地点灵活': { category: 'jd', surface: '写的是「地点灵活」', meaning: '可能是多地点、外派、驻场，或者没有明确办公地点。', risk: 'medium', advice: '问清常驻地点与出差安排，评估生活与通勤。' },
+  '会沟通': { category: 'jd', surface: '写的是「会沟通、协调能力强」', meaning: '往往意味着要常对接、跨部门协调，甚至是销售/客服性质。', risk: 'medium', advice: '问清岗位沟通对象与对接窗口，判断是否纯沟通岗。' },
+
+  // ============ 面试潜台词 增补 ============
+  '你的职业规划': { category: 'interview', surface: '问「职业规划」', meaning: '看稳定性与上进心，判断你会不会干两年就跑。', risk: 'low', advice: '结合岗位说清短期目标与长期方向，别太空泛、别画大饼。' },
+  '你做过最失败的事': { category: 'interview', surface: '问「最失败/挫折的经历」', meaning: '考察抗挫折能力与复盘意识，也是压力测试。', risk: 'medium', advice: '讲一个真实但能学到教训的事，重点放在反思与改进。' },
+  '你的优势是什么': { category: 'interview', surface: '问「最大优势」', meaning: '看自我认知与岗位匹配度，考察你能否说清差异化。', risk: 'low', advice: '结合岗位核心能力说具体优势+例证，别只说「学习能力强」。' },
+  '你能接受外包吗': { category: 'interview', surface: '问「接受外包/驻场」', meaning: '岗位可能是外包、驻场、稳定性差，或转正难。', risk: 'high', advice: '问清劳动关系、转正机会与项目周期，别当「备胎」。' },
+  '你期望的工作环境': { category: 'interview', surface: '问「期望工作环境」', meaning: '试探你能否接受快节奏/高压/或特定氛围。', risk: 'medium', advice: '结合公司真实强度回答，别立一个太高的人设。' },
+  '你有证书吗': { category: 'interview', surface: '问「相关证书」', meaning: '可能岗位有硬性资格要求，或是你专业对口的加分项。', risk: 'low', advice: '如实说明已有证书与在考状态，别夸大或编造。' },
+  '你英语怎么样': { category: 'interview', surface: '问「英语水平」', meaning: '考察涉外/外企/技术文档阅读能力，判断是否满足岗位需求。', risk: 'medium', advice: '据实回答，可说明 CET/专业水平与应用场景。' },
+  '你对我们产品了解吗': { category: 'interview', surface: '问「了解我们产品吗」', meaning: '考察你求职意愿与准备度，海投者往往答不出。', risk: 'medium', advice: '提前体验产品、看官网/公众号，说出1-2个真理解。' },
+  '你实习经历多吗': { category: 'interview', surface: '问「实习/项目经历」', meaning: '看你的实操经验，应届可用学习经历补充。', risk: 'medium', advice: '把课程项目/比赛当实战讲，突出你能上手什么。' },
+  '这个岗位可能要出差': { category: 'interview', surface: '问「接受出差吗」', meaning: '提前告知出差是常态，或问你能否适应外派。', risk: 'medium', advice: '问清出差频率与地点，评估后诚实回答。' },
+  '你的性格内向吗': { category: 'interview', surface: '问「性格/内向与否」', meaning: '判断你适不适合对外沟通、团队协作岗位。', risk: 'low', advice: '诚实说清性格与岗位匹配，内向不是缺点，关键看适配。' },
+
+  // ============ 简历潜台词 增补 ============
+  '主导': { category: 'resume', surface: '简历写「主导XX」', meaning: 'HR 会追问你主导到什么程度，是否有自主决策。', risk: 'medium', advice: '用决策权+结果说明主导范围，别把「参与」写成「主导」。' },
+  '了解': { category: 'resume', surface: '简历写「了解/熟悉XX」', meaning: 'HR 会把「了解」当「初级」，怀疑你深度不够。', risk: 'medium', advice: '把「了解」改写为具体能用它解决什么问题。' },
+  '掌握': { category: 'resume', surface: '简历写「掌握XX」', meaning: '考察你是否真能实操，还是停留在理论课。', risk: 'medium', advice: '用项目/作品证明掌握深度，别空谈「掌握」。' },
+  '熟练': { category: 'resume', surface: '简历写「熟练使用XX」', meaning: 'HR 会较真到底多熟，是否过了初级门槛。', risk: 'medium', advice: '给出使用时长/作品/场景，量化为「能独立完成X」。' },
+  '良好': { category: 'resume', surface: '简历写「XX能力良好」', meaning: '模糊表述，HR 会质疑你到底多好，难量化。', risk: 'medium', advice: '把「良好」换成具体成果或达成标准。' },
+  '有较强的': { category: 'resume', surface: '简历写「有较强XX能力」', meaning: '空泛形容词，HR 会觉得没实证、缺亮点。', risk: 'medium', advice: '补充可验证的业绩或案例支撑，别只堆形容词。' },
+  '获奖经历': { category: 'resume', surface: '简历写「获XX奖」', meaning: 'HR 看奖项含金量与是否与岗位相关。', risk: 'low', advice: '注明奖项级别与获奖人数，别只列名字。' },
+  '学生干部': { category: 'resume', surface: '简历写「曾任学生会/班干」', meaning: 'HR 会考察组织协调能力，也担心是否真对岗位有用。', risk: 'low', advice: '拆出具体组织成果，别只报职务名称。' },
+  '无工作经验': { category: 'resume', surface: '简历写「暂无经验」', meaning: '应届生共性，HR 更看潜力与可培养性。', risk: 'medium', advice: '用课程项目/竞赛/实习补足，突出可迁移能力。' },
+
+  // ============ 职场黑话 增补 ============
+  '内卷': { category: 'workplace', surface: '同事说「内卷」', meaning: '竞争激烈、大家都在加班，隐性压力大。', risk: 'medium', advice: '观察团队加班与晋升节奏，评估是否适合自己。' },
+  '画饼': { category: 'workplace', surface: '领导说「未来上市/做大」', meaning: '用愿景代替回报，钱和晋升未必到位。', risk: 'high', advice: '关注当下薪酬与成长，别为「饼」透支自己。' },
+  '背锅': { category: 'workplace', surface: '让你做「兜底/收尾」的活', meaning: '责任边界模糊，出问题往往找你。', risk: 'high', advice: '明确职责边界，重要事项留痕，别口头扛责。' },
+  '抓大放小': { category: 'workplace', surface: '领导说「抓重点」', meaning: '可能人手不足、要你自己权衡，或让你忽略细节。', risk: 'medium', advice: '问清优先级与验收标准，别自己猜。' },
+  '向上管理': { category: 'workplace', surface: '同事说「要向上管理」', meaning: '暗示老板决策依赖下属推动，职场政治较重。', risk: 'medium', advice: '了解团队汇报风格，学会主动同步，别闷头干活。' },
+  '兄弟团队': { category: 'workplace', surface: '领导说「我们是兄弟」', meaning: '用感情代替制度，可能是要你无边界付出。', risk: 'medium', advice: '看制度与合同，别被「兄弟」绑定。' },
+  '忠诚度': { category: 'workplace', surface: '领导强调「忠诚」', meaning: '可能希望员工稳定安分、别跳槽，重视服从。', risk: 'medium', advice: '了解真实回报与成长，别只谈忠诚不谈报酬。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
