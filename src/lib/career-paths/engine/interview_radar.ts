@@ -523,6 +523,44 @@ export const ALL_INDUSTRY_RADAR: IndustryRadar[] = [
     redFlags: ['只会背模板无真情实感', '好高骛远拒绝基层', '对时事政策无积累'],
     prepTips: ['系统练结构化面试题型', '积累时政与政策素材', '打磨申论与文字表达'],
   },
+  {
+    key: 'supply_chain',
+    label: '供应链/物流/采购',
+    blurb: '制造业供应链与物流是桂电工科+管理类同学的重要去向，采购/计划/物流/供应链管理岗看重「懂产品流程+数据+跨部门协同」，会从计划、成本、交付与异常处置角度考察。',
+    focus: [
+      {
+        module: '供应链/物流知识',
+        weight: 30,
+        how: '考察对采购、计划、仓储、物流、订单履行的基础理解，以及能说清上下游环节。',
+        questions: ['说说你理解的供应链流程', '采购和计划的关系是什么', '如何降低物料库存成本'],
+      },
+      {
+        module: '成本/数据分析',
+        weight: 25,
+        how: '考察成本敏感度、Excel/数据分析与库存周转等指标意识。',
+        questions: ['如何衡量库存健康度', '你会怎么分析供应商报价', '用哪些指标看供应链效率'],
+      },
+      {
+        module: '跨部门协同/沟通',
+        weight: 25,
+        how: '考察与生产、品质、研发、销售的跨部门沟通与问题解决。',
+        questions: ['生产计划临时插单怎么处理', '品质和交付冲突你如何协调', '供应商延期你怎么解决'],
+      },
+      {
+        module: '异常处置/抗压',
+        weight: 20,
+        how: '考察面对缺料、爆仓、延迟等突发异常时的应对与责任心。',
+        questions: ['遇到物料断供你怎么应急', '一次订单延误你怎么复盘', '如何平衡多任务优先级'],
+      },
+    ],
+    questions: [
+      { question: '你为什么想进供应链/物流方向？', subtext: '看是否有认知，还是随便投。', tip: '结合专业+对制造业/供应链的理解说。' },
+      { question: '你怎么理解供应链的核心目标？', subtext: '考是否懂「降本、增效、保交付」这一基本盘。', tip: '点出成本/效率/交付三者的权衡。' },
+      { question: '讲讲你处理过的一个复杂协调问题？', subtext: '考跨部门协同与问题解决真实案例。', tip: '用STAR讲清冲突与你的推进动作。' },
+    ],
+    redFlags: ['只懂概念说不清流程', '回避异常与冲突', '对成本/数据无概念'],
+    prepTips: ['学供应链与物流基础知识', '练数据与成本分析', '准备跨部门协作的STAR案例'],
+  },
 ];
 
 /** 行业关键词 → 匹配用别名表，用于识别用户输入的行业 */
@@ -539,6 +577,7 @@ const INDUSTRY_ALIASES: Record<string, string[]> = {
   new_energy: ['新能源', '电池', '储能', '光伏', '风电', '锂电', '氢能', '电化学'],
   telecom: ['通信', '运营商', '网优', '5g', '4g', '基站', '光通信', '传输'],
   public_sector: ['公务员', '公考', '事业单位', '国企', '考编', '编制', '选调', '体制'],
+  supply_chain: ['供应链', '物流', '采购', '计划', '仓储', '供应链管理', '物料', '订单', 'sourcing', 'buyer'],
 };
 
 /** 专业 → 推荐行业的映射，用于生成个性化准备建议 */
@@ -556,10 +595,11 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
   '会计': ['finance', 'hr'],
   '财务': ['finance', 'hr'],
   '人力': ['hr'],
-  '工商': ['hr', 'ecommerce', 'finance'],
-  '市营': ['ecommerce', 'hr'],
-  '物流': ['ecommerce', 'manufacturing'],
-  '电子商务': ['ecommerce'],
+  '工商': ['hr', 'supply_chain', 'ecommerce', 'finance'],
+  '市营': ['ecommerce', 'hr', 'supply_chain'],
+  '物流': ['supply_chain', 'ecommerce', 'manufacturing'],
+  '电子商务': ['supply_chain', 'ecommerce'],
+  '工业工程': ['supply_chain', 'manufacturing'],
   '新媒体': ['ecommerce'],
   '数据': ['data', 'ecommerce'],
   '统计': ['data', 'finance'],
