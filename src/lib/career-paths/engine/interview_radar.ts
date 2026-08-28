@@ -561,6 +561,82 @@ export const ALL_INDUSTRY_RADAR: IndustryRadar[] = [
     redFlags: ['只懂概念说不清流程', '回避异常与冲突', '对成本/数据无概念'],
     prepTips: ['学供应链与物流基础知识', '练数据与成本分析', '准备跨部门协作的STAR案例'],
   },
+  {
+    key: 'defense',
+    label: '军工/国防/保密单位',
+    blurb: '军工与保密单位是桂电电子信息类学生的重要去向，尤其电子/微电子/通信/自动化方向。这里看重「专业过硬 + 政治可靠 + 保密意识 + 长期稳定」，面试会非常关注你的政治素养、家庭背景与保密纪律，与其他行业的考察维度明显不同。',
+    focus: [
+      {
+        module: '专业/技术功底',
+        weight: 35,
+        how: '考察专业课是否扎实，尤其通信、微波、电路、信号等军工核心方向的技术理解。',
+        questions: ['讲讲你掌握的核心专业课', '你对XX技术方向的理解', '用到的工具/平台有哪些'],
+      },
+      {
+        module: '政治素养/可靠性',
+        weight: 30,
+        how: '考察政治立场、家庭背景、品行与忠诚度，军工单位对"人才可靠性"要求极高。',
+        questions: ['你对当前形势怎么看', '家庭成员情况与职业', '为什么选择军工/保密单位'],
+      },
+      {
+        module: '保密意识/纪律',
+        weight: 20,
+        how: '考察对保密纪律的理解，能否守住涉密红线，是否愿意长期扎根保密岗位。',
+        questions: ['了解保密法吗', '对涉密信息会怎么处理', '能否接受脱密期与岗位约束'],
+      },
+      {
+        module: '稳定性/抗压',
+        weight: 15,
+        how: '考察能否接受相对封闭的环境、长期扎根与随时待命，军工岗不追短期跳槽。',
+        questions: ['能否接受去二三线研究所', '对你来说稳定意味着什么', '遇到高强度任务怎么扛'],
+      },
+    ],
+    questions: [
+      { question: '你为什么想进军工保密单位？', subtext: '看是否有真实认同，还是只当保底。', tip: '结合专业对口+价值认同，避免只谈待遇。' },
+      { question: '你如何看待保密纪律？', subtext: '考保密意识与政治红线是否清晰。', tip: '点出对保密法/脱密期的正确认知。' },
+      { question: '讲讲你的家庭与成长环境？', subtext: '军工单位做背景调查，考察品行与稳定性。', tip: '坦诚清晰，体现务实与上进。' },
+    ],
+    redFlags: ['对保密纪律无概念', '回避家庭/背景问题', '只想着大城市赚快钱'],
+    prepTips: ['补军工核心专业课', '了解保密法与脱密期规则', '准备真实可背调的家庭/经历介绍'],
+  },
+  {
+    key: 'medical',
+    label: '医疗器械/医疗大健康',
+    blurb: '医疗器械是桂电电子信息类、生物医学工程类专业的重要去向，行业重器械落地、法规注册与临床结合。这类岗位看重「电子/软件功底 + 医疗行业理解」，面试常结合具体产品与注册法规提问，是电子信息类学生差异化竞争的好赛道。',
+    focus: [
+      {
+        module: '电子/软件/算法功底',
+        weight: 35,
+        how: '考察能否把电路、嵌入式、算法用在实际医疗设备上，是否真做过可落地的产品。',
+        questions: ['讲讲你做的电子/软件项目', '信号处理的难点在哪', '设备稳定性怎么保障'],
+      },
+      {
+        module: '医疗法规/注册',
+        weight: 25,
+        how: '考察对医疗器械注册、GMP、质量体系的了解，医疗行业对合规要求极严。',
+        questions: ['了解医疗器械注册流程吗', '什么是ISO13485', '医疗产品安全怎么把控'],
+      },
+      {
+        module: '临床场景/行业理解',
+        weight: 25,
+        how: '考察是否理解医疗设备实际使用场景、医生需求与临床痛点。',
+        questions: ['你理解的某类设备痛点', '贴近临床怎么改进', '医生会怎么使用这个设备'],
+      },
+      {
+        module: '沟通/跨部门',
+        weight: 15,
+        how: '考察与临床、法规、生产等跨部门协作，医疗产品链条长、环节多。',
+        questions: ['和临床沟通怎么推进', '法规与研发冲突怎么平衡', '如何对齐多方需求'],
+      },
+    ],
+    questions: [
+      { question: '为什么选医疗器械行业？', subtext: '看是有行业认知还是随便投。', tip: '结合电子/生物医学背景谈行业前景。' },
+      { question: '你了解医疗器械注册吗？', subtext: '考对行业合规门槛的认知。', tip: '点出注册/认证/质量体系的关键。' },
+      { question: '讲讲你做过的可落地产品？', subtext: '考真实动手能力与非课程项目经验。', tip: '用STAR讲清需求-实现-验证。' },
+    ],
+    redFlags: ['对医疗法规无概念', '只谈技术不谈落地', '对临床场景毫无理解'],
+    prepTips: ['了解医疗器械注册与质量体系', '补临床场景认知', '准备可落地的电子/软件项目案例'],
+  },
 ];
 
 /** 行业关键词 → 匹配用别名表，用于识别用户输入的行业 */
@@ -578,19 +654,22 @@ const INDUSTRY_ALIASES: Record<string, string[]> = {
   telecom: ['通信', '运营商', '网优', '5g', '4g', '基站', '光通信', '传输'],
   public_sector: ['公务员', '公考', '事业单位', '国企', '考编', '编制', '选调', '体制'],
   supply_chain: ['供应链', '物流', '采购', '计划', '仓储', '供应链管理', '物料', '订单', 'sourcing', 'buyer'],
+  defense: ['军工', '国防', '保密', '兵器', '航天', '航空', '船舶', '研究所', '涉密', '国企军工'],
+  medical: ['医疗', '医疗器械', '大健康', '生物医学', '医院', '健康', '制药', 'iso13485', 'gmр'],
 };
 
 /** 专业 → 推荐行业的映射，用于生成个性化准备建议 */
 const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
   '计算机': ['software', 'data', 'semiconductor'],
   '软件': ['software', 'data'],
-  '通信': ['software', 'semiconductor', 'telecom'],
-  '电子': ['semiconductor', 'software', 'automotive'],
-  '微电子': ['semiconductor'],
-  '集成电路': ['semiconductor'],
-  '机械': ['manufacturing', 'automotive'],
-  '机电': ['manufacturing', 'automotive', 'semiconductor'],
+  '通信': ['software', 'semiconductor', 'telecom', 'defense'],
+  '电子': ['semiconductor', 'software', 'automotive', 'defense', 'medical'],
+  '微电子': ['semiconductor', 'defense'],
+  '集成电路': ['semiconductor', 'defense'],
+  '机械': ['manufacturing', 'automotive', 'medical'],
+  '机电': ['manufacturing', 'automotive', 'semiconductor', 'medical'],
   '车辆': ['automotive', 'manufacturing'],
+  '生物医学': ['medical'],
   '金融': ['finance'],
   '会计': ['finance', 'hr'],
   '财务': ['finance', 'hr'],
