@@ -17,13 +17,50 @@ import {
 import {
   User, GraduationCap, Briefcase, FolderGit2, Wrench,
   Plus, Trash2, Eye, Sparkles, Save,
-  X, MessageCircle, Bot, Send,
+  X, MessageCircle, Bot, Send, ShieldAlert,
 } from 'lucide-react';
 import {
   Resume, ResumeBasicInfo, ResumeEducation, ResumeExperience,
   ResumeProject, ResumeSkill, ResumeCertification,
   createEmptyResume, uid, SKILL_LEVEL_LABELS, DEGREE_OPTIONS,
 } from '@/types/resume';
+
+/* ─── 真实性红线（四真）质检结果类型 ─── */
+interface TruthRisk {
+  level: 'high' | 'medium' | 'low';
+  rule: string;
+  snippet: string;
+  why: string;
+  fix: string;
+}
+interface TruthReport {
+  riskCount: number;
+  highCount: number;
+  verdict: 'verifiable' | 'needs_fix' | 'high_risk';
+  risks: TruthRisk[];
+  summary: string;
+}
+
+/* ─── 能力翻译 + 叙事权重（A3）结果类型 ─── */
+interface NarrLayer {
+  layer: 'industry' | 'hard' | 'soft';
+  label: string;
+  score: number;
+  weight: number;
+  signals: string[];
+  gap: string;
+}
+interface NarrTranslation {
+  original: string;
+  translated: string;
+  rationale: string;
+}
+interface NarrReport {
+  emphasis: { value: number; focus: string; placement: string };
+  layers: NarrLayer[];
+  translations: NarrTranslation[];
+  summary: string;
+}
 
 /* ─── 基本避免重复渲染 ─── */
 type SectionKey = 'basic' | 'education' | 'experience' | 'projects' | 'skills' | 'certifications';
@@ -147,6 +184,36 @@ function ExperienceEditor({ items, onChange }: {
   const update = (id: string, field: keyof ResumeExperience, value: string | boolean | string[]) =>
     onChange(items.map(i => i.id === id ? { ...i, [field]: value } : i));
 
+  // 真实性红线（四真）质检状态
+  const [truthReport, setTruthReport] = useState<Record<string, TruthReport>>({});
+  const [truthLoading, setTruthLoading] = useState<Record<string, boolean>>({});
+  const [truthError, setTruthError] = useState<Record<string, string>>({});
+
+  const runTruthCheck = async (id: string, description: string) => {
+    if (!description.trim()) return;
+    setTruthLoading((p) => ({ ...p, [id]: true }));
+    setTruthError((p) => {
+      const n = { ...p }; delete n[id]; return n;
+    });
+    try {
+      const res = await fetch('/api/resume/truth-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ experience: description.trim() }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setTruthReport((p) => ({ ...p, [id]: data.data }));
+      } else {
+        setTruthError((p) => ({ ...p, [id]: data.error || '真实性质检失败，请重试' }));
+      }
+    } catch {
+      setTruthError((p) => ({ ...p, [id]: '网络错误，请稍后重试' }));
+    } finally {
+      setTruthLoading((p) => ({ ...p, [id]: false }));
+    }
+  };
+
   return (
     <div className="space-y-4">
       {items.map((item) => (
@@ -188,6 +255,48 @@ function ExperienceEditor({ items, onChange }: {
               <Label className="text-xs">工作描述</Label>
               <Textarea value={item.description} onChange={e => update(item.id, 'description', e.target.value)} placeholder="主要职责和成果" rows={3} />
             </div>
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs border-[#F59E0B] text-[#D97706] hover:bg-[#FFFBEB]"
+                disabled={!item.description.trim() || truthLoading[item.id]}
+                onClick={() => runTruthCheck(item.id, item.description)}
+              >
+                <ShieldAlert className="w-3.5 h-3.5 mr-1" />
+                {truthLoading[item.id] ? '检测中…' : (truthReport[item.id] ? '重新检测' : '真实性红线检测')}
+              </Button>
+              {truthError[item.id] && (
+                <span className="text-xs text-red-500">{truthError[item.id]}</span>
+              )}
+            </div>
+            {truthReport[item.id] && (
+              <div className={`rounded-lg border p-3 text-xs leading-relaxed ${
+                truthReport[item.id].verdict === 'verifiable'
+                  ? 'border-green-200 bg-green-50 text-green-700'
+                  : truthReport[item.id].verdict === 'high_risk'
+                    ? 'border-red-200 bg-red-50 text-red-700'
+                    : 'border-amber-200 bg-amber-50 text-amber-700'
+              }`}>
+                <div className="flex items-center gap-1.5 font-medium mb-1">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  {truthReport[item.id].verdict === 'verifiable'
+                    ? `真实性合规（风险 ${truthReport[item.id].riskCount} 处）`
+                    : truthReport[item.id].verdict === 'high_risk'
+                      ? `真实性高风险（${truthReport[item.id].highCount} 处高险）`
+                      : '真实性需收敛（边缘风险）'}
+                </div>
+                <p className="mb-1.5">{truthReport[item.id].summary}</p>
+                {truthReport[item.id].risks.slice(0, 3).map((r, ri) => (
+                  <div key={ri} className="mt-1.5 border-t border-current/20 pt-1.5">
+                    <div className="font-semibold">「{r.snippet}」</div>
+                    <div>{r.why}</div>
+                    <div className="text-current/90">💡 {r.fix}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}
@@ -208,6 +317,34 @@ function ProjectEditor({ items, onChange }: {
     onChange(items.map(i => i.id === id ? { ...i, [field]: value } : i));
   const updateTechs = (id: string, raw: string) =>
     onChange(items.map(i => i.id === id ? { ...i, technologies: raw.split(',').map(t => t.trim()).filter(Boolean) } : i));
+
+  // 能力翻译 + 叙事权重（A3）质检状态
+  const [narrReport, setNarrReport] = useState<Record<string, NarrReport>>({});
+  const [narrLoading, setNarrLoading] = useState<Record<string, boolean>>({});
+  const [narrError, setNarrError] = useState<Record<string, string>>({});
+
+  const runNarrativeCheck = async (id: string, description: string) => {
+    if (!description.trim()) return;
+    setNarrLoading((p) => ({ ...p, [id]: true }));
+    setNarrError((p) => { const n = { ...p }; delete n[id]; return n; });
+    try {
+      const res = await fetch('/api/resume/narrative-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ experience: description.trim() }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setNarrReport((p) => ({ ...p, [id]: data.data }));
+      } else {
+        setNarrError((p) => ({ ...p, [id]: data.error || '能力翻译诊断失败，请重试' }));
+      }
+    } catch {
+      setNarrError((p) => ({ ...p, [id]: '网络错误，请稍后重试' }));
+    } finally {
+      setNarrLoading((p) => ({ ...p, [id]: false }));
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -248,6 +385,59 @@ function ProjectEditor({ items, onChange }: {
               <Label className="text-xs">技术栈（逗号分隔）</Label>
               <Input value={item.technologies.join(', ')} onChange={e => updateTechs(item.id, e.target.value)} placeholder="React, TypeScript, Supabase" />
             </div>
+            <div className="flex items-center gap-2 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs border-[#165DFF] text-[#165DFF] hover:bg-[#EFF6FF]"
+                disabled={!item.description.trim() || narrLoading[item.id]}
+                onClick={() => runNarrativeCheck(item.id, item.description)}
+              >
+                <Sparkles className="w-3.5 h-3.5 mr-1" />
+                {narrLoading[item.id] ? '诊断中…' : (narrReport[item.id] ? '重新诊断' : '能力翻译 & 叙事诊断')}
+              </Button>
+              {narrError[item.id] && (
+                <span className="text-xs text-red-500">{narrError[item.id]}</span>
+              )}
+            </div>
+            {narrReport[item.id] && (
+              <div className="rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] p-3 text-xs leading-relaxed text-[#1E3A8A]">
+                <div className="flex items-center gap-1.5 font-medium mb-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#165DFF]" />
+                  叙事价值 {narrReport[item.id].emphasis.value}/100
+                  <span className="text-[#64748B] font-normal">· {narrReport[item.id].emphasis.placement}</span>
+                </div>
+                {narrReport[item.id].translations[0] && (
+                  <div className="mb-1.5">
+                    <div className="font-semibold">企业语言改写：</div>
+                    <div className="text-[#1E3A8A]">{narrReport[item.id].translations[0].translated}</div>
+                  </div>
+                )}
+                {narrReport[item.id].translations[0] && (
+                  <p className="text-[#334155] mb-1.5">{narrReport[item.id].translations[0].rationale}</p>
+                )}
+                <div className="flex flex-wrap gap-1.5 my-1.5">
+                  {narrReport[item.id].layers.map((l) => (
+                    <span key={l.layer} className={
+                      `inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] ${
+                        l.score >= 70 ? 'border-green-200 bg-green-50 text-green-700'
+                          : l.score >= 50 ? 'border-amber-200 bg-amber-50 text-amber-700'
+                            : 'border-red-200 bg-red-50 text-red-600'
+                      }`
+                    }>
+                      {l.label} {l.score}/100 (权重{l.weight}%)
+                    </span>
+                  ))}
+                </div>
+                {narrReport[item.id].layers.filter(l => l.gap).slice(0, 1).map((l) => (
+                  <p key={l.layer} className="text-[#334155] border-t border-[#BFDBFE]/50 pt-1.5 mt-1.5">
+                    <span className="font-semibold">缺口：</span>{l.gap}
+                  </p>
+                ))}
+                <p className="text-[#334155] mt-1.5">{narrReport[item.id].emphasis.focus}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}
