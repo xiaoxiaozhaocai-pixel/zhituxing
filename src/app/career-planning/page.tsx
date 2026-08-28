@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import type { CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognitive_correction';
 import type { InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
 import type { SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
+import type { PathPlanReport } from '@/lib/career-paths/engine/career_path_planner';
 import {
   Sparkles,
   Loader2,
@@ -49,6 +50,11 @@ export default function CareerPlanningPage() {
   const [subtextResult, setSubtextResult] = useState<SubtextReport | null>(null);
   const [subtextLoading, setSubtextLoading] = useState(false);
   const [subtextError, setSubtextError] = useState<string | null>(null);
+  const [pathDirection, setPathDirection] = useState('');
+  const [pathSkills, setPathSkills] = useState('');
+  const [pathResult, setPathResult] = useState<PathPlanReport | null>(null);
+  const [pathLoading, setPathLoading] = useState(false);
+  const [pathError, setPathError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!major.trim() || !grade) {
@@ -171,6 +177,38 @@ export default function CareerPlanningPage() {
       setSubtextError('网络错误，请稍后重试');
     } finally {
       setSubtextLoading(false);
+    }
+  };
+
+  const handleCareerPath = async () => {
+    if (!major.trim()) {
+      setPathError('请先在上方填写你的专业');
+      return;
+    }
+    setPathLoading(true);
+    setPathError(null);
+    setPathResult(null);
+    try {
+      const res = await fetch('/api/career-planning/career-path', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          major: major.trim(),
+          grade,
+          direction: pathDirection.trim(),
+          skills: pathSkills.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setPathResult(data.data);
+      } else {
+        setPathError(data.error || data.message || '成长路线生成失败，请重试');
+      }
+    } catch {
+      setPathError('网络错误，请稍后重试');
+    } finally {
+      setPathLoading(false);
     }
   };
 
@@ -381,6 +419,46 @@ export default function CareerPlanningPage() {
                     <>
                       <Lightbulb className="w-5 h-5 mr-2" />
                       潜台词词条库：把黑话翻译成人话
+                    </>
+                  )}
+                </Button>
+
+                <div className="mt-2">
+                  <Label className="text-sm font-medium text-[#475569] mb-2 block">
+                    成长路线 <span className="text-[#94A3B8]">（从这一步，推下一步，可留空方向/技能）</span>
+                  </Label>
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      placeholder="想去的方向（可留空，如：数据分析 / 后端 / 产品）"
+                      value={pathDirection}
+                      onChange={(e) => setPathDirection(e.target.value)}
+                      className="rounded-xl border-[#E2E8F0] focus:border-[#3D7FFF]"
+                    />
+                    <Input
+                      placeholder="已有的技能/经历（可留空，如：会Python、做过校级项目）"
+                      value={pathSkills}
+                      onChange={(e) => setPathSkills(e.target.value)}
+                      className="rounded-xl border-[#E2E8F0] focus:border-[#3D7FFF]"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-semibold py-4 border-[#10B981]/30 text-[#10B981] hover:bg-[#10B981]/5"
+                  onClick={handleCareerPath}
+                  disabled={pathLoading}
+                  type="button"
+                >
+                  {pathLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      规划中...
+                    </>
+                  ) : (
+                    <>
+                      <Compass className="w-5 h-5 mr-2" />
+                      成长路线：从这一步，推下一步
                     </>
                   )}
                 </Button>
@@ -652,6 +730,72 @@ export default function CareerPlanningPage() {
                         没在这些文本里识别到典型黑话。想让拆解更准，可以把完整的 JD、简历或面试问题整段贴进来。
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* 成长路线结果展示 */}
+          {(pathResult || pathError) && (
+            <div className="mt-8">
+              {pathError && (
+                <Card className="border-red-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm">{pathError}</div>
+                  </CardContent>
+                </Card>
+              )}
+              {pathResult && (
+                <Card className="border-[#10B981]/20 shadow-lg shadow-[#10B981]/5">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-3 mb-5">
+                      <div className="w-10 h-10 shrink-0 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
+                        <Compass className="w-5 h-5 text-[#10B981]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-[#1E293B]">成长路线：{pathResult.trackLabel}</h3>
+                        <p className="text-sm text-[#64748B] mt-1">{pathResult.summary}</p>
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {pathResult.jobDirections.map((d, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-[#10B981]/5 text-[#10B981] text-xs rounded-md border border-[#10B981]/15">{d}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 当前阶段 */}
+                    <div className="mb-5 rounded-xl bg-[#10B981]/5 border border-[#10B981]/15 p-4">
+                      <p className="text-xs font-medium text-[#10B981] uppercase tracking-wide mb-1">当前阶段</p>
+                      <p className="text-sm font-semibold text-[#1E293B]">{pathResult.currentStageLabel}</p>
+                    </div>
+
+                    {/* 路线步骤 */}
+                    <div className="relative pl-5">
+                      <div className="absolute left-0 top-1 bottom-1 w-px bg-[#E2E8F0]" />
+                      <div className="space-y-5">
+                        {pathResult.roadmap.map((step, i) => (
+                          <div key={i} className="relative">
+                            <span className="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-[#10B981] ring-4 ring-[#10B981]/10" />
+                            <p className="text-sm font-semibold text-[#1E293B]">{step.stageLabel}</p>
+                            <p className="text-sm text-[#475569] mt-1">{step.focus}</p>
+                            <ul className="mt-2 space-y-1.5">
+                              {step.actions.map((a, j) => (
+                                <li key={j} className="flex items-start gap-2 text-sm text-[#64748B]">
+                                  <span className="text-[#10B981] mt-0.5">›</span>
+                                  <span>{a}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="mt-2 rounded-lg bg-gray-50 p-3 text-xs">
+                              <span className="font-medium text-[#475569]">完成标准：</span>
+                              <span className="text-[#64748B]">{step.milestone}</span>
+                            </div>
+                            <p className="mt-1.5 text-xs text-[#3D7FFF]">下一步：{step.nextHint}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               )}
