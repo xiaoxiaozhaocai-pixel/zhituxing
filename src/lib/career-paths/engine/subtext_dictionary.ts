@@ -137,6 +137,18 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '向上管理': { category: 'workplace', surface: '同事说「要向上管理」', meaning: '暗示老板决策依赖下属推动，职场政治较重。', risk: 'medium', advice: '了解团队汇报风格，学会主动同步，别闷头干活。' },
   '兄弟团队': { category: 'workplace', surface: '领导说「我们是兄弟」', meaning: '用感情代替制度，可能是要你无边界付出。', risk: 'medium', advice: '看制度与合同，别被「兄弟」绑定。' },
   '忠诚度': { category: 'workplace', surface: '领导强调「忠诚」', meaning: '可能希望员工稳定安分、别跳槽，重视服从。', risk: 'medium', advice: '了解真实回报与成长，别只谈忠诚不谈报酬。' },
+  '稳定性好': { category: 'jd', surface: '写的是「稳定性好、能长期」', meaning: '担心你频繁跳槽，希望安分稳扎，接纳度要打问号。', risk: 'medium', advice: '想清楚自己是否愿意长待，别为「稳定」接受廉价。' },
+  '具备一定基础': { category: 'jd', surface: '写的是「具备一定基础即可」', meaning: '门槛不高，可能偏执行/重复性，成长空间有限。', risk: 'low', advice: '判断是否值得长期深耕，别只图入行先做。' },
+  '你住哪里': { category: 'interview', surface: '问「你住哪里/通勤多久」', meaning: '常是考察稳定性，或聊家常般试探你的生活状态。', risk: 'low', advice: '如实简单回答即可，不必过度展开，留意是不是在评估离职风险。' },
+  '和你说实话': { category: 'interview', surface: '面试官说「和你说实话」', meaning: '往往接下来要坦白短板或压价，先做预期管理。', risk: 'medium', advice: '认真听完，若涉及薪资别退让太狠，结合自身底线判断。' },
+  '你为什么离职': { category: 'interview', surface: '问「为什么从上家离职」', meaning: '考察跳槽动机、稳定性与倾向，判断是否会重蹈覆辙。', risk: 'medium', advice: '说客观+成长向原因，别抱怨前司，给出你的选择逻辑。' },
+  '我们节奏快': { category: 'interview', surface: '说「我们节奏很快」', meaning: '提前暗示高强度、加班多，要你做好心理准备。', risk: 'medium', advice: '确认团队规模与加班规律，衡量体能与精力能否承受。' },
+  '参加过很多活动': { category: 'resume', surface: '简历写「参加过很多活动」', meaning: '泛泛不聚焦，HR 看不出你能力和岗位的匹配点。', risk: 'medium', advice: '挑1-2个跟岗位相关的活动，用结果和数据写具体。' },
+  '熟悉Office': { category: 'resume', surface: '简历写「熟悉Office」', meaning: '泛化且低门槛，几乎等于没说，体现不出差异化。', risk: 'low', advice: '改成具体技能（如透视表/宏/数据分析），落到可验证。' },
+  '有较强的学习能力': { category: 'resume', surface: '简历写「学习能力强」', meaning: '万金油式表述，HR 更想看能证明学习能力的证据。', risk: 'medium', advice: '用一门自学的技能、一个速成的项目来佐证，别空喊。' },
+  '格局要大': { category: 'workplace', surface: '领导说「格局要大」', meaning: '常是让你别太计较回报、多做少说，先别谈钱。', risk: 'medium', advice: '该争取的合理权益还是要争取，别拿「格局」自我绑架。' },
+  '今年很关键': { category: 'workplace', surface: '领导说「今年很关键」', meaning: '往往意味着业务冲刺、压力大，要你拼命顶上。', risk: 'medium', advice: '了解目标与考核，别只被「关键」带动，看实际投入产出。' },
+  '先干起来': { category: 'workplace', surface: '说「先干起来再说」', meaning: '暗示快执行、别纠结细节或方案，重视速度胜过质量。', risk: 'medium', advice: '问清边界与验收标准，重要事项先对齐，避免返工。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
