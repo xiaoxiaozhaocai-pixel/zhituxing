@@ -4,6 +4,8 @@
 import { RawProfile, EncodedProfile, MatchReport } from '@/lib/career-paths/types';
 import { encodeProfile } from '@/lib/career-paths/engine/condition_encoder';
 import { getMatchReport } from '@/lib/career-paths/engine/rule_engine';
+import { interviewRadar, type InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
+import { decodeSubtext, type SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
 
 /** 从自然语言文本提取画像字段 */
 export function extractProfileFromText(text: string): Partial<RawProfile> {
@@ -322,4 +324,137 @@ export function handleTruthChatQuery(text: string): {
   }
   const targetJob = extractTargetJob(text);
   return { needsMoreInfo: false, reply: '', experience: exp, targetJob };
+}
+
+// ============================================================
+// 行业雷达 · chat 接入（B1 面试行业雷达）
+// 复用 interview_radar.ts 引擎：从自然语言抽行业/专业 → 跑引擎 → 格式化回复。
+// 零模型成本，输出「解释 + 路径 + 建议」，不输出单一分数。
+// ============================================================
+
+/** 专业关键词（用于从自然语言里反推推荐行业） */
+const MAJOR_HINTS = [
+  '计算机', '软件', '通信', '电子', '微电子', '集成电路', '机械', '机电', '车辆',
+  '金融', '会计', '财务', '人力', '工商', '市营', '物流', '电子商务', '新媒体',
+  '数据', '统计', '信管',
+];
+
+function extractMajorFromText(text: string): string | undefined {
+  for (const m of MAJOR_HINTS) {
+    if (text.includes(m)) return m;
+  }
+  return undefined;
+}
+
+/** 把行业雷达报告格式化成 chat 可读文本 */
+function formatRadarForChat(report: InterviewRadarReport): string {
+  const radar = report.radar;
+  const lines: string[] = [];
+  lines.push(`🎯 ${report.matchedIndustry}面试雷达`);
+  lines.push(`一句话：${report.summary}`);
+  if (report.majorImplication) lines.push(`📌 ${report.majorImplication}`);
+  lines.push('');
+  lines.push('【考察重点】');
+  radar.focus.forEach((f) => lines.push(`• ${f.module}（权重 ${f.weight}%）：${f.how}`));
+  lines.push('');
+  lines.push('【高频问题 + 潜台词】');
+  radar.questions.slice(0, 5).forEach((q) => lines.push(`• Q：${q.question}\n  ⚡ 潜台词：${q.subtext}\n  💡 ${q.tip}`));
+  if (radar.redFlags.length > 0) {
+    lines.push('');
+    lines.push('【雷区·别踩】');
+    radar.redFlags.slice(0, 3).forEach((r) => lines.push(`• ${r}`));
+  }
+  if (radar.prepTips.length > 0) {
+    lines.push('');
+    lines.push('【准备建议】');
+    radar.prepTips.slice(0, 3).forEach((t) => lines.push(`• ${t}`));
+  }
+  return lines.join('\n');
+}
+
+/** B1：面试行业雷达 chat 查询（抽行业/专业 → 跑引擎） */
+export function handleInterviewRadarChatQuery(text: string): {
+  needsMoreInfo: boolean;
+  reply: string;
+  industry?: string;
+  major?: string;
+  report?: InterviewRadarReport;
+} {
+  const cleaned = (text || '').trim();
+  if (!cleaned) {
+    return { needsMoreInfo: true, reply: '告诉我你想投的行业或你的专业，我帮你拆这个行业面试会重点考察什么～' };
+  }
+  const major = extractMajorFromText(cleaned);
+  const report = interviewRadar(cleaned, major);
+  if (report.needsMoreInfo) {
+    return { needsMoreInfo: true, reply: report.summary, industry: undefined, major, report };
+  }
+  return { needsMoreInfo: false, reply: formatRadarForChat(report), industry: report.input, major, report };
+}
+
+// ============================================================
+// 潜台词 · chat 接入（B2 潜台词词条库）
+// 复用 subtext_dictionary.ts 引擎：从自然语言抽要分析的文本 → decodeSubtext → 格式化回复。
+// 零模型成本，只做「翻译」不替用户拔高，守四真。
+// ============================================================
+
+/** 从自然语言抽取「要拆解的文本」：优先引号内 / 冒号后，否则剥掉提问前缀 */
+function extractSubtextText(text: string): string | null {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return null;
+  // 引号内内容优先（「"..."」「'...'」「『...』」「“...”」）
+  const quoted = trimmed.match(/[“"'『「]([^”"'』」]{1,30})[”"'』」]/);
+  if (quoted && quoted[1]) return quoted[1].trim();
+  // 冒号后正文（用户常写「帮我翻译这句话：弹性工作是福报吗」）
+  const sepIdx = trimmed.indexOf('：') >= 0 ? trimmed.indexOf('：') : trimmed.indexOf(':');
+  if (sepIdx >= 0) {
+    const body = trimmed.slice(sepIdx + 1).trim();
+    if (body) return body;
+  }
+  // 否则剥掉提问/指令前缀
+  let body = trimmed
+    .replace(/^(帮我|请|麻烦|能不能|可以|我想|我想让你|你帮我|请问|问一下)\s*/g, '')
+    .replace(/^(翻译|拆解|解释|看看|分析|理解|说说|讲讲|读一下|说一下|查一下|品味|读懂)\s*(一下|下|一下这个|一句话|这句话|这话|这段|这个|它|上面|这句)?\s*(潜台词|黑话|话外音|言外之意|背后意思|是什么意思|是啥意思|啥意思|真实意思|意思)?(是|有)?\s*/g, '')
+    .trim();
+  return body.length >= 2 ? body : null;
+}
+
+/** 把潜台词报告格式化成 chat 可读文本 */
+function formatSubtextForChat(report: SubtextReport): string {
+  const lines: string[] = [];
+  lines.push(`🕵️ 潜台词翻译`);
+  lines.push(`一句话：${report.summary}`);
+  lines.push('');
+  report.items.forEach((it) => {
+    lines.push(`【${it.categoryLabel}】${it.phrase}`);
+    lines.push(`  表面：${it.surface}`);
+    lines.push(`  人话：${it.meaning}`);
+    lines.push(`  风险：${it.risk === 'high' ? '🔴 高' : it.risk === 'medium' ? '🟡 中' : '🟢 低'}`);
+    lines.push(`  建议：${it.advice}`);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+/** B2：潜台词 chat 查询（抽文本 → decodeSubtext） */
+export function handleSubtextChatQuery(text: string): {
+  needsMoreInfo: boolean;
+  reply: string;
+  input?: string;
+  report?: SubtextReport;
+} {
+  const target = extractSubtextText(text);
+  if (!target) {
+    return { needsMoreInfo: true, reply: '把你想拆的那段话发我（JD、简历、面试问题、公司黑话都可以），我帮你翻译成人话～' };
+  }
+  const report = decodeSubtext(target);
+  if (!report.items || report.items.length === 0) {
+    return {
+      needsMoreInfo: true,
+      reply: `${report.summary}\n\n也可以直接把整段 JD、简历句或面试问题发我，我帮你逐句拆。`,
+      input: target,
+      report,
+    };
+  }
+  return { needsMoreInfo: false, reply: formatSubtextForChat(report), input: target, report };
 }

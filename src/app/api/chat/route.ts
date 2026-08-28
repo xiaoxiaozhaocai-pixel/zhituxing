@@ -44,7 +44,7 @@ import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
 import { matchJobs, type MatchResult } from '@/lib/matching-service';
-import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery } from '@/lib/career-paths/chat-adapter';
+import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery, handleInterviewRadarChatQuery, handleSubtextChatQuery } from '@/lib/career-paths/chat-adapter';
 import { analyzeNarrative } from '@/lib/career-paths/engine/narrative';
 import { walkTruthfulness } from '@/lib/career-paths/engine/truthfulness';
 import { resolvePersona, personaFallbackReply, personaPromptFragment, type PersonaProfile } from '@/lib/career-paths/engine/persona';
@@ -612,6 +612,8 @@ export async function POST(request: NextRequest) {
         ['jobs', ['岗位', '职位', '求职', '找工作', '薪资', '工资', 'JD', '深圳', '北京', '上海', '广州', '杭州', '投递', '校招', '秋招', '春招', '内推']],
         ['narrative_check', ['翻译这段经历', '把经历写成', '能力翻译', '这段经历怎么说', '帮我包装', '包装这段经历', '表述这段经历', '体现什么能力', '这段经历价值', '翻译经历', '怎么把这段经历', '写成企业', '这段经历能体现', '怎么描述经历', '经历怎么写']],
         ['truth_check', ['真实吗', '会翻车', '背调', '吹牛', '夸大', '虚构', '编造', '真实发生', '这样写行不行', '会不会被问', '经得起', '能背调', '不真实', '有没有夸大', '真实吗这段', '这段真实']],
+        ['interview_radar', ['面试会问什么', '会被问什么', '会问什么', '面试重点', '考场什么', '会考什么', '考察什么', '考察重点', '重点考察', '面试雷达', '行业面试', '行业会考', '面试怎么准备', '面试方向', '面试问题', '面试会重点']],
+        ['subtext_detect', ['潜台词', '黑话', '话里有话', '言外之意', '话外音', '背后意思', '翻译成人话', '真实意思', '意思是什么', '什么意思', '啥意思', '抗压能力强', '弹性工作', '薪资面议', '词条库']],
       ];
       
       // 统计每个意图的命中关键词数
@@ -634,7 +636,7 @@ export async function POST(request: NextRequest) {
       
       // 按分数排序，同分时按优先级：career_paths > (job_match/narrative_check/truth_check) > assessment > interview > decision > career > competency > jobs
       const INTENT_PRIORITY: Record<string, number> = {
-        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7,
+        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7, 'interview_radar': 7, 'subtext_detect': 7,
         'assessment': 6,
         'interview': 5, 'decision': 4, 'career': 3,
         'competency': 2, 'jobs': 1,
@@ -710,6 +712,59 @@ export async function POST(request: NextRequest) {
         async start(controller) {
           for (const seg of segs) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      return new Response(stream, { headers: SSE_HEADERS });
+    }
+
+    // ============================================================
+    // 面试行业雷达 / 潜台词词条库 · chat 接入（B1 / B2）
+    // 本地启发式引擎，先于 DeepSeek，零模型成本；命中即返回，不降级。
+    // ============================================================
+    if (resolvedBotType === 'interview_radar' || resolvedBotType === 'subtext_detect') {
+      const isRadar = resolvedBotType === 'interview_radar';
+      const ctx = isRadar
+        ? handleInterviewRadarChatQuery(message || '')
+        : handleSubtextChatQuery(message || '');
+      const encoder = new TextEncoder();
+
+      // 信息不全 → 只返文本追问，不降级到 DeepSeek
+      if (ctx.needsMoreInfo) {
+        const segs = ctx.reply.match(/[^。！？\n]+[。！？\n]?/g) || [ctx.reply];
+        const stream = new ReadableStream({
+          async start(controller) {
+            for (const seg of segs) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+            }
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          }
+        });
+        return new Response(stream, { headers: SSE_HEADERS });
+      }
+
+      // 有结果 → SSE 文本流 + dispatch 卡片事件（引导到功能页）
+      const responseText = ctx.reply;
+      const segs = responseText.match(/[^。！？\n]+[。！？\n]?/g) || [responseText];
+      const dispatchCard = DISPATCH_CARDS[resolvedBotType];
+      const stream = new ReadableStream({
+        async start(controller) {
+          for (const seg of segs) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', content: seg })}\n\n`));
+          }
+          if (dispatchCard) {
+            const dispatchEvent = `event: dispatch\ndata: ${JSON.stringify({
+              intent: resolvedBotType,
+              title: dispatchCard.title,
+              description: dispatchCard.description,
+              actionLabel: dispatchCard.actionLabel,
+              tabId: dispatchCard.tabId,
+              url: dispatchCard.url,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(dispatchEvent));
           }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();

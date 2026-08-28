@@ -51,6 +51,20 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     actionLabel: '查看匹配结果',
     tabId: 'career-paths',
   },
+  interview_radar: {
+    title: '🎯 检测到你想提前摸清面试',
+    description: '要不要拆一下你目标行业的面试重点？提前知道会被问什么，面试不慌。',
+    actionLabel: '查看行业面试雷达',
+    tabId: 'career',
+    url: '/career-planning',
+  },
+  subtext_detect: {
+    title: '🕵️ 检测到你想读潜台词',
+    description: '要不要把JD、简历、面试里的黑话翻成人话？警惕风险，提前避坑。',
+    actionLabel: '打开潜台词词条库',
+    tabId: 'career',
+    url: '/career-planning',
+  },
   skill: {
     title: '🔧 检测到你想提升技能',
     description: '要不要做个技能画像分析？找到你的优势和短板。',
