@@ -130,8 +130,8 @@ export default function HomeClient() {
           </h1>
 
           <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-10 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
-            我是小职，你的AI朋友 👋<br />
-            不用焦虑，一步步陪你走。
+            我是小职，懂桂电的AI朋友 👋<br />
+            想清楚方向，一步步陪你走。
           </p>
 
           {/* ============================================================
