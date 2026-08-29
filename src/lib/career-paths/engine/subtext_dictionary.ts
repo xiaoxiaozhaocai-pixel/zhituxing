@@ -149,6 +149,38 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '格局要大': { category: 'workplace', surface: '领导说「格局要大」', meaning: '常是让你别太计较回报、多做少说，先别谈钱。', risk: 'medium', advice: '该争取的合理权益还是要争取，别拿「格局」自我绑架。' },
   '今年很关键': { category: 'workplace', surface: '领导说「今年很关键」', meaning: '往往意味着业务冲刺、压力大，要你拼命顶上。', risk: 'medium', advice: '了解目标与考核，别只被「关键」带动，看实际投入产出。' },
   '先干起来': { category: 'workplace', surface: '说「先干起来再说」', meaning: '暗示快执行、别纠结细节或方案，重视速度胜过质量。', risk: 'medium', advice: '问清边界与验收标准，重要事项先对齐，避免返工。' },
+
+  // ============ JD 黑话 增补2 ============
+  '储备干部': { category: 'jd', surface: '写的是「储备干部/后备力量」', meaning: '多是基层轮岗，未来未必有管理岗，可能被当廉价储备。', risk: 'medium', advice: '问清轮岗周期、定岗方向、培养机制，别被「干部」title 忽悠。' },
+  '待遇优厚': { category: 'jd', surface: '写的是「待遇优厚」', meaning: '常是吸引投递的包装，实际薪酬未必高。', risk: 'medium', advice: '问清具体薪资构成与区间，别只被「优厚」吸引。' },
+  '工作压力小': { category: 'jd', surface: '写的是「工作压力小、轻松」', meaning: '可能业务萎缩、节奏慢，长期成长性存疑。', risk: 'medium', advice: '结合公司实际业务判断，别只图「轻松」透支职业发展。' },
+  '复合型人才': { category: 'jd', surface: '写的是「复合型人才/多面手」', meaning: '想让你身兼数职、一人多岗，职能边界模糊。', risk: 'high', advice: '问清具体职责与工作量，别把「复合」当成无限加班的理由。' },
+  '行业前景好': { category: 'jd', surface: '写的是「行业前景好」', meaning: '可能行业偏小/冷门，前景需你自行甄别。', risk: 'low', advice: '查一下行业真实规模与增长，别只听「前景」就入场。' },
+  '内部晋升快': { category: 'jd', surface: '写的是「内部晋升快」', meaning: '常是画饼，晋升未必真兑现，多用于吸引应届。', risk: 'medium', advice: '问清晋升标准与真实案例，别只听「机会多」。' },
+  '相关经验优先': { category: 'jd', surface: '写的是「相关经验优先」', meaning: '说明对经验不是硬性门槛，应届有可迁移能力即可尝试。', risk: 'low', advice: '把可迁移经历写突出，别因「经验优先」就放弃投递。' },
+
+  // ============ 面试潜台词 增补2 ============
+  '你什么时候能到岗': { category: 'interview', surface: '问「什么时候能到岗」', meaning: '越急着到这岗，越可能岗位缺人、要你顶上。', risk: 'medium', advice: '据实回答可到岗时间，也借机了解岗位时间压力。' },
+  '你身边有同学签了吗': { category: 'interview', surface: '问「同学签了吗/还在找吗」', meaning: '对比行情、判断你可选余地，可能用来压价或试探。', risk: 'medium', advice: '如实但不必暴露太多信息，守住自己的底线与节奏。' },
+  '你还有什么要补充': { category: 'interview', surface: '问「还有什么要补充的吗」', meaning: '给你最后展示或补充信息的机会，也看你的收尾表达。', risk: 'low', advice: '补一个与岗位相关的亮点或澄清，别只说「没有了」。' },
+  '你能接受驻场吗': { category: 'interview', surface: '问「接受驻场/长期外派」', meaning: '可能要去客户现场，出差多、生活节奏受扰。', risk: 'medium', advice: '问清驻场周期、地点与补助，评估能否接受。' },
+  '你了解我们行业吗': { category: 'interview', surface: '问「了解我们行业吗」', meaning: '考察你对行业是否做功课，是否真的想入这行。', risk: 'medium', advice: '说清行业现状与趋势、这个公司的位置，别只说「想尝试」。' },
+  '你怎么看待加班': { category: 'interview', surface: '问「如何看待加班」', meaning: '判断你的工作观与期望，也是对加班预期的摸底。', risk: 'medium', advice: '表达合理配合+注重效率，别表忠也别说死。' },
+
+  // ============ 简历潜台词 增补2 ============
+  '精通': { category: 'resume', surface: '简历写「精通XX」', meaning: 'HR 最忌「精通」，会现场深挖，一不小心就露怯。', risk: 'high', advice: '能说清原理与应用场景才算「精通」，否则改用「熟练/掌握」。' },
+  '相关课程': { category: 'resume', surface: '简历写「修过XX课程」', meaning: '泛泛罗列，HR 看不出你真实能力与岗位匹配。', risk: 'low', advice: '挑与岗位相关的课程+结合成果写，别整段罗列。' },
+  '组织能力强': { category: 'resume', surface: '简历写「组织协调能力强」', meaning: '空泛自评，缺实证支撑，说服力打折扣。', risk: 'medium', advice: '用具体活动/项目成果证明组织能力，别只堆词。' },
+  '优秀毕业生': { category: 'resume', surface: '简历写「优秀毕业生/三好学生」', meaning: 'HR 会看含金量，也可能认为偏向学术、缺实践。', risk: 'low', advice: '注明获得比例与标准，同时补充实践/项目经历。' },
+  '表达能力强': { category: 'resume', surface: '简历写「表达能力好」', meaning: '泛化自评，HR 需要你当场证明。', risk: 'medium', advice: '用演讲/答辩/沟通成果佐证，别只给自己贴标签。' },
+
+  // ============ 职场黑话 增补2 ============
+  '能者多劳': { category: 'workplace', surface: '领导说「能者多劳」', meaning: '多干不一定多得，可能把活儿都压给能干的人。', risk: 'high', advice: '明确边界与回报，别让「多劳」变成「白劳」。' },
+  '临时顶一下': { category: 'workplace', surface: '让你「临时顶一下/补位」', meaning: '可能有人员流失、岗位缺人，要你额外承担。', risk: 'medium', advice: '问清顶岗时长与职责，别让自己的本职被挤压。' },
+  '我们是个大家庭': { category: 'workplace', surface: '领导说「我们是一个大家庭」', meaning: '用感情代替制度与回报，可能要求你无边界付出。', risk: 'medium', advice: '看薪酬与制度是否匹配，别被「家人」绑架。' },
+  '以结果为导向': { category: 'workplace', surface: '领导强调「以结果为导向」', meaning: '重产出、过程可能被忽略，目标压力大。', risk: 'medium', advice: '问清考核标准与资源支持，别只管数字不管落地。' },
+  '先委屈一下': { category: 'workplace', surface: '说「先委屈一下/过渡一下」', meaning: '可能是短期压价或临时安排，后续未必兑现。', risk: 'medium', advice: '问清过渡期限与后续安排，别空等「以后」。' },
+  '大家都很拼': { category: 'workplace', surface: '同事说「我们都很拼」', meaning: '加班普遍、内卷重，氛围可能紧张。', risk: 'medium', advice: '了解真实工作强度与回报，评估是否适合自己。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
