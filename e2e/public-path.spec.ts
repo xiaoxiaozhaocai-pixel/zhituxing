@@ -70,10 +70,19 @@ test.describe('Phase 3 · 公共路径功能回归', () => {
 
     test('JSON-LD 结构化数据', async ({ page }) => {
       await page.goto('/insights');
-      const jsonld = page.locator('script[type="application/ld+json"]');
-      await expect(jsonld).toHaveCount(1);
-      // script 的 innerText 为空，需用 textContent() 读原始 JSON 字符串
-      expect((await jsonld.first().textContent()) ?? '').toContain('职途星求职判断力内容库');
+      // 页面上可能注入多个 JSON-LD（布局/元数据），任一个命中即通过
+      const jsonlds = page.locator('script[type="application/ld+json"]');
+      const count = await jsonlds.count();
+      expect(count).toBeGreaterThan(0);
+      let matched = false;
+      for (let i = 0; i < count; i++) {
+        const t = await jsonlds.nth(i).textContent();
+        if (t && t.includes('职途星求职判断力内容库')) {
+          matched = true;
+          break;
+        }
+      }
+      expect(matched).toBe(true);
     });
   });
 
