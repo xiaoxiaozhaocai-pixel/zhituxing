@@ -865,6 +865,44 @@ export const ALL_INDUSTRY_RADAR: IndustryRadar[] = [
     redFlags: ['分不清显示技术路线', '只背原理不懂工艺', '对前沿只看噱头不做判断'],
     prepTips: ['系统学光学/光电子基础', '对比 LCD/OLED/MicroLED 技术路线', '准备1个能讲深的光学项目'],
   },
+    {
+    key: 'robotics',
+    label: '机器人/智能装备',
+    blurb: '机器人是桂电机电/自动化/计算机交叉主方向，覆盖工业机器人、移动机器人、机器视觉、伺服与运动控制，对口自动化、机械设计、电气、计算机等专业。面试考控制/传感/运动学与机器视觉，也考具身智能、人形机器人等前沿判断。',
+    focus: [
+      {
+        module: '控制/运动学',
+        weight: 35,
+        how: '问控制原理、坐标系、运动学、轨迹规划。',
+        questions: ['机械臂如何做轨迹规划', 'PID控制的核心思想是什么', '旋转矩阵与欧拉角的区别'],
+      },
+      {
+        module: '传感/视觉',
+        weight: 30,
+        how: '问传感器、机器视觉、点云、标定与融合。',
+        questions: ['激光雷达与视觉怎么融合', '相机标定的作用是什么', '机器视觉在工业自动化里怎么落地'],
+      },
+      {
+        module: '前沿/技术判断',
+        weight: 20,
+        how: '考具身智能、人形机器人、AI驱动等判断。',
+        questions: ['你怎么看人形机器人的前景', '具身智能的核心难点在哪', '工业机器人会被AI如何改变'],
+      },
+      {
+        module: '项目/实践',
+        weight: 15,
+        how: '考机器人竞赛、科研、工程实践。',
+        questions: ['讲一个你做过的机器人/智能装备项目', '这个控制或视觉问题你怎么解决'],
+      },
+    ],
+    questions: [
+      { question: '机械臂如何做轨迹规划？', subtext: '考运动学与规划。', tip: '从正逆运动学、关节空间/笛卡尔空间规划讲，别只背名词。' },
+      { question: '你怎么看人形机器人/具身智能？', subtext: '考前沿判断。', tip: '从技术成熟度、成本、落地场景综合判断，避免只追热点。' },
+      { question: '讲一个你做过的机器人项目？', subtext: '看真实实践。', tip: '讲清控制/传感/视觉方法与结果。' },
+    ],
+    redFlags: ['只知名词不懂运动学/控制原理', '对具身智能只追噱头不做判断', '讲不出自己做过的真实项目'],
+    prepTips: ['系统学自动控制/运动学基础', '对比工业/移动/人形机器人技术路线', '准备1个能讲深的机器人或智能装备项目'],
+  },
 ];
 
 /** 行业关键词 → 匹配用别名表，用于识别用户输入的行业 */
@@ -890,18 +928,19 @@ const INDUSTRY_ALIASES: Record<string, string[]> = {
   environment: ['环保', '绿色能源', '碳中和', '碳管理', '双碳', '环境工程', '清洁能源', '可持续发展', 'esg'],
   consumer_electronics: ['消费电子', '数码', '手机', '智能硬件', '电子制造', '整机', 'OEM', 'ODM', '国货', '硬件产品'],
   optical: ['光电', '光学', '显示', '面板', '激光', '光电子', 'display', '光通信', '显示模组', 'MicroLED', 'OLED', 'LCD'],
+  robotics: ['机器人', '工业机器人', '移动机器人', '人形机器人', '机器视觉', '智能装备', '机器人工程', '自动化', '伺服', '机械臂', '具身智能', 'agv'],
 };
 
 /** 专业 → 推荐行业的映射，用于生成个性化准备建议 */
 const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
-  '计算机': ['software', 'data', 'semiconductor'],
+  '计算机': ['software', 'data', 'semiconductor', 'robotics'],
   '软件': ['software', 'data'],
   '通信': ['software', 'semiconductor', 'telecom', 'defense'],
   '电子': ['semiconductor', 'software', 'automotive', 'defense', 'medical'],
   '微电子': ['semiconductor', 'defense'],
   '集成电路': ['semiconductor', 'defense'],
-  '机械': ['manufacturing', 'automotive', 'medical'],
-  '机电': ['manufacturing', 'automotive', 'semiconductor', 'medical'],
+  '机械': ['manufacturing', 'automotive', 'medical', 'robotics'],
+  '机电': ['manufacturing', 'automotive', 'semiconductor', 'medical', 'robotics'],
   '车辆': ['automotive', 'manufacturing'],
   '生物医学': ['medical'],
   '金融': ['finance'],
@@ -931,10 +970,11 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
   '环境': ['environment', 'new_energy'],
   '化工': ['environment', 'medical'],
   '能动': ['environment', 'new_energy', 'manufacturing'],
-  '电气': ['environment', 'new_energy', 'semiconductor', 'manufacturing'],
+  '电气': ['environment', 'new_energy', 'semiconductor', 'manufacturing', 'robotics'],
   '电子信息': ['semiconductor', 'consumer_electronics', 'optical', 'telecom'],
   '光电': ['optical', 'semiconductor', 'defense'],
   '光信息': ['optical', 'telecom', 'semiconductor'],
+  '自动化': ['robotics', 'manufacturing', 'semiconductor'],
 };
 
 /** 识别行业 key */
