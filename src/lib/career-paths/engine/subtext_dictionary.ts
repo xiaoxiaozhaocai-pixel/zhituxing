@@ -224,6 +224,32 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '摸鱼': { category: 'workplace', surface: '同事说「摸鱼/躺平划水」', meaning: '自嘲或反讽工作强度，也可能团队确实偏松、成长慢。', risk: 'low', advice: '结合真实节奏判断，别轻易给自己贴上「混」的标签。' },
   '内耗': { category: 'workplace', surface: '同事/领导说「内耗」', meaning: '团队协作不畅、流程低效，沟通成本高。', risk: 'medium', advice: '了解团队分工与决策流程，评估自己能否适应这种环境。' },
   '对结果负责': { category: 'workplace', surface: '领导强调「对结果负责/向上负责」', meaning: '考核导向强，过程可能被忽略，也可能忽视员工合理诉求。', risk: 'medium', advice: '问清考核指标与资源支持，别只管数字不管落地。' },
+
+  // ============ JD 黑话 增补2 ============
+  '有竞争力的薪资': { category: 'jd', surface: '写的是「薪酬有竞争力」', meaning: '常是兜底话术，未必真顶尖，要用具体区间和数据验证。', risk: 'medium', advice: '直接问清薪资区间+构成，别被「竞争力」三个字带偏。' },
+  '定期团建': { category: 'jd', surface: '写的是「定期团建、员工旅游」', meaning: '常是加班文化的佐料，说明工作节奏偏紧、靠福利找补。', risk: 'low', advice: '结合业务状态判断，别把「团建多」当成「轻松」。' },
+  '期权激励': { category: 'jd', surface: '写的是「期权/股权激励」', meaning: '未上市期权可能难兑现，别把期权当头薪去算收入。', risk: 'medium', advice: '问清兑现条件、行权价与上市预期，权当加分别当保底。' },
+  '不加班': { category: 'jd', surface: '写的是「不加班、朝九晚五」', meaning: '明说「不加班」反而要核实，可能是变相加班或岗位确实清闲。', risk: 'medium', advice: '问清实际上下班时间、加班补偿，别只信「不加班」三个字。' },
+  '快速学习': { category: 'jd', surface: '写的是「具备快速学习能力」', meaning: '可能暗示缺带教、要你自学扛活，或岗位门槛低靠学习凑。', risk: 'medium', advice: '问清培训与带教机制，别让「快速学习」变成你独自扛雷。' },
+
+  // ============ 面试潜台词 增补2 ============
+  '你有没有男女朋友': { category: 'interview', surface: '问「有没有对象/结婚没」', meaning: '窥探稳定性与生育/离职倾向，属边缘题，非工作能力考察。', risk: 'medium', advice: '可坦然回应并拉回业务，若对方持续追问，说明公司文化需警惕。' },
+  '你家里是做什么的': { category: 'interview', surface: '问「家里是做什么的」', meaning: '评估你的经济压力、稳定性与求职动机，而非家庭背景本身。', risk: 'low', advice: '简洁回应，别透露过多隐私，把话题引回岗位匹配。' },
+  '你愿意从基层做起吗': { category: 'interview', surface: '问「愿不愿意从基层做起」', meaning: '可能是真培养，也可能是让你干初级杂活，需区分。', risk: 'medium', advice: '问清基层的内容、轮岗路径与培养机制，别只听「从基层锻炼」。' },
+  '你考虑过考研考公吗': { category: 'interview', surface: '问「有没有考研/考公打算」', meaning: '评估你的入职稳定性与长期意愿，看你是否「骑驴找马」。', risk: 'medium', advice: '明确表达就业意向与稳定性，别让对方觉得你可能中途离开。' },
+  '你怎么看竞品': { category: 'interview', surface: '问「怎么看我们和竞品的关系」', meaning: '考察行业认知与表达能力，也在看你是否客观、会否踩雷。', risk: 'low', advice: '讲客观差异与优势，别去贬低竞品，给出有观点的中立判断。' },
+
+  // ============ 简历潜台词 增补2 ============
+  '有相关经验': { category: 'resume', surface: '简历写「有相关经验」', meaning: '空泛表述，HR 会追问具体做过什么、多久、参与多深。', risk: 'low', advice: '写清具体项目、角色与量化产出，别用「有经验」一带而过。' },
+  '全勤': { category: 'resume', surface: '简历写「全勤/无缺勤」', meaning: '可能暗示实习无薪或含金量低，也可能只是习惯用词。', risk: 'low', advice: '作补充说明即可，别当核心亮点，重点放具体能力与结果。' },
+
+  // ============ 职场黑话 增补2 ============
+  '赋能': { category: 'workplace', surface: '公司/领导提「赋能、给你资源」', meaning: '常是让你扛更多不明确的活，或画饼补偿。', risk: 'medium', advice: '问清具体要做什么、能给什么资源支持，别被「赋能」架空。' },
+  '颗粒度': { category: 'workplace', surface: '领导要「颗粒度再细一点」', meaning: '要求细节做到位，可能暗示你之前的输出太粗放。', risk: 'low', advice: '主动把方案拆细、给到可执行层级，展示专业度。' },
+  '抓手': { category: 'workplace', surface: '上级说「要找抓手」', meaning: '常是没想清具体动作时的话术，别被「重要抓手」唬住。', risk: 'low', advice: '追问抓手的具体落点与衡量标准，逼出可执行方案。' },
+  '闭环': { category: 'workplace', surface: '要求「形成闭环、闭环负责」', meaning: '负责到底、有始有终，警惕被单方面抗下责任。', risk: 'medium', advice: '界定你的职责范围与协作方，别把「闭环」签成全包。' },
+  '落地': { category: 'workplace', surface: '要求「落地、落地执行」', meaning: '别谈虚的，要能执行出来，警惕只给压力不给资源。', risk: 'low', advice: '给出执行路径与所需资源，别只承诺结果。' },
+  '主人翁精神': { category: 'workplace', surface: '强调「主人翁精神」', meaning: '暗示你要多干活、少抱怨、替公司着想，别把自己当打工的。', risk: 'medium', advice: '该争取资源/利益时明确表达，别把「主人翁」当无底线付出的借口。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
