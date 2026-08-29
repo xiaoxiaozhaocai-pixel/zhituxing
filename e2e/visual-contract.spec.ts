@@ -50,6 +50,7 @@ async function readBackgroundLightness(page: import('@playwright/test').Page): P
   return page.evaluate(() => {
     const raw = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
     const ctx = document.createElement('canvas').getContext('2d');
+    if (!ctx) return { light: false, raw };
     ctx.fillStyle = raw;                // 若 raw 合法，浏览器会解析；非法则保持默认黑
     const norm = ctx.fillStyle;         // 归一化后通常为 #rrggbb 或 rgba(r,g,b,a)
     let r = 0, g = 0, b = 0;
@@ -114,7 +115,6 @@ test.describe('Phase 5 · 视觉契约', () => {
       const primary = await readCssVar(page, '--primary');
       expect(primary.toLowerCase()).toBe('#165dff');
       // 页面背景 token 为浅色（蓝白基调）
-      const bg = await readCssVar(page, '--background');
       const bgLight = await readBackgroundLightness(page);
       expect(bgLight.light, `--background 应为浅色, raw=${bgLight.raw}`).toBe(true);
     });
