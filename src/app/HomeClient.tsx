@@ -9,6 +9,7 @@ import {
   Sparkles, Building2, Mic, Search, Shield, Zap, FileText,
   MessageSquare, Target, Layers,
 } from 'lucide-react';
+import { listIndustryRadars } from '@/lib/career-paths/engine/interview_radar';
 
 // ============================================================
 // 数据：痛点共鸣 + 5核心链路 + 数据信任
@@ -73,11 +74,9 @@ const corePaths = [
   },
 ];
 
-const trustStats = [
-  { icon: <Building2 className="w-5 h-5" />, value: '20,000+', label: '真实JD', desc: '覆盖27大行业' },
-  { icon: <Shield className="w-5 h-5" />, value: '免费', label: '基础对话', desc: '高级分析会员专享' },
-  { icon: <Zap className="w-5 h-5" />, value: '全链路', label: '求职陪伴', desc: '先想清楚，再投简历' },
-];
+// 首页「数据信任区」逐项数据：第一项「真实JD」由组件内 useEffect 动态拉取
+// /api/jobs/stats（真实岗位总数）+ 引擎行业雷达数，避免硬编码失真（历史曾写死
+// 「20,000+ / 27大行业」，与真实库不符，违反守四真）。后两项为产品定位文案，保持不变。
 
 // ============================================================
 // 首页组件 — 主界面：小职对话 = 唯一主入口；5核心链路；岗位信息
@@ -87,6 +86,40 @@ export default function HomeClient() {
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
+
+  // 数据信任区 · 真实JD动态化（守四真，避免写死失真数字）
+  const [jdStats, setJdStats] = useState({ total: '8,930+', industries: 16 });
+
+  useEffect(() => {
+    let active = true;
+    // 行业覆盖数：读引擎真实行业雷达（纯本地知识库，条目均可背调）
+    try {
+      setJdStats((prev) => ({ ...prev, industries: listIndustryRadars().length }));
+    } catch {
+      /* 保持兜底 */
+    }
+    // JD真实总数：拉取岗位库统计接口
+    fetch('/api/jobs/stats')
+      .then((r) => r.json())
+      .then((d) => {
+        if (active && d?.ok && typeof d?.data?.total === 'number') {
+          setJdStats((prev) => ({
+            ...prev,
+            total: new Intl.NumberFormat('en-US').format(d.data.total) + '+',
+          }));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const trustStats = [
+    { icon: <Building2 className="w-5 h-5" />, value: jdStats.total, label: '真实JD', desc: `覆盖${jdStats.industries}大行业` },
+    { icon: <Shield className="w-5 h-5" />, value: '免费', label: '基础对话', desc: '高级分析会员专享' },
+    { icon: <Zap className="w-5 h-5" />, value: '全链路', label: '求职陪伴', desc: '先想清楚，再投简历' },
+  ];
 
   return (
     <div className="min-h-screen bg-white text-[#1E293B]">

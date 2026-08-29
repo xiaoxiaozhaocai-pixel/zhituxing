@@ -7,20 +7,15 @@ import { NextRequest } from 'next/server';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { z } from 'zod';
 import { getEmployerSession } from '@/lib/employer-auth';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
-
 export async function GET(request: NextRequest) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
+  const supabase = getSupabaseAdmin();
   if (!session.companyId) return jsonError('FORBIDDEN', '请先完成企业认证');
 
   const { searchParams } = new URL(request.url);
@@ -46,6 +41,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
+  const supabase = getSupabaseAdmin();
   if (!session.companyId) return jsonError('FORBIDDEN', '请先完成企业认证');
 
   const body = await request.json();

@@ -461,7 +461,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">全行业岗位百科</h1>
-              <p className="text-blue-100 text-lg">收录10000+真实校招/应届生岗位JD，助你找到最适合自己的工作</p>
+              <p className="text-blue-100 text-lg">收录海量真实校招/应届生岗位JD，助你找到最适合自己的工作</p>
             </div>
             <div className="flex gap-3">
               <Button 

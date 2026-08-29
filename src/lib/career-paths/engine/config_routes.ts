@@ -168,8 +168,8 @@ export const CONFIG: ConfigData = {
         scenario: '桂电IT方向第二大路径。IT/EE类 + 基础技能 + 至少1段实习 → 前端/测试/运维岗，桂电门槛友好的方向',
         gap_advice: {
           MAJ_CAT: 'IT/EE类专业对口，非技术专业需额外准备',
-          SKILL_SET: '前端建议掌握HTML/CSS/JavaScript/React/Vue；测试建议掌握自动化测试/性能测试',
-          INT_NUM: '建议找1段IT公司实习，测试或开发助理均可',
+          SKILL_SET: '前端建议掌握HTML/CSS/JavaScript/React/Vue；测试建议掌握自动化测试/性能测试；运维建议掌握Linux/Docker/K8s基础',
+          INT_NUM: '建议找1段IT公司实习，测试/运维/开发助理均可',
         },
       },
     },

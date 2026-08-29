@@ -49,6 +49,7 @@ export default function CareerPlanningPage() {
   const [radarLoading, setRadarLoading] = useState(false);
   const [radarError, setRadarError] = useState<string | null>(null);
   const [radarIndustry, setRadarIndustry] = useState('');
+  const [radarIndustries, setRadarIndustries] = useState<{ key: string; label: string; blurb: string }[]>([]);
   const [subtextInput, setSubtextInput] = useState('');
   const [subtextResult, setSubtextResult] = useState<SubtextReport | null>(null);
   const [subtextLoading, setSubtextLoading] = useState(false);
@@ -58,7 +59,7 @@ export default function CareerPlanningPage() {
   const [glossaryLoading, setGlossaryLoading] = useState(false);
   const [glossaryError, setGlossaryError] = useState<string | null>(null);
   const [capJobs, setCapJobs] = useState<{ id: string; name: string; category: string }[]>([]);
-  const [capJobsLoading, setCapJobsLoading] = useState(false);
+  const [, setCapJobsLoading] = useState(false);
   const [capTargetJob, setCapTargetJob] = useState('');
   const [capExperience, setCapExperience] = useState('');
   const [capResult, setCapResult] = useState<CapabilityReport | null>(null);
@@ -241,6 +242,21 @@ export default function CareerPlanningPage() {
       }
     };
     loadCapJobs();
+
+    // 面试行业雷达：动态加载引擎支持的行业列表（供下拉选择，引擎新增行业自动可见）
+    const loadRadarIndustries = async () => {
+      try {
+        const res = await fetch('/api/career-planning/interview-radar');
+        const data = await res.json();
+        if (alive && data.success && Array.isArray(data.data)) {
+          setRadarIndustries(data.data);
+        }
+      } catch {
+        // 加载失败不阻塞页面，下拉回退为空
+      }
+    };
+    loadRadarIndustries();
+
     return () => {
       alive = false;
     };
@@ -471,14 +487,13 @@ export default function CareerPlanningPage() {
                       <SelectValue placeholder="选择目标行业（可留空）" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="互联网/软件开发">互联网/软件开发</SelectItem>
-                      <SelectItem value="电子/半导体/芯片">电子/半导体/芯片</SelectItem>
-                      <SelectItem value="汽车/新能源车">汽车/新能源车</SelectItem>
-                      <SelectItem value="金融/银行/证券">金融/银行/证券</SelectItem>
-                      <SelectItem value="人力资源/HR">人力资源/HR</SelectItem>
-                      <SelectItem value="电商/新媒体/运营">电商/新媒体/运营</SelectItem>
-                      <SelectItem value="数据分析/BI">数据分析/BI</SelectItem>
-                      <SelectItem value="制造/智能制造/机械">制造/智能制造/机械</SelectItem>
+                      {radarIndustries.length > 0 ? (
+                        radarIndustries.map((ind) => (
+                          <SelectItem key={ind.key} value={ind.key}>{ind.label}</SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="software">互联网/软件开发</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

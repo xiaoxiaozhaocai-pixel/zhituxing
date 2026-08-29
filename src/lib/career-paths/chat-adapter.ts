@@ -413,7 +413,7 @@ function extractSubtextText(text: string): string | null {
     if (body) return body;
   }
   // 否则剥掉提问/指令前缀
-  let body = trimmed
+  const body = trimmed
     .replace(/^(帮我|请|麻烦|能不能|可以|我想|我想让你|你帮我|请问|问一下)\s*/g, '')
     .replace(/^(翻译|拆解|解释|看看|分析|理解|说说|讲讲|读一下|说一下|查一下|品味|读懂)\s*(一下|下|一下这个|一句话|这句话|这话|这段|这个|它|上面|这句)?\s*(潜台词|黑话|话外音|言外之意|背后意思|是什么意思|是啥意思|啥意思|真实意思|意思)?(是|有)?\s*/g, '')
     .trim();
@@ -495,7 +495,7 @@ function extractCapExperienceFromText(text: string, targetJob?: string): string 
     if (body.length >= 4) return body;
   }
   // 剥掉岗位词 + 提问前缀
-  let body = trimmed
+  const body = trimmed
     .replace(targetJob || '', '')
     .replace(/^(帮我|请|麻烦|能不能|可以|我想|我想让你|你帮我|请问|问一下|想看看|帮我看看|看看|分析一下|评估一下|对标一下|测一下)\s*/g, '')
     .replace(/(对标|目标|想做|求职|匹配|看看|分析|评估|面向|适合|意向|岗位|方向|值多少|还差什么|还差|差距|怎么样|如何)\s*/g, '')
