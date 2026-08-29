@@ -903,6 +903,44 @@ export const ALL_INDUSTRY_RADAR: IndustryRadar[] = [
     redFlags: ['只知名词不懂运动学/控制原理', '对具身智能只追噱头不做判断', '讲不出自己做过的真实项目'],
     prepTips: ['系统学自动控制/运动学基础', '对比工业/移动/人形机器人技术路线', '准备1个能讲深的机器人或智能装备项目'],
   },
+  {
+    key: 'ai',
+    label: '人工智能/AI大模型',
+    blurb: 'AI是桂电计算机/人工智能/数据方向的核心赛道，覆盖大模型、AIGC、机器学习、深度学习、多模态等，对口计算机、人工智能、数据科学、软件、电子信息等专业。面试考算法与深度学习原理，也考大模型落地、算力成本与合规风险等前沿判断。',
+    focus: [
+      {
+        module: '机器学习/深度学习',
+        weight: 35,
+        how: '问监督/无监督、模型评估、特征工程、经典算法原理。',
+        questions: ['过拟合怎么解决', '决策树与随机森林的区别', '怎么评估一个分类模型'],
+      },
+      {
+        module: '大模型/AIGC',
+        weight: 30,
+        how: '问Transformer、提示词工程、RAG、微调、多模态、生成式应用。',
+        questions: ['Transformer的核心思想是什么', '什么是RAG，它解决什么问题', '提示词工程和微调有什么区别'],
+      },
+      {
+        module: '工程/编程',
+        weight: 20,
+        how: '考编程能力、数据结构、算法题、分布式训练与工具链。',
+        questions: ['手写一个排序算法并分析复杂度', '怎么用代码实现一个简单的分类器', '深度学习训练用了哪些框架和调优手段'],
+      },
+      {
+        module: '业务/前沿判断',
+        weight: 15,
+        how: '考AI落地场景、行业机会、成本/合规、商业化判断。',
+        questions: ['你怎么看大模型在企业的落地价值', 'AI落地有哪些成本和合规风险', '哪些行业会被AI最先改变'],
+      },
+    ],
+    questions: [
+      { question: '讲一个你用过的机器学习/大模型项目？', subtext: '看真实实践。', tip: '讲清数据、模型、评估指标与结果，别只讲用了什么框架。' },
+      { question: '你怎么看大模型/AIGC的产业落地和风险？', subtext: '考前沿判断。', tip: '从技术成熟度、成本、合规、商业场景综合判断，避免只追热点。' },
+      { question: 'Transformer的核心思想是什么？', subtext: '考基础原理。', tip: '讲注意力机制、自回归、并行计算，别只背名词。' },
+    ],
+    redFlags: ['只追AI热点不懂原理', '讲不出自己训过/调过的模型', '对算力成本/合规风险无概念'],
+    prepTips: ['系统学机器学习/深度学习基础', '做一个能讲深的小项目（如RAG/图像分类）', '关注大模型落地场景与成本/合规判断'],
+  },
 ];
 
 /** 行业关键词 → 匹配用别名表，用于识别用户输入的行业 */
@@ -929,12 +967,14 @@ const INDUSTRY_ALIASES: Record<string, string[]> = {
   consumer_electronics: ['消费电子', '数码', '手机', '智能硬件', '电子制造', '整机', 'OEM', 'ODM', '国货', '硬件产品'],
   optical: ['光电', '光学', '显示', '面板', '激光', '光电子', 'display', '光通信', '显示模组', 'MicroLED', 'OLED', 'LCD'],
   robotics: ['机器人', '工业机器人', '移动机器人', '人形机器人', '机器视觉', '智能装备', '机器人工程', '自动化', '伺服', '机械臂', '具身智能', 'agv'],
+
+  ai: ['人工智能', '大模型', '机器学习', '深度学习', 'aigc', '生成式', '模型训练', '神经网络', '算法工程师'],
 };
 
 /** 专业 → 推荐行业的映射，用于生成个性化准备建议 */
 const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
-  '计算机': ['software', 'data', 'semiconductor', 'robotics'],
-  '软件': ['software', 'data'],
+  '计算机': ['software', 'data', 'semiconductor', 'robotics', 'ai'],
+  '软件': ['software', 'data', 'ai'],
   '通信': ['software', 'semiconductor', 'telecom', 'defense'],
   '电子': ['semiconductor', 'software', 'automotive', 'defense', 'medical'],
   '微电子': ['semiconductor', 'defense'],
@@ -953,7 +993,7 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
   '电子商务': ['supply_chain', 'ecommerce'],
   '工业工程': ['supply_chain', 'manufacturing'],
   '新媒体': ['ecommerce'],
-  '数据': ['data', 'ecommerce'],
+  '数据': ['data', 'ecommerce', 'ai'],
   '统计': ['data', 'finance'],
   '信管': ['data', 'ecommerce', 'finance'],
   '材料': ['new_energy', 'semiconductor', 'manufacturing'],
@@ -975,6 +1015,8 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
   '光电': ['optical', 'semiconductor', 'defense'],
   '光信息': ['optical', 'telecom', 'semiconductor'],
   '自动化': ['robotics', 'manufacturing', 'semiconductor'],
+  '人工智能': ['ai', 'data', 'software'],
+  '智能科学': ['ai', 'robotics', 'data'],
 };
 
 /** 识别行业 key */
