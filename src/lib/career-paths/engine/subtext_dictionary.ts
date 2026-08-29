@@ -209,6 +209,21 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '我在忙': { category: 'workplace', surface: '同事/领导回你「我在忙」', meaning: '可能是真忙，也可能是委婉拒绝或不想被打扰，需结合上下文。', risk: 'low', advice: '判断对方态度，重要事项改用留痕方式同步，别硬凑。' },
   '你多辛苦一下': { category: 'workplace', surface: '领导说「这段时间辛苦一下」', meaning: '委婉要求你多加班、多承担，往往缺乏对等的回报承诺。', risk: 'medium', advice: '了解是否有补偿与边界，别把「辛苦」当白做，关键成果留痕。' },
   '先放一放': { category: 'workplace', surface: '领导说「先放一放/缓一缓」', meaning: '项目优先级被调低或方向有变，你的投入可能暂时被搁置。', risk: 'low', advice: '问清原因与后续计划，别自己默默等待或重复劳动。' },
+
+  // ============ 潜台词 增补5 ============
+  '晋升通道': { category: 'jd', surface: '写的是「晋升通道明确/晋升空间大」', meaning: '可能是确有机制，也可能只是画饼，需看是否有真实标准与案例。', risk: 'medium', advice: '问清晋升标准、周期与真实案例，别只听口号就信了。' },
+  '公司平台大': { category: 'jd', surface: '写的是「平台大/资源多」', meaning: '大公司分工细、能见世面，但也可能晋升慢、螺丝钉化。', risk: 'low', advice: '结合岗位是否核心来判断，别只看「平台」二字就盲目看好。' },
+  '免费三餐': { category: 'jd', surface: '写的是「包三餐/免费班车/房补」', meaning: '福利能对冲部分薪资，但也要合计总包与加班是否变相抵消。', risk: 'low', advice: '把福利折算进总包对比，别被「包吃住」冲昏头。' },
+  '年终奖': { category: 'jd', surface: '写的是「年底双薪/年终奖」', meaning: '年终奖往往与绩效挂钩、浮动大，不能当固定收入。', risk: 'medium', advice: '问清发放标准、基数与可能浮动范围，别按全额算预期。' },
+  '你的核心竞争力是什么': { category: 'interview', surface: '问「你的核心竞争力」', meaning: '考察自我定位与差异化，判断你能否说清自己的独到价值。', risk: 'medium', advice: '结合岗位说 1-2 个能验证的差异化能力+例证，别堆形容词。' },
+  '你怎么看待重复性工作': { category: 'interview', surface: '问「如何看待基础/重复性工作」', meaning: '判断你能否接受执行向、琐碎的活，考察心态。', risk: 'medium', advice: '表达能踏实打底+会主动提炼优化，别轻慢「基础活」。' },
+  '你有没有想过其他方向': { category: 'interview', surface: '问「有没有考虑其他方向/职业」', meaning: '试探你求职是否坚定、是否把岗位当过渡。', risk: 'medium', advice: '坦诚表达兴趣但强调对本岗位的认同，别让面试官怀疑诚意。' },
+  '你期望的发展路径是什么': { category: 'interview', surface: '问「期望的发展/晋升路径」', meaning: '考察成长规划与稳定性，判断你是否会干不久就跑。', risk: 'low', advice: '给出与岗位匹配的阶段性目标，别说得太空或太不切实际。' },
+  '在校期间': { category: 'resume', surface: '简历写「在校期间」', meaning: '泛泛罗列时间线，HR 需要你聚焦具体成果，别流水账。', risk: 'low', advice: '挑与岗位相关的经历+结果写具体，砍掉无信息量描述。' },
+  '有一定了解': { category: 'resume', surface: '简历写「有一定了解/了解即可」', meaning: '模糊表述，HR 会怀疑你深度不足、是否真上手过。', risk: 'medium', advice: '改成具体能做什么+一个实例，别只写「了解」。' },
+  '摸鱼': { category: 'workplace', surface: '同事说「摸鱼/躺平划水」', meaning: '自嘲或反讽工作强度，也可能团队确实偏松、成长慢。', risk: 'low', advice: '结合真实节奏判断，别轻易给自己贴上「混」的标签。' },
+  '内耗': { category: 'workplace', surface: '同事/领导说「内耗」', meaning: '团队协作不畅、流程低效，沟通成本高。', risk: 'medium', advice: '了解团队分工与决策流程，评估自己能否适应这种环境。' },
+  '对结果负责': { category: 'workplace', surface: '领导强调「对结果负责/向上负责」', meaning: '考核导向强，过程可能被忽略，也可能忽视员工合理诉求。', risk: 'medium', advice: '问清考核指标与资源支持，别只管数字不管落地。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
