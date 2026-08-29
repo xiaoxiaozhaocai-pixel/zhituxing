@@ -37,7 +37,7 @@ function jsonReq(body?: unknown): NextRequest {
 function invalidJsonReq(): NextRequest {
   return { json: async () => { throw new Error('invalid json'); } } as unknown as NextRequest;
 }
-function bodyOf(res: Response): Promise<any> {
+function bodyOf(res: Response) {
   return res.json();
 }
 function authedUserId(): string {
