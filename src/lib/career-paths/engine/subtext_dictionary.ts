@@ -195,6 +195,20 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '优化': { category: 'workplace', surface: '公司说「组织优化/人员优化」', meaning: '通常是裁员或调岗的委婉说法，需留意岗位是否受影响。', risk: 'high', advice: '问清岗位归属与变动，提前评估风险、做两手准备。' },
   '拥抱变化': { category: 'workplace', surface: '公司说「拥抱变化」', meaning: '往往业务不稳、方向频繁调整，要你能随时接新活。', risk: 'medium', advice: '问清业务稳定度与变化原因，评估长期性。' },
   '先对齐': { category: 'workplace', surface: '领导说「先对齐一下」', meaning: '往往是要统一方向/避免返工，也可能暗示此前有分歧。', risk: 'low', advice: '主动同步关键信息与预期，避免后期反复。' },
+
+  // ============ 潜台词 增补4 ============
+  '可接受应届生': { category: 'jd', surface: '写的是「可接受应届生/无经验也可」', meaning: '门槛不高，但往往薪资偏低、竞争激烈，培养空间未必大。', risk: 'medium', advice: '问清入职后带教与晋升路径，别只图「好进」低估长期价值。' },
+  '岗位急招': { category: 'jd', surface: '写的是「急招/紧急招聘」', meaning: '可能是岗位突然缺人、活紧压力大，或长期招不满才放急招。', risk: 'medium', advice: '问清为何急招、团队现状与入职压力，别踩进「填坑」岗。' },
+  '到岗快优先': { category: 'jd', surface: '写的是「能快速到岗者优先」', meaning: '急切要人补位，项目可能紧张，也暗示用人荒、流动大。', risk: 'medium', advice: '如实报可到岗时间，同时也问清项目强度与团队是否稳定。' },
+  '你最大的成就是什么': { category: 'interview', surface: '问「你最大的成就/高光时刻」', meaning: '考察你是否有拿得出手的经历与叙事能力，也在挖你的价值取向。', risk: 'low', advice: '挑一个与岗位相关、能讲出过程和结果的成就，别只报头衔。' },
+  '你投了哪些公司': { category: 'interview', surface: '问「你还投了哪些公司」', meaning: '试探你的求职结构和比较心理，也可能用来压价、判断诚意。', risk: 'medium', advice: '如实但不必全盘托出，重点表达你对本岗位的兴趣与匹配。' },
+  '你的短板是什么': { category: 'interview', surface: '问「你的弱点/短板」', meaning: '压力测试，看自我认知与坦诚度，判断你是否能正视问题。', risk: 'medium', advice: '说一个真实可控的短板+正在改进的动作，别说「我太追求完美」。' },
+  '你想和什么样的团队共事': { category: 'interview', surface: '问「期望的团队/工作氛围」', meaning: '考察你与现有团队风格是否契合，判断你能否融入。', risk: 'low', advice: '结合岗位真实氛围回答，别立一个明显冲突的人设。' },
+  '团队合作': { category: 'resume', surface: '简历写「有团队合作精神」', meaning: '万金油式自评，HR 更想听你具体协作了什么、解决了什么。', risk: 'medium', advice: '用一个跨角色协作、共同达成的结果来佐证，别只贴标签。' },
+  '沟通能力强': { category: 'resume', surface: '简历写「沟通协调能力强」', meaning: '泛化自评，HR 需要你当场用真实沟通成果证明。', risk: 'medium', advice: '举一个谈判/宣讲/跨部门推进的实例，别只给自己打分。' },
+  '我在忙': { category: 'workplace', surface: '同事/领导回你「我在忙」', meaning: '可能是真忙，也可能是委婉拒绝或不想被打扰，需结合上下文。', risk: 'low', advice: '判断对方态度，重要事项改用留痕方式同步，别硬凑。' },
+  '你多辛苦一下': { category: 'workplace', surface: '领导说「这段时间辛苦一下」', meaning: '委婉要求你多加班、多承担，往往缺乏对等的回报承诺。', risk: 'medium', advice: '了解是否有补偿与边界，别把「辛苦」当白做，关键成果留痕。' },
+  '先放一放': { category: 'workplace', surface: '领导说「先放一放/缓一缓」', meaning: '项目优先级被调低或方向有变，你的投入可能暂时被搁置。', risk: 'low', advice: '问清原因与后续计划，别自己默默等待或重复劳动。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
