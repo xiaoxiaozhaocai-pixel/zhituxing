@@ -8,22 +8,17 @@ import { NextRequest } from 'next/server';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { z } from 'zod';
 import { getEmployerSession } from '@/lib/employer-auth';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
 
 interface RouteContext { params: Promise<{ id: string }> }
 
 export async function GET(request: NextRequest, ctx: RouteContext) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
+  const supabase = getSupabaseAdmin();
 
   const { id } = await ctx.params;
 
@@ -40,6 +35,7 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
 export async function PATCH(request: NextRequest, ctx: RouteContext) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
+  const supabase = getSupabaseAdmin();
 
   const { id } = await ctx.params;
   const body = await request.json();
@@ -68,6 +64,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext) {
 export async function DELETE(request: NextRequest, ctx: RouteContext) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
+  const supabase = getSupabaseAdmin();
 
   const { id } = await ctx.params;
 
