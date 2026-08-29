@@ -4,6 +4,7 @@ import { ALL_INDUSTRY_RADAR } from '@/lib/career-paths/engine/interview_radar';
 import { listSubtextGlossary } from '@/lib/career-paths/engine/subtext_dictionary';
 import { ALL_COGNITIVE_KNOWLEDGE } from '@/lib/career-paths/engine/cognitive_knowledge';
 import { JOBS } from '@/lib/career-paths/engine/capability_dictionary';
+import { JUDGMENT_CAUSAL_LAYER } from '@/lib/career-paths/engine/judgment_layer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
