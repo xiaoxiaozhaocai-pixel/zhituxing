@@ -732,7 +732,15 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
 
 /** 识别行业 key */
 function detectIndustryKey(input: string): { key: string | null; label: string | null } {
-  const text = (input || '').toLowerCase();
+  const text = (input || '').toLowerCase().trim();
+
+  // 先精确匹配行业 key / label：前端动态下拉会直接传 key（如 'design'），或完整 label，需稳定命中
+  for (const r of ALL_INDUSTRY_RADAR) {
+    if (r.key === text || r.label.toLowerCase() === text) {
+      return { key: r.key, label: r.label };
+    }
+  }
+
   for (const key of Object.keys(INDUSTRY_ALIASES)) {
     for (const alias of INDUSTRY_ALIASES[key]) {
       if (text.includes(alias.toLowerCase())) {
