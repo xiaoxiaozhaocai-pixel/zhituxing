@@ -1,0 +1,310 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ALL_INDUSTRY_RADAR } from '@/lib/career-paths/engine/interview_radar';
+import { listSubtextGlossary } from '@/lib/career-paths/engine/subtext_dictionary';
+import { ALL_COGNITIVE_KNOWLEDGE } from '@/lib/career-paths/engine/cognitive_knowledge';
+import { JOBS } from '@/lib/career-paths/engine/capability_dictionary';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+export const metadata: Metadata = {
+  title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典',
+  description:
+    '职途星求职判断力内容库免费开放：覆盖全行业的面试行业雷达、JD/简历/面试/职场潜台词词条翻译、专业认知库与岗位能力词典。来自真实招聘洞察，求职先想清楚再投简历。',
+  keywords: [
+    '求职判断力',
+    '面试行业雷达',
+    'JD潜台词',
+    '简历潜台词',
+    '职场黑话',
+    '岗位能力词典',
+    '求职认知库',
+    '大学生求职',
+    '职途星',
+  ],
+  openGraph: {
+    title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典',
+    description:
+      '职途星面向求职者免费开放的判断力内容库：行业面试雷达、潜台词词条、专业认知库、岗位能力词典。',
+    type: 'website',
+  },
+};
+
+const categoryLabels: Record<string, string> = {
+  jd: 'JD 潜台词',
+  interview: '面试潜台词',
+  resume: '简历潜台词',
+  workplace: '职场黑话',
+};
+
+const riskMeta: Record<string, { label: string; cls: string }> = {
+  high: { label: '高规避', cls: 'bg-red-50 text-red-600 border-red-200' },
+  medium: { label: '要留意', cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+  low: { label: '基本无坑', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+};
+
+const layerLabels: Record<string, string> = {
+  industry: '行业知识',
+  hard: '硬技能',
+  soft: '软技能',
+  signal: '经验信号',
+};
+
+export default function InsightsPage() {
+  const glossary = listSubtextGlossary();
+  const groupedGlossary = (['jd', 'interview', 'resume', 'workplace'] as const).map((cat) => ({
+    cat,
+    label: categoryLabels[cat],
+    items: glossary.filter((g) => g.category === cat),
+  }));
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: '职途星求职判断力内容库',
+    description:
+      '职途星面向求职者免费开放的判断力内容库：面试行业雷达、潜台词词条、专业认知库、岗位能力词典。',
+    numberOfItems: ALL_INDUSTRY_RADAR.length + glossary.length + ALL_COGNITIVE_KNOWLEDGE.length + JOBS.length,
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: `面试行业雷达（${ALL_INDUSTRY_RADAR.length}个行业）`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: `潜台词词条库（${glossary.length}条）`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: `专业认知库（${ALL_COGNITIVE_KNOWLEDGE.length}个专业）`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: `岗位能力词典（${JOBS.length}个岗位）`,
+      },
+    ],
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#f8fafd] via-white to-[#f0f5ff]/40">
+      {/* 结构化数据（SEO） */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {/* 顶部 Hero */}
+      <section className="relative overflow-hidden py-16 sm:py-20">
+        <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-[#165DFF]/10 blur-3xl" />
+        <div className="absolute top-10 -left-10 h-56 w-56 rounded-full bg-[#3D7FFF]/10 blur-3xl" />
+        <div className="relative mx-auto max-w-7xl px-6 text-center">
+          <Badge className="mb-4 border-[#165DFF]/20 bg-[#165DFF]/5 text-[#165DFF]">
+            免费开放 · 判断力内容库
+          </Badge>
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-[#1E293B] sm:text-5xl">
+            求职判断力<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]">内容库</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[#64748B]">
+            把「面试会问什么」「JD 在说什么黑话」「你学的专业能做什么」「这个岗位要什么能力」
+            一次讲清。来自真实招聘洞察，求职先想清楚，再投简历。
+          </p>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-4 text-sm text-[#64748B]">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#165DFF]" />{ALL_INDUSTRY_RADAR.length} 个行业雷达</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#3D7FFF]" />{glossary.length} 条潜台词词条</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#FF7D00]" />{ALL_COGNITIVE_KNOWLEDGE.length} 个专业认知</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#10B981]" />{JOBS.length} 个岗位能力</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 锚点导航 */}
+      <nav className="sticky top-14 z-20 border-y border-[#E2E8F0] bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-6 py-3 text-sm">
+          <a href="#industries" className="rounded-full px-4 py-1.5 text-[#165DFF] hover:bg-[#165DFF]/5">行业雷达</a>
+          <a href="#glossary" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">潜台词词条</a>
+          <a href="#cognitive" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">专业认知库</a>
+          <a href="#capability" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">岗位能力词典</a>
+        </div>
+      </nav>
+
+      {/* 行业雷达 */}
+      <section id="industries" className="mx-auto max-w-7xl px-6 py-16">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">面试行业雷达</h2>
+          <p className="mt-2 text-[#64748B]">提前知道这个行业面试会问什么，怎么准备、有哪些雷区。</p>
+        </div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {ALL_INDUSTRY_RADAR.map((ind) => (
+            <Card key={ind.key} className="border-[#E2E8F0] shadow-sm transition hover:shadow-md">
+              <CardContent className="p-5">
+                <h3 className="text-lg font-semibold text-[#1E293B]">{ind.label}</h3>
+                <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-[#64748B]">{ind.blurb}</p>
+                {ind.focus && ind.focus.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {ind.focus.map((f, i) => (
+                      <div key={i} className="rounded-lg bg-[#F8FAFC] p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-[#1E293B]">{f.module}</span>
+                          <span className="text-xs font-semibold text-[#165DFF]">{f.weight}%</span>
+                        </div>
+                        {f.questions && f.questions.length > 0 && (
+                          <ul className="mt-1.5 space-y-1 text-xs text-[#64748B]">
+                            {f.questions.map((q, j) => (
+                              <li key={j}>· {q}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {ind.redFlags && ind.redFlags.length > 0 && (
+                  <div className="mt-4">
+                    <span className="text-xs font-semibold text-red-600">雷区</span>
+                    <ul className="mt-1 space-y-0.5 text-xs text-[#64748B]">
+                      {ind.redFlags.map((r, i) => <li key={i}>· {r}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* 潜台词词条库 */}
+      <section id="glossary" className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">潜台词词条库</h2>
+            <p className="mt-2 text-[#64748B]">把 JD、简历、面试问题里的黑话，翻译成「人话」。</p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {groupedGlossary.map((group) => (
+              <div key={group.cat} className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-6">
+                <h3 className="mb-4 text-lg font-semibold text-[#1E293B]">{group.label}（{group.items.length} 条）</h3>
+                <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+                  {group.items.map((g) => {
+                    const risk = riskMeta[g.risk] || riskMeta.low;
+                    return (
+                      <div key={g.phrase} className="rounded-lg bg-white p-3 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-medium text-[#1E293B]">{g.phrase}</span>
+                          <Badge className={`shrink-0 border ${risk.cls}`}>{risk.label}</Badge>
+                        </div>
+                        <p className="mt-1 text-xs text-[#64748B]">{g.meaning}</p>
+                        <p className="mt-1.5 text-xs leading-relaxed text-[#165DFF]">建议：{g.advice}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 专业认知库 */}
+      <section id="cognitive" className="mx-auto max-w-7xl px-6 py-16">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">专业认知库</h2>
+          <p className="mt-2 text-[#64748B]">你学的这个专业，到底能去哪些方向，中间需要什么能力。</p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {ALL_COGNITIVE_KNOWLEDGE.map((cog) => (
+            <Card key={`${cog.subCategory}-${cog.label}`} className="border-[#E2E8F0] shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-[#165DFF]/5 px-2 py-0.5 text-xs font-medium text-[#165DFF]">{cog.category}</span>
+                  <h3 className="text-base font-semibold text-[#1E293B]">{cog.label}</h3>
+                </div>
+                <div className="mt-3">
+                  <span className="text-xs font-semibold text-[#475569]">核心课程</span>
+                  <p className="mt-1 text-xs leading-relaxed text-[#64748B]">{cog.coreCourses.join(' / ')}</p>
+                </div>
+                <div className="mt-3">
+                  <span className="text-xs font-semibold text-[#475569]">培养能力</span>
+                  <p className="mt-1 text-xs leading-relaxed text-[#64748B]">{cog.derivedSkills.join(' / ')}</p>
+                </div>
+                {cog.jobDirections && cog.jobDirections.length > 0 && (
+                  <div className="mt-3">
+                    <span className="text-xs font-semibold text-[#475569]">去向岗位</span>
+                    <ul className="mt-1 space-y-1 text-xs text-[#64748B]">
+                      {cog.jobDirections.slice(0, 3).map((jd, i) => (
+                        <li key={i}>· {jd.job}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* 岗位能力词典 */}
+      <section id="capability" className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">岗位能力词典</h2>
+            <p className="mt-2 text-[#64748B]">每个岗位真正看重什么能力，从行业知识到经验信号拆给你看。</p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {JOBS.map((job) => (
+              <Card key={job.id} className="border-[#E2E8F0] shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-[#1E293B]">{job.name}</h3>
+                    <Badge className="border-[#165DFF]/20 bg-[#165DFF]/5 text-[#165DFF]">{job.category}</Badge>
+                  </div>
+                  {job.layers && job.layers.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      {job.layers.map((layer) => (
+                        <div key={layer.layer} className="rounded-lg bg-[#F8FAFC] p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-[#1E293B]">{layer.label}</span>
+                            <span className="text-xs font-semibold text-[#FF7D00]">{layer.weight}%</span>
+                          </div>
+                          <ul className="mt-1.5 space-y-1 text-xs text-[#64748B]">
+                            {layer.items.map((item, i) => <li key={i}>· {item}</li>)}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {job.recommendCompanies && job.recommendCompanies.length > 0 && (
+                    <div className="mt-4">
+                      <span className="text-xs font-semibold text-[#475569]">代表企业</span>
+                      <p className="mt-1 text-xs text-[#64748B]">{job.recommendCompanies.join(' / ')}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 底部 CTA */}
+      <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+        <Card className="border-[#165DFF]/20 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] text-white shadow-lg">
+          <CardContent className="p-10">
+            <h2 className="text-2xl font-bold sm:text-3xl">想让小职帮你拆解具体内容？</h2>
+            <p className="mt-3 text-white/85">
+              把你的 JD、简历、面试问题发给小职，它会把对应的潜台词和行业重点讲给你听。
+            </p>
+            <Link
+              href="/career-planning"
+              className="mt-6 inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[#165DFF] shadow transition hover:bg-white/90"
+            >
+              去求职判断力工具 →
+            </Link>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}

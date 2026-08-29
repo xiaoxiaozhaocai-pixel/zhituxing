@@ -58,7 +58,7 @@ interface JobEntry {
 // 薪资/术语不设新值；词典内容从既有 md 转写。
 // ============================================================
 
-const JOBS: JobEntry[] = [
+export const JOBS: JobEntry[] = [
   {
     id: 'lithium_process_engineer',
     name: '工艺工程师',
