@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 export const metadata: Metadata = {
   title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典',
   description:
-    '职途星求职判断力内容库免费开放：覆盖全行业的面试行业雷达、JD/简历/面试/职场潜台词词条翻译、专业认知库与岗位能力词典。来自真实招聘洞察，求职先想清楚再投简历。',
+    '职途星求职判断力内容库免费开放：覆盖全行业的面试行业雷达、JD/简历/面试/职场潜台词词条翻译、专业认知库、岗位能力词典与判断力因果层（专业≠岗位的学术实证依据）。来自真实招聘洞察，求职先想清楚再投简历。',
   keywords: [
     '求职判断力',
     '面试行业雷达',
@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     '职场黑话',
     '岗位能力词典',
     '求职认知库',
+    '判断力因果层',
+    '专业不对口',
+    '可迁移能力',
     '大学生求职',
     '职途星',
   ],
@@ -85,6 +88,11 @@ export default function InsightsPage() {
         '@type': 'ListItem',
         position: 4,
         name: `岗位能力词典（${JOBS.length}个岗位）`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 5,
+        name: `判断力因果层（${JUDGMENT_CAUSAL_LAYER.length}条）`,
       },
     ],
   };
@@ -242,6 +250,50 @@ export default function InsightsPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </section>
+
+      {/* 判断力因果层 */}
+      <section id="judgment" className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">判断力因果层</h2>
+            <p className="mt-2 text-[#64748B]">
+              为什么「专业≠岗位」？求职判断的科学依据——每条讲清前提、推理到结论的因果链，来源可背调。
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {JUDGMENT_CAUSAL_LAYER.map((item) => (
+              <Card key={item.id} className="border-[#E2E8F0] shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded-md bg-[#165DFF]/5 px-2 py-0.5 text-xs font-medium text-[#165DFF]">
+                      {item.id}
+                    </span>
+                    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${confidenceMeta[item.confidence]?.cls ?? ''}`}>
+                      {confidenceMeta[item.confidence]?.label ?? item.confidence}
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-base font-semibold text-[#1E293B]">{item.title}</h3>
+                  <div className="mt-3 space-y-2 text-xs leading-relaxed">
+                    <div>
+                      <span className="font-semibold text-[#475569]">前提：</span>
+                      <span className="text-[#64748B]">{item.premise}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-[#475569]">推理：</span>
+                      <span className="text-[#64748B]">{item.inference}</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-[#475569]">结论：</span>
+                      <span className="text-[#64748B]">{item.conclusion}</span>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed text-[#94A3B8]">来源：{item.source}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
