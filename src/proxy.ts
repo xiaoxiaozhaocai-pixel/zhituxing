@@ -117,11 +117,12 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // --------------------------------------------------------
   // CI / E2E 本地构建：同一 IP（localhost）高频访问构建产物会触发全局限流 429，
   // 导致视觉契约 / 功能回归等 E2E 用例 flaky。仅当显式设置 E2E_DISABLE_RATE_LIMIT=true
-  // （由 ci.yml 的 e2e job 注入，GitHub Actions 环境）时豁免全局限流；
+  // （由 ci.yml 的 e2e job 注入，GitHub Actions 环境）时豁免**全局限流**；
   // 线上生产未设置该变量，限流照常生效，不影响真实用户。安全头与 admin 保护不受影响。
+  // 注：rateLimitKey 需保持在函数顶层，供 /api/chat、/api/auth、/api/jobs 等后续限流复用。
+  const rateLimitKey = getRateLimitKey(request);
   const e2eDisableRateLimit = process.env.E2E_DISABLE_RATE_LIMIT === 'true';
   if (!e2eDisableRateLimit) {
-    const rateLimitKey = getRateLimitKey(request);
     const globalCheck = checkRateLimit(`global:${rateLimitKey}`, { maxRequests: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
     if (!globalCheck.success) {
       return createRateLimitResponse();
