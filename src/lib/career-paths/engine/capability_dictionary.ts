@@ -420,6 +420,61 @@ const JOBS: JobEntry[] = [
     },
   },
   {
+    id: 'devops_engineer',
+    name: '运维/DevOps工程师',
+    category: '软件开发/运维',
+    aliases: ['运维', '运维工程师', 'DevOps', 'SRE', '系统运维', '云运维', '运维开发', '平台工程师'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '软件上线/发布/变更流程（CI/CD 流水线）',
+          '云原生与容器化基础（云计算/微服务）',
+          '中小企业运维 vs 大型平台 SRE 的职责边界',
+          '监控告警/容量与成本意识',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'Linux 系统与 Shell 脚本',
+          '容器化（Docker / docker-compose / K8s 基础）',
+          'CI/CD 工具（Jenkins / GitLab CI / GitHub Actions）',
+          '云平台基础（阿里云/腾讯云/AWS 配置）',
+          '监控与日志（Prometheus / Grafana / ELK）',
+          '数据库与中间件基础运维（MySQL / Redis / Nginx）',
+          '故障排查与命令（top / grep / 日志分析）',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '沉稳与抗压（线上故障应急处置）',
+          '变更规范与可回滚意识（先审批后变更）',
+          '文档沉淀与工单闭环（SOP / 上线记录）',
+          '跨团队协作（对接开发/业务/安全）',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '独立部署/上线过至少一个服务（有上线记录）',
+          '做过一次线上故障定位与复盘（带时间线/根因）',
+          '自动化脚本/CI 配置沉淀（可复用）',
+          '云资源/服务器管理记录（环境与容量清单）',
+        ],
+      },
+    ],
+    recommendCompanies: ['字节跳动', '腾讯', '阿里云', '华为云', '美团', '滴滴'],
+    studyPaths: {
+      'Linux': '学 Linux 常见命令 + 搭 1 台服务器环境（约1周）',
+      'Docker': '学 Docker + docker-compose 部署一个项目（约1周）',
+      'K8s': '学 K8s 基础 + 用 minikube 跑一个服务（约1-2周）',
+      'CI/CD': '学 GitHub Actions + 给项目配一条自动部署流水线（约3天）',
+      '监控': '学 Prometheus/Grafana + 给服务配监控告警（约1周）',
+    },
+  },
+  {
     id: 'data_analyst',
     name: '数据分析师',
     category: '互联网/数据',
