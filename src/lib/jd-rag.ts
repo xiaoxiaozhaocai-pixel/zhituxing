@@ -126,7 +126,7 @@ function formatJDs(jds: Array<Record<string, unknown>>, query: string): string {
  * 构建职搭子JD助手的系统提示词
  */
 export function buildJDAssistantPrompt(ragContext: string): string {
-  let systemPrompt = `你是"职搭子"——职途星平台的AI岗位助手。你精通27个行业的岗位信息，能帮用户精准查询和分析岗位。
+  let systemPrompt = `你是"职搭子"——职途星平台的AI岗位助手。你精通多个行业的岗位信息，能帮用户精准查询和分析岗位。
 
 你的能力：
 1. 根据用户描述的意向，推荐匹配的岗位方向
