@@ -181,6 +181,20 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '以结果为导向': { category: 'workplace', surface: '领导强调「以结果为导向」', meaning: '重产出、过程可能被忽略，目标压力大。', risk: 'medium', advice: '问清考核标准与资源支持，别只管数字不管落地。' },
   '先委屈一下': { category: 'workplace', surface: '说「先委屈一下/过渡一下」', meaning: '可能是短期压价或临时安排，后续未必兑现。', risk: 'medium', advice: '问清过渡期限与后续安排，别空等「以后」。' },
   '大家都很拼': { category: 'workplace', surface: '同事说「我们都很拼」', meaning: '加班普遍、内卷重，氛围可能紧张。', risk: 'medium', advice: '了解真实工作强度与回报，评估是否适合自己。' },
+
+  // ============ 潜台词 增补3 ============
+  '有想法': { category: 'jd', surface: '写的是「有想法、有创意」', meaning: '希望你能带来新点子，也常意味着方向缺人定、要你自己出活。', risk: 'medium', advice: '问清是否真给决策空间，还是只口头「要创意」。' },
+  '独立负责': { category: 'jd', surface: '写的是「能独立负责XX」', meaning: '可能要你一人扛一个模块、无人带教，需独当一面。', risk: 'high', advice: '问清带教与协作资源，别把「独立」签成「全包」。' },
+  '长期发展': { category: 'jd', surface: '写的是「可长期发展/长期合作」', meaning: '希望你稳定安分、别轻易离职，岗位重稳定性。', risk: 'low', advice: '结合薪酬与成长判断是否值得长期深耕。' },
+  '你考虑创业吗': { category: 'interview', surface: '问「考虑创业吗」', meaning: '可能是缺人想用「股权/愿景」顶薪，或试探你的干劲与野心。', risk: 'medium', advice: '问清薪酬保障与发展路径，别被「合伙」模糊了报酬。' },
+  '这个岗位很锻炼人': { category: 'interview', surface: '说「岗位很锻炼人」', meaning: '往往活杂事多、免不了替人顶班，用「锻炼」包装强度。', risk: 'medium', advice: '问清具体职责与带教，别把「锻炼」当成免费成长。' },
+  '你会留在这座城市吗': { category: 'interview', surface: '问「会留在这座城市吗」', meaning: '多在考察稳定性与长期意向，判断你能否安心留下。', risk: 'low', advice: '如实说明意愿，若有意向可顺势表达对城市/岗位的认同。' },
+  '你觉得我们公司怎么样': { category: 'interview', surface: '问「觉得我们公司怎么样」', meaning: '考察你的观察与准备度，也看你是否贴合公司氛围。', risk: 'low', advice: '结合了解到的业务/产品客观评价，别只夸不实。' },
+  '具备': { category: 'resume', surface: '简历写「具备XX能力」', meaning: '自述式表述，缺具体动作与结果支撑，说服力弱。', risk: 'medium', advice: '改成「做过什么+用什么方法+拿到什么结果」，别只抛形容词。' },
+  '适应能力': { category: 'resume', surface: '简历写「适应能力强」', meaning: '泛化自评，HR 需要你拿具体场景证明。', risk: 'medium', advice: '用一个快速上手新环境/新任务的例子佐证。' },
+  '优化': { category: 'workplace', surface: '公司说「组织优化/人员优化」', meaning: '通常是裁员或调岗的委婉说法，需留意岗位是否受影响。', risk: 'high', advice: '问清岗位归属与变动，提前评估风险、做两手准备。' },
+  '拥抱变化': { category: 'workplace', surface: '公司说「拥抱变化」', meaning: '往往业务不稳、方向频繁调整，要你能随时接新活。', risk: 'medium', advice: '问清业务稳定度与变化原因，评估长期性。' },
+  '先对齐': { category: 'workplace', surface: '领导说「先对齐一下」', meaning: '往往是要统一方向/避免返工，也可能暗示此前有分歧。', risk: 'low', advice: '主动同步关键信息与预期，避免后期反复。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
