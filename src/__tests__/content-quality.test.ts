@@ -1,4 +1,4 @@
-import { listSubtextGlossary } from '@/lib/career-paths/engine/subtext_dictionary';
+import { SUBTEXT_GLOSSARY } from '@/lib/career-paths/engine/subtext_dictionary';
 import { ALL_INDUSTRY_RADAR } from '@/lib/career-paths/engine/interview_radar';
 import { ALL_COGNITIVE_KNOWLEDGE } from '@/lib/career-paths/engine/cognitive_knowledge';
 import { JOBS, listCapabilityJobs } from '@/lib/career-paths/engine/capability_dictionary';
@@ -11,7 +11,13 @@ import { JUDGMENT_CAUSAL_LAYER } from '@/lib/career-paths/engine/judgment_layer'
  * 夸大失真数字、答辩等红线词，或产出「只打分不解释」的劣质内容。
  */
 
-const GLOSSARY = listSubtextGlossary();
+const GLOSSARY = Object.entries(SUBTEXT_GLOSSARY).map(([key, e]) => ({
+  phrase: key,
+  surface: e.surface,
+  meaning: e.meaning,
+  risk: e.risk,
+  advice: e.advice,
+}));
 
 /** 全量序列化所有内容底座，便于一次红线扫描 */
 function serializeAllContent(): string {
