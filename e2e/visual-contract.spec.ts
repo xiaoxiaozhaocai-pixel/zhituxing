@@ -14,9 +14,9 @@
  *   ② 背景浅色读全局 `--background` token，而非 body computed backgroundColor，
  *      避免页面局部渐变/容器覆盖导致误读（曾读到非浅色而误报）。
  *   ③ ⚠️ production build 的 CSS 压缩器会把 `--background: oklch(1 0 0)` 转换成
- *      `color(srgb 1 1 1)`（0-1 归一化分量），纯文本按 0-255 判断会误判为深色。
- *      故用浏览器 canvas 把任意合法 CSS 颜色归一化为 #rrggbb，再统一按 0-255 判浅色，
- *      可同时兼容 oklch / color(srgb) / rgb / hex / 命名色。纯文本解析仅作兜底。
+ *      `lab(100% 0 0)`（压缩器输出格式不固定，可能是 oklch / lab / lch / color(srgb)）。
+ *      故 isLightBackground 统一抽取「明度分量」，兼容 oklch / lab / lch /
+ *      color(srgb) / rgb / hsl / hex / 命名色，对压缩器输出格式免疫，避免 flaky。
  *   ④ CI 下项目 src/proxy.ts 有全局限流（400 次/分钟，按 IP），同一 IP 高频访问构建产物
  *      会触发 429 返回 JSON 错误，导致后续用例失败。已通过 ci.yml 的 e2e job 注入
  *      E2E_DISABLE_RATE_LIMIT=true 豁免（仅 CI 生效，线上生产未设置不受影响）。
@@ -41,53 +41,41 @@ async function hasDarkClass(page: import('@playwright/test').Page): Promise<bool
 }
 
 /**
- * 在浏览器内用 canvas 把 --background 归一化为 #rrggbb 并判断是否浅色（蓝白基调）。
- * canvas 的 ctx.fillStyle getter 会把任意合法 CSS 颜色（oklch / color(srgb) / rgb / hex /
- * 命名色）解析为标准形式，避免 build 压缩器把 oklch 转成 color(srgb 1 1 1) 后纯文本
- * 解析把 0-1 分量误判为深色。返回 raw（原始 token）以便失败时定位。
+ * 判断颜色明度是否够浅（蓝白基调）。
+ * 兼容 production build 压缩器可能输出的任意现代 CSS 颜色格式：
+ *   oklch(L ...)   → L∈[0,1]（oklch 明度）
+ *   lab/lch(L ...) → L∈[0,100]（可带 %，lab/lch 明度）
+ *   color(srgb ...) / rgb() / rgba() / hsl() → 分量可为 0-255、0-1 归一化或 0-100%
+ *   hex / 命名浅色
+ * 统一抽取「明度/亮度」判断，避免随 build 的颜色格式变化而 flaky。
  */
-async function readBackgroundLightness(page: import('@playwright/test').Page): Promise<{ light: boolean; raw: string }> {
-  return page.evaluate(() => {
-    const raw = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
-    const ctx = document.createElement('canvas').getContext('2d');
-    if (!ctx) return { light: false, raw };
-    ctx.fillStyle = raw;                // 若 raw 合法，浏览器会解析；非法则保持默认黑
-    const norm = ctx.fillStyle;         // 归一化后通常为 #rrggbb 或 rgba(r,g,b,a)
-    let r = 0, g = 0, b = 0;
-    if (norm.startsWith('#')) {
-      const h = norm.slice(1);
-      if (h.length === 3) {
-        r = parseInt(h[0] + h[0], 16); g = parseInt(h[1] + h[1], 16); b = parseInt(h[2] + h[2], 16);
-      } else if (h.length === 6) {
-        r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16);
-      }
-    } else {
-      const m = norm.match(/rgba?\(\s*(\d+)\s*[,\s]\s*(\d+)\s*[,\s]\s*(\d+)/);
-      if (m) { r = +m[1]; g = +m[2]; b = +m[3]; }
-    }
-    return { light: r >= 200 && g >= 200 && b >= 200, raw };
-  });
-}
-
-/** 纯文本兜底解析：--background 是否浅色，兼容 oklch / color(srgb 0-1) / rgb / hex / 命名色 */
 function isLightBackground(value: string): boolean {
   if (!value) return false;
   const v = value.trim().toLowerCase();
-  // oklch(L C H)，L 接近 1 为白 → 取明度分量
+  if (!v) return false;
+
+  // oklch(L C H[/A])：L∈[0,1]，≥0.8 视为浅
   const oklch = v.match(/oklch\(\s*([\d.]+)/);
   if (oklch) return parseFloat(oklch[1]) >= 0.8;
-  // color(srgb r g b[/a]) 或 rgb()/rgba()，分量可能为 0-1 归一化或 0-255，也可能带 %
-  const numsMatch = v.match(/(?:color\(\s*srgb[\w-]*\s*|rgba?\s*)\(([^)]+)\)/);
-  if (numsMatch) {
-    const parts = numsMatch[1].replace(/[%]+/g, '').split(/[\s,/]+/).filter(Boolean);
-    const nums = parts.map(Number).filter((n) => !Number.isNaN(n));
+  // lab(L a b[/A]) / lch(L C H[/A])：L∈[0,100]（可带 %），≥80 视为浅
+  const lab = v.match(/(?:lab|lch)\(\s*([\d.]+%?)/);
+  if (lab) return parseFloat(lab[1]) >= 80;
+
+  // color(srgb ...) / rgb() / rgba() / hsl()：抽取前三个数值，归一化到 0-255 后取最小值
+  const colorBody = v.match(/color\(([^)]+)\)/);
+  const funcBody = v.match(/(?:rgba?|hsla?)\(([^)]+)\)/);
+  const inner = colorBody ? colorBody[1] : funcBody ? funcBody[1] : '';
+  if (inner) {
+    const hasPct = inner.includes('%');
+    const nums = inner.replace(/%/g, '').split(/[\s,/]+/).filter(Boolean).map(Number).filter((n) => !Number.isNaN(n));
     if (nums.length >= 3) {
       let [r, g, b] = nums;
-      // 0-1 归一化 → 转为 0-255
-      if (r <= 1 && g <= 1 && b <= 1) { r *= 255; g *= 255; b *= 255; }
-      return r >= 200 && g >= 200 && b >= 200;
+      if (hasPct) { r *= 2.55; g *= 2.55; b *= 2.55; }          // 0-100% → 0-255
+      else if (r <= 1 && g <= 1 && b <= 1) { r *= 255; g *= 255; b *= 255; } // 0-1 → 0-255
+      return Math.min(r, g, b) >= 200;
     }
   }
+
   // hex #fff / #ffffff
   if (v.startsWith('#')) {
     const hex = v.slice(1);
@@ -96,11 +84,13 @@ function isLightBackground(value: string): boolean {
       : hex.length === 6 ? [hex.slice(0, 2), hex.slice(2, 4), hex.slice(4, 6)] : [];
     if (picks.length === 3) {
       const [r, g, b] = picks.map((h) => parseInt(h, 16));
-      return r >= 200 && g >= 200 && b >= 200;
+      return Math.min(r, g, b) >= 200;
     }
   }
+
   // 常见命名浅色
-  if (['white', 'whitesmoke', 'snow', 'ivory', 'floralwhite', 'aliceblue', 'ghostwhite', 'azure', 'lightyellow', 'honeydew', 'mintcream'].includes(v)) return true;
+  const lightNames = ['white', 'whitesmoke', 'snow', 'ivory', 'floralwhite', 'aliceblue', 'ghostwhite', 'azure', 'lightyellow', 'honeydew', 'mintcream', 'lightgoldenrodyellow'];
+  if (lightNames.includes(v)) return true;
   return false;
 }
 
@@ -115,8 +105,8 @@ test.describe('Phase 5 · 视觉契约', () => {
       const primary = await readCssVar(page, '--primary');
       expect(primary.toLowerCase()).toBe('#165dff');
       // 页面背景 token 为浅色（蓝白基调）
-      const bgLight = await readBackgroundLightness(page);
-      expect(bgLight.light, `--background 应为浅色, raw=${bgLight.raw}`).toBe(true);
+      const bg = await readCssVar(page, '--background');
+      expect(isLightBackground(bg), `--background 应为浅色, raw=${bg}`).toBe(true);
     });
 
     test('主标题结构与关键视觉元素可见', async ({ page }) => {
@@ -138,8 +128,8 @@ test.describe('Phase 5 · 视觉契约', () => {
       const primary = await readCssVar(page, '--primary');
       expect(primary.toLowerCase()).toBe('#165dff');
       // 页面背景 token 为浅色（蓝白基调）
-      const bgLight = await readBackgroundLightness(page);
-      expect(bgLight.light, `--background 应为浅色, raw=${bgLight.raw}`).toBe(true);
+      const bg = await readCssVar(page, '--background');
+      expect(isLightBackground(bg), `--background 应为浅色, raw=${bg}`).toBe(true);
     });
 
     test('标题结构：唯一主标题 H1 + 分块标题 H2 + 锚点与四层内容可见', async ({ page }) => {
