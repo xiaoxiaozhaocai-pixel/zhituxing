@@ -85,6 +85,12 @@ export const MatchJobSchema = z.object({
 });
 
 
+export const MatchLearningPhaseSchema = z.object({
+  phase: z.string(),
+  skills: z.array(z.string()),
+  estimatedDays: z.number().optional(),
+});
+
 export const MatchGetItemSchema = z.object({
   job: MatchJobSchema,
   matchScore: z.number(),
@@ -92,7 +98,8 @@ export const MatchGetItemSchema = z.object({
   matchedSkills: z.array(z.string()),
   gapSkills: z.array(z.string()),
   requiredGaps: z.array(z.string()),
-  learningPath: z.array(z.unknown()), // 当前未填充
+  learningPath: z.array(MatchLearningPhaseSchema),
+  prerequisiteChains: z.record(z.string(), z.array(z.string())),
   salary: z.object({
     estimatedMin: z.number(),
     estimatedMax: z.number(),
