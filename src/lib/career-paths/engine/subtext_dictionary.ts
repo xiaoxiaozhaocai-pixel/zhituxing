@@ -172,7 +172,7 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
   '相关课程': { category: 'resume', surface: '简历写「修过XX课程」', meaning: '泛泛罗列，HR 看不出你真实能力与岗位匹配。', risk: 'low', advice: '挑与岗位相关的课程+结合成果写，别整段罗列。' },
   '组织能力强': { category: 'resume', surface: '简历写「组织协调能力强」', meaning: '空泛自评，缺实证支撑，说服力打折扣。', risk: 'medium', advice: '用具体活动/项目成果证明组织能力，别只堆词。' },
   '优秀毕业生': { category: 'resume', surface: '简历写「优秀毕业生/三好学生」', meaning: 'HR 会看含金量，也可能认为偏向学术、缺实践。', risk: 'low', advice: '注明获得比例与标准，同时补充实践/项目经历。' },
-  '表达能力强': { category: 'resume', surface: '简历写「表达能力好」', meaning: '泛化自评，HR 需要你当场证明。', risk: 'medium', advice: '用演讲/答辩/沟通成果佐证，别只给自己贴标签。' },
+  '表达能力强': { category: 'resume', surface: '简历写「表达能力好」', meaning: '泛化自评，HR 需要你当场证明。', risk: 'medium', advice: '用演讲/公开汇报/沟通成果佐证，别只给自己贴标签。' },
 
   // ============ 职场黑话 增补2 ============
   '能者多劳': { category: 'workplace', surface: '领导说「能者多劳」', meaning: '多干不一定多得，可能把活儿都压给能干的人。', risk: 'high', advice: '明确边界与回报，别让「多劳」变成「白劳」。' },
