@@ -728,6 +728,59 @@ const JOBS: JobEntry[] = [
     },
   },
   {
+    id: 'quality_engineer',
+    name: '质量管理/品质工程师',
+    category: '制造/品质',
+    aliases: ['质量', '品质', '品质工程师', '质量工程师', 'QC', 'SQE', '质量管理', '品质管理'],
+    layers: [
+      {
+        layer: 'industry', label: '行业知识', weight: 20,
+        items: [
+          '制造质量体系（ISO9001/IATF16949/ISO13485）',
+          '品质工具（SPC/FMEA/8D/QC七大手法/PDCA）',
+          '来料/制程/出货品质管理流程（IQC/IPQC/OQC）',
+          '供应商质量管理（SQE 与审核）',
+        ],
+      },
+      {
+        layer: 'hard', label: '硬技能', weight: 40,
+        items: [
+          'SPC 控制（CPK≥1.33/1.67、判异准则）',
+          '8D 报告（根因分析/永久纠正措施）',
+          'FMEA（PFMEA/DFMEA、RPN 评分）',
+          'QC 七大手法（鱼骨/柏拉图/散布图等）',
+          'Minitab / JMP 质量数据分析',
+          '供应商审核与质量协议',
+        ],
+      },
+      {
+        layer: 'soft', label: '软技能', weight: 25,
+        items: [
+          '问题解决（异常定位→根因→措施→验证）',
+          '数据说话与质量意识',
+          '跨部门拉通（产线/研发/采购/客户）',
+          '坚守标准同时推动改善',
+        ],
+      },
+      {
+        layer: 'signal', label: '经验信号', weight: 15,
+        items: [
+          '做过品质改善项目，有量化结果（不良率X%→Y%）',
+          '会写 8D/FMEA/SPC，能讲清判异与根因',
+          '实习中接触过质检/SQE 或供应商审核',
+        ],
+      },
+    ],
+    recommendCompanies: ['比亚迪', '立讯精密', '富士康', '冠宇电池', '欣旺达', '宁德时代', '博世'],
+    studyPaths: {
+      'SPC': '学 Xbar-R 控制图 + 掌握 CPK 计算与判异（约3天）',
+      '8D': '看3个 8D 案例 + 写一个模拟 8D 报告（约3天）',
+      'FMEA': '主导一次 PFMEA，会 RPN 评分（约1周）',
+      'Minitab': '学假设检验 + 过程能力分析，输出报告（约2周）',
+      '供应商审核': '学审核要点 + 做一份模拟审核清单（约3天）',
+    },
+  },
+  {
     id: 'automation_engineer',
     name: '自动化控制工程师',
     category: '制造/自动化',
