@@ -44,6 +44,15 @@ interface CareerPlanStep {
   [key: string]: unknown;
 }
 
+interface LatestCareerPlan {
+  data?: {
+    job_name?: string;
+    learning_path?: CareerPlanStep[];
+    action_plan?: CareerPlanStep[];
+    prerequisite_chains?: Record<string, string[]>;
+  };
+}
+
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   mastered: { label: '已掌握', color: 'text-green-600 bg-green-50 border-green-200', icon: <CheckCircle2 className="w-5 h-5 text-green-500" /> },
   practicing: { label: '练习中', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: <Circle className="w-5 h-5 text-blue-500 fill-blue-200" /> },
@@ -60,6 +69,7 @@ export default function LearningPathPage() {
   const [selectedJobIdx, setSelectedJobIdx] = useState(0);
   const [skillProgress, setSkillProgress] = useState<Record<string, SkillProgress>>({});
   const [careerSteps, setCareerSteps] = useState<CareerPlanStep[]>([]);
+  const [latestPlanState, setLatestPlanState] = useState<LatestCareerPlan | null>(null);
 
   // 埋点：页面浏览
   usePageView('learning_path');
@@ -104,15 +114,16 @@ export default function LearningPathPage() {
       });
       const profileData = await profileRes.json();
       if (profileData.success) {
-        const progressList: SkillProgress[] = profileData.data?.skillProgress || [];
+        const progressList: SkillProgress[] = profileData.data?.skill_progress || [];
         const progressMap: Record<string, SkillProgress> = {};
         progressList.forEach((p: SkillProgress) => {
           progressMap[p.skillName] = p;
         });
         setSkillProgress(progressMap);
 
-        // 从 careerPlans 提取学习步骤
-        const latestPlan = profileData.data?.latestCareerPlan;
+        // 从 latest_career_plan 提取学习步骤（跨会话恢复）
+        const latestPlan: LatestCareerPlan = profileData.data?.latest_career_plan;
+        if (latestPlan) setLatestPlanState(latestPlan);
         if (latestPlan?.data?.learning_path || latestPlan?.data?.action_plan) {
           setCareerSteps(latestPlan.data.learning_path || latestPlan.data.action_plan || []);
         }
@@ -122,6 +133,53 @@ export default function LearningPathPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ---- 阶段三：学习计划 & 技能进度持久化（跨会话） ----
+  const saveProfile = async (patch: Record<string, unknown>) => {
+    try {
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+    } catch (err) {
+      console.error('[learning-path] 保存失败:', err);
+    }
+  };
+
+  // 首个匹配岗位含学习路径时，自动持久化为 latest_career_plan（换岗位更新，同岗位不重复写）
+  useEffect(() => {
+    if (!selectedJob?.learningPath || selectedJob.learningPath.length === 0) return;
+    const jobName = selectedJob.job?.jobName;
+    if (!jobName) return;
+    if (latestPlanState?.data?.job_name === jobName) return;
+    const plan: LatestCareerPlan = {
+      data: {
+        job_name: jobName,
+        learning_path: selectedJob.learningPath,
+        action_plan: selectedJob.learningPath,
+        prerequisite_chains: selectedJob.prerequisiteChains || {},
+      },
+    };
+    setLatestPlanState(plan);
+    saveProfile({ latest_career_plan: plan });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedJob?.job?.jobName, selectedJob?.learningPath]);
+
+  // 技能进度勾选：点击循环切换 not_started→learning→practicing→mastered 并保存
+  const cycleStatus = (skill: string) => {
+    const order: SkillProgress['status'][] = ['not_started', 'learning', 'practicing', 'mastered'];
+    const cur = skillProgress[skill]?.status || 'not_started';
+    const next = order[(order.indexOf(cur) + 1) % order.length];
+    const pctMap: Record<SkillProgress['status'], number> = { not_started: 0, learning: 30, practicing: 65, mastered: 100 };
+    const updated = {
+      ...skillProgress,
+      [skill]: { skillName: skill, status: next, completionPct: pctMap[next] },
+    };
+    setSkillProgress(updated);
+    saveProfile({ skill_progress: Object.values(updated) });
   };
 
   const selectedJob = matchResults[selectedJobIdx];
@@ -257,13 +315,18 @@ export default function LearningPathPage() {
                                   const progress = skillProgress[skill];
                                   const cfg = statusConfig[progress?.status || 'not_started'];
                                   return (
-                                    <div key={j} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm ${cfg!.color}`}>
+                                    <button
+                                      key={j}
+                                      onClick={() => cycleStatus(skill)}
+                                      title="点击切换掌握状态"
+                                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm transition-all hover:scale-105 cursor-pointer ${cfg!.color}`}
+                                    >
                                       {cfg!.icon}
                                       <span>{skill}</span>
                                       {progress && (
                                         <span className="text-xs opacity-60">({progress.completionPct}%)</span>
                                       )}
-                                    </div>
+                                    </button>
                                   );
                                 })}
                               </div>

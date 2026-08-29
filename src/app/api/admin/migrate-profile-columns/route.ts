@@ -50,6 +50,14 @@ export async function POST(request: NextRequest) {
       {
         column: 'graduation_year',
         sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS graduation_year VARCHAR(20);`
+      },
+      {
+        column: 'skill_progress',
+        sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS skill_progress JSONB DEFAULT '[]'::jsonb;`
+      },
+      {
+        column: 'latest_career_plan',
+        sql: `ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS latest_career_plan JSONB DEFAULT 'null'::jsonb;`
       }
     ];
 
@@ -103,7 +111,7 @@ export async function POST(request: NextRequest) {
       .from('information_schema.columns')
       .select('column_name, data_type')
       .eq('table_name', 'user_profiles')
-      .in('column_name', ['awards', 'internship_experience', 'project_experience', 'graduation_year']);
+      .in('column_name', ['awards', 'internship_experience', 'project_experience', 'graduation_year', 'skill_progress', 'latest_career_plan']);
 
     return NextResponse.json({
       success: true,

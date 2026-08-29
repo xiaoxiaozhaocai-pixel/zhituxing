@@ -118,6 +118,8 @@ export async function PUT(request: NextRequest) {
 
     // 新增字段：graduation_year (varchar)
     if (body.graduation_year !== undefined) updateData.graduation_year = body.graduation_year;
+    if (body.skill_progress !== undefined) updateData.skill_progress = body.skill_progress;
+    if (body.latest_career_plan !== undefined) updateData.latest_career_plan = body.latest_career_plan;
 
     // 字段映射：internship_experience → has_internship (boolean)
     if (body.internship_experience !== undefined) {
