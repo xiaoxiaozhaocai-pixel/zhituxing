@@ -18,9 +18,12 @@ import {
   parseUserSkillsFromText,
   parseSalaryRange,
   evaluateCohortFit,
+  analyzeSkillGaps,
   type UserSkill,
   type CohortInput,
-  type CohortFitResult
+  type CohortFitResult,
+  type LearningPhase,
+  type SkillRelation
 } from '@/lib/matching-algorithm';
 
 // ============================================================
@@ -66,6 +69,10 @@ export interface MatchResult {
   };
   /** 组态匹配 + 双维错位诊断（判断力 L2） */
   cohort?: CohortFitResult;
+  /** 学习路径（按前置依赖排序，判断力 L3） */
+  learningPath: LearningPhase[];
+  /** 每个缺口技能的前置技能链 */
+  prerequisiteChains: Record<string, string[]>;
 }
 
 export interface MatchRequest {
@@ -119,8 +126,11 @@ export async function matchJobs(request: MatchRequest): Promise<MatchResult[]> {
   // 2b. 语义搜索返回字段有限，二次查询获取完整 JD 数据（company, hard_skills, soft_skills, major_require）
   const enrichedCandidates = await enrichJDs(candidates);
 
+  // 2c. 获取技能关系（用于技能缺口→学习路径推荐）
+  const skillRelations = await fetchAllSkillRelations();
+
   // 3. 多维打分
-  const scored = enrichedCandidates.map(jd => scoreJob(jd, userSkills, userProfile, expectedSalary));
+  const scored = enrichedCandidates.map(jd => scoreJob(jd, userSkills, userProfile, expectedSalary, skillRelations));
 
   // 4. 按总分降序 + 截取
   scored.sort((a, b) => b.totalScore - a.totalScore);
@@ -274,6 +284,28 @@ async function enrichJDs(
   });
 }
 
+/** 拉取全部技能关系（用于技能缺口→学习路径推荐） */
+async function fetchAllSkillRelations(): Promise<SkillRelation[]> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from('skill_relations')
+    .select('source_skill, target_skill, relation_type, weight');
+
+  if (error) {
+    console.warn('[matching] fetchAllSkillRelations error:', error.message);
+    return [];
+  }
+
+  if (!data || data.length === 0) return [];
+
+  return (data as Array<Record<string, unknown>>).map((row) => ({
+    sourceSkill: String(row.source_skill ?? ''),
+    targetSkill: String(row.target_skill ?? ''),
+    relationType: (row.relation_type as SkillRelation['relationType']) || 'similar',
+    weight: typeof row.weight === 'number' ? row.weight : undefined,
+  }));
+}
+
 /** 关键词降级搜索（embedding 不可用时） */
 async function keywordFallback(
   limit: number,
@@ -355,7 +387,8 @@ function scoreJob(
   jd: Record<string, unknown>,
   userSkills: UserSkill[],
   profile: UserProfile,
-  expectedSalary?: string
+  expectedSalary?: string,
+  skillRelations: SkillRelation[] = []
 ): MatchResult {
   // 解析 JD 技能要求
   const jdSkillsStr = buildJDSkillsString(jd);
@@ -411,6 +444,13 @@ function scoreJob(
   };
   const cohort = evaluateCohortFit(jd, cohortInput);
 
+  // 技能缺口 → 学习路径推荐（判断力 L3：解释+路径+建议）
+  const gapAnalysis = analyzeSkillGaps(
+    skillResult.gapSkills,
+    skillRelations,
+    userSkills.map(s => s.name)
+  );
+
   return {
     jobId: jd.id as string | number,
     jobTitle: (jd.job_title as string) || '未知岗位',
@@ -440,6 +480,8 @@ function scoreJob(
       experience: jd.experience as string,
     },
     cohort,
+    learningPath: gapAnalysis.learningPath,
+    prerequisiteChains: gapAnalysis.prerequisiteChains,
   };
 }
 

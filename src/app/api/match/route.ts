@@ -78,7 +78,8 @@ export async function GET(request: NextRequest) {
       matchedSkills: r.matchedSkills,
       gapSkills: r.skillGaps,
       requiredGaps: r.requiredGaps,
-      learningPath: [],
+      learningPath: r.learningPath,
+      prerequisiteChains: r.prerequisiteChains,
       salary: {
         estimatedMin: r.salaryEstimation?.estimatedMin ?? 0,
         estimatedMax: r.salaryEstimation?.estimatedMax ?? 0,
