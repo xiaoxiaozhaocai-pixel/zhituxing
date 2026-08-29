@@ -71,7 +71,9 @@ test.describe('Phase 3 · 公共路径功能回归', () => {
     test('JSON-LD 结构化数据', async ({ page }) => {
       await page.goto('/insights');
       const jsonld = page.locator('script[type="application/ld+json"]');
-      await expect(jsonld.first()).toContainText('职途星求职判断力内容库');
+      await expect(jsonld).toHaveCount(1);
+      // script 的 innerText 为空，需用 textContent() 读原始 JSON 字符串
+      expect((await jsonld.first().textContent()) ?? '').toContain('职途星求职判断力内容库');
     });
   });
 
