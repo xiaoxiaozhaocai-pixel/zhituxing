@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 export const metadata: Metadata = {
-  title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典',
+  title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典 / 判断力因果层',
   description:
     '职途星求职判断力内容库免费开放：覆盖全行业的面试行业雷达、JD/简历/面试/职场潜台词词条翻译、专业认知库、岗位能力词典与判断力因果层（专业≠岗位的学术实证依据）。来自真实招聘洞察，求职先想清楚再投简历。',
   keywords: [
@@ -27,9 +27,9 @@ export const metadata: Metadata = {
     '职途星',
   ],
   openGraph: {
-    title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典',
+    title: '求职判断力内容库 — 行业雷达 / 潜台词词条 / 认知库 / 能力词典 / 判断力因果层',
     description:
-      '职途星面向求职者免费开放的判断力内容库：行业面试雷达、潜台词词条、专业认知库、岗位能力词典。',
+      '职途星面向求职者免费开放的判断力内容库：行业面试雷达、潜台词词条、专业认知库、岗位能力词典与判断力因果层（专业≠岗位的学术实证依据）。',
     type: 'website',
   },
 };
