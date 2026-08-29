@@ -47,9 +47,9 @@ interface CareerPlanStep {
 interface LatestCareerPlan {
   data?: {
     job_name?: string;
-    learning_path?: CareerPlanStep[];
-    action_plan?: CareerPlanStep[];
-    prerequisite_chains?: Record<string, string[]>;
+    learning_path?: unknown;
+    action_plan?: unknown;
+    prerequisite_chains?: unknown;
   };
 }
 
@@ -125,7 +125,7 @@ export default function LearningPathPage() {
         const latestPlan: LatestCareerPlan = profileData.data?.latest_career_plan;
         if (latestPlan) setLatestPlanState(latestPlan);
         if (latestPlan?.data?.learning_path || latestPlan?.data?.action_plan) {
-          setCareerSteps(latestPlan.data.learning_path || latestPlan.data.action_plan || []);
+          setCareerSteps((latestPlan.data.learning_path || latestPlan.data.action_plan || []) as CareerPlanStep[]);
         }
       }
     } catch (err) {
@@ -134,6 +134,8 @@ export default function LearningPathPage() {
       setLoading(false);
     }
   };
+
+  const selectedJob = matchResults[selectedJobIdx];
 
   // ---- 阶段三：学习计划 & 技能进度持久化（跨会话） ----
   const saveProfile = async (patch: Record<string, unknown>) => {
@@ -182,7 +184,6 @@ export default function LearningPathPage() {
     saveProfile({ skill_progress: Object.values(updated) });
   };
 
-  const selectedJob = matchResults[selectedJobIdx];
 
   if (!isAuthenticated) {
     return (
