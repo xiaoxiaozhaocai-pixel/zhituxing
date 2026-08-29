@@ -46,6 +46,12 @@ const riskMeta: Record<string, { label: string; cls: string }> = {
   low: { label: '基本无坑', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
 };
 
+const confidenceMeta: Record<string, { label: string; cls: string }> = {
+  HIGH: { label: '高置信', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+  MEDIUM: { label: '中置信', cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+  LOW: { label: '低置信', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+};
+
 const layerLabels: Record<string, string> = {
   industry: '行业知识',
   hard: '硬技能',
@@ -134,6 +140,7 @@ export default function InsightsPage() {
           <a href="#industries" className="rounded-full px-4 py-1.5 text-[#165DFF] hover:bg-[#165DFF]/5">行业雷达</a>
           <a href="#glossary" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">潜台词词条</a>
           <a href="#cognitive" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">专业认知库</a>
+          <a href="#judgment" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">判断力因果层</a>
           <a href="#capability" className="rounded-full px-4 py-1.5 text-[#475569] hover:bg-[#165DFF]/5">岗位能力词典</a>
         </div>
       </nav>
