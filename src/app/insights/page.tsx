@@ -53,13 +53,6 @@ const confidenceMeta: Record<string, { label: string; cls: string }> = {
   LOW: { label: '低置信', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
 };
 
-const layerLabels: Record<string, string> = {
-  industry: '行业知识',
-  hard: '硬技能',
-  soft: '软技能',
-  signal: '经验信号',
-};
-
 export default function InsightsPage() {
   const glossary = listSubtextGlossary();
   const groupedGlossary = (['jd', 'interview', 'resume', 'workplace'] as const).map((cat) => ({
