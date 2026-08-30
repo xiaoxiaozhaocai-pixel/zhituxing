@@ -25,7 +25,7 @@ const FEATURE_FLAGS: Record<string, FeatureFlag> = {
   xiaozhiV2: {
     key: 'xiaozhiV2',
     name: '小职 V2 对话',
-    description: '小职主对话智能体（DeepSeek直连）',
+    description: '小职主对话能力（DeepSeek直连）',
     enabled: true,
     category: 'core',
     addedAt: '2026-05-29',
