@@ -1,6 +1,7 @@
 import {
   runEngine,
   getMatchReport,
+  FIELD_WEIGHT,
 } from '@/lib/career-paths/engine/rule_engine';
 import { CONFIG } from '@/lib/career-paths/engine/config_routes';
 import { EncodedProfile } from '@/lib/career-paths/types';
@@ -91,5 +92,44 @@ describe('runEngine 定点：IT-DEV-A1 后端/全栈路径', () => {
     expect(dev).toBeDefined();
     expect(dev!.match_rate).toBe(0);
     expect(dev!.verdict).toBe('no_match');
+  });
+});
+describe('runEngine 加权匹配与可解释合成（块2）', () => {
+  it('FIELD_WEIGHT 核心字段权重更高（专业对口 > 学校档次）', () => {
+    expect(FIELD_WEIGHT.MAJ_CAT).toBeGreaterThan(FIELD_WEIGHT.SCH_TIER);
+    expect(FIELD_WEIGHT.INT_QLT).toBeGreaterThan(FIELD_WEIGHT.INT_NUM);
+  });
+
+  it('field_details 含 weight/contribution 且贡献和约为 1', () => {
+    const report = runEngine(strongIT);
+    for (const r of report.routes) {
+      expect(r.field_details.length).toBeGreaterThan(0);
+      const totalContrib = r.field_details.reduce((s, d) => s + d.contribution, 0);
+      expect(Math.abs(totalContrib - 1)).toBeLessThan(0.05);
+      for (const d of r.field_details) {
+        expect(d.weight).toBeGreaterThan(0);
+        expect(d.contribution).toBeGreaterThanOrEqual(0);
+        expect(d.contribution).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('weighted_explanation 非空且含加权匹配率', () => {
+    const report = runEngine(strongIT);
+    for (const r of report.routes) {
+      expect(r.weighted_explanation).toBeTruthy();
+      expect(r.weighted_explanation).toContain('加权匹配率');
+    }
+  });
+
+  it('命中 MAJ_CAT 的贡献占比最大（IT 强画像三条件全命中）', () => {
+    const report = runEngine(strongIT);
+    const dev = report.routes.find((r) => r.route_id === 'IT-DEV-A1');
+    expect(dev).toBeDefined();
+    const maj = dev!.field_details.find((d) => d.field === 'MAJ_CAT');
+    const skill = dev!.field_details.find((d) => d.field === 'SKILL_SET');
+    expect(maj).toBeDefined();
+    expect(skill).toBeDefined();
+    expect(maj!.contribution).toBeGreaterThan(skill!.contribution);
   });
 });

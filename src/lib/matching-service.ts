@@ -19,11 +19,15 @@ import {
   parseSalaryRange,
   evaluateCohortFit,
   analyzeSkillGaps,
+  classifyJobRole,
+  getJobRoleInfo,
+  buildWeightedBreakdown,
   type UserSkill,
   type CohortInput,
   type CohortFitResult,
   type LearningPhase,
-  type SkillRelation
+  type SkillRelation,
+  type WeightedBreakdown
 } from '@/lib/matching-algorithm';
 
 // ============================================================
@@ -69,6 +73,8 @@ export interface MatchResult {
   };
   /** 组态匹配 + 双维错位诊断（判断力 L2） */
   cohort?: CohortFitResult;
+  /** 岗位加权 + 可解释合成（判断力 · 块2）：各维度权重与贡献、加权理由、建议 */
+  weighting: WeightedBreakdown;
   /** 学习路径（按前置依赖排序，判断力 L3） */
   learningPath: LearningPhase[];
   /** 每个缺口技能的前置技能链 */
@@ -90,19 +96,6 @@ export interface MatchRequest {
   /** 返回数量 */
   limit?: number;
 }
-
-// ============================================================
-// 权重配置（同方案文档 5.3）
-// ============================================================
-
-const WEIGHTS = {
-  skill: 0.40,    // ↑ 从 0.35 提升：技能是核心区分维度
-  education: 0.10, // ↓ 从 0.15：无画像时默认值缺乏区分度
-  major: 0.15,
-  location: 0.15,
-  experience: 0.10,
-  salary: 0.10,
-};
 
 // ============================================================
 // 主入口：执行完整匹配流程
@@ -413,15 +406,22 @@ function scoreJob(
   // 3f. 薪资匹配 (10%)
   const salaryScore = matchSalary(expectedSalary, jd.salary_range as string, jd.industry as string, jd.job_title as string);
 
-  // 综合加权
-  const totalScore = Math.round(
-    skillScore * WEIGHTS.skill +
-    educationScore * WEIGHTS.education +
-    majorScore * WEIGHTS.major +
-    locationScore * WEIGHTS.location +
-    experienceScore * WEIGHTS.experience +
-    salaryScore * WEIGHTS.salary
+  // 按岗位角色动态加权 + 可解释合成（判断力 · 块2）
+  const roleInfo = getJobRoleInfo(
+    classifyJobRole(jd.job_title as string, jd.industry as string)
   );
+  const weighting = buildWeightedBreakdown(
+    {
+      skill: skillScore,
+      education: educationScore,
+      major: majorScore,
+      location: locationScore,
+      experience: experienceScore,
+      salary: salaryScore,
+    },
+    roleInfo
+  );
+  const totalScore = weighting.totalScore;
 
   // 薪资估算（"面议"时用行业默认值）
   const salaryEstimation = (() => {
@@ -480,6 +480,7 @@ function scoreJob(
       experience: jd.experience as string,
     },
     cohort,
+    weighting,
     learningPath: gapAnalysis.learningPath,
     prerequisiteChains: gapAnalysis.prerequisiteChains,
   };

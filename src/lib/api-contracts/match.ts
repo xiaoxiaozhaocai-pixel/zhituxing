@@ -58,6 +58,8 @@ export const MatchPostItemSchema = z.object({
   gap_skills: z.array(z.string()),
   fresh_graduate_friendly: z.boolean().nullable(),
   cohort: MatchCohortSchema.nullable().optional(),
+  role: z.string().nullable().optional(),
+  overall_advice: z.string().nullable().optional(),
 });
 export type MatchPostItem = z.infer<typeof MatchPostItemSchema>;
 
@@ -91,6 +93,40 @@ export const MatchLearningPhaseSchema = z.object({
   estimatedDays: z.number().optional(),
 });
 
+/** 岗位加权角色信息（可解释合成 · 判断力块2） */
+export const MatchWeightingRoleSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  weights: z.object({
+    skill: z.number(),
+    education: z.number(),
+    major: z.number(),
+    location: z.number(),
+    experience: z.number(),
+    salary: z.number(),
+  }),
+  rationale: z.string(),
+});
+
+/** 单一维度加权贡献 */
+export const MatchWeightingDimSchema = z.object({
+  dimension: z.string(),
+  label: z.string(),
+  score: z.number(),
+  weight: z.number(),
+  contribution: z.number(),
+});
+
+/** 岗位加权可解释合成 */
+export const MatchWeightingSchema = z.object({
+  role: MatchWeightingRoleSchema,
+  breakdown: z.array(MatchWeightingDimSchema),
+  totalScore: z.number(),
+  strongest: z.object({ dimension: z.string(), label: z.string(), contribution: z.number() }),
+  weakest: z.object({ dimension: z.string(), label: z.string(), contribution: z.number() }),
+  advice: z.string(),
+});
+
 export const MatchGetItemSchema = z.object({
   job: MatchJobSchema,
   matchScore: z.number(),
@@ -106,6 +142,7 @@ export const MatchGetItemSchema = z.object({
     estimatedMedian: z.number(),
   }),
   cohort: MatchCohortSchema.nullable().optional(),
+  weighting: MatchWeightingSchema,
 });
 export type MatchGetItem = z.infer<typeof MatchGetItemSchema>;
 

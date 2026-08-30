@@ -54,6 +54,9 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
                 </span>
               </div>
               <p className="text-sm text-gray-500 mt-1">{result.scenario}</p>
+              {result.weighted_explanation && (
+                <p className="text-xs text-gray-400 mt-1">{result.weighted_explanation}</p>
+              )}
             </div>
           </div>
           <div className="text-right">
@@ -72,6 +75,7 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
                 <th className="text-left py-1.5 font-medium">条件</th>
                 <th className="text-left py-1.5 font-medium">要求</th>
                 <th className="text-left py-1.5 font-medium">你的</th>
+                <th className="text-right py-1.5 font-medium">占比</th>
                 <th className="text-right py-1.5 font-medium">状态</th>
               </tr>
             </thead>
@@ -81,6 +85,7 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
                   <td className="py-1.5 text-gray-600">{fd.label}</td>
                   <td className="py-1.5 text-gray-500">{fd.required}</td>
                   <td className="py-1.5 text-gray-700 font-medium">{fd.current}</td>
+                  <td className="py-1.5 text-right text-gray-400">{Math.round(fd.contribution * 100)}%</td>
                   <td className="py-1.5 text-right">
                     {fd.status === 'met' && <span className="text-green-500">✅</span>}
                     {fd.status === 'near_gap' && <span className="text-amber-500">⚠️ 差一点</span>}

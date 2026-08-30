@@ -34,6 +34,7 @@ interface MatchJobResult {
   learningPath: { phase: string; skills: string[]; estimatedDays: number }[];
   salary: { estimatedMin: number; estimatedMax: number; estimatedMedian: number };
   cohort?: CohortResult | null;
+  weighting?: WeightingResult | null;
 }
 
 interface UnderratedJob {
@@ -56,6 +57,30 @@ interface CohortResult {
   pathFit: number;
   passPaths: string[];
   gaps: CohortGapItem[];
+  advice: string;
+}
+
+interface WeightingDim {
+  dimension: string;
+  label: string;
+  score: number;
+  weight: number;
+  contribution: number;
+}
+
+interface WeightingRole {
+  key: string;
+  label: string;
+  weights: { skill: number; education: number; major: number; location: number; experience: number; salary: number };
+  rationale: string;
+}
+
+interface WeightingResult {
+  role: WeightingRole;
+  breakdown: WeightingDim[];
+  totalScore: number;
+  strongest: { dimension: string; label: string; contribution: number };
+  weakest: { dimension: string; label: string; contribution: number };
   advice: string;
 }
 
@@ -115,6 +140,66 @@ function CohortGaps({ cohort }: { cohort: CohortResult }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** 岗位加权解读（各维度贡献 + 加权理由 + 强弱项 + 建议） */
+function WeightingSummary({ weighting }: { weighting: WeightingResult }) {
+  const maxContribution = Math.max(...weighting.breakdown.map((d) => d.contribution), 1);
+  const total = weighting.totalScore;
+  const totalClass = total >= 70 ? 'text-green-600' : total >= 50 ? 'text-orange-600' : 'text-red-500';
+  return (
+    <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
+      <h4 className="text-sm font-medium text-violet-700 mb-3 flex items-center gap-1">
+        岗位加权解读
+      </h4>
+
+      {/* 岗位角色 + 综合分 */}
+      <div className="flex items-center gap-2 flex-wrap mb-2">
+        <Badge className="bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100">
+          {weighting.role.label}
+        </Badge>
+        <span className={`text-sm font-bold ${totalClass}`}>综合 {total} 分</span>
+      </div>
+
+      {/* 加权理由 */}
+      <p className="text-xs text-gray-500 leading-relaxed mb-3">
+        {weighting.role.rationale}
+      </p>
+
+      {/* 各维度贡献 */}
+      <div className="space-y-2">
+        {weighting.breakdown.map((d) => (
+          <div key={d.dimension} className="flex items-center gap-2">
+            <span className="w-16 text-xs text-gray-500 shrink-0">{d.label}</span>
+            <div className="flex-1 h-2 rounded-full bg-violet-100 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-violet-400 to-violet-600"
+                style={{ width: `${(d.contribution / maxContribution) * 100}%` }}
+              />
+            </div>
+            <span className="w-20 text-right text-[11px] text-gray-400 shrink-0">
+              {d.score} × {d.weight} = {d.contribution}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* 强弱项 */}
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+          <span className="font-semibold text-green-700">优势 · {weighting.strongest.label}</span>
+          <div className="text-green-600">贡献 {weighting.strongest.contribution} 分</div>
+        </div>
+        <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+          <span className="font-semibold text-red-700">短板 · {weighting.weakest.label}</span>
+          <div className="text-red-500">贡献 {weighting.weakest.contribution} 分</div>
+        </div>
+      </div>
+
+      {/* 建议 */}
+      <p className="mt-3 text-sm text-gray-700 leading-relaxed">{weighting.advice}</p>
     </div>
   );
 }
@@ -465,6 +550,9 @@ export default function MatchPage() {
                       <div className="mt-5 pt-5 border-t border-gray-100 space-y-5">
                         {/* 组态诊断「差多少」双维错位缺口 */}
                         {item.cohort && <CohortGaps cohort={item.cohort} />}
+
+                        {/* 岗位加权解读 */}
+                        {item.weighting && <WeightingSummary weighting={item.weighting} />}
 
                         {/* 匹配技能 */}
                         <div>

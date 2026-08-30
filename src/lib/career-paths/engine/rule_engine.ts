@@ -67,21 +67,57 @@ function getProfileFieldValue(profile: EncodedProfile, field: string): number | 
 /**
  * 计算单条路径的匹配率
  */
+/** 全局字段权重（默认；字段越核心权重越高）。不同岗位因 conditions 字段集合不同而自然差异化。 */
+export const FIELD_WEIGHT: Record<string, number> = {
+  MAJ_CAT: 2.5,   // 专业对口：能不能入行的根本
+  INT_QLT: 1.8,   // 实习质量：大厂/头部硬加分
+  SKILL_SET: 1.5, // 技能密度：硬技能
+  INT_NUM: 1.2,   // 实习数量：有经验
+  DEG_LEV: 0.9,   // 学历：校招门槛，非绝对
+  SCH_TIER: 0.8,  // 学校档次：桂电基准，非名校导向
+};
+
+/** 取字段权重：岗位可用 condition.weight 微调，否则用全局 FIELD_WEIGHT */
+function getFieldWeight(condition: RouteCondition, field: string): number {
+  if (condition.weight !== undefined) return condition.weight;
+  return FIELD_WEIGHT[field] ?? 1;
+}
+
+/**
+ * 计算单条路径的加权匹配率：Σ(命中字段权重) / Σ(字段权重)
+ * 核心字段权重更高 → 命中核心字段对匹配率的拉动更大，避免等权平均稀释。
+ */
 function calcMatchRate(
   conditions: Record<string, RouteCondition>,
   profile: EncodedProfile
-): { matchedCount: number; totalCount: number } {
-  let matched = 0;
-  let total = 0;
+): { matchedWeight: number; totalWeight: number } {
+  let matchedWeight = 0;
+  let totalWeight = 0;
 
   for (const [field, condition] of Object.entries(conditions)) {
-    total++;
+    const w = getFieldWeight(condition, field);
+    totalWeight += w;
     const profileValue = getProfileFieldValue(profile, field);
     const { met } = checkCondition(condition, profileValue);
-    if (met) matched++;
+    if (met) matchedWeight += w;
   }
 
-  return { matchedCount: matched, totalCount: total };
+  return { matchedWeight, totalWeight };
+}
+
+/** 生成加权匹配的可解释说明（哪些字段是决定项、哪些拉低） */
+function buildWeightedExplanation(fieldDetails: FieldDetail[], matchRate: number): string {
+  const metFields = fieldDetails.filter((f) => f.status === 'met');
+  const gapFields = fieldDetails.filter((f) => f.status === 'gap' || f.status === 'near_gap');
+  const topMet = [...metFields].sort((a, b) => b.weight - a.weight)[0];
+  const topGap = [...gapFields].sort((a, b) => b.weight - a.weight)[0];
+
+  const parts: string[] = [];
+  parts.push(`加权匹配率 ${(matchRate * 100).toFixed(0)}%`);
+  if (topMet) parts.push(`最关键的命中项是「${topMet.label}」（权重 ${topMet.weight}）`);
+  if (topGap) parts.push(`拉低分数的是「${topGap.label}」（权重 ${topGap.weight}，未达标）`);
+  else parts.push('所有条件均已达标');
+  return parts.join('；');
 }
 
 /**
@@ -108,9 +144,17 @@ function matchRoute(route: RouteConfig, profile: EncodedProfile): RouteMatchResu
   const fieldDetails: FieldDetail[] = [];
   const gaps: GapItem[] = [];
 
+  // 先算总权重，用于计算各字段贡献占比
+  let totalWeight = 0;
+  for (const [field, condition] of Object.entries(route.conditions)) {
+    totalWeight += getFieldWeight(condition, field);
+  }
+
   for (const [field, condition] of Object.entries(route.conditions)) {
     const profileValue = getProfileFieldValue(profile, field);
     const { met, isNearGap } = checkCondition(condition, profileValue);
+    const w = getFieldWeight(condition, field);
+    const contribution = totalWeight > 0 ? w / totalWeight : 0;
 
     let status: 'met' | 'gap' | 'near_gap';
     if (met) {
@@ -130,6 +174,8 @@ function matchRoute(route: RouteConfig, profile: EncodedProfile): RouteMatchResu
       required: requiredStr,
       current: profileValue,
       status,
+      weight: w,
+      contribution,
     });
 
     if (!met) {
@@ -143,8 +189,9 @@ function matchRoute(route: RouteConfig, profile: EncodedProfile): RouteMatchResu
     }
   }
 
-  const { matchedCount, totalCount } = calcMatchRate(route.conditions, profile);
-  const matchRate = totalCount > 0 ? matchedCount / totalCount : 0;
+  const { matchedWeight, totalWeight: tw2 } = calcMatchRate(route.conditions, profile);
+  const matchRate = tw2 > 0 ? matchedWeight / tw2 : 0;
+  const weightedExplanation = buildWeightedExplanation(fieldDetails, matchRate);
 
   return {
     route_id: route.route_id,
@@ -156,6 +203,7 @@ function matchRoute(route: RouteConfig, profile: EncodedProfile): RouteMatchResu
     conditions: route.conditions,
     field_details: fieldDetails,
     gaps,
+    weighted_explanation: weightedExplanation,
   };
 }
 

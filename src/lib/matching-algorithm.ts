@@ -1117,3 +1117,204 @@ function buildFitAdvice(
   }
   return `当前画像与这条岗位路径匹配度偏低（${pathFit}分），暂不建议盲投。建议先做认知校正，换个更适合的方向，或针对性补足后再投。`;
 }
+// ============================================================
+// 6. 岗位加权评分 + 可解释合成（判断力 · 块2）
+// ============================================================
+
+/** 岗位角色类型 */
+export type JobRoleKey =
+  | 'data_ai'
+  | 'manufacturing'
+  | 'design'
+  | 'finance'
+  | 'function_admin'
+  | 'marketing'
+  | 'technology'
+  | 'general';
+
+export interface JobRoleWeights {
+  skill: number;
+  education: number;
+  major: number;
+  location: number;
+  experience: number;
+  salary: number;
+}
+
+export interface JobRoleInfo {
+  key: JobRoleKey;
+  label: string;
+  weights: JobRoleWeights;
+  /** 加权理由（为什么这样配，服务于「可解释」） */
+  rationale: string;
+}
+
+export interface WeightedBreakdownDim {
+  dimension: 'skill' | 'education' | 'major' | 'location' | 'experience' | 'salary';
+  label: string;
+  score: number;
+  weight: number;
+  contribution: number;
+}
+
+export interface WeightedBreakdown {
+  role: JobRoleInfo;
+  breakdown: WeightedBreakdownDim[];
+  totalScore: number;
+  strongest: { dimension: string; label: string; contribution: number };
+  weakest: { dimension: string; label: string; contribution: number };
+  advice: string;
+}
+
+/** 岗位角色规则：按关键词命中优先级排序（领域特征强的在前） */
+const ROLE_RULES: Array<{ key: JobRoleKey; keywords: string[] }> = [
+  { key: 'data_ai', keywords: ['数据分析', '算法', '人工智能', '大数据', '机器学习', '数据挖掘', '智能'] },
+  { key: 'manufacturing', keywords: ['工艺', '制造', '生产', '质量', '设备', '工装', '装配', 'qc', '品控'] },
+  { key: 'design', keywords: ['设计', 'ui', 'ux', '视觉', '交互', '美工', '平面', '插画'] },
+  { key: 'finance', keywords: ['财务', '会计', '审计', '金融', '税务', '出纳', '风控', '银行'] },
+  { key: 'function_admin', keywords: ['人事', '人力资源', 'hr', '行政', '助理', '文员', '招聘', '秘书', '前台', '后勤', '管培'] },
+  { key: 'marketing', keywords: ['运营', '市场', '营销', '销售', '推广', '新媒体', '品牌', '策划', '商务', '客户'] },
+  { key: 'technology', keywords: ['开发', '工程师', '程序员', 'java', 'python', '前端', '后端', '运维', '测试', 'c++', '嵌入式', '硬件', '架构', 'php', 'golang', 'node', '软件', '安全'] },
+];
+
+/** 岗位角色 → 权重矩阵 + 加权理由（权重和恒为 1） */
+const JOB_ROLE_WEIGHTS: Record<JobRoleKey, JobRoleInfo> = {
+  data_ai: {
+    key: 'data_ai',
+    label: '数据/AI/算法岗',
+    weights: { skill: 0.5, education: 0.08, major: 0.17, location: 0.1, experience: 0.1, salary: 0.05 },
+    rationale: '数据/AI岗高度依赖算法与工程硬技能，专业对口加成明显，学历是门槛但非核心区分项，薪资容错较低。',
+  },
+  technology: {
+    key: 'technology',
+    label: '技术/研发岗',
+    weights: { skill: 0.5, education: 0.08, major: 0.15, location: 0.12, experience: 0.1, salary: 0.05 },
+    rationale: '技术岗的能力栈是硬通货，技能权重最高；专业偏计算机/电子可加分，其余维度作辅助。',
+  },
+  manufacturing: {
+    key: 'manufacturing',
+    label: '制造/工艺/质量岗',
+    weights: { skill: 0.35, education: 0.1, major: 0.22, location: 0.15, experience: 0.13, salary: 0.05 },
+    rationale: '制造岗看专业与工艺技能并重，且常需到岗、看重稳定性与经验，地点与经验权重相应上调。',
+  },
+  design: {
+    key: 'design',
+    label: '设计/视觉岗',
+    weights: { skill: 0.45, education: 0.08, major: 0.2, location: 0.12, experience: 0.1, salary: 0.05 },
+    rationale: '设计岗以作品与技能为核心，专业方向（设计类）加成高，其余维度辅助。',
+  },
+  finance: {
+    key: 'finance',
+    label: '财务/金融岗',
+    weights: { skill: 0.38, education: 0.12, major: 0.22, location: 0.1, experience: 0.1, salary: 0.08 },
+    rationale: '财务金融岗专业对口与证书技能是核心，学历与薪资适配也有一定权重。',
+  },
+  function_admin: {
+    key: 'function_admin',
+    label: '职能/人事/行政岗',
+    weights: { skill: 0.3, education: 0.15, major: 0.25, location: 0.1, experience: 0.12, salary: 0.08 },
+    rationale: '职能岗尤为看重专业对口与综合素质（学历/经验），技能相对宽泛。',
+  },
+  marketing: {
+    key: 'marketing',
+    label: '市场/运营/销售岗',
+    weights: { skill: 0.35, education: 0.1, major: 0.2, location: 0.15, experience: 0.12, salary: 0.08 },
+    rationale: '市场类岗重专业与软技能、地域与薪资适配，技能覆盖范围广。',
+  },
+  general: {
+    key: 'general',
+    label: '通用岗',
+    weights: { skill: 0.4, education: 0.1, major: 0.15, location: 0.15, experience: 0.1, salary: 0.1 },
+    rationale: '未识别明确岗位类型时使用通用均衡权重，兼顾匹配稳健性。',
+  },
+};
+
+/** 匹配维度键与中文标签 */
+const DIMENSION_KEYS = ['skill', 'education', 'major', 'location', 'experience', 'salary'] as const;
+const DIMENSION_LABELS: Record<string, string> = {
+  skill: '技能匹配',
+  education: '学历匹配',
+  major: '专业对口',
+  location: '地点偏好',
+  experience: '经验要求',
+  salary: '薪资匹配',
+};
+
+/** 按岗位标题+行业识别岗位角色 */
+export function classifyJobRole(jobTitle?: string, industry?: string): JobRoleKey {
+  const text = `${jobTitle || ''} ${industry || ''}`.toLowerCase();
+  if (!text.trim()) return 'general';
+  for (const rule of ROLE_RULES) {
+    if (rule.keywords.some((kw) => text.includes(kw))) return rule.key;
+  }
+  return 'general';
+}
+
+/** 获取岗位角色对应的权重信息 */
+export function getJobRoleInfo(key: JobRoleKey): JobRoleInfo {
+  return JOB_ROLE_WEIGHTS[key] || JOB_ROLE_WEIGHTS.general;
+}
+
+/** 构建可解释合成：各维度贡献 + 加权理由 + 建议 */
+export function buildWeightedBreakdown(
+  dimensions: Record<'skill' | 'education' | 'major' | 'location' | 'experience' | 'salary', number>,
+  roleInfo: JobRoleInfo
+): WeightedBreakdown {
+  const weights = roleInfo.weights;
+  const breakdown: WeightedBreakdownDim[] = DIMENSION_KEYS.map((k) => {
+    const score = dimensions[k];
+    const weight = weights[k];
+    return {
+      dimension: k,
+      label: DIMENSION_LABELS[k],
+      score,
+      weight,
+      contribution: Math.round(score * weight),
+    };
+  });
+
+  const totalScore = Math.round(breakdown.reduce((s, d) => s + d.contribution, 0));
+
+  let strongest = breakdown[0]!;
+  let weakest = breakdown[0]!;
+  for (const d of breakdown) {
+    if (d.contribution > strongest.contribution) strongest = d;
+    if (d.contribution < weakest.contribution) weakest = d;
+  }
+
+  const advice = buildWeightedAdvice(roleInfo, totalScore, strongest, weakest);
+
+  return {
+    role: roleInfo,
+    breakdown,
+    totalScore,
+    strongest: {
+      dimension: strongest.dimension,
+      label: strongest.label,
+      contribution: strongest.contribution,
+    },
+    weakest: {
+      dimension: weakest.dimension,
+      label: weakest.label,
+      contribution: weakest.contribution,
+    },
+    advice,
+  };
+}
+
+/** 生成「解释+路径+建议」的加权结论 */
+function buildWeightedAdvice(
+  roleInfo: JobRoleInfo,
+  totalScore: number,
+  strongest: WeightedBreakdownDim,
+  weakest: WeightedBreakdownDim
+): string {
+  const label = roleInfo.label;
+  if (totalScore >= 70) {
+    return `「${label}」综合匹配 ${totalScore} 分，较契合。你的核心优势在${strongest.label}（贡献 ${strongest.contribution} 分），与岗位要求重叠度高。建议：优先投递，并在简历/面试中强化${strongest.label}相关的可背调证据。`;
+  }
+  if (totalScore >= 50) {
+    return `「${label}」综合匹配 ${totalScore} 分，中等。当前主要差距在${weakest.label}。建议：先针对性补齐${weakest.label}，再重点投递那些最看重${strongest.label}的岗位，形成差异化定位，避免盲投。`;
+  }
+  return `「${label}」综合匹配 ${totalScore} 分，偏弱。核心短板是${weakest.label}。建议：先做岗位认知校正（看清这类岗位的真实要求），若短期难补齐，转向更契合你${strongest.label}优势的方向，不要硬投。`;
+}

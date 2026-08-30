@@ -13,6 +13,8 @@ export type ConditionOperator = '>=' | 'in';
 export interface RouteCondition {
   operator: ConditionOperator;
   value: number | string[];
+  /** 字段权重（按岗位可微调；未配置用全局 FIELD_WEIGHT） */
+  weight?: number;
 }
 
 /** 路径的条件集合 */
@@ -48,6 +50,10 @@ export interface FieldDetail {
   required: string;
   current: string | number;
   status: FieldStatus;
+  /** 该字段在本路径中的权重（用于加权匹配） */
+  weight: number;
+  /** 该字段对加权匹配率的贡献占比 [0,1]（用于可解释） */
+  contribution: number;
 }
 
 /** 差距项（含建议） */
@@ -70,6 +76,8 @@ export interface RouteMatchResult {
   conditions: RouteConditions;
   field_details: FieldDetail[];
   gaps: GapItem[];
+  /** 加权匹配的可解释说明：哪些字段是决定项、哪些拉低 */
+  weighted_explanation: string;
 }
 
 /** 匹配报告摘要 */
