@@ -55,6 +55,6 @@ describe('interview_bars BARS 行为锚定量表', () => {
     expect(p).toContain('沟通力');
     expect(p).toContain('逻辑力');
     expect(p).toContain('专业度');
-    expect(p).toContain('列举观察到的具体行为');
+    expect(p).toContain('从面试对话中列举');
   });
 });
