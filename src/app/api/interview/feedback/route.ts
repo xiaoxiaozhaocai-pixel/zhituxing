@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
+import { buildBarsPrompt, scoreToBarsLevel } from '@/lib/career-paths/engine/interview_bars';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -38,6 +39,11 @@ const FEEDBACK_SYSTEM_PROMPT = `你是一个专业的面试评估分析师。你
 - 40-59：待提升（需要系统训练）
 - 0-39：薄弱（建议从基础开始）
 
+【重要：行为锚定评分（BARS）】
+请严格按下面 BARS 行为锚点评分，不要凭感觉打分。每个维度都要先「列举观察到的最关键 2-3 个可观察行为」→「匹配到最贴切的锚点级」→「在该级分数段内给分」→「说明为什么是这个级」，并给出提升路径与建议。
+
+${buildBarsPrompt()}
+
 【输出要求】
 请以 JSON 格式输出分析结果（放在 <<DATA:type=interview_feedback>> 和 <<END>> 之间），结构如下：
 
@@ -53,6 +59,19 @@ const FEEDBACK_SYSTEM_PROMPT = `你是一个专业的面试评估分析师。你
     {"area": "沟通力", "advice": "具体改进建议", "priority": "high|medium|low"},
     {"area": "逻辑力", "advice": "具体改进建议", "priority": "high|medium|low"},
     {"area": "专业度", "advice": "具体改进建议", "priority": "high|medium|low"}
+  ],
+  "dimension_analysis": [
+    {
+      "dimension": "communication|logic|professionalism",
+      "name": "沟通力|逻辑力|专业度",
+      "score": 分数,
+      "level": "该分数对应锚点级名称,如『条理清楚』",
+      "level_number": 锚点级数(1-5),
+      "matched_anchors": ["你观察到的匹配该级的具体行为(引用对话)"],
+      "reasoning": "为什么是这个级(2-3句,引用行为)",
+      "path": "提升到下一级的具体路径",
+      "suggestion": "可执行改进建议"
+    }
   ],
   "star_analysis": {
     "good_examples": ["用户回答中STAR结构完整的例子"],
@@ -126,6 +145,19 @@ ${conversationText}
             if (dataMatch) {
               try {
                 const feedbackData = JSON.parse(dataMatch[1]);
+
+                // BARS 兜底校验：若 LLM 未给出锚点级，按分数反查补全（保证「判断力≠打分」有结构）
+                if (Array.isArray(feedbackData.dimension_analysis)) {
+                  for (const item of feedbackData.dimension_analysis) {
+                    if (item && typeof item.score === 'number' && !item.level_number) {
+                      const lv = scoreToBarsLevel(item.dimension, item.score);
+                      if (lv) {
+                        item.level_number = lv.level;
+                        item.level = lv.name;
+                      }
+                    }
+                  }
+                }
                 // 保存到数据库
                 await supabase.from('interview_results').upsert({
                   user_id: userId,
