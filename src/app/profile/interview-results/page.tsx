@@ -21,6 +21,7 @@ interface InterviewFeedback {
     professionalism?: number;
     overall_match?: number;
     summary?: string;
+    interview_type?: string;
     strengths?: string[];
     weaknesses?: string[];
     suggestions?: { area: string; advice: string; priority: string }[];
@@ -91,6 +92,18 @@ export default function InterviewResultsPage() {
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const INTERVIEW_TYPE_MAP: Record<string, { name: string; emoji: string }> = {
+    standard: { name: '常规面试', emoji: '🤝' },
+    pressure: { name: '压力面试', emoji: '⚡' },
+    group: { name: '无领导小组讨论', emoji: '👥' },
+    english: { name: '英文面试', emoji: '🌍' },
+  };
+
+  const getInterviewType = (type?: string) => {
+    if (!type) return null;
+    return INTERVIEW_TYPE_MAP[type] || { name: type, emoji: '🎤' };
   };
 
   if (loading) {
@@ -169,6 +182,7 @@ export default function InterviewResultsPage() {
             <div className="space-y-3">
               {feedbacks.map((fb) => {
                 const rd = fb.result_data || {};
+                const itype = getInterviewType(rd.interview_type);
                 const hasRadarData = rd.communication !== undefined;
                 const dimensions = hasRadarData
                   ? [
@@ -202,6 +216,11 @@ export default function InterviewResultsPage() {
                             <span className="font-medium text-gray-900 truncate">
                               {fb.target_job || '未指定岗位'}
                             </span>
+                            {itype && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium truncate">
+                                {itype.emoji} {itype.name}
+                              </span>
+                            )}
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getScoreColor(fb.overall_score || 0)}`}>
                               {getScoreLevel(fb.overall_score || 0)} · {fb.overall_score || '-'}
                             </span>

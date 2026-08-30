@@ -146,6 +146,11 @@ ${conversationText}
               try {
                 const feedbackData = JSON.parse(dataMatch[1]);
 
+                // 注入面试类型到结果数据（零迁移：不新增数据库列，结果页据此通告本次面试类型）
+                if (interview_type) {
+                  feedbackData.interview_type = interview_type;
+                }
+
                 // BARS 兜底校验：若 LLM 未给出锚点级，按分数反查补全（保证「判断力≠打分」有结构）
                 if (Array.isArray(feedbackData.dimension_analysis)) {
                   for (const item of feedbackData.dimension_analysis) {
