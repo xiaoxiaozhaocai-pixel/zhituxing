@@ -53,6 +53,24 @@ const confidenceMeta: Record<string, { label: string; cls: string }> = {
   LOW: { label: '低置信', cls: 'bg-slate-50 text-slate-600 border-slate-200' },
 };
 
+// P2-1：内容→行动导流。内容库每块底部加「去试试」，把「看完（知道）」转成「去用（行动）」，让内容库成为主线入口。
+function SectionCTA({ href, action, desc }: { href: string; action: string; desc: string }) {
+  return (
+    <div className="mt-10 flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#165DFF]/15 bg-[#165DFF]/5 px-6 py-5 text-center sm:flex-row sm:justify-between sm:text-left">
+      <div className="max-w-md">
+        <p className="text-sm font-medium text-[#1E293B]">{action}</p>
+        <p className="mt-0.5 text-xs leading-relaxed text-[#64748B]">{desc}</p>
+      </div>
+      <Link
+        href={href}
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#165DFF] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#165DFF]/90"
+      >
+        去试试 <span aria-hidden>→</span>
+      </Link>
+    </div>
+  );
+}
+
 export default function InsightsPage() {
   const glossary = listSubtextGlossary();
   const groupedGlossary = (['jd', 'interview', 'resume', 'workplace'] as const).map((cat) => ({
@@ -123,7 +141,7 @@ export default function InsightsPage() {
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#165DFF]" />{ALL_INDUSTRY_RADAR.length} 个行业雷达</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#3D7FFF]" />{glossary.length} 条潜台词词条</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#FF7D00]" />{ALL_COGNITIVE_KNOWLEDGE.length} 个专业认知</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#64748B]" />{JOBS.length} 个岗位能力</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#10B981]" />{JOBS.length} 个岗位能力</span>
           </div>
         </div>
       </section>
@@ -182,6 +200,11 @@ export default function InsightsPage() {
             </Card>
           ))}
         </div>
+        <SectionCTA
+          href="/career-planning"
+          action="对照你的专业，看看能去哪些行业面试"
+          desc="用行业雷达生成你的专属求职方向与面试准备清单，把「这个行业会问什么」变成你的行动准备。"
+        />
       </section>
 
       {/* 潜台词词条库 */}
@@ -214,6 +237,11 @@ export default function InsightsPage() {
             ))}
           </div>
         </div>
+        <SectionCTA
+          href="/assistant?bot=interview"
+          action="把你的 JD / 面试问题发给小职翻译"
+          desc="把潜台词词条库接入你的真实面试，实时拆解 HR 话里的真实意图，提前避开坑。"
+        />
       </section>
 
       {/* 专业认知库 */}
@@ -252,6 +280,11 @@ export default function InsightsPage() {
             </Card>
           ))}
         </div>
+        <SectionCTA
+          href="/career-planning"
+          action="让你学的专业能去哪些岗位，一键生成方向"
+          desc="专业认知库 + 职业规划报告，把「这个专业能做什么」变成你的明确求职方向。"
+        />
       </section>
 
       {/* 判断力因果层 */}
@@ -296,6 +329,11 @@ export default function InsightsPage() {
             ))}
           </div>
         </div>
+        <SectionCTA
+          href="/career-planning"
+          action="用判断力因果层佐证你的职业选择"
+          desc="生成职业规划报告，用「前提→推理→结论」讲清你的专业与岗位适配，选择更踏实。"
+        />
       </section>
 
       {/* 岗位能力词典 */}
@@ -339,6 +377,11 @@ export default function InsightsPage() {
             ))}
           </div>
         </div>
+        <SectionCTA
+          href="/learning-path"
+          action="看看目标岗位要什么能力，生成学习路径"
+          desc="岗位能力词典 + 技能差距分析，生成你的专属学习路线，缺哪补哪。"
+        />
       </section>
 
       {/* 底部 CTA */}
