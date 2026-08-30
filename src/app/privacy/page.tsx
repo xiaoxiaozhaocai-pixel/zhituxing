@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const sections = [
   {
-    icon: <Eye className="w-6 h-6 text-blue-600" />,
+    icon: <Eye className="w-6 h-6 text-[#165DFF]" />,
     title: '一、信息收集',
     content: `我们收集您在使用职途星服务时主动提供的信息，包括但不限于：`,
     list: [
@@ -35,7 +35,7 @@ const sections = [
     ],
   },
   {
-    icon: <Lock className="w-6 h-6 text-blue-600" />,
+    icon: <Lock className="w-6 h-6 text-[#165DFF]" />,
     title: '三、数据处理与模型训练',
     content: `我们采用行业标准的加密技术和安全措施保护您的个人信息。对于您授权用于模型训练的数据，我们遵循以下原则：`,
     list: [
@@ -74,7 +74,7 @@ const sections = [
     note: '这些服务商均有严格的数据保护协议，不会将您的数据用于其他目的。',
   },
   {
-    icon: <UserCircle className="w-6 h-6 text-blue-600" />,
+    icon: <UserCircle className="w-6 h-6 text-[#165DFF]" />,
     title: '六、用户权利',
     content: `您对个人信息享有以下权利：`,
     list: [
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 text-white py-16">
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-10 h-10" />
@@ -134,10 +134,10 @@ export default function PrivacyPage() {
         ))}
 
         {/* Contact Section */}
-        <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-blue-50">
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl">
-              <Mail className="w-6 h-6 text-blue-600" />
+              <Mail className="w-6 h-6 text-[#165DFF]" />
               <span>七、联系我们</span>
             </CardTitle>
           </CardHeader>
@@ -148,7 +148,7 @@ export default function PrivacyPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="font-medium text-gray-900">邮箱</p>
-                <p className="text-blue-600">privacy@zhituxing.com</p>
+                <p className="text-[#165DFF]">privacy@zhituxing.com</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <p className="font-medium text-gray-900">微信公众号</p>
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl">
-              <Fingerprint className="w-6 h-6 text-blue-600" />
+              <Fingerprint className="w-6 h-6 text-[#165DFF]" />
               <span>八、生物识别信息管理</span>
             </CardTitle>
           </CardHeader>
@@ -182,7 +182,7 @@ export default function PrivacyPage() {
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-3 text-xl">
-              <Database className="w-6 h-6 text-blue-600" />
+              <Database className="w-6 h-6 text-[#165DFF]" />
               <span>九、数据贡献设置</span>
             </CardTitle>
           </CardHeader>

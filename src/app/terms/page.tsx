@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const sections = [
   {
-    icon: <FileText className="w-6 h-6 text-blue-600" />,
+    icon: <FileText className="w-6 h-6 text-[#165DFF]" />,
     title: '一、服务说明',
     content: `职途星是一个基于AI技术的职业规划与模拟面试平台，为大学生和求职者提供以下服务：`,
     list: [
@@ -49,7 +49,7 @@ const sections = [
     note: '违反以上规范，我们有权暂停或终止您的账户，并保留追究法律责任的权利。',
   },
   {
-    icon: <Shield className="w-6 h-6 text-blue-600" />,
+    icon: <Shield className="w-6 h-6 text-[#165DFF]" />,
     title: '四、知识产权',
     content: `关于知识产权的说明：`,
     list: [
@@ -84,7 +84,7 @@ const sections = [
     note: '重大变更我们会通过站内通知、邮件或短信等方式告知您。',
   },
   {
-    icon: <MessageCircle className="w-6 h-6 text-blue-600" />,
+    icon: <MessageCircle className="w-6 h-6 text-[#165DFF]" />,
     title: '七、争议解决',
     content: `如发生争议，解决方式如下：`,
     list: [
@@ -100,7 +100,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-600 to-blue-600 text-white py-16">
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
             <FileText className="w-10 h-10" />
