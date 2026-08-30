@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEmployerSession } from '@/lib/employer-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { execSql } from '@/lib/exec-sql';
+import { buildMatchBreakdown, CandidatePortraitLike } from '@/lib/employer-match-breakdown';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -72,6 +73,58 @@ function calculateMatchScore(candidate: Record<string, unknown>, post: Record<st
   return Math.round((score / Math.max(totalWeight, 1)) * 100);
 }
 
+// 为匹配结果补充「候选人可读信息 + 匹配解释层」（判断力≠打分）
+async function enrichMatches(items: Record<string, unknown>[], post: Record<string, unknown>): Promise<Record<string, unknown>[]> {
+  if (!items || items.length === 0) return items;
+  const ids = items.map((i) => i.candidate_user_id as string).filter(Boolean);
+  if (ids.length === 0) return items;
+
+  const placeholders = ids.map(() => '%L').join(',');
+  const sql = `
+    SELECT user_id, nickname, major, grade, graduation_year,
+      target_cities, target_industry, target_job,
+      hard_skills, soft_skills, has_internship, has_project,
+      portrait_completeness_score, assessment_overall_score
+    FROM public.user_portrait_v
+    WHERE user_id IN (${placeholders})
+  `;
+  const rows = (await execSql(sql, ...ids)) as Array<Record<string, unknown>>;
+  const byId = new Map<string, Record<string, unknown>>();
+  for (const r of rows) {
+    if (r.user_id) byId.set(r.user_id as string, r);
+  }
+
+  return items.map((item) => {
+    const uid = item.candidate_user_id as string;
+    const cand = byId.get(uid) || null;
+    const breakdown = cand
+      ? buildMatchBreakdown(cand as unknown as CandidatePortraitLike, {
+          required_hard_skills: post.required_hard_skills as string[] | null,
+          target_industry: post.target_industry as string | null,
+          target_cities: post.target_cities as string[] | null,
+        })
+      : null;
+    return {
+      ...item,
+      candidate: cand
+        ? {
+            nickname: cand.nickname ?? null,
+            major: cand.major ?? null,
+            grade: cand.grade ?? null,
+            graduation_year: cand.graduation_year ?? null,
+            target_industry: cand.target_industry ?? null,
+            target_cities: cand.target_cities ?? null,
+            target_job: cand.target_job ?? null,
+            hard_skills: cand.hard_skills ?? null,
+            portrait_completeness_score: cand.portrait_completeness_score ?? null,
+            assessment_overall_score: cand.assessment_overall_score ?? null,
+          }
+        : null,
+      breakdown,
+    };
+  });
+}
+
 // GET /api/employer/job-posts/:id/match?page=1&page_size=20
 export async function GET(
   request: NextRequest,
@@ -113,10 +166,11 @@ export async function GET(
     .range(offset, offset + pageSize - 1);
 
   if (matches && matches.length > 0) {
+    const enriched = await enrichMatches(matches, post);
     return NextResponse.json({
       success: true,
       data: {
-        items: matches,
+        items: enriched,
         total: count || 0,
         page,
         page_size: pageSize,
@@ -140,10 +194,11 @@ export async function GET(
     .order('match_score', { ascending: false })
     .range(offset, offset + pageSize - 1);
 
+  const enriched = await enrichMatches(newMatches || [], post);
   return NextResponse.json({
     success: true,
     data: {
-      items: newMatches || [],
+      items: enriched,
       total: newCount || 0,
       page,
       page_size: pageSize,

@@ -20,10 +20,40 @@ interface JobPost {
   created_at: string; updated_at: string;
 }
 
+interface MatchCandidate {
+  nickname: string | null; major: string | null; grade: string | null;
+  graduation_year: string | null; target_industry: string | null;
+  target_cities: string[] | null; target_job: string | null;
+  hard_skills: string[] | null;
+  portrait_completeness_score: number | null;
+  assessment_overall_score: number | null;
+}
+
+interface MatchDim {
+  key: string; label: string; enabled: boolean; weight: number;
+  gained: number; level: 'high' | 'mid' | 'low' | 'na'; detail: string;
+}
+
+interface MatchBreakdownData {
+  summary: string; dimensions: MatchDim[];
+  strengths: string[]; shortfalls: string[]; advice: string;
+}
+
 interface MatchResult {
   id: number; job_post_id: number; candidate_user_id: string;
   match_score: number; matched_at: string; is_viewed: boolean;
   is_notified: boolean; notes: string | null;
+  candidate: MatchCandidate | null;
+  breakdown: MatchBreakdownData | null;
+}
+
+function dimColor(level: MatchDim['level']): string {
+  switch (level) {
+    case 'high': return 'bg-[#165DFF]';
+    case 'mid': return 'bg-[#FF7D00]';
+    case 'low': return 'bg-red-400';
+    default: return 'bg-gray-200';
+  }
 }
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -234,30 +264,68 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <p className="text-xs mt-1">点击&quot;触发匹配&quot;开始匹配候选人</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {matches.map((m) => (
-              <div key={m.candidate_user_id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-[#165DFF]/20 transition">
-                <input type="checkbox" checked={selectedIds.has(m.candidate_user_id)}
-                  onChange={() => toggleSelect(m.candidate_user_id)}
-                  className="rounded border-gray-300 text-[#165DFF] focus:ring-[#165DFF]" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">{m.candidate_user_id.slice(0, 8)}...</span>
-                    <span className="text-xs text-gray-400">匹配于 {new Date(m.matched_at).toLocaleDateString('zh-CN')}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full transition-all duration-500"
-                        style={{ width: `${m.match_score}%` }} />
+          <div className="space-y-3">
+            {matches.map((m) => {
+              const cand = m.candidate;
+              const bd = m.breakdown;
+              return (
+                <div key={m.candidate_user_id}
+                  className="p-4 rounded-xl border border-gray-100 hover:border-[#165DFF]/20 transition">
+                  <div className="flex items-center gap-3">
+                    <input type="checkbox" checked={selectedIds.has(m.candidate_user_id)}
+                      onChange={() => toggleSelect(m.candidate_user_id)}
+                      className="rounded border-gray-300 text-[#165DFF] focus:ring-[#165DFF]" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-900">{cand?.nickname || '未实名候选人'}</span>
+                        {cand?.major && <span className="text-xs text-gray-500">{cand.major}</span>}
+                        {cand?.grade && <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">{cand.grade}</span>}
+                        {cand?.graduation_year && <span className="text-xs text-gray-400">{cand.graduation_year}届</span>}
+                      </div>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+                        <span>匹配于 {new Date(m.matched_at).toLocaleDateString('zh-CN')}</span>
+                        {cand?.portrait_completeness_score != null && <span>画像 {cand.portrait_completeness_score}%</span>}
+                        {cand?.assessment_overall_score != null && <span>测评 {cand.assessment_overall_score}分</span>}
+                        {cand?.target_cities?.length ? <span>{cand.target_cities.join('、')}</span> : null}
+                        {cand?.hard_skills?.length ? <span>技能 {(cand.hard_skills || []).slice(0, 3).join('、')}</span> : null}
+                      </div>
                     </div>
-                    <span className="text-sm font-bold text-[#165DFF] w-8 text-right">{m.match_score}%</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full transition-all duration-500"
+                          style={{ width: `${m.match_score}%` }} />
+                      </div>
+                      <span className="text-sm font-bold text-[#165DFF] w-8 text-right">{m.match_score}%</span>
+                    </div>
                   </div>
+
+                  {bd && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-600">{bd.summary}</p>
+                      <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1.5">
+                        {bd.dimensions.filter((d) => d.enabled).map((d) => (
+                          <div key={d.key} className="flex items-center gap-2">
+                            <span className="text-[11px] text-gray-500 w-14 shrink-0">{d.label}</span>
+                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${dimColor(d.level)}`}
+                                style={{ width: `${d.weight ? (d.gained / d.weight) * 100 : 0}%` }} />
+                            </div>
+                            <span className="text-[11px] text-gray-500 w-10 text-right">{d.gained}/{d.weight}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {bd.shortfalls.length > 0 && (
+                        <div className="mt-2">
+                          <span className="text-[11px] text-red-500 font-medium">短板：</span>
+                          <span className="text-[11px] text-gray-600">{bd.shortfalls.join('；')}</span>
+                        </div>
+                      )}
+                      <p className="mt-2 text-[11px] text-gray-500 leading-relaxed">建议：{bd.advice}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
