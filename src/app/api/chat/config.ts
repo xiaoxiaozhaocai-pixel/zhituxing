@@ -43,7 +43,7 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     description: '要不要优化一下简历？AI帮你打磨，让HR眼前一亮。',
     actionLabel: '优化简历',
     tabId: 'jobs',
-    url: '/resume',
+    url: '/resume-optimize',
   },
   career_paths: {
     title: '🎯 检测到你在找求职方向',
