@@ -206,7 +206,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <span className="text-gray-500">技能要求</span>
             <div className="mt-1 flex flex-wrap gap-1">
               {post.required_hard_skills.map(s => (
-                <span key={s} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{s}</span>
+                <span key={s} className="px-2 py-0.5 bg-[#165DFF]/10 text-[#165DFF] rounded text-xs">{s}</span>
               ))}
               {post.required_soft_skills.map(s => (
                 <span key={s} className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">{s}</span>

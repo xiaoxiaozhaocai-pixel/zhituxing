@@ -476,7 +476,7 @@ export default function CandidateDetailPage() {
                       </h4>
                     </div>
                     {it.tech_stack && (
-                      <div className="mt-1.5 text-xs text-blue-700 font-mono">{it.tech_stack}</div>
+                      <div className="mt-1.5 text-xs text-[#165DFF] font-mono">{it.tech_stack}</div>
                     )}
                     {it.description && (
                       <p className="mt-2 text-sm text-slate-600 leading-relaxed">{it.description}</p>

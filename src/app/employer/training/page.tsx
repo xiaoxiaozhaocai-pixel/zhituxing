@@ -374,12 +374,12 @@ function CreateTrackDialog({
 function statusBadge(status: string): { label: string; cls: string } {
   switch (status) {
     case 'invited':
-      return { label: '已邀请', cls: 'bg-blue-50 text-blue-600' };
+      return { label: '已邀请', cls: 'bg-[#165DFF]/10 text-[#165DFF]' };
     case 'accepted':
       return { label: '已接受', cls: 'bg-emerald-50 text-emerald-600' };
     case 'active':
     case 'learning':
-      return { label: '进行中', cls: 'bg-indigo-50 text-indigo-600' };
+      return { label: '进行中', cls: 'bg-[#165DFF]/10 text-[#165DFF]' };
     case 'completed':
       return { label: '已完成', cls: 'bg-green-50 text-green-600' };
     default:

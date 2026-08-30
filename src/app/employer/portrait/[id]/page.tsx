@@ -27,13 +27,13 @@ interface Progress {
 const LEVEL_LABELS = ['极低', '低', '中', '高', '极高'];
 const LEVEL_COLORS = ['bg-gray-100 text-gray-500 hover:bg-gray-200 border-gray-200',
   'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200',
-  'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200',
-  'bg-blue-100 text-[#165DFF] hover:bg-blue-200 border-[#165DFF]/30',
+  'bg-[#165DFF]/10 text-[#165DFF] hover:bg-[#165DFF]/20 border-[#165DFF]/20',
+  'bg-[#165DFF]/15 text-[#165DFF] hover:bg-[#165DFF]/25 border-[#165DFF]/30',
   'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border-[#165DFF]/40 hover:from-[#165DFF]/20 hover:to-[#3D7FFF]/20'];
 const LEVEL_SELECTED = ['ring-2 ring-gray-400 bg-gray-200',
   'ring-2 ring-gray-400 bg-gray-200',
-  'ring-2 ring-blue-400 bg-blue-100',
-  'ring-2 ring-[#165DFF] bg-blue-200',
+  'ring-2 ring-[#165DFF]/40 bg-[#165DFF]/15',
+  'ring-2 ring-[#165DFF] bg-[#165DFF]/20',
   'ring-2 ring-[#165DFF] bg-gradient-to-r from-[#165DFF]/20 to-[#3D7FFF]/20'];
 
 const SKILL_ANCHORS = ['零经验，仅接触相关领域', '单一工序入门(<1年)', '1-3年，熟悉1-2道工序', '3-5年，多工序+改善案例', '5年+，全工序/大厂背景'];
@@ -208,7 +208,7 @@ export default function BlindReviewPage() {
         {progress && progress.insights.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-50">
             {progress.insights.map((ins, i) => (
-              <div key={i} className="text-xs text-[#165DFF] bg-blue-50 rounded-lg px-3 py-1.5 mb-1 last:mb-0">
+              <div key={i} className="text-xs text-[#165DFF] bg-[#165DFF]/10 rounded-lg px-3 py-1.5 mb-1 last:mb-0">
                 💡 {ins}
               </div>
             ))}

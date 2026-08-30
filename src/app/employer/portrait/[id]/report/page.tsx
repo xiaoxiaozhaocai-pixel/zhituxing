@@ -179,7 +179,7 @@ export default function PortraitReportPage() {
         <h2 className="text-base font-semibold text-gray-900 mb-4">组态路径分析</h2>
         <div className="space-y-2">
           {highSkill >= n * 0.5 && (
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
               <span className="text-lg">🔵</span>
               <div>
                 <div className="text-sm font-medium text-gray-900">技能主导型路径</div>
@@ -188,7 +188,7 @@ export default function PortraitReportPage() {
             </div>
           )}
           {expSoft >= n * 0.3 && (
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
               <span className="text-lg">🟢</span>
               <div>
                 <div className="text-sm font-medium text-gray-900">经验+软素质型路径</div>
@@ -197,7 +197,7 @@ export default function PortraitReportPage() {
             </div>
           )}
           {skillSoft >= n * 0.3 && (
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
               <span className="text-lg">🟣</span>
               <div>
                 <div className="text-sm font-medium text-gray-900">技能+软素质型路径</div>

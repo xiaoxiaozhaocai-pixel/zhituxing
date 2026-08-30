@@ -50,7 +50,7 @@ const TYPE_TABS: { value: TxType | 'all'; label: string }[] = [
 const TYPE_META: Record<TxType, { label: string; cls: string; icon: typeof ArrowDownToLine }> = {
   recharge: { label: '充值', cls: 'text-emerald-600 bg-emerald-50', icon: ArrowDownToLine },
   consume: { label: '消费', cls: 'text-rose-600 bg-rose-50', icon: ArrowUpFromLine },
-  refund: { label: '退款', cls: 'text-blue-600 bg-blue-50', icon: RefreshCw },
+  refund: { label: '退款', cls: 'text-[#165DFF] bg-[#165DFF]/10', icon: RefreshCw },
   bonus: { label: '奖励', cls: 'text-amber-600 bg-amber-50', icon: ArrowDownToLine },
 };
 
