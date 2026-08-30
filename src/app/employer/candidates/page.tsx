@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { CANDIDATE_UNLOCK_PRICE_TEXT } from '@/lib/config';
 import {
   Loader2, Search, Briefcase, GraduationCap, MapPin, Award, Sparkles,
   Lock, Unlock, ArrowLeft, ArrowRight, X, Coins, MessageSquare,
@@ -121,7 +122,7 @@ export default function CandidatesPage() {
             <Sparkles className="w-6 h-6 text-[#165DFF]" />
             候选人库
           </h1>
-          <p className="text-sm text-slate-500 mt-1">¥10/条 · 24 小时内重复查看免费</p>
+          <p className="text-sm text-slate-500 mt-1">{CANDIDATE_UNLOCK_PRICE_TEXT} · 24 小时内重复查看免费</p>
         </div>
         <div className="flex items-center gap-3">
           {selectedIds.size > 0 && (

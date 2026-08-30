@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { CANDIDATE_UNLOCK_PRICE_TEXT } from '@/lib/config';
 import { useRouter } from 'next/navigation';
 import {
   Coins, Users, TrendingUp, Sparkles, ArrowRight, Loader2,
@@ -134,7 +135,7 @@ export default function DashboardPage() {
             </span>
             <span className="text-sm text-slate-500">条</span>
           </div>
-          <div className="text-xs text-slate-400 mt-2">¥10/条 · 解锁完整画像</div>
+          <div className="text-xs text-slate-400 mt-2">{CANDIDATE_UNLOCK_PRICE_TEXT} · 解锁完整画像</div>
         </div>
       </div>
 
