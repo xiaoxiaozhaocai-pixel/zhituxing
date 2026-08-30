@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CANDIDATE_UNLOCK_PRICE_TEXT } from '@/lib/config';
 import {
   Coins, Users, TrendingUp, Sparkles, ArrowRight, Loader2,
   Briefcase, Award, GraduationCap,
@@ -135,7 +134,7 @@ export default function DashboardPage() {
             </span>
             <span className="text-sm text-gray-500">条</span>
           </div>
-          <div className="text-xs text-gray-400 mt-2">{CANDIDATE_UNLOCK_PRICE_TEXT} · 解锁完整画像</div>
+          <div className="text-xs text-gray-400 mt-2">¥10/条 · 解锁完整画像</div>
         </div>
       </div>
 
@@ -204,4 +203,9 @@ function CandidateCard({ c }: { c: Candidate }) {
       {c.assessment_overall_score !== null && (
         <div className="flex items-center gap-1 text-xs text-gray-500">
           <Award className="w-3 h-3" />
-          测评综合：{c.assessme
+          测评综合：{c.assessment_overall_score}
+        </div>
+      )}
+    </div>
+  );
+}

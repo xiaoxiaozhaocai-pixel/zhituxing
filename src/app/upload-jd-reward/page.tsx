@@ -215,7 +215,7 @@ export default function UploadJdRewardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#F0F5FF] to-white">
       {/* 顶部Banner */}
       <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -304,14 +304,14 @@ export default function UploadJdRewardPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       1
                     </div>
                     <h4 className="font-medium text-gray-900 mb-1">上传真实校招JD</h4>
                     <p className="text-sm text-gray-500">粘贴岗位文本或上传截图，支持任意企业校招岗位</p>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       2
                     </div>
                     <h4 className="font-medium text-gray-900 mb-1">等待审核通过</h4>
@@ -561,4 +561,9 @@ export default function UploadJdRewardPage() {
           <span className="flex items-center gap-1">
             <Zap className="w-4 h-4" />
             快速审核
-          
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
