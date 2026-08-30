@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import Breadcrumb from '@/components/Breadcrumb';
 import { QUIZ_QUESTIONS, calculateQuizResult, type QuizResult } from '@/lib/assessment-engine';
-import {BarChart3, ChevronLeft, Award, AlertTriangle, RefreshCw, Sparkles} from 'lucide-react';
+import {BarChart3, ChevronLeft, Award, AlertTriangle, RefreshCw, Sparkles, ArrowRight} from 'lucide-react';
 
 const DIMENSION_ICONS: Record<string, string> = {
   '自我认知': '🧠',
@@ -15,6 +15,51 @@ const DIMENSION_ICONS: Record<string, string> = {
   '技能匹配': '🔧',
   '求职准备': '📋',
 };
+
+interface NextStep {
+  title: string;
+  desc: string;
+  href: string;
+  label: string;
+}
+
+/**
+ * 根据评分最低的维度，给出一条「下一步」主线建议。
+ * 让测评结果不只停留在一个分数上，而是接到具体的行动入口。
+ */
+function getNextStep(result: QuizResult): NextStep {
+  const lowest = [...result.dimensions].sort((a, b) => a.score - b.score)[0];
+  switch (lowest.name) {
+    case '自我认知':
+      return {
+        title: '先认识自己',
+        desc: '你的自我认知偏弱。建议先梳理自己的兴趣、性格和优势，再对应选方向、定目标，避免跟风。',
+        href: '/career-planning',
+        label: '去做职业规划',
+      };
+    case '职业方向':
+      return {
+        title: '先锁定方向',
+        desc: '你的职业方向还不够清晰。建议先明确目标行业与岗位，再针对性补技能、做简历，准备会更聚焦。',
+        href: '/career-planning',
+        label: '去生成职业规划',
+      };
+    case '技能匹配':
+      return {
+        title: '先补齐技能',
+        desc: '你与目标岗位的技能差距较大。建议先按缺口补足核心能力，再去匹配岗位和投递。',
+        href: '/learning-path',
+        label: '去看学习路径',
+      };
+    default:
+      return {
+        title: '先完善求职准备',
+        desc: '你的求职准备还需加强。建议先打磨简历、多练模拟面试，把硬件准备好再进入投递。',
+        href: '/resume-optimize',
+        label: '去优化简历',
+      };
+  }
+}
 
 export default function QuizPage() {
   const [step, setStep] = useState<'quiz' | 'result'>('quiz');
@@ -156,6 +201,42 @@ export default function QuizPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* 下一步建议：让测评结果接到具体行动 */}
+          <Card className="border-blue-100 overflow-hidden mb-6">
+            <div className="h-1.5 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]" />
+            <CardContent className="py-6">
+              <h3 className="font-medium text-[#1E293B] text-lg mb-1 flex items-center gap-2">
+                <ArrowRight className="w-4 h-4 text-[#165DFF]" />
+                你的下一步
+              </h3>
+              <p className="text-sm text-[#64748B] mb-4">
+                测评不只给你一个分数。根据结果，建议你先从这里发力：
+              </p>
+              <div className="bg-blue-50/50 rounded-xl p-4 mb-4">
+                <div className="text-[#165DFF] font-medium mb-1">
+                  {getNextStep(result).title}
+                </div>
+                <p className="text-sm text-[#475569]">
+                  {getNextStep(result).desc}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href={getNextStep(result).href}>
+                  <Button className="w-full sm:w-auto bg-[#165DFF] hover:bg-[#3D7FFF] gap-2">
+                    {getNextStep(result).label}
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Link href="/match">
+                  <Button variant="outline" className="w-full sm:w-auto gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    去匹配岗位
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* 行动按钮 */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

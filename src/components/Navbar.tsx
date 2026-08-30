@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap, BarChart3, Route} from 'lucide-react';
+import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap, BarChart3, Route, ClipboardCheck} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
