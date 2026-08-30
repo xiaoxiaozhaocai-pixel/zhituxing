@@ -522,6 +522,19 @@ export default function MatchPage() {
                             <Badge variant="outline" className="text-xs">+{item.matchedSkills.length + item.gapSkills.length - 5}</Badge>
                           )}
                         </div>
+
+                        {/* 适配解读：把「为什么匹配+怎么补」提到主位（P1，弱化%独大） */}
+                        {item.weighting && (
+                          <div className="mt-2 rounded-lg bg-violet-50/60 border border-violet-100 px-3 py-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[11px] font-semibold text-violet-700">适配解读</span>
+                              <Badge className="text-[10px] bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100">
+                                {item.weighting.role.label}
+                              </Badge>
+                            </div>
+                            <p className="mt-1 text-xs text-gray-600 leading-relaxed">{item.weighting.advice}</p>
+                          </div>
+                        )}
                       </div>
 
                       {/* 展开按钮（与卡片同步状态，点击不再冒泡到 Card） */}
