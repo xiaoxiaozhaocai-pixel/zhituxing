@@ -2071,6 +2071,55 @@ export const SUBTEXT_GLOSSARY: Record<string, GlossaryEntry> = {
       risk: 'medium',
       advice: '复盘本月关键产出，主动找领导对齐期望，别等结果出来才被动。',
     },
+
+  // ============ JD 黑话 · 补充 ============
+  '大小周': { category: 'jd', surface: '写的是「大小周」', meaning: '单双周轮休，一个月多上2天班，实际加班更多。', risk: 'high', advice: '问清排班与加班费，别把大小周当双休。' },
+  '单休': { category: 'jd', surface: '写的是「单休」', meaning: '一周只休1天，工作强度往往较高，生活节奏被压缩。', risk: 'high', advice: '问清工作内容与休息补偿，评估能否长期接受。' },
+  '无责底薪': { category: 'jd', surface: '写的是「无责底薪」', meaning: '看似有保底，但常伴随高销售指标，达标难可能拿不满或考核严。', risk: 'high', advice: '问清底薪是否与考核挂钩、提成结构，别只看数字。' },
+  '电话销售': { category: 'jd', surface: '写的是「电话销售」', meaning: '往往是高流失、靠话术的高压销售岗，培训与指标压力大。', risk: 'high', advice: '确认是真销售还是变相催收/推广，评估抗压与兴趣。' },
+  '地推': { category: 'jd', surface: '写的是「地推/渠道推广」', meaning: '多为线下拉新、体力活，指标压力与流动性偏高。', risk: 'medium', advice: '问清推广产品、计酬方式与地域，评估是否愿意长期外跑。' },
+  '驻外': { category: 'jd', surface: '写的是「驻外/常驻外地」', meaning: '需长期驻项目地，离家远、生活不便，补贴与调休要问清。', risk: 'high', advice: '问清驻地城市、周期、补贴与探亲假，别只看title。' },
+  '倒班': { category: 'jd', surface: '写的是「倒班/轮班制」', meaning: '要上夜班或频繁倒班，作息混乱，影响健康与生活。', risk: 'high', advice: '问清倒班频率与夜班补贴，评估身体能否适应。' },
+  '试用期': { category: 'jd', surface: '写的是「试用期」', meaning: '试用期工资、转正考核、社保缴纳都有讲究，可能被压价或试用期裁员。', risk: 'medium', advice: '问清试用期时长、薪资比例、转正标准与社保起缴时间。' },
+  '六险一金': { category: 'jd', surface: '写的是「六险一金」', meaning: '在五险一金外多一份补充医疗/商业险，福利相对更好。', risk: 'low', advice: '确认是额外商业险还是变相打包，问清具体种类。' },
+  '销售性质': { category: 'jd', surface: '写的是「销售性质/业绩导向」', meaning: '收入与业绩强挂钩，压力大、流动性高，底薪可能不高。', risk: 'medium', advice: '问清提成结构、客源来源与考核周期，评估能否接受。' },
+  '做五休二': { category: 'jd', surface: '写的是「做五休二」', meaning: '标准双休，但需确认是否真的下班后不被打扰。', risk: 'low', advice: '问清加班与加班费情况，避免「双休只是写在纸上」。' },
+  '全额五险一金': { category: 'jd', surface: '写的是「全额缴纳五险一金」', meaning: '按全额工资基数缴纳，福利更规范，但注意是否真按实际工资缴。', risk: 'low', advice: '问清缴费基数，确认是否真按合同工资全额。' },
+
+  // ============ 面试潜台词 · 补充 ============
+  '你对我们公司有什么建议': { category: 'interview', surface: '问「你对我们公司有什么建议」', meaning: '考察你对公司的了解与思考深度，也可能试探你的投入度。', risk: 'medium', advice: '基于调研给1-2个具体、可落地的小建议，别空泛套话。' },
+  '你觉得这个岗位枯燥吗': { category: 'interview', surface: '问「会不会觉得岗位枯燥」', meaning: '提前给你打预防针，岗位可能重复、琐碎，看你能否长期坚持。', risk: 'medium', advice: '坦诚表达对重复工作的理解+你如何从中沉淀，别违心说很喜欢。' },
+  '你能承担多大压力': { category: 'interview', surface: '问「你能承受多大压力」', meaning: '压力测试，岗位可能强度高，考察你的韧性。', risk: 'medium', advice: '给出具体抗压案例+调节方式，别只喊口号说「我抗压」。' },
+  '你的成绩在班里怎么样': { category: 'interview', surface: '问「你成绩在班里怎么样」', meaning: '考察学习能力与自驱力，成绩一般可能被质疑。', risk: 'medium', advice: '用学习成果+主动补短板佐证，别回避也别夸大。' },
+  '你为什么不选大厂': { category: 'interview', surface: '问你「为什么不选大厂」', meaning: '考察职业选择的理性、动机是否清晰，也测试你是否会被分心。', risk: 'medium', advice: '讲清自己的选择逻辑与匹配点，别贬低大厂也别显得将就。' },
+  '你会不会觉得大材小用': { category: 'interview', surface: '问「会不会觉得大材小用」', meaning: '岗位可能偏基础，试探你的预期与稳定性。', risk: 'medium', advice: '说明你理解岗位价值+如何发挥，别流露出不甘心。' },
+  '你如何看待这份工作的价值': { category: 'interview', surface: '问「这份工作对你有什么价值」', meaning: '考察你对岗位的理解与长期动机，避免招进来就走的。', risk: 'low', advice: '结合岗位实际价值+你的成长诉求回答，别只谈钱。' },
+
+  // ============ 简历潜台词（HR 视角） · 补充 ============
+  '自学能力': { category: 'resume', surface: '简历写「自学能力强」', meaning: 'HR 会追问自学了什么、有没有落地成果，空泛会被质疑。', risk: 'medium', advice: '给出你自学的具体内容+产出（项目/证书/作品），用实例支撑。' },
+  '数据分析': { category: 'resume', surface: '简历写「数据分析能力」', meaning: 'HR 会追问用的什么工具、处理了什么真实数据、得出了什么结论。', risk: 'medium', advice: '写明工具+真实数据源+结论，最好能落到业务动作。' },
+  '思路清晰': { category: 'resume', surface: '简历写「思路清晰/逻辑严谨」', meaning: 'HR 会通过追问验证你是否真的条理清楚，空洞会被打回。', risk: 'medium', advice: '用STAR讲清一件事的来龙去脉，用结构证明逻辑。' },
+  '严谨细致': { category: 'resume', surface: '简历写「工作严谨细致」', meaning: 'HR 会问具体如何体现细心，防止只是空话。', risk: 'low', advice: '举一个因细心避免出错的真实案例，用细节说话。' },
+  '团队精神': { category: 'resume', surface: '简历写「有团队精神」', meaning: 'HR 会追问分工、协作、冲突处理，空话难验证。', risk: 'low', advice: '讲清一次真实协作里的角色与贡献，别只说「配合好」。' },
+  '出色的执行力': { category: 'resume', surface: '简历写「执行力强」', meaning: 'HR 会追问你如何把事落地，是否真能扛事。', risk: 'medium', advice: '用「目标-行动-结果」三段讲清一次执行，突出量化产出。' },
+  '吃苦': { category: 'resume', surface: '简历写「能吃苦/不怕累」', meaning: 'HR 可能理解为愿意无条件加班，或加进脏活累活。', risk: 'medium', advice: '表达抗压意愿的同时，也讲清你的工作边界，别把「能吃苦」写成「没底线」。' },
+
+  // ============ 职场黑话 · 补充 ============
+  '降本增效': { category: 'workplace', surface: '公司说「降本增效」', meaning: '往往意味着收缩预算、可能优化人员，福利与编制收紧。', risk: 'high', advice: '关注自身岗位稳定性与考核，提前做好预案，别坐等。' },
+  '复盘': { category: 'workplace', surface: '领导说「复盘一下」', meaning: '总结经验、找问题，也可能借机追溯责任。', risk: 'low', advice: '基于事实讲清做了什么、哪里可改进，别只找借口。' },
+  '拉齐': { category: 'workplace', surface: '说「大家拉齐一下」', meaning: '要统一口径、对齐信息，避免各有各的说法。', risk: 'low', advice: '主动确认各方观点与结论，把分歧摆到台面上。' },
+  '沉淀': { category: 'workplace', surface: '说「把这沉淀下来」', meaning: '要把方法、经验固化成文档或流程，别做完就忘。', risk: 'low', advice: '把过程+结论整理成可复用资料，方便后续查用。' },
+  '阵痛期': { category: 'workplace', surface: '领导说「现在在阵痛期」', meaning: '业务可能在调整、转型，短期内压力大、不稳定。', risk: 'high', advice: '问清调整方向与时间表，评估自己的位置与前景。' },
+  '大环境不好': { category: 'workplace', surface: '说「今年大环境不好」', meaning: '可能是成本收紧、降薪裁员的铺垫，也是压价的理由。', risk: 'high', advice: '警惕不合理的薪资/考核诉求，理性判断真实的经营状况。' },
+  '行业寒冬': { category: 'workplace', surface: '说「行业正处于寒冬」', meaning: '行业整体下滑，公司可能收缩或加大内卷。', risk: 'high', advice: '了解公司现金流与业务，评估风险，别轻易接大饼。' },
+  '甩锅': { category: 'workplace', surface: '说「这个不是我负责」', meaning: '推卸责任、明确边界，也提示团队可能在互相撇清。', risk: 'medium', advice: '以事实和记录为准，温和确认职责，别跟着一起推。' },
+  '踩坑': { category: 'workplace', surface: '说「这个我之前踩过坑」', meaning: '提醒你某个做法有风险，是经验之谈。', risk: 'low', advice: '认真听并结合实际判断，别盲目照做也别不当回事。' },
+  '我尽力了': { category: 'workplace', surface: '同事说「我已经尽力了」', meaning: '结果可能不理想，是给自己的交代，也可能是想止步于此。', risk: 'low', advice: '看结果与过程，理性分析是否还有可改进空间，别逼得太紧。' },
+  '就这样吧': { category: 'workplace', surface: '说「就这样吧」', meaning: '对现状妥协、不想再折腾，可能是精力不济或意愿不足。', risk: 'low', advice: '结合上下文判断是结束还是暂时停顿，别误解为彻底定论。' },
+  '第二曲线': { category: 'workplace', surface: '说「要找第二增长曲线」', meaning: '主业可能见顶，要在新方向找机会，风险与不确定性高。', risk: 'medium', advice: '关注新业务投入与自身机会，评估是增长还是焦虑。' },
+  '传帮带': { category: 'workplace', surface: '说「要有传帮带」', meaning: '要老带新，重视经验传承，也可能暗示你要多带新人。', risk: 'low', advice: '把经验讲清楚、交给别人，别藏私，也别过度代劳。' },
+  '校招': { category: 'workplace', surface: '写「校招」', meaning: '面向应届生，培养体系相对成熟，但也可能门槛与编制有限。', risk: 'low', advice: '关注培养机制、定岗方向与转正条件，别只看title。' },
+  '社招': { category: 'workplace', surface: '写「社招」', meaning: '面向有经验者，看重即战力，应届生投递可能难匹配。', risk: 'low', advice: '确认自身经验是否匹配要求，不匹配就转投更合适的岗位。' },
 };
 
 /** 词条命中匹配：对输入做子串匹配，返回命中集合 */
