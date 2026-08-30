@@ -50,6 +50,12 @@ interface ReportData {
     values: number;
     risk: number;
   };
+  dimension_insight: Record<string, {
+    evidence: string;
+    reason: string;
+    path: string;
+    suggestion: string;
+  }> | null;
   career_path: Array<{
     stage: string;
     action: string;
@@ -65,6 +71,15 @@ interface ReportData {
     status: string;
   }>;
 }
+
+const DIMS = [
+  { key: 'personality', label: '性格匹配' },
+  { key: 'major', label: '专业匹配' },
+  { key: 'ability', label: '能力匹配' },
+  { key: 'interest', label: '兴趣匹配' },
+  { key: 'values', label: '价值观匹配' },
+  { key: 'risk', label: '风险承受' },
+] as const;
 
 export default function ReportPage() {
   const router = useRouter();
@@ -348,6 +363,34 @@ export default function ReportPage() {
                         <Radar name="诊断" dataKey="value" stroke="#165DFF" fill="#165DFF" fillOpacity={0.32} strokeWidth={2} />
                       </RadarChart>
                     </ResponsiveContainer>
+                </div>
+                {/* 判断力详解 · 依据与提升路径 */}
+                <div className="mt-6 space-y-4">
+                  <h4 className="text-sm font-semibold text-[#165DFF]">判断力详解 · 依据与提升路径</h4>
+                  {report?.dimension_insight ? (
+                    <div className="space-y-3">
+                      {DIMS.map(d => {
+                        const ins = report.dimension_insight?.[d.key];
+                        if (!ins) return null;
+                        return (
+                          <div key={d.key} className="rounded-xl border border-[#165DFF]/15 bg-[#165DFF]/5 p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">{d.label}</span>
+                              <span className="text-sm text-[#165DFF]">得分 {report.dimensions[d.key]}%</span>
+                            </div>
+                            <div className="space-y-1.5 text-sm text-gray-600">
+                              <p><span className="text-gray-400">依据：</span>{ins.evidence}</p>
+                              <p><span className="text-gray-400">判定：</span>{ins.reason}</p>
+                              <p><span className="text-gray-400">提升：</span>{ins.path}</p>
+                              <p><span className="text-gray-400">建议：</span>{ins.suggestion}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">报告生成时间较早，暂无逐维度判断依据；重新生成报告可获得完整判断力详解。</p>
+                  )}
                 </div>
               </CardContent>
             )}

@@ -32,6 +32,14 @@ const GENERATE_SYSTEM_PROMPT = `你是一个专业的职业规划分析师。根
     "values": 65,
     "risk": 50
   },
+  "dimension_insight": {
+    "personality": { "evidence": "可观察行为依据", "reason": "判定理由", "path": "提升路径", "suggestion": "改进建议" },
+    "major": { "evidence": "可观察行为依据", "reason": "判定理由", "path": "提升路径", "suggestion": "改进建议" },
+    "ability": { "evidence": "可观察行为依据", "reason": "判定理由", "path": "提升路径", "suggestion": "改进建议" },
+    "interest": { "evidence": "可观察行为依据", "reason": "判定理由", "path": "提升路径", "suggestion": "改进建议" },
+    "values": { "evidence": "可观察行为依据", "reason": "判定理由", "path": "提升路径", "suggestion": "改进建议" },
+    "risk": { "evidence": "可观察行为依据", "reason": "判定理由", "path": "提升路径", "suggestion": "改进建议" }
+  },
   "career_path": [
     { "stage": "短期（0-1年）", "action": "具体行动描述" },
     { "stage": "中期（1-3年）", "action": "具体行动描述" },
@@ -49,6 +57,7 @@ const GENERATE_SYSTEM_PROMPT = `你是一个专业的职业规划分析师。根
 
 ## 评分说明
 - dimensions 各项 0-100：personality=性格匹配度, major=专业匹配度, ability=能力匹配度, interest=兴趣匹配度, values=价值观匹配度, risk=风险承受度
+- dimension_insight 为每个维度提供判断力解释：evidence=可观察行为依据（基于用户专业/年级/意向等具体信息，禁止空泛套话）、reason=判定理由（为什么这样判断）、path=提升路径（可执行行动路线）、suggestion=改进建议（一句可落地建议）。判断力不等于打分，必须给出"依据+理由+路径+建议"，禁止只给分数不给判断；每条 40-80 字，具体、可背调、不编造。
 - core_jobs 推荐 3 个最匹配岗位，match_score 0-100
 - skills_gap 列出 4-6 个核心技能缺口
 - action_plan 列出 6 个月的行动计划

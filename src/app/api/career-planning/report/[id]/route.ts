@@ -36,6 +36,7 @@ export async function GET(
       dimensions: planData.dimensions || {
         personality: 0, major: 0, ability: 0, interest: 0, values: 0, risk: 0
       },
+      dimension_insight: (planData.dimension_insight as Record<string, unknown> | null) || null,
       career_path: planData.career_path || [],
       skills_gap: planData.skills_gap || [],
       action_plan: planData.action_plan || [],
