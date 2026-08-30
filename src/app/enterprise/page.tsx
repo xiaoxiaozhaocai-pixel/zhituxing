@@ -5,11 +5,13 @@ import { ArrowRight, Check, Users, Target, TrendingUp, Sparkles, BarChart3, Sear
 
 // ─── 数据 ──────────────────────────────────────────────
 
+// 守四真：此前的"在校生规模/画像完整度/AI匹配准确率/平均响应"等精确数字均无法背调，
+// 遵循主站首页"避免硬编码失真数字"方针，改为可背调的能力/定位表述，不编造具体规模或准确率指标。
 const stats = [
-  { value: '500+', label: '桂电在校生', icon: <Users className="w-5 h-5" /> },
-  { value: '85%', label: '画像完整度', icon: <Target className="w-5 h-5" /> },
-  { value: '92%', label: 'AI匹配准确率', icon: <TrendingUp className="w-5 h-5" /> },
-  { value: '3min', label: '平均响应速度', icon: <Zap className="w-5 h-5" /> },
+  { value: 'AI', label: '岗位智能匹配', icon: <Users className="w-5 h-5" /> },
+  { value: '多维', label: '候选人画像', icon: <Target className="w-5 h-5" /> },
+  { value: '桂电', label: '面向在校生', icon: <TrendingUp className="w-5 h-5" /> },
+  { value: '全流程', label: '匹配至入职', icon: <Zap className="w-5 h-5" /> },
 ];
 
 const features = [
