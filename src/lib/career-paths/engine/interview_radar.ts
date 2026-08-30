@@ -1047,6 +1047,131 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
   '智能科学': ['ai', 'robotics', 'data'],
 };
 
+/**
+ * 专业 → 深度切入判断（判断力层，2025-2026 数据窗口，来源经多源交叉校验）
+ * 比 MAJOR_INDUSTRY_HINTS 更细：给出「最佳切入行业 + 切入点 + 避雷」，
+ * 面向桂电主业核心专业，供行业雷达做个性化判断参考。守四真，不夸大。
+ */
+interface MajorDeepInsight {
+  /** 最佳切入行业（展示名） */
+  best: string[];
+  /** 切入点：具体方向 + 真实信号 */
+  entry: string;
+  /** 避雷/注意点 */
+  avoid: string;
+}
+const MAJOR_DEEP_INSIGHTS: Record<string, MajorDeepInsight> = {
+  '计算机': {
+    best: ['互联网/软件开发', '汽车·智驾/智能座舱软件', '机器人·具身大脑算法'],
+    entry: '主攻「AI+工程落地」—把 Claude Code/Cursor/Agent 工具练成可背调的闭环项目，再往端到端智驾、具身大模型迁移。2026 春招 AI 职位数同比增 455%、供需比仅 0.97，是供给明显不足的蓝海。',
+    avoid: '互联网通用岗（前端/测试/运营）在缩编，避免停留于纯八股与模板项目，要往 AI、云原生、自动驾驶、运动控制算法等高稀缺方向转。',
+  },
+  '软件': {
+    best: ['互联网/软件开发', 'AI 应用', '汽车·智能座舱'],
+    entry: '把「AI 全流程编程」做成真实项目闭环，从 Agent 工具提效切入，向大模型应用、端到端软件架构走。',
+    avoid: '低端纯编码岗位正在被出清，避免停留在增删改查，要往「AI + 业务」复合方向走。',
+  },
+  '通信': {
+    best: ['通信/运营商', '半导体·芯片', '军工保密'],
+    entry: '通信原理 + 网络/项目实作是桂电王牌硬实力，运营商与设备商看重技术根基与稳定性；也可向车规芯片、射频方向延伸。',
+    avoid: '避免只背课本理论，缺真实组网/协议实测；纯软件应用岗在缩编，要把技术做深。',
+  },
+  '电子': {
+    best: ['电子/半导体·芯片', '汽车·车规芯片', '机器人·传感器'],
+    entry: '模拟 IC 设计、数字后端、先进制程工艺、存储是 2026 薪资上探最快方向；2026 中国半导体市场 +92.9%、数字后端需供比 6.43，是当前最缺人赛道。',
+    avoid: '筑牢电路与器件基础（MOSFET/电路分析），不要盲目转码；产线思维与工程交付能力比学历标签更关键。',
+  },
+  '微电子': {
+    best: ['电子/半导体·芯片', '军工保密'],
+    entry: '模拟/数字 IC 设计、先进制程工艺是国产替代主战场，2026 存储 +262.9%、数字后端需供比 6.43，缺口持续放大。',
+    avoid: '勿因行情热度盲目转码，要把器件物理与电路基础打牢，否则面试一问即溃。',
+  },
+  '集成电路': {
+    best: ['电子/半导体·芯片', '军工保密'],
+    entry: '设计/验证/工艺三线都缺人，数字后端与存储是 2026 最紧缺环节，需供比 6.43。',
+    avoid: '避免只懂概念不懂流程，要把 EDA 流程与流片/封装工程认知补齐。',
+  },
+  '机械': {
+    best: ['智能制造/工艺', '汽车', '机器人·本体/灵巧手'],
+    entry: '纯机械供给过剩，向「机械 + 电控/软件」复合走；执行器、灵巧手、关节模组是机器人最缺的高壁垒细分。',
+    avoid: '传统机械工艺岗库存堆积，避免只凭机械制图与 CAD，要主动补电控与算法。',
+  },
+  '机电': {
+    best: ['智能制造/工艺', '汽车', '机器人'],
+    entry: '机械结构 + 电控/软件的复合能力最吃香，机器人本体、伺服、运动控制是高薪缺口方向。',
+    avoid: '避免停留在传统机电设备维保，要向「机械+AI+电控」跨界复合转。',
+  },
+  '车辆': {
+    best: ['汽车', '新能源车', '智能制造'],
+    entry: '智驾与智能座舱下沉是 2026 最大变量（智驾缺口约 68 万），纯三电岗增速放缓，价值重心转向智驾/座舱软件。',
+    avoid: '纯车辆结构传统岗在收缩，避免只懂整车不碰智驾/电池/电控；软件应用岗同比 -74%，要往「AI+汽车」复合走。',
+  },
+  '电子信息': {
+    best: ['电子/半导体', '消费电子', '通信'],
+    entry: '电子/软件功底 + 行业理解是差异化关键，半导体、消费电子（智能硬件）与军工保密都是桂电主去向。',
+    avoid: '避免只学课程不碰项目，要把「电子 + 软件」双栈做实。',
+  },
+  '自动化': {
+    best: ['机器人', '智能制造', '半导体'],
+    entry: '运动控制算法需供比 1.46、机器人算法工程师平均月薪 23335 元且岗位同比增 57%，是确定性最高方向之一。',
+    avoid: '避免只做 PLC 传统电气，要往算法与系统集成走；人形机器人数据与盈利瓶颈尚未突破，警惕概念热度。',
+  },
+  '人工智能': {
+    best: ['AI', '数据/算法', '软件开发'],
+    entry: 'AI 岗位供需比 0.97、是市场最供不应求的方向；端到端智驾、具身大模型是落地主战场。',
+    avoid: '避免只调包不啃底层原理，要补深度学习/大模型地基；警惕过度承诺「AI 万能」。',
+  },
+  '材料': {
+    best: ['新能源', '电子/半导体·材料工艺'],
+    entry: '固态电解质、储能系统、新能源材料是 2026 最稀缺方向；储能研发岗缺口率高达 35%、液流电池供需比 1:12。',
+    avoid: '光伏上游硅料/组件处于价格战出清期，避免扎进低价内卷环节，优先锁定储能、新型储能、光储融合。',
+  },
+  '能源': {
+    best: ['新能源', '智能制造'],
+    entry: '储能高景气是主战场，研发缺口率 35%，聚焦细分深度而非泛泛技能。',
+    avoid: '避免只盯光伏发电端（上游内卷），要往储能、光储融合、新型电力系统走。',
+  },
+  '化工': {
+    best: ['新能源', '电子/半导体·工艺'],
+    entry: '向电池材料、半导体材料/工艺延伸，是材料+化工类的高价值跳板。',
+    avoid: '避免停留传统化工下游，要向新能源材料、先进制程工艺迁移。',
+  },
+  '光电': {
+    best: ['电子/光学', '半导体', '军工保密'],
+    entry: '光电/光学工程是桂电特色强项，半导体与军工保密方向对光学人才需求明确。',
+    avoid: '避免只懂光学理论不碰器件/系统集成，要往光电+电子复合走。',
+  },
+};
+
+/** 根据专业生成深度切入建议（优先 MAJOR_DEEP_INSIGHTS，未命中回退 MAJOR_INDUSTRY_HINTS） */
+function buildMajorImplication(major: string): { industryKeys: string[]; text: string } | undefined {
+  if (!major) return undefined;
+  // 优先：深度切入判断（最佳切入 + 切入点 + 避雷）
+  for (const m of Object.keys(MAJOR_DEEP_INSIGHTS)) {
+    if (major.includes(m)) {
+      const d = MAJOR_DEEP_INSIGHTS[m];
+      const keys = (MAJOR_INDUSTRY_HINTS[m] || []).slice();
+      return {
+        industryKeys: keys.length > 0 ? keys : d.best.map((b) => b),
+        text: `你的专业「${major}」最对口 ${d.best.join('、')}。\n🎯 切入点：${d.entry}\n⚠️ 避雷:${d.avoid}`,
+      };
+    }
+  }
+  // 回退：仅列举对口行业
+  for (const m of Object.keys(MAJOR_INDUSTRY_HINTS)) {
+    if (major.includes(m)) {
+      const keys = MAJOR_INDUSTRY_HINTS[m];
+      const labels = keys
+        .map((k) => ALL_INDUSTRY_RADAR.find((r) => r.key === k)?.label)
+        .filter(Boolean);
+      return {
+        industryKeys: keys,
+        text: `你的专业「${major}」更对口${labels.join('、')}，这些行业的面试，可以优先按雷达做针对性准备。`,
+      };
+    }
+  }
+}
+
 /** 识别行业 key */
 function detectIndustryKey(input: string): { key: string | null; label: string | null } {
   const text = (input || '').toLowerCase().trim();
@@ -1067,24 +1192,6 @@ function detectIndustryKey(input: string): { key: string | null; label: string |
     }
   }
   return { key: null, label: null };
-}
-
-/** 根据专业生成推荐行业 + 一句话建议 */
-function buildMajorImplication(major: string): { industryKeys: string[]; text: string } | undefined {
-  if (!major) return undefined;
-  for (const m of Object.keys(MAJOR_INDUSTRY_HINTS)) {
-    if (major.includes(m)) {
-      const keys = MAJOR_INDUSTRY_HINTS[m];
-      const labels = keys
-        .map((k) => ALL_INDUSTRY_RADAR.find((r) => r.key === k)?.label)
-        .filter(Boolean);
-      return {
-        industryKeys: keys,
-        text: `你的专业「${major}」更对口${labels.join('、')}，这些行业的面试，可以优先按雷达做针对性准备。`,
-      };
-    }
-  }
-  return undefined;
 }
 
 function buildSummary(radar: IndustryRadar, matchedMajor: string): string {
