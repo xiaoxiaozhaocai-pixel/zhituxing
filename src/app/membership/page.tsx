@@ -296,6 +296,61 @@ export default function MembershipPage() {
           ))}
         </div>
 
+        {/* 会员权益对比表 —— 导流转化 */}
+        <Card className="mb-8 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
+              <Crown className="w-5 h-5 text-blue-500" /> 免费 vs 会员 权益对比
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-2 font-medium text-gray-500">功能</th>
+                    <th className="text-center py-3 px-2 font-medium text-gray-500">免费用户</th>
+                    <th className="text-center py-3 px-2 font-medium text-blue-600 bg-blue-50">会员</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { name: 'AI对话', free: '每日10次', member: true },
+                    { name: '岗位匹配分析', free: '基础匹配', member: true },
+                    { name: '技能图谱', free: '查看关系', member: '全功能' },
+                    { name: '学习路径规划', free: '—', member: true },
+                    { name: '测评报告PDF导出', free: '—', member: true },
+                    { name: 'AI模拟面试', free: '—', member: '无限次' },
+                    { name: '对话导出', free: '每日3次', member: true },
+                    { name: '简历优化', free: '—', member: '永久会员' },
+                  ].map((row) => (
+                    <tr key={row.name} className="border-b border-gray-100">
+                      <td className="py-3 px-2 text-gray-700">{row.name}</td>
+                      <td className="py-3 px-2 text-center">
+                        {row.free === '—' ? (
+                          <span className="text-gray-300">—</span>
+                        ) : (
+                          <span className="text-gray-500">{row.free}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2 text-center bg-blue-50/50">
+                        {row.member === true ? (
+                          <Check className="w-4 h-4 text-green-500 inline" />
+                        ) : (
+                          <span className="text-blue-600 font-medium text-xs">{row.member}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-center text-sm text-gray-500 mt-4">
+              升级会员，解锁全部高级能力，加速你的职业发展 🚀
+            </p>
+          </CardContent>
+        </Card>
+
         {/* 免费用户权益 */}
         <Card className="mb-8 border-gray-200">
           <CardHeader>
