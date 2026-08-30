@@ -26,7 +26,7 @@ export default function GenerateGuideModal({ show, onClose, onContinue }: Genera
 
         {/* 内容 */}
         <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 text-center mb-4">
+          <h2 className="text-xl font-bold text-slate-900 text-center mb-4">
             生成更精准的职业规划
           </h2>
 
@@ -49,7 +49,7 @@ export default function GenerateGuideModal({ show, onClose, onContinue }: Genera
             </Link>
             <button
               onClick={onContinue}
-              className="w-full py-2.5 text-gray-600 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full py-2.5 text-slate-600 text-sm border border-slate-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               继续生成通用版
             </button>

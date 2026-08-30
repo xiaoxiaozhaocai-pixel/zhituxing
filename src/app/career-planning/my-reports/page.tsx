@@ -110,11 +110,11 @@ export default function MyReportsPage() {
         {/* 页面标题 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <FileText className="w-7 h-7 text-[#722ED1]" />
               我的职业规划报告
             </h1>
-            <p className="text-gray-500 mt-2">
+            <p className="text-slate-500 mt-2">
               查看和管理您的职业规划报告
             </p>
           </div>
@@ -151,8 +151,8 @@ export default function MyReportsPage() {
                     <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Sparkles className="w-12 h-12 text-purple-500" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">还没有职业规划报告</h3>
-                    <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">还没有职业规划报告</h3>
+                    <p className="text-slate-500 mb-8 max-w-md mx-auto">
                       生成你的专属职业规划，基于专业、年级和兴趣，精准匹配最适合你的岗位
                     </p>
                     <Link href="/career-planning">
@@ -161,56 +161,56 @@ export default function MyReportsPage() {
                         立即生成我的规划
                       </Button>
                     </Link>
-                    <p className="text-sm text-gray-400 mt-4">免费体验 · 陪你厘清方向</p>
+                    <p className="text-sm text-slate-400 mt-4">免费体验 · 陪你厘清方向</p>
                   </CardContent>
                 </Card>
               ) : (
                 <Card className="hover:shadow-md transition-shadow overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className="bg-gray-50 border-b border-slate-200">
                         <tr>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">生成时间</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">专业</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">年级</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">意向城市</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">核心方向</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">状态</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">操作</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">生成时间</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">专业</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">年级</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">意向城市</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">核心方向</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">状态</th>
+                          <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">操作</th>
                         </tr>
                       </thead>
                       <tbody>
                         {reports.map((report) => (
-                          <tr key={report.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                            <td className="py-3 px-4 text-sm text-gray-600">
+                          <tr key={report.id} className="border-b border-slate-100 last:border-0 hover:bg-gray-50 transition-colors">
+                            <td className="py-3 px-4 text-sm text-slate-600">
                               <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4 text-gray-400" />
+                                <Calendar className="w-4 h-4 text-slate-400" />
                                 {formatDate(report.create_time)}
                               </div>
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-slate-700">
                               <div className="flex items-center gap-1">
-                                <GraduationCap className="w-4 h-4 text-gray-400" />
+                                <GraduationCap className="w-4 h-4 text-slate-400" />
                                 {report.major || '未填写'}
                               </div>
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-slate-700">
                               {report.grade}
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-slate-700">
                               <div className="flex items-center gap-1">
-                                <MapPin className="w-4 h-4 text-gray-400" />
+                                <MapPin className="w-4 h-4 text-slate-400" />
                                 {report.city}
                               </div>
                             </td>
-                            <td className="py-3 px-4 text-sm text-gray-700">
+                            <td className="py-3 px-4 text-sm text-slate-700">
                               {report.core_job}
                             </td>
                             <td className="py-3 px-4">
                               <Badge className={
                                 report.is_latest === 1 
                                   ? 'bg-green-100 text-green-700 border-green-200' 
-                                  : 'bg-gray-100 text-gray-600 border-gray-200'
+                                  : 'bg-gray-100 text-slate-600 border-slate-200'
                               }>
                                 {report.status}
                               </Badge>
@@ -244,7 +244,7 @@ export default function MyReportsPage() {
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   上一页
                 </Button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-slate-600">
                   第 {currentPage} / {totalPages} 页
                 </span>
                 <Button

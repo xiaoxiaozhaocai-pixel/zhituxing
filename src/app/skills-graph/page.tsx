@@ -324,9 +324,9 @@ export default function SkillsGraphPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] shadow-md shadow-[#165DFF]/20 rounded-lg flex items-center justify-center">
               <Network className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">技能关系图</h1>
+            <h1 className="text-2xl font-bold text-slate-900">技能关系图</h1>
           </div>
-          <p className="text-gray-500 ml-13">可视化展示技能之间的关联关系，发现学习路径</p>
+          <p className="text-slate-500 ml-13">可视化展示技能之间的关联关系，发现学习路径</p>
           {!isMember && !memberLoading && (
             <button
               onClick={() => setPaywallOpen(true)}
@@ -342,7 +342,7 @@ export default function SkillsGraphPage() {
           <CardContent className="py-4">
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   placeholder="搜索技能，如：Java、React、新媒体运营"
                   value={searchSkill}
@@ -369,7 +369,7 @@ export default function SkillsGraphPage() {
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     activeTypes.has(type)
                       ? 'border-transparent text-white'
-                      : 'border-gray-200 text-gray-400 bg-gray-50'
+                      : 'border-slate-200 text-slate-400 bg-gray-50'
                   }`}
                   style={activeTypes.has(type) ? { backgroundColor: relationColors[type] } : undefined}
                 >
@@ -387,14 +387,14 @@ export default function SkillsGraphPage() {
         {loading ? (
           <div className="flex flex-col items-center py-20">
             <Spinner className="w-10 h-10 text-[#165DFF]" />
-            <p className="mt-4 text-gray-500">加载技能关系数据...</p>
+            <p className="mt-4 text-slate-500">加载技能关系数据...</p>
           </div>
         ) : simNodes.length === 0 ? (
-          <Card className="border-gray-100">
+          <Card className="border-slate-100">
             <CardContent className="py-16 text-center">
-              <Network className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-700 mb-2">暂无技能关系数据</h3>
-              <p className="text-gray-400 text-sm">尝试搜索特定技能查看关系</p>
+              <Network className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-700 mb-2">暂无技能关系数据</h3>
+              <p className="text-slate-400 text-sm">尝试搜索特定技能查看关系</p>
             </CardContent>
           </Card>
         ) : (
@@ -405,7 +405,7 @@ export default function SkillsGraphPage() {
                 <CardHeader className="pb-2 flex-row items-center justify-between">
                   <CardTitle className="text-[#165DFF] text-base">技能关系网络</CardTitle>
                   <div className="flex items-center gap-2">
-                    <div className="flex rounded-lg border border-gray-200 p-0.5 mr-1">
+                    <div className="flex rounded-lg border border-slate-200 p-0.5 mr-1">
                       {(['force', 'circular', 'hierarchy'] as const).map((mode) => (
                         <button
                           key={mode}
@@ -413,7 +413,7 @@ export default function SkillsGraphPage() {
                           className={`px-2.5 py-1 text-xs rounded-md transition-all ${
                             layoutMode === mode
                               ? 'bg-[#165DFF] text-white shadow-sm'
-                              : 'text-gray-500 hover:text-gray-700'
+                              : 'text-slate-500 hover:text-slate-700'
                           }`}
                         >
                           {mode === 'force' ? '力导向' : mode === 'circular' ? '环形' : '层次'}
@@ -586,19 +586,19 @@ export default function SkillsGraphPage() {
               {/* 图例 */}
               <Card className="border-blue-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-gray-600">关系图例</CardTitle>
+                  <CardTitle className="text-sm text-slate-600">关系图例</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {activeRelations.map((type) => (
                       <div key={type} className="flex items-center gap-2 text-sm">
                         <div className="w-6 h-0.5 rounded" style={{ backgroundColor: relationColors[type] }} />
-                        <span className="text-gray-600">{relationLabels[type]}</span>
+                        <span className="text-slate-600">{relationLabels[type]}</span>
                       </div>
                     ))}
                     <div className="flex items-center gap-2 text-sm">
-                      <div className="w-6 h-0.5 rounded border-t-2 border-dashed border-gray-400" />
-                      <span className="text-gray-600">虚线=前置/相似</span>
+                      <div className="w-6 h-0.5 rounded border-t-2 border-dashed border-slate-400" />
+                      <span className="text-slate-600">虚线=前置/相似</span>
                     </div>
                   </div>
                 </CardContent>
@@ -611,7 +611,7 @@ export default function SkillsGraphPage() {
                     <CardTitle className="text-[#165DFF] flex items-center gap-1">
                       <Info className="w-4 h-4" /> {selectedNode}
                       <button onClick={() => setSelectedNode(null)} className="ml-auto">
-                        <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                        <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                       </button>
                     </CardTitle>
                   </CardHeader>
@@ -624,8 +624,8 @@ export default function SkillsGraphPage() {
                           return (
                             <div key={i} className="flex items-center gap-2 text-sm">
                               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: relationColors[e.relationType] }} />
-                              <span className="text-gray-500">{isSource ? '→' : '←'}</span>
-                              <span className="font-medium text-gray-700">{otherSkill}</span>
+                              <span className="text-slate-500">{isSource ? '→' : '←'}</span>
+                              <span className="font-medium text-slate-700">{otherSkill}</span>
                               <Badge className="text-xs ml-auto" style={{ backgroundColor: relationColors[e.relationType] + '20', color: relationColors[e.relationType], borderColor: relationColors[e.relationType] + '40' }}>
                                 {relationLabels[e.relationType]}
                               </Badge>
@@ -634,15 +634,15 @@ export default function SkillsGraphPage() {
                         })}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-400">暂无关联关系</p>
+                      <p className="text-sm text-slate-400">暂无关联关系</p>
                     )}
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="border-gray-100">
+                <Card className="border-slate-100">
                   <CardContent className="py-6 text-center">
-                    <Info className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">点击图谱中的节点查看详情</p>
+                    <Info className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm text-slate-400">点击图谱中的节点查看详情</p>
                   </CardContent>
                 </Card>
               )}
@@ -650,7 +650,7 @@ export default function SkillsGraphPage() {
               {/* 节点列表 */}
               <Card className="border-blue-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-gray-600">技能节点 ({simNodes.length})</CardTitle>
+                  <CardTitle className="text-sm text-slate-600">技能节点 ({simNodes.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-1 max-h-64 overflow-y-auto">
@@ -663,12 +663,12 @@ export default function SkillsGraphPage() {
                           className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                             selectedNode === node.name
                               ? 'bg-[#165DFF]/8 text-[#165DFF] font-medium'
-                              : 'hover:bg-gray-50 text-gray-600'
+                              : 'hover:bg-gray-50 text-slate-600'
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <span>{node.name}</span>
-                            <span className="text-xs text-gray-400">{node.relatedCount} 关联</span>
+                            <span className="text-xs text-slate-400">{node.relatedCount} 关联</span>
                           </div>
                         </button>
                       ))}

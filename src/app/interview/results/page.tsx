@@ -120,14 +120,14 @@ export default function InterviewResultsPage() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link href="/profile">
-            <Button variant="ghost" size="sm" className="text-gray-500">
+            <Button variant="ghost" size="sm" className="text-slate-500">
               <ArrowLeft className="w-4 h-4 mr-1" />
               返回
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">模拟面试记录</h1>
-            <p className="text-sm text-gray-500 mt-1">查看你的面试表现和进步趋势</p>
+            <h1 className="text-2xl font-bold text-slate-900">模拟面试记录</h1>
+            <p className="text-sm text-slate-500 mt-1">查看你的面试表现和进步趋势</p>
           </div>
         </div>
 
@@ -139,8 +139,8 @@ export default function InterviewResultsPage() {
           <Card className="text-center py-20">
             <CardContent>
               <div className="text-6xl mb-4">🎤</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">还没有面试记录</h3>
-              <p className="text-gray-500 mb-6">去小职那里做一次模拟面试，完成后会自动生成报告</p>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">还没有面试记录</h3>
+              <p className="text-slate-500 mb-6">去小职那里做一次模拟面试，完成后会自动生成报告</p>
               <Link href="/assistant?bot=interview">
                 <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
                   开始模拟面试
@@ -163,9 +163,9 @@ export default function InterviewResultsPage() {
                   <div className="grid grid-cols-3 gap-4">
                     {feedbacks.slice(0, 3).reverse().map((fb, idx) => (
                       <div key={fb.id} className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-xs text-gray-500 mb-1">第{idx + 1}次</div>
+                        <div className="text-xs text-slate-500 mb-1">第{idx + 1}次</div>
                         <div className="text-lg font-bold text-[#165DFF]">{fb.overall_score || '-'}</div>
-                        <div className="text-xs text-gray-400">{formatDate(fb.created_at)}</div>
+                        <div className="text-xs text-slate-400">{formatDate(fb.created_at)}</div>
                       </div>
                     ))}
                   </div>
@@ -213,7 +213,7 @@ export default function InterviewResultsPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
                             <Target className="w-4 h-4 text-[#165DFF]" />
-                            <span className="font-medium text-gray-900 truncate">
+                            <span className="font-medium text-slate-900 truncate">
                               {fb.target_job || '未指定岗位'}
                             </span>
                             {itype && (
@@ -226,13 +226,13 @@ export default function InterviewResultsPage() {
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                          <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
                             <Calendar className="w-3 h-3" />
                             <span>{formatDate(fb.created_at)}</span>
                           </div>
 
                           {rd.summary && (
-                            <p className="text-sm text-gray-600 line-clamp-2">{rd.summary}</p>
+                            <p className="text-sm text-slate-600 line-clamp-2">{rd.summary}</p>
                           )}
 
                           {/* 维度评分微条 */}
@@ -244,8 +244,8 @@ export default function InterviewResultsPage() {
                                 { label: '专业', score: rd.professionalism },
                               ].map((d) => (
                                 <div key={d.label} className="flex items-center gap-1 text-xs">
-                                  <span className="text-gray-400">{d.label}</span>
-                                  <span className="font-medium text-gray-700">{d.score}</span>
+                                  <span className="text-slate-400">{d.label}</span>
+                                  <span className="font-medium text-slate-700">{d.score}</span>
                                 </div>
                               ))}
                             </div>
@@ -253,7 +253,7 @@ export default function InterviewResultsPage() {
 
                           {/* 展开后的详情 */}
                           {selectedFeedback?.id === fb.id && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                            <div className="mt-4 pt-4 border-t border-slate-100 space-y-4">
                               {rd.dimension_analysis && rd.dimension_analysis.length > 0 && (
                                 <div>
                                   <h4 className="text-sm font-medium text-[#165DFF] mb-3">🎯 判断力维度分析</h4>
@@ -261,14 +261,14 @@ export default function InterviewResultsPage() {
                                     {rd.dimension_analysis.map((da, i) => (
                                       <div key={i} className="text-sm bg-blue-50/50 rounded-lg p-3 border border-blue-100">
                                         <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                          <span className="font-medium text-gray-900">{da.name || da.dimension}</span>
+                                          <span className="font-medium text-slate-900">{da.name || da.dimension}</span>
                                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getScoreColor(da.score || 0)}`}>{da.score}</span>
                                           <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">L{da.level_number} · {da.level}</span>
                                         </div>
                                         {da.matched_anchors && da.matched_anchors.length > 0 && (
                                           <div className="mb-2">
-                                            <div className="text-xs text-gray-400 mb-1">可观察行为</div>
-                                            <ul className="text-gray-600 space-y-1">
+                                            <div className="text-xs text-slate-400 mb-1">可观察行为</div>
+                                            <ul className="text-slate-600 space-y-1">
                                               {da.matched_anchors.map((a, j) => (
                                                 <li key={j} className="flex items-start gap-2">
                                                   <span className="text-[#165DFF] mt-0.5">•</span>
@@ -280,20 +280,20 @@ export default function InterviewResultsPage() {
                                         )}
                                         {da.reasoning && (
                                           <div className="mb-2">
-                                            <div className="text-xs text-gray-400 mb-1">为什么是这个级</div>
-                                            <p className="text-gray-600">{da.reasoning}</p>
+                                            <div className="text-xs text-slate-400 mb-1">为什么是这个级</div>
+                                            <p className="text-slate-600">{da.reasoning}</p>
                                           </div>
                                         )}
                                         {da.path && (
                                           <div className="mb-2">
-                                            <div className="text-xs text-gray-400 mb-1">提升路径</div>
-                                            <p className="text-gray-700 bg-white rounded-lg p-2">{da.path}</p>
+                                            <div className="text-xs text-slate-400 mb-1">提升路径</div>
+                                            <p className="text-slate-700 bg-white rounded-lg p-2">{da.path}</p>
                                           </div>
                                         )}
                                         {da.suggestion && (
                                           <div>
-                                            <div className="text-xs text-gray-400 mb-1">改进建议</div>
-                                            <p className="text-gray-700 bg-white rounded-lg p-2">{da.suggestion}</p>
+                                            <div className="text-xs text-slate-400 mb-1">改进建议</div>
+                                            <p className="text-slate-700 bg-white rounded-lg p-2">{da.suggestion}</p>
                                           </div>
                                         )}
                                       </div>
@@ -304,7 +304,7 @@ export default function InterviewResultsPage() {
                               {rd.strengths && rd.strengths.length > 0 && (
                                 <div>
                                   <h4 className="text-sm font-medium text-green-700 mb-2">✅ 亮点</h4>
-                                  <ul className="text-sm text-gray-600 space-y-1">
+                                  <ul className="text-sm text-slate-600 space-y-1">
                                     {rd.strengths.map((s, i) => (
                                       <li key={i} className="flex items-start gap-2">
                                         <span className="text-green-500 mt-0.5">•</span>
@@ -317,7 +317,7 @@ export default function InterviewResultsPage() {
                               {rd.weaknesses && rd.weaknesses.length > 0 && (
                                 <div>
                                   <h4 className="text-sm font-medium text-amber-700 mb-2">🔧 待改进</h4>
-                                  <ul className="text-sm text-gray-600 space-y-1">
+                                  <ul className="text-sm text-slate-600 space-y-1">
                                     {rd.weaknesses.map((w, i) => (
                                       <li key={i} className="flex items-start gap-2">
                                         <span className="text-amber-500 mt-0.5">•</span>
@@ -341,7 +341,7 @@ export default function InterviewResultsPage() {
                                             'bg-blue-100 text-blue-600'
                                           }`}>{sg.priority === 'high' ? '高优先' : sg.priority === 'medium' ? '中优先' : '低优先'}</span>
                                         </div>
-                                        <p className="text-gray-600">{sg.advice}</p>
+                                        <p className="text-slate-600">{sg.advice}</p>
                                       </div>
                                     ))}
                                   </div>
@@ -353,7 +353,7 @@ export default function InterviewResultsPage() {
                                   <Target className="w-4 h-4 text-[#165DFF]" />
                                   <span className="text-sm font-medium text-[#165DFF]">下一步 · 把短板补上</span>
                                 </div>
-                                <p className="text-xs text-gray-600 mb-2">结合这次面试的薄弱项，去学习路径 / 职业规划里补齐对应能力，下次更有把握。</p>
+                                <p className="text-xs text-slate-600 mb-2">结合这次面试的薄弱项，去学习路径 / 职业规划里补齐对应能力，下次更有把握。</p>
                                 <div className="flex gap-2 flex-wrap">
                                   <Link href="/learning-path">
                                     <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">

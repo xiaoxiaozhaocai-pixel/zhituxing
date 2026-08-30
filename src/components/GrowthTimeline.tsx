@@ -68,7 +68,7 @@ export default function GrowthTimeline({ milestones, isLoading = false }: Growth
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-4">
             <Sparkles className="w-6 h-6 text-blue-600" />
           </div>
-          <p className="text-gray-500">更多精彩，等你探索 ✨</p>
+          <p className="text-slate-500">更多精彩，等你探索 ✨</p>
         </CardContent>
       </Card>
     );
@@ -99,10 +99,10 @@ export default function GrowthTimeline({ milestones, isLoading = false }: Growth
                   
                   <div className="flex-1 pb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">{formatDate(milestone.date)}</span>
+                      <span className="text-xs text-slate-400">{formatDate(milestone.date)}</span>
                     </div>
-                    <h4 className="font-medium text-gray-800 mt-1">{milestone.title}</h4>
-                    <p className="text-sm text-gray-500 mt-0.5">{milestone.description}</p>
+                    <h4 className="font-medium text-slate-800 mt-1">{milestone.title}</h4>
+                    <p className="text-sm text-slate-500 mt-0.5">{milestone.description}</p>
                   </div>
                 </div>
               );

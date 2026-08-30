@@ -79,7 +79,7 @@ const BiometricConsentSettings = () => {
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+      <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
         <div className="h-5 bg-gray-200 rounded w-1/3 mb-3" />
         <div className="h-4 bg-gray-100 rounded w-2/3" />
       </div>
@@ -87,20 +87,20 @@ const BiometricConsentSettings = () => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white border border-slate-200 rounded-lg p-6">
       <div className="flex items-center gap-3 mb-4">
         <Fingerprint className="w-6 h-6 text-blue-600" />
-        <h3 className="text-lg font-semibold text-gray-900">生物识别信息管理</h3>
+        <h3 className="text-lg font-semibold text-slate-900">生物识别信息管理</h3>
       </div>
 
       {!status?.exists || !status?.consented ? (
         /* 未授权状态 */
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <XCircle className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-600">您尚未授权AI模拟面试的生物识别信息处理</span>
+            <XCircle className="w-5 h-5 text-slate-400" />
+            <span className="text-slate-600">您尚未授权AI模拟面试的生物识别信息处理</span>
           </div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-slate-500 mb-4">
             授权后，AI面试将分析您的语音、表情等特征以提供面试评估和改进建议。
             数据在面试结束后立即删除。
           </p>
@@ -120,12 +120,12 @@ const BiometricConsentSettings = () => {
             <CheckCircle className="w-5 h-5 text-green-500" />
             <span className="text-green-700 font-medium">已授权</span>
             {status.consented_at && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-slate-400">
                 授权时间：{new Date(status.consented_at).toLocaleString('zh-CN')}
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-slate-500 mb-4">
             您已授权职途星在AI模拟面试中处理语音、表情等生物识别信息。
             您可以随时撤回此授权，撤回后不会影响其他功能。
           </p>
@@ -141,7 +141,7 @@ const BiometricConsentSettings = () => {
             <button
               onClick={fetchStatus}
               type="button"
-              className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
               title="刷新状态"
             >
               <RefreshCw className="w-4 h-4" />
@@ -160,8 +160,8 @@ const BiometricConsentSettings = () => {
       )}
 
       {/* 法律依据 */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="mt-4 pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
           <Shield className="w-3 h-3" />
           <span>依据《个人信息保护法》第29条，处理生物识别信息需取得您的单独同意</span>
         </div>

@@ -77,12 +77,12 @@ export default function PaywallModal({ open, onClose, feature }: PaywallModalPro
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-lg bg-white border border-gray-200 text-gray-900 shadow-xl">
+      <DialogContent className="sm:max-w-lg bg-white border border-slate-200 text-slate-900 shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {success ? '🎉 升级成功！' : `解锁${feature || '会员功能'}`}
           </DialogTitle>
-          <DialogDescription className="text-gray-500 text-center">
+          <DialogDescription className="text-slate-500 text-center">
             {success
               ? '已为您开通会员权益，尽情使用吧！'
               : '升级会员，解锁全部职业发展功能'}
@@ -94,11 +94,11 @@ export default function PaywallModal({ open, onClose, feature }: PaywallModalPro
             {/* 权益列表 */}
             <div className="grid grid-cols-2 gap-3 my-4">
               {MEMBER_BENEFITS.map((b) => (
-                <div key={b.title} className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                <div key={b.title} className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 border border-slate-100">
                   <span className="text-lg">{b.icon}</span>
                   <div>
                     <div className="text-sm font-medium">{b.title}</div>
-                    <div className="text-xs text-gray-500">{b.desc}</div>
+                    <div className="text-xs text-slate-500">{b.desc}</div>
                   </div>
                 </div>
               ))}
@@ -112,7 +112,7 @@ export default function PaywallModal({ open, onClose, feature }: PaywallModalPro
                   className={`relative flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${
                     plan.highlight
                       ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
-                      : 'border-gray-200 bg-gray-50 border border-gray-100 hover:border-blue-400'
+                      : 'border-slate-200 bg-gray-50 border border-slate-100 hover:border-blue-400'
                   }`}
                   onClick={() => handleUpgrade(plan.key)}
                 >
@@ -124,7 +124,7 @@ export default function PaywallModal({ open, onClose, feature }: PaywallModalPro
                   <div className="flex items-center gap-3">
                     <div>
                       <div className="font-semibold">{plan.name}</div>
-                      <div className="text-xs text-gray-500">{plan.period}</div>
+                      <div className="text-xs text-slate-500">{plan.period}</div>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {plan.features.slice(0, 2).map((f) => (
@@ -147,7 +147,7 @@ export default function PaywallModal({ open, onClose, feature }: PaywallModalPro
               ))}
             </div>
 
-            <p className="text-center text-xs text-gray-500 mt-3">
+            <p className="text-center text-xs text-slate-500 mt-3">
               点击套餐将跳转至下单页面，完成支付后会员权益自动开通
             </p>
           </>

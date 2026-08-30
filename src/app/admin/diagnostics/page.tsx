@@ -114,7 +114,7 @@ export default function DiagnosticsPage() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Icon className={`w-5 h-5 ${config.color}`} />
             {config.label}
-            <span className="ml-auto text-sm font-normal text-gray-600">
+            <span className="ml-auto text-sm font-normal text-slate-600">
               {category.pass}/{total} 通过
             </span>
           </CardTitle>
@@ -125,9 +125,9 @@ export default function DiagnosticsPage() {
               <div key={idx} className="flex items-center justify-between py-1.5 px-2 bg-white/60 rounded-lg">
                 <div className="flex items-center gap-2">
                   {getStatusIcon(item.result)}
-                  <span className="text-sm text-gray-700">{item.name}</span>
+                  <span className="text-sm text-slate-700">{item.name}</span>
                 </div>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-slate-500">
                   {item.table ? `${item.count}/${item.min}` : item.detail}
                 </span>
               </div>
@@ -146,7 +146,7 @@ export default function DiagnosticsPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold text-[#1E293B]">网站健康诊断</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-slate-500 mt-1">
                 {data?.timestamp ? `检测时间: ${new Date(data.timestamp).toLocaleString('zh-CN')}` : '检测中...'}
               </p>
             </div>
@@ -167,7 +167,7 @@ export default function DiagnosticsPage() {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              <span className="ml-3 text-gray-600">正在执行诊断，请稍候...</span>
+              <span className="ml-3 text-slate-600">正在执行诊断，请稍候...</span>
             </div>
           ) : error ? (
             <div className="text-center py-8 text-red-600">
@@ -182,7 +182,7 @@ export default function DiagnosticsPage() {
                   <div className={`text-3xl font-bold ${getHealthColor(data.health)}`}>
                     {data.health}%
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">健康度</div>
+                  <div className="text-sm text-slate-600 mt-1">健康度</div>
                   <div className={`mt-2 h-2 bg-gray-200 rounded-full overflow-hidden`}>
                     <div 
                       className={`h-full ${getHealthBgColor(data.health)} transition-all duration-500`}
@@ -204,20 +204,20 @@ export default function DiagnosticsPage() {
                   return (
                     <>
                       <div className="bg-gray-50 rounded-xl p-4 text-center">
-                        <div className="text-2xl font-bold text-gray-700">{total}</div>
-                        <div className="text-sm text-gray-500 mt-1">总测试项</div>
+                        <div className="text-2xl font-bold text-slate-700">{total}</div>
+                        <div className="text-sm text-slate-500 mt-1">总测试项</div>
                       </div>
                       <div className="bg-green-50 rounded-xl p-4 text-center">
                         <div className="text-2xl font-bold text-green-600">{totals.pass}</div>
-                        <div className="text-sm text-gray-500 mt-1">通过</div>
+                        <div className="text-sm text-slate-500 mt-1">通过</div>
                       </div>
                       <div className="bg-yellow-50 rounded-xl p-4 text-center">
                         <div className="text-2xl font-bold text-yellow-600">{totals.warn}</div>
-                        <div className="text-sm text-gray-500 mt-1">警告</div>
+                        <div className="text-sm text-slate-500 mt-1">警告</div>
                       </div>
                       <div className="bg-red-50 rounded-xl p-4 text-center">
                         <div className="text-2xl font-bold text-red-600">{totals.fail}</div>
-                        <div className="text-sm text-gray-500 mt-1">失败</div>
+                        <div className="text-sm text-slate-500 mt-1">失败</div>
                       </div>
                     </>
                   );

@@ -80,8 +80,8 @@ export default function NewJobPostPage() {
     }
   };
 
-  const inputClass = 'w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition bg-white';
-  const labelClass = 'block text-sm font-medium text-gray-700 mb-1.5';
+  const inputClass = 'w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] transition bg-white';
+  const labelClass = 'block text-sm font-medium text-slate-700 mb-1.5';
   const sliderClass = 'w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#165DFF]';
 
   return (
@@ -89,7 +89,7 @@ export default function NewJobPostPage() {
       {/* 返回 */}
       <button
         onClick={() => router.push('/employer/jobs')}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#165DFF] transition"
+        className="flex items-center gap-1 text-sm text-slate-500 hover:text-[#165DFF] transition"
       >
         <ArrowLeft className="w-4 h-4" />
         返回岗位列表
@@ -101,8 +101,8 @@ export default function NewJobPostPage() {
           <Briefcase className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">创建新岗位</h1>
-          <p className="text-sm text-gray-500">填写岗位信息与匹配条件，系统将自动匹配候选人</p>
+          <h1 className="text-xl font-bold text-slate-900">创建新岗位</h1>
+          <p className="text-sm text-slate-500">填写岗位信息与匹配条件，系统将自动匹配候选人</p>
         </div>
       </div>
 
@@ -114,8 +114,8 @@ export default function NewJobPostPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 基本信息 */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-          <h2 className="text-base font-semibold text-gray-900">基本信息</h2>
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
+          <h2 className="text-base font-semibold text-slate-900">基本信息</h2>
 
           <div>
             <label className={labelClass}>岗位名称 <span className="text-red-500">*</span></label>
@@ -141,8 +141,8 @@ export default function NewJobPostPage() {
         </div>
 
         {/* 技能要求 */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-          <h2 className="text-base font-semibold text-gray-900">技能要求</h2>
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
+          <h2 className="text-base font-semibold text-slate-900">技能要求</h2>
 
           <div>
             <label className={labelClass}>必需硬技能</label>
@@ -153,7 +153,7 @@ export default function NewJobPostPage() {
               placeholder="Python, Java, React（逗号分隔）"
               className={inputClass}
             />
-            <p className="text-xs text-gray-400 mt-1">输入技能名称，用逗号分隔</p>
+            <p className="text-xs text-slate-400 mt-1">输入技能名称，用逗号分隔</p>
           </div>
 
           <div>
@@ -165,13 +165,13 @@ export default function NewJobPostPage() {
               placeholder="沟通能力, 团队协作（逗号分隔）"
               className={inputClass}
             />
-            <p className="text-xs text-gray-400 mt-1">输入技能名称，用逗号分隔</p>
+            <p className="text-xs text-slate-400 mt-1">输入技能名称，用逗号分隔</p>
           </div>
         </div>
 
         {/* 筛选条件 */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-          <h2 className="text-base font-semibold text-gray-900">筛选条件</h2>
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
+          <h2 className="text-base font-semibold text-slate-900">筛选条件</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -293,13 +293,13 @@ export default function NewJobPostPage() {
         </div>
 
         {/* 自动推送 */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-          <h2 className="text-base font-semibold text-gray-900">自动推送设置</h2>
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
+          <h2 className="text-base font-semibold text-slate-900">自动推送设置</h2>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700">启用自动推送</p>
-              <p className="text-xs text-gray-400">定期将新匹配的候选人推送给您</p>
+              <p className="text-sm font-medium text-slate-700">启用自动推送</p>
+              <p className="text-xs text-slate-400">定期将新匹配的候选人推送给您</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -335,7 +335,7 @@ export default function NewJobPostPage() {
           <button
             type="button"
             onClick={() => router.push('/employer/jobs')}
-            className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+            className="px-4 py-2 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-gray-50 transition"
           >
             取消
           </button>

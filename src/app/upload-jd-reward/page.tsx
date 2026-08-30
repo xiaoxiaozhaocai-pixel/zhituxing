@@ -190,7 +190,7 @@ export default function UploadJdRewardPage() {
   const renderStatus = (status: number, rewardGranted: boolean) => {
     switch (status) {
       case 0:
-        return <span className="text-gray-500 flex items-center gap-1"><Clock className="w-4 h-4" /> 待审核</span>;
+        return <span className="text-slate-500 flex items-center gap-1"><Clock className="w-4 h-4" /> 待审核</span>;
       case 1:
         return (
           <span className="text-green-600 flex items-center gap-1">
@@ -245,7 +245,7 @@ export default function UploadJdRewardPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-orange-500" />
-                <span className="font-bold text-lg text-gray-900">
+                <span className="font-bold text-lg text-slate-900">
                   你的上传进度
                 </span>
               </div>
@@ -254,7 +254,7 @@ export default function UploadJdRewardPage() {
               </span>
             </div>
             <Progress value={progress} className="h-3" indicatorClassName="bg-gradient-to-r from-orange-400 to-orange-500" />
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-slate-500 mt-2">
               {isComplete ? (
                 <span className="text-green-600 font-medium flex items-center gap-1">
                   <CheckCircle className="w-4 h-4" />
@@ -274,7 +274,7 @@ export default function UploadJdRewardPage() {
             className={`flex-1 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'upload'
                 ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border'
+                : 'bg-white text-slate-600 hover:bg-gray-50 border'
             }`}
           >
             <Upload className="w-5 h-5 inline mr-2" />
@@ -285,7 +285,7 @@ export default function UploadJdRewardPage() {
             className={`flex-1 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'history'
                 ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white shadow-lg'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border'
+                : 'bg-white text-slate-600 hover:bg-gray-50 border'
             }`}
           >
             <FileText className="w-5 h-5 inline mr-2" />
@@ -298,7 +298,7 @@ export default function UploadJdRewardPage() {
             {/* 3步流程 */}
             <Card className="mb-6">
               <CardContent className="pt-6">
-                <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="font-bold text-lg text-slate-900 mb-4 flex items-center gap-2">
                   <Zap className="w-5 h-5 text-blue-600" />
                   3步免费领终身会员
                 </h3>
@@ -307,22 +307,22 @@ export default function UploadJdRewardPage() {
                     <div className="w-12 h-12 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       1
                     </div>
-                    <h4 className="font-medium text-gray-900 mb-1">上传真实校招JD</h4>
-                    <p className="text-sm text-gray-500">粘贴岗位文本或上传截图，支持任意企业校招岗位</p>
+                    <h4 className="font-medium text-slate-900 mb-1">上传真实校招JD</h4>
+                    <p className="text-sm text-slate-500">粘贴岗位文本或上传截图，支持任意企业校招岗位</p>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <div className="w-12 h-12 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       2
                     </div>
-                    <h4 className="font-medium text-gray-900 mb-1">等待审核通过</h4>
-                    <p className="text-sm text-gray-500">系统自动初审+人工复核，24小时内出结果</p>
+                    <h4 className="font-medium text-slate-900 mb-1">等待审核通过</h4>
+                    <p className="text-sm text-slate-500">系统自动初审+人工复核，24小时内出结果</p>
                   </div>
                   <div className="text-center p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
                     <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">
                       3
                     </div>
-                    <h4 className="font-medium text-gray-900 mb-1">自动到账终身会员</h4>
-                    <p className="text-sm text-gray-500">累计3条审核通过，会员自动开通，永久有效</p>
+                    <h4 className="font-medium text-slate-900 mb-1">自动到账终身会员</h4>
+                    <p className="text-sm text-slate-500">累计3条审核通过，会员自动开通，永久有效</p>
                   </div>
                 </div>
               </CardContent>
@@ -347,7 +347,7 @@ export default function UploadJdRewardPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
                         岗位名称 <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -355,13 +355,13 @@ export default function UploadJdRewardPage() {
                         value={jobName}
                         onChange={(e) => setJobName(e.target.value)}
                         placeholder="例如：前端开发工程师（2026届校招）"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           企业名称 <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -369,11 +369,11 @@ export default function UploadJdRewardPage() {
                           value={companyName}
                           onChange={(e) => setCompanyName(e.target.value)}
                           placeholder="例如：阿里巴巴"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           工作城市
                         </label>
                         <input
@@ -381,13 +381,13 @@ export default function UploadJdRewardPage() {
                           value={city}
                           onChange={(e) => setCity(e.target.value)}
                           placeholder="例如：北京"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
                         薪资范围（可选）
                       </label>
                       <input
@@ -395,12 +395,12 @@ export default function UploadJdRewardPage() {
                         value={salary}
                         onChange={(e) => setSalary(e.target.value)}
                         placeholder="例如：15k-25k 或 15000-25000"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
                         JD内容 <span className="text-red-500">*</span>
                       </label>
                       <textarea
@@ -408,7 +408,7 @@ export default function UploadJdRewardPage() {
                         onChange={(e) => setJdContent(e.target.value)}
                         placeholder="粘贴岗位描述内容，包括岗位职责、任职要求等..."
                         rows={8}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
                       />
                     </div>
                   </div>
@@ -432,11 +432,11 @@ export default function UploadJdRewardPage() {
             {/* 审核标准 */}
             <Card className="mb-6 border-green-200 bg-green-50">
               <CardContent className="pt-6">
-                <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="font-bold text-lg text-slate-900 mb-4 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600" />
                   审核通过标准
                 </h3>
-                <ul className="space-y-2 text-gray-700">
+                <ul className="space-y-2 text-slate-700">
                   <li className="flex items-start gap-2">
                     <span className="text-green-600 mt-0.5">✓</span>
                     必须是2026年应届毕业生校招岗位，实习/社招岗位不通过
@@ -470,8 +470,8 @@ export default function UploadJdRewardPage() {
                 </div>
               ) : submissions.length === 0 ? (
                 <div className="text-center py-8">
-                  <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">暂无上传记录</p>
+                  <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">暂无上传记录</p>
                   <Button
                     onClick={() => setActiveTab('upload')}
                     className="mt-4 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
@@ -488,12 +488,12 @@ export default function UploadJdRewardPage() {
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{item.job_name}</h4>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <h4 className="font-medium text-slate-900">{item.job_name}</h4>
+                          <p className="text-sm text-slate-500 mt-1">
                             {item.company_name}
                             {item.city && ` · ${item.city}`}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-slate-400 mt-1">
                             提交于 {new Date(item.created_at).toLocaleDateString('zh-CN')}
                           </p>
                         </div>
@@ -517,7 +517,7 @@ export default function UploadJdRewardPage() {
         {/* 常见问题 */}
         <Card className="mt-8">
           <CardContent className="pt-6">
-            <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+            <h3 className="font-bold text-lg text-slate-900 mb-4 flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-blue-600" />
               常见问题
             </h3>
@@ -528,15 +528,15 @@ export default function UploadJdRewardPage() {
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
                     className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                   >
-                    <span className="font-medium text-gray-900">{faq.q}</span>
+                    <span className="font-medium text-slate-900">{faq.q}</span>
                     {expandedFaq === index ? (
-                      <ChevronUp className="w-5 h-5 text-gray-400" />
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400" />
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
                     )}
                   </button>
                   {expandedFaq === index && (
-                    <div className="px-4 pb-4 text-gray-600 text-sm">
+                    <div className="px-4 pb-4 text-slate-600 text-sm">
                       {faq.a}
                     </div>
                   )}
@@ -547,7 +547,7 @@ export default function UploadJdRewardPage() {
         </Card>
 
         {/* 安全说明 */}
-        <div className="mt-6 text-center text-sm text-gray-500 flex items-center justify-center gap-4">
+        <div className="mt-6 text-center text-sm text-slate-500 flex items-center justify-center gap-4">
           <span className="flex items-center gap-1">
             <Shield className="w-4 h-4" />
             信息安全

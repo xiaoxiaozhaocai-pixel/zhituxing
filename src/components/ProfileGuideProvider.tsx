@@ -106,10 +106,10 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
               >
                 去和小职聊聊
               </Link>
-              <button onClick={handleDismissGuide} className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
+              <button onClick={handleDismissGuide} className="text-slate-400 hover:text-slate-600 transition-colors text-sm">
                 稍后再说
               </button>
-              <button onClick={handleDismissGuide} className="text-gray-400 hover:text-gray-600 transition-colors ml-1">
+              <button onClick={handleDismissGuide} className="text-slate-400 hover:text-slate-600 transition-colors ml-1">
                 <X className="w-4 h-4" />
               </button>
             </div>

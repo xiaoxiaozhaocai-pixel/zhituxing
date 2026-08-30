@@ -122,8 +122,8 @@ export default function AdminCareerPlanningPage() {
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">权限不足</h2>
-            <p className="text-gray-500">您没有权限访问此页面</p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">权限不足</h2>
+            <p className="text-slate-500">您没有权限访问此页面</p>
           </CardContent>
         </Card>
       </div>
@@ -135,11 +135,11 @@ export default function AdminCareerPlanningPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 页面标题 */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Sparkles className="w-7 h-7 text-[#165DFF]" />
             职业规划报告管理
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-slate-500 mt-2">
             查看和管理所有用户的职业规划报告
           </p>
         </div>
@@ -149,7 +149,7 @@ export default function AdminCareerPlanningPage() {
           <CardContent className="p-4">
             <form onSubmit={handleSearch} className="flex flex-wrap items-end gap-4">
               <div className="space-y-1">
-                <label className="text-sm text-gray-600">用户ID</label>
+                <label className="text-sm text-slate-600">用户ID</label>
                 <Input
                   value={searchParams.user_id}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, user_id: e.target.value }))}
@@ -158,7 +158,7 @@ export default function AdminCareerPlanningPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm text-gray-600">专业</label>
+                <label className="text-sm text-slate-600">专业</label>
                 <Input
                   value={searchParams.major}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, major: e.target.value }))}
@@ -167,11 +167,11 @@ export default function AdminCareerPlanningPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm text-gray-600">年级</label>
+                <label className="text-sm text-slate-600">年级</label>
                 <select
                   value={searchParams.grade}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, grade: e.target.value }))}
-                  className="h-10 px-3 rounded-lg border border-gray-200 bg-white"
+                  className="h-10 px-3 rounded-lg border border-slate-200 bg-white"
                 >
                   <option value="">全部</option>
                   {gradeOptions.map(opt => (
@@ -217,57 +217,57 @@ export default function AdminCareerPlanningPage() {
             <Card className="overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gray-50 border-b border-slate-200">
                     <tr>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">ID</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">用户</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">专业</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">年级</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">意向城市</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">生成时间</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600 text-sm">操作</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">ID</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">用户</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">专业</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">年级</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">意向城市</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">生成时间</th>
+                      <th className="text-left py-3 px-4 font-medium text-slate-600 text-sm">操作</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reports.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-12 text-center text-gray-500">
+                        <td colSpan={7} className="py-12 text-center text-slate-500">
                           暂无数据
                         </td>
                       </tr>
                     ) : (
                       reports.map((report) => (
-                        <tr key={report.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-                          <td className="py-3 px-4 text-sm text-gray-600">
+                        <tr key={report.id} className="border-b border-slate-100 last:border-0 hover:bg-gray-50 transition-colors">
+                          <td className="py-3 px-4 text-sm text-slate-600">
                             {report.id}
                           </td>
                           <td className="py-3 px-4 text-sm">
                             <div className="flex items-center gap-2">
-                              <User className="w-4 h-4 text-gray-400" />
+                              <User className="w-4 h-4 text-slate-400" />
                               <div>
-                                <div className="text-gray-700">{report.user_nickname}</div>
-                                <div className="text-xs text-gray-400">{report.user_phone}</div>
+                                <div className="text-slate-700">{report.user_nickname}</div>
+                                <div className="text-xs text-slate-400">{report.user_phone}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-700">
+                          <td className="py-3 px-4 text-sm text-slate-700">
                             <div className="flex items-center gap-1">
-                              <GraduationCap className="w-4 h-4 text-gray-400" />
+                              <GraduationCap className="w-4 h-4 text-slate-400" />
                               {report.major || '未填写'}
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-700">
+                          <td className="py-3 px-4 text-sm text-slate-700">
                             {report.grade}
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-700">
+                          <td className="py-3 px-4 text-sm text-slate-700">
                             <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4 text-gray-400" />
+                              <MapPin className="w-4 h-4 text-slate-400" />
                               {report.city}
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
+                          <td className="py-3 px-4 text-sm text-slate-600">
                             <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <Calendar className="w-4 h-4 text-slate-400" />
                               {formatDate(report.create_time)}
                             </div>
                           </td>
@@ -299,7 +299,7 @@ export default function AdminCareerPlanningPage() {
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   上一页
                 </Button>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-slate-600">
                   第 {currentPage} / {totalPages} 页
                 </span>
                 <Button

@@ -74,8 +74,8 @@ export default function AboutPage() {
       {/* Story */}
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">我们的故事</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4">我们的故事</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto leading-relaxed">
             作为大学生，我们深知求职过程中的迷茫与焦虑——
             不知道什么岗位适合自己、不了解行业真实需求、不会写简历、害怕面试。
             于是我们决定，用自己学到的技术，为同样处境的同学打造一个真正有用的AI求职助手。
@@ -90,16 +90,16 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
                   {item.icon}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{item.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Features */}
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-16">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">核心功能</h3>
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 mb-16">
+          <h3 className="text-xl font-bold text-slate-900 mb-6 text-center">核心功能</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {features.map((feature, index) => (
               <div key={index} className="flex gap-4 p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition-colors">
@@ -107,8 +107,8 @@ export default function AboutPage() {
                   {feature.icon}
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{feature.name}</h4>
-                  <p className="text-sm text-gray-500">{feature.desc}</p>
+                  <h4 className="font-medium text-slate-900">{feature.name}</h4>
+                  <p className="text-sm text-slate-500">{feature.desc}</p>
                 </div>
               </div>
             ))}
@@ -118,8 +118,8 @@ export default function AboutPage() {
         {/* CTA */}
         <div className="text-center bg-gradient-to-r from-blue-50 to-blue-50 rounded-2xl p-12 border border-blue-100">
           <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">和我们一起成长</h3>
-          <p className="text-gray-600 mb-6">
+          <h3 className="text-xl font-bold text-slate-900 mb-2">和我们一起成长</h3>
+          <p className="text-slate-600 mb-6">
             职途星还在持续迭代中，欢迎提出建议和反馈
           </p>
           <div className="flex gap-4 justify-center">

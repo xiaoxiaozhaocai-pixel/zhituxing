@@ -21,8 +21,8 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
               <Building2 className="w-4 h-4 text-white" />
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-semibold text-gray-900 group-hover:text-[#165DFF] transition">职途星 · 雇主</span>
-              <span className="text-[10px] text-gray-500">Candidate Match</span>
+              <span className="text-sm font-semibold text-slate-900 group-hover:text-[#165DFF] transition">职途星 · 雇主</span>
+              <span className="text-[10px] text-slate-500">Candidate Match</span>
             </div>
           </Link>
           <EmployerNavClient />

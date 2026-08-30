@@ -117,7 +117,7 @@ export default function PrivacyPage() {
                 <span>{section.title}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-gray-700 leading-relaxed">
+            <CardContent className="text-slate-700 leading-relaxed">
               <p className="mb-4">{section.content}</p>
               <ul className="list-disc pl-6 space-y-2">
                 {section.list.map((item, idx) => (
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
                 ))}
               </ul>
               {section.note && (
-                <p className="mt-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <p className="mt-4 text-sm text-slate-500 bg-gray-50 p-3 rounded-lg">
                   {section.note}
                 </p>
               )}
@@ -141,21 +141,21 @@ export default function PrivacyPage() {
               <span>七、联系我们</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-gray-700">
+          <CardContent className="text-slate-700">
             <p className="mb-4">
               如果您对本隐私政策有任何疑问、意见或需要行使您的用户权利，请通过以下方式联系我们：
             </p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="font-medium text-gray-900">邮箱</p>
+                <p className="font-medium text-slate-900">邮箱</p>
                 <p className="text-[#165DFF]">privacy@zhituxing.com</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="font-medium text-gray-900">微信公众号</p>
-                <p className="text-gray-600">职途星</p>
+                <p className="font-medium text-slate-900">微信公众号</p>
+                <p className="text-slate-600">职途星</p>
               </div>
             </div>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-slate-500">
               我们将在收到您的请求后15个工作日内予以回复。
             </p>
           </CardContent>
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700 mb-4">
+            <p className="text-slate-700 mb-4">
               AI模拟面试功能涉及对语音、面部表情等生物识别信息的处理。根据《个人信息保护法》第29条，
               您拥有单独的知情权和决定权，可随时查看授权状态或撤回同意。
             </p>
@@ -187,7 +187,7 @@ export default function PrivacyPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700 mb-4">
+            <p className="text-slate-700 mb-4">
               为持续改进小职的AI能力，我们邀请您贡献脱敏后的匿名使用数据用于模型训练。
               此功能与个性化推荐完全独立，关闭不影响您的基础服务体验。
             </p>
@@ -196,7 +196,7 @@ export default function PrivacyPage() {
         </Card>
 
         {/* Footer Note */}
-        <div className="text-center text-sm text-gray-500 py-8">
+        <div className="text-center text-sm text-slate-500 py-8">
           <p>
             本隐私政策适用于职途星（zhituxing.com）提供的所有服务。
             如本政策发生变更，我们将在网站显著位置公告。

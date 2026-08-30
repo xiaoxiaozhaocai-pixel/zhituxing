@@ -205,8 +205,8 @@ export default function JdSyncPage() {
           <Card className="text-center py-12">
             <CardContent>
               <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">权限不足</h2>
-              <p className="text-gray-500">只有管理员才能访问此页面</p>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">权限不足</h2>
+              <p className="text-slate-500">只有管理员才能访问此页面</p>
             </CardContent>
           </Card>
         </div>
@@ -219,8 +219,8 @@ export default function JdSyncPage() {
       <div className="max-w-6xl mx-auto">
         {/* 页面标题 */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">JD同步管理</h1>
-          <p className="text-gray-500 mt-1">管理6大官方招聘API数据同步，目标：5000+条真实校招岗位</p>
+          <h1 className="text-2xl font-bold text-slate-900">JD同步管理</h1>
+          <p className="text-slate-500 mt-1">管理6大官方招聘API数据同步，目标：5000+条真实校招岗位</p>
         </div>
 
         {/* 同步进度条 */}
@@ -232,7 +232,7 @@ export default function JdSyncPage() {
                   {progress.status === 'syncing' && <Loader2 className="w-5 h-5 animate-spin text-[#165DFF]" />}
                   {progress.status === 'completed' && <CheckCircle className="w-5 h-5 text-green-500" />}
                   {progress.status === 'error' && <XCircle className="w-5 h-5 text-red-500" />}
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-slate-900">
                     {progress.status === 'syncing' && `正在同步: ${progress.platform}`}
                     {progress.status === 'completed' && '同步完成'}
                     {progress.status === 'error' && '同步失败'}
@@ -245,7 +245,7 @@ export default function JdSyncPage() {
                 </Badge>
               </div>
               <Progress value={(progress.current / progress.total) * 100} className="h-2" />
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-slate-500 mt-2">
                 {progress.current} / {progress.total}
               </p>
             </CardContent>
@@ -258,8 +258,8 @@ export default function JdSyncPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">岗位总数</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
+                  <p className="text-sm text-slate-500">岗位总数</p>
+                  <p className="text-2xl font-bold text-slate-900">{stats?.total || 0}</p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                   <Database className="w-6 h-6 text-blue-600" />
@@ -272,7 +272,7 @@ export default function JdSyncPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">今日新增</p>
+                  <p className="text-sm text-slate-500">今日新增</p>
                   <p className="text-2xl font-bold text-green-600">+{stats?.today || 0}</p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -286,8 +286,8 @@ export default function JdSyncPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">最近同步</p>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-sm text-slate-500">最近同步</p>
+                  <p className="text-lg font-semibold text-slate-900">
                     {logs[0] ? formatTime(logs[0].sync_time) : '从未同步'}
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export default function JdSyncPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">目标进度</p>
+                  <p className="text-sm text-slate-500">目标进度</p>
                   <p className="text-2xl font-bold text-[#165DFF]">
                     {Math.round(((stats?.total || 0) / 5000) * 100)}%
                   </p>
@@ -334,7 +334,7 @@ export default function JdSyncPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 mb-4">
+                <p className="text-slate-600 mb-4">
                   点击下方按钮，从6大官方招聘平台同步校招岗位数据。每次同步将拉取每个平台最近发布的新岗位。
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -377,13 +377,13 @@ export default function JdSyncPage() {
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div className={`w-3 h-3 rounded-full ${platform.color}`} />
-                          <span className="font-medium text-gray-900">{platform.name}</span>
+                          <span className="font-medium text-slate-900">{platform.name}</span>
                         </div>
                         <Badge variant="outline">
                           {stats?.bySource?.[platform.name] || 0} 条
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-500 mb-3">
+                      <p className="text-sm text-slate-500 mb-3">
                         预计获取: ~{platform.pages * 100} 条
                       </p>
                       <Button
@@ -427,11 +427,11 @@ export default function JdSyncPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className={`w-3 h-3 rounded-full ${platform.color}`} />
-                            <span className="font-medium text-gray-900">{platform.name}</span>
+                            <span className="font-medium text-slate-900">{platform.name}</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-sm text-gray-500">{count} 条</span>
-                            <span className="text-sm font-medium text-gray-900">{percentage}%</span>
+                            <span className="text-sm text-slate-500">{count} 条</span>
+                            <span className="text-sm font-medium text-slate-900">{percentage}%</span>
                           </div>
                         </div>
                         <div className="w-full bg-gray-100 rounded-full h-2">
@@ -446,8 +446,8 @@ export default function JdSyncPage() {
                 </div>
                 
                 {(!stats?.bySource || Object.keys(stats.bySource).length === 0) && (
-                  <div className="text-center py-8 text-gray-500">
-                    <Database className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-slate-500">
+                    <Database className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                     <p>暂无数据，请先执行同步任务</p>
                   </div>
                 )}
@@ -491,8 +491,8 @@ export default function JdSyncPage() {
                             <div className="flex items-center gap-3">
                               <div className={`w-3 h-3 rounded-full ${platform.color}`} />
                               <div>
-                                <p className="font-medium text-gray-900">{log.source_platform}</p>
-                                <p className="text-sm text-gray-500">{formatTime(log.sync_time)}</p>
+                                <p className="font-medium text-slate-900">{log.source_platform}</p>
+                                <p className="text-sm text-slate-500">{formatTime(log.sync_time)}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -507,9 +507,9 @@ export default function JdSyncPage() {
                                 </span>
                               </div>
                               {isExpanded ? (
-                                <ChevronUp className="w-5 h-5 text-gray-400" />
+                                <ChevronUp className="w-5 h-5 text-slate-400" />
                               ) : (
-                                <ChevronDown className="w-5 h-5 text-gray-400" />
+                                <ChevronDown className="w-5 h-5 text-slate-400" />
                               )}
                             </div>
                           </div>
@@ -518,19 +518,19 @@ export default function JdSyncPage() {
                             <div className="border-t p-4 bg-gray-50">
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
-                                  <p className="text-gray-500">总计获取</p>
+                                  <p className="text-slate-500">总计获取</p>
                                   <p className="font-medium">{log.total_fetched} 条</p>
                                 </div>
                                 <div>
-                                  <p className="text-gray-500">成功导入</p>
+                                  <p className="text-slate-500">成功导入</p>
                                   <p className="font-medium text-green-600">{log.success_count} 条</p>
                                 </div>
                                 <div>
-                                  <p className="text-gray-500">重复/失败</p>
+                                  <p className="text-slate-500">重复/失败</p>
                                   <p className="font-medium text-red-600">{log.fail_count} 条</p>
                                 </div>
                                 <div>
-                                  <p className="text-gray-500">成功率</p>
+                                  <p className="text-slate-500">成功率</p>
                                   <p className="font-medium">
                                     {log.total_fetched > 0 
                                       ? `${Math.round((log.success_count / log.total_fetched) * 100)}%`
@@ -553,8 +553,8 @@ export default function JdSyncPage() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Clock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-slate-500">
+                    <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                     <p>暂无同步日志</p>
                   </div>
                 )}

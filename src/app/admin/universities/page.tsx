@@ -49,12 +49,12 @@ const defaultForm: UniversityForm = {
 // ============ 常量 ============
 const STATUS_MAP: Record<string, { label: string; className: string }> = {
   active: { label: '运营中', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  inactive: { label: '已停用', className: 'bg-gray-50 text-gray-500 border-gray-200' },
+  inactive: { label: '已停用', className: 'bg-gray-50 text-slate-500 border-slate-200' },
   trial: { label: '试用中', className: 'bg-blue-50 text-blue-600 border-blue-200' },
 };
 
 const PLAN_MAP: Record<string, { label: string; className: string }> = {
-  free: { label: 'Free', className: 'bg-gray-50 text-gray-600 border-gray-200' },
+  free: { label: 'Free', className: 'bg-gray-50 text-slate-600 border-slate-200' },
   starter: { label: 'Starter', className: 'bg-amber-50 text-amber-700 border-amber-200' },
   pro: { label: 'Pro', className: 'bg-blue-50 text-blue-700 border-blue-200' },
 };

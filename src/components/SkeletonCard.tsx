@@ -77,7 +77,7 @@ export function SkeletonAIMessage() {
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-3/4 rounded-lg" />
         <Skeleton className="h-4 w-1/2 rounded-lg" />
-        <div className="flex items-center gap-1 text-sm text-gray-400">
+        <div className="flex items-center gap-1 text-sm text-slate-400">
           <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
           <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />

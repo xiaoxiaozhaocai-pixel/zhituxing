@@ -131,15 +131,15 @@ export default async function SharePage({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       {/* 顶部品牌条 */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <header className="bg-white border-b border-slate-100 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradientClass} flex items-center justify-center text-white font-bold text-sm`}>
               职
             </div>
             <div>
-              <h1 className="font-semibold text-gray-900">职途星 · 对话分享</h1>
-              <p className="text-xs text-gray-400">{data.botName} · {date}</p>
+              <h1 className="font-semibold text-slate-900">职途星 · 对话分享</h1>
+              <p className="text-xs text-slate-400">{data.botName} · {date}</p>
             </div>
           </div>
           <a
@@ -163,7 +163,7 @@ export default async function SharePage({
             </span>
           </div>
         )}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-6">
           {data.messages.map((msg, i) => (
             <div
               key={i}
@@ -174,7 +174,7 @@ export default async function SharePage({
                 className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm ${
                   msg.role === 'user'
                     ? `bg-gradient-to-br ${gradientClass} text-white`
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-gray-100 text-slate-600'
                 }`}
               >
                 {msg.role === 'user' ? '我' : 'AI'}
@@ -184,7 +184,7 @@ export default async function SharePage({
                 className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                   msg.role === 'user'
                     ? `bg-gradient-to-br ${gradientClass} text-white rounded-tr-sm`
-                    : 'bg-gray-50 text-gray-900 rounded-tl-sm border border-gray-100'
+                    : 'bg-gray-50 text-slate-900 rounded-tl-sm border border-slate-100'
                 }`}
               >
                 <div
@@ -198,7 +198,7 @@ export default async function SharePage({
 
         {/* 底部引导 */}
         <div className="mt-8 text-center">
-          <p className="text-gray-400 text-sm mb-4">内容由 AI 生成，仅供参考</p>
+          <p className="text-slate-400 text-sm mb-4">内容由 AI 生成，仅供参考</p>
           <a
             href="https://zhituxing.tech"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/25"

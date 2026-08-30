@@ -238,10 +238,10 @@ export default function MembershipPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-100 to-blue-100 text-blue-700 border border-blue-200 mb-4">
             <Crown className="w-5 h-5" /> 会员中心
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
             解锁全部功能，加速职业发展
           </h1>
-          <p className="text-gray-500 max-w-lg mx-auto">
+          <p className="text-slate-500 max-w-lg mx-auto">
             选择适合你的会员套餐，享受无限AI对话、深度分析、专业报告等高级功能
           </p>
         </div>
@@ -254,7 +254,7 @@ export default function MembershipPage() {
               className={`relative overflow-hidden transition-all hover:shadow-lg ${
                 plan.popular 
                   ? 'border-blue-500 ring-2 ring-blue-500/20 scale-[1.02] bg-gradient-to-b from-blue-50 to-white' 
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-slate-200 hover:border-slate-300'
               }`}
             >
               {plan.popular && (
@@ -263,20 +263,20 @@ export default function MembershipPage() {
                 </div>
               )}
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   {plan.name}
                   {plan.popular && <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />}
                 </CardTitle>
-                <p className="text-sm text-gray-500">{plan.description}</p>
+                <p className="text-sm text-slate-500">{plan.description}</p>
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-gray-900">¥{plan.price}</span>
-                  <span className="text-sm text-gray-500 ml-1">/{plan.period}</span>
+                  <span className="text-4xl font-bold text-slate-900">¥{plan.price}</span>
+                  <span className="text-sm text-slate-500 ml-1">/{plan.period}</span>
                 </div>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                    <li key={idx} className="flex items-center gap-2 text-sm text-slate-600">
                       <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                       {feature}
                     </li>
@@ -300,7 +300,7 @@ export default function MembershipPage() {
         {/* 会员权益对比表 —— 导流转化 */}
         <Card className="mb-8 border-blue-200">
           <CardHeader>
-            <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
+            <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
               <Crown className="w-5 h-5 text-blue-500" /> 免费 vs 会员 权益对比
             </CardTitle>
           </CardHeader>
@@ -308,9 +308,9 @@ export default function MembershipPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-2 font-medium text-gray-500">功能</th>
-                    <th className="text-center py-3 px-2 font-medium text-gray-500">免费用户</th>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-3 px-2 font-medium text-slate-500">功能</th>
+                    <th className="text-center py-3 px-2 font-medium text-slate-500">免费用户</th>
                     <th className="text-center py-3 px-2 font-medium text-blue-600 bg-blue-50">会员</th>
                   </tr>
                 </thead>
@@ -325,13 +325,13 @@ export default function MembershipPage() {
                     { name: '对话导出', free: '每日3次', member: true },
                     { name: '简历优化', free: '—', member: '永久会员' },
                   ].map((row) => (
-                    <tr key={row.name} className="border-b border-gray-100">
-                      <td className="py-3 px-2 text-gray-700">{row.name}</td>
+                    <tr key={row.name} className="border-b border-slate-100">
+                      <td className="py-3 px-2 text-slate-700">{row.name}</td>
                       <td className="py-3 px-2 text-center">
                         {row.free === '—' ? (
-                          <span className="text-gray-300">—</span>
+                          <span className="text-slate-300">—</span>
                         ) : (
-                          <span className="text-gray-500">{row.free}</span>
+                          <span className="text-slate-500">{row.free}</span>
                         )}
                       </td>
                       <td className="py-3 px-2 text-center bg-blue-50/50">
@@ -346,16 +346,16 @@ export default function MembershipPage() {
                 </tbody>
               </table>
             </div>
-            <p className="text-center text-sm text-gray-500 mt-4">
+            <p className="text-center text-sm text-slate-500 mt-4">
               升级会员，解锁全部高级能力，加速你的职业发展 🚀
             </p>
           </CardContent>
         </Card>
 
         {/* 免费用户权益 */}
-        <Card className="mb-8 border-gray-200">
+        <Card className="mb-8 border-slate-200">
           <CardHeader>
-            <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
+            <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-500" /> 免费用户权益
             </CardTitle>
           </CardHeader>
@@ -365,14 +365,14 @@ export default function MembershipPage() {
                 <div key={b.title} className="flex items-center gap-3 p-4 rounded-lg bg-gray-50">
                   <span className="text-blue-500">{b.icon}</span>
                   <div>
-                    <div className="font-medium text-gray-800">{b.title}</div>
-                    <div className="text-sm text-gray-500">{b.desc}</div>
+                    <div className="font-medium text-slate-800">{b.title}</div>
+                    <div className="text-sm text-slate-500">{b.desc}</div>
                   </div>
                   <Check className="w-5 h-5 text-green-500 ml-auto" />
                 </div>
               ))}
             </div>
-            <p className="text-center text-sm text-gray-500 mt-4">
+            <p className="text-center text-sm text-slate-500 mt-4">
               免费用户可体验基础功能，升级会员解锁全部能力 ✨
             </p>
           </CardContent>
@@ -380,28 +380,28 @@ export default function MembershipPage() {
 
         {/* FAQ */}
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">常见问题</h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4 text-center">常见问题</h3>
           <div className="max-w-2xl mx-auto space-y-2">
             {[
               { q: '审核需要多久？', a: '提交订单后，管理员会在 1 小时内完成审核，审核通过后会员权益自动激活。' },
               { q: '审核未通过怎么办？', a: '如果支付金额不符或截图不清晰，管理员会驳回并注明原因。您可以在「我的订单」中查看驳回原因，重新提交即可。' },
               { q: '付款后可以退款吗？', a: '会员权益激活后，如因平台原因无法正常使用，可联系客服全额退款。因个人原因退款，按剩余有效期比例退还。' },
             ].map((faq, i) => (
-                <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+                <div key={i} className="border border-slate-200 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setFaqOpenIndex(faqOpenIndex === i ? null : i)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm text-left text-slate-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="font-medium">{faq.q}</span>
                     <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform ${faqOpenIndex === i ? 'rotate-180' : ''}`}
+                      className={`w-4 h-4 text-slate-400 transition-transform ${faqOpenIndex === i ? 'rotate-180' : ''}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
                   {faqOpenIndex === i && (
-                    <div className="px-4 pb-3 text-sm text-gray-500">
+                    <div className="px-4 pb-3 text-sm text-slate-500">
                       {faq.a}
                     </div>
                   )}
@@ -412,10 +412,10 @@ export default function MembershipPage() {
 
         {/* 底部提示 */}
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-slate-500 mb-2">
             所有套餐均支持发票开具，如有问题请联系客服
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-slate-400">
             职途星 — 让每个大学生都能获得专业的就业指导
           </p>
         </div>
@@ -436,12 +436,12 @@ export default function MembershipPage() {
           <div className="space-y-4">
             {/* 支付方式选择 */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">支付方式</label>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">支付方式</label>
               <div className="flex gap-4">
                 <label className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
                   paymentMethod === 'wechat' 
                     ? 'border-green-500 bg-green-50 text-green-700' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-slate-200 hover:border-slate-300'
                 }`}>
                   <input
                     type="radio"
@@ -457,7 +457,7 @@ export default function MembershipPage() {
                 <label className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
                   paymentMethod === 'alipay' 
                     ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-slate-200 hover:border-slate-300'
                 }`}>
                   <input
                     type="radio"
@@ -502,28 +502,28 @@ export default function MembershipPage() {
                 className="mx-auto rounded-lg shadow-sm mb-3 object-contain"
                 priority
               />
-              <p className="text-sm text-gray-700 font-medium">
+              <p className="text-sm text-slate-700 font-medium">
                 {paymentMethod === 'wechat' ? '使用微信扫一扫支付' : '使用支付宝扫一扫支付'}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 转账时请备注您的注册手机号或邮箱，付款后下方上传截图
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 扫码遇到问题？加客服微信 <strong>zhituxing</strong> 协助
               </p>
             </div>
 
             {/* 上传截图 */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">上传付款截图</label>
+              <label className="text-sm font-medium text-slate-700 mb-2 block">上传付款截图</label>
               {!screenshotPreview ? (
                 <div 
-                  className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
+                  className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">点击选择截图文件</p>
-                  <p className="text-xs text-gray-400 mt-1">支持 JPG、PNG、WebP，最大 5MB</p>
+                  <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">点击选择截图文件</p>
+                  <p className="text-xs text-slate-400 mt-1">支持 JPG、PNG、WebP，最大 5MB</p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -539,34 +539,34 @@ export default function MembershipPage() {
                     alt="付款截图预览" 
                     width={400}
                     height={192}
-                    className="w-full max-h-48 object-contain rounded-lg border border-gray-200"
+                    className="w-full max-h-48 object-contain rounded-lg border border-slate-200"
                     unoptimized
                   />
                   <button
                     className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
                     onClick={clearScreenshot}
                   >
-                    <X className="w-4 h-4 text-gray-500" />
+                    <X className="w-4 h-4 text-slate-500" />
                   </button>
-                  <p className="text-xs text-gray-500 mt-1">{screenshotFile?.name}</p>
+                  <p className="text-xs text-slate-500 mt-1">{screenshotFile?.name}</p>
                 </div>
               )}
             </div>
 
             {/* 备注 */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">
-                备注 <span className="text-gray-400 font-normal">（可选）</span>
+              <label className="text-sm font-medium text-slate-700 mb-1 block">
+                备注 <span className="text-slate-400 font-normal">（可选）</span>
               </label>
               <textarea
-                className="w-full border border-gray-200 rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-200 rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={2}
                 maxLength={500}
                 placeholder="如有备注请填写，如转账时备注的姓名"
                 value={userNote}
                 onChange={(e) => setUserNote(e.target.value)}
               />
-              <p className="text-xs text-gray-400 text-right">{userNote.length}/500</p>
+              <p className="text-xs text-slate-400 text-right">{userNote.length}/500</p>
             </div>
 
             {/* 错误提示 */}

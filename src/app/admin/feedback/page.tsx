@@ -29,14 +29,14 @@ const typeConfig: Record<string, { label: string; className: string }> = {
   bug: { label: '功能问题', className: 'bg-red-100 text-red-700' },
   suggestion: { label: '功能建议', className: 'bg-blue-100 text-blue-700' },
   correction: { label: '内容纠错', className: 'bg-orange-100 text-orange-700' },
-  other: { label: '其他', className: 'bg-gray-100 text-gray-700' }
+  other: { label: '其他', className: 'bg-gray-100 text-slate-700' }
 };
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending: { label: '待处理', className: 'bg-yellow-100 text-yellow-700' },
   processing: { label: '处理中', className: 'bg-blue-100 text-blue-700' },
   resolved: { label: '已解决', className: 'bg-green-100 text-green-700' },
-  closed: { label: '已关闭', className: 'bg-gray-100 text-gray-700' }
+  closed: { label: '已关闭', className: 'bg-gray-100 text-slate-700' }
 };
 
 export default function AdminFeedbackPage() {
@@ -157,7 +157,7 @@ export default function AdminFeedbackPage() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">工单管理</h1>
+            <h1 className="text-2xl font-bold text-slate-900">工单管理</h1>
           </div>
           <Button variant="outline" onClick={fetchFeedbacks}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -191,10 +191,10 @@ export default function AdminFeedbackPage() {
               <p className="text-sm text-green-600">已解决</p>
             </CardContent>
           </Card>
-          <Card className="bg-gray-50 border-gray-200">
+          <Card className="bg-gray-50 border-slate-200">
             <CardContent className="text-center py-4">
-              <p className="text-2xl font-bold text-gray-600">{totalPages}</p>
-              <p className="text-sm text-gray-600">总页数</p>
+              <p className="text-2xl font-bold text-slate-600">{totalPages}</p>
+              <p className="text-sm text-slate-600">总页数</p>
             </CardContent>
           </Card>
         </div>
@@ -205,7 +205,7 @@ export default function AdminFeedbackPage() {
             <div className="flex flex-wrap gap-4">
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <Input
                     placeholder="搜索内容/手机号/用户名..."
                     value={searchKeyword}
@@ -257,8 +257,8 @@ export default function AdminFeedbackPage() {
                             {statusConfig[feedback.status]!.label}
                           </Badge>
                         </div>
-                        <p className="text-gray-900 mb-2 line-clamp-2">{feedback.content}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <p className="text-slate-900 mb-2 line-clamp-2">{feedback.content}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500">
                           <span>{feedback.userName || '游客'}</span>
                           <span>{feedback.userPhone}</span>
                           <span>{new Date(feedback.createdAt).toLocaleDateString()}</span>
@@ -267,7 +267,7 @@ export default function AdminFeedbackPage() {
                       {feedback.reply && (
                         <div className="ml-4 p-2 bg-green-50 rounded-lg max-w-[200px]">
                           <p className="text-xs text-green-600 mb-1">已回复</p>
-                          <p className="text-sm text-gray-600 line-clamp-3">{feedback.reply}</p>
+                          <p className="text-sm text-slate-600 line-clamp-3">{feedback.reply}</p>
                         </div>
                       )}
                     </div>
@@ -279,7 +279,7 @@ export default function AdminFeedbackPage() {
         )}
 
         {filteredFeedbacks.length === 0 && !loading && (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-slate-500">
             暂无工单
           </div>
         )}
@@ -294,7 +294,7 @@ export default function AdminFeedbackPage() {
             >
               上一页
             </Button>
-            <span className="px-4 py-2 text-gray-600">
+            <span className="px-4 py-2 text-slate-600">
               第 {page} / {totalPages} 页
             </span>
             <Button
@@ -328,26 +328,26 @@ export default function AdminFeedbackPage() {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500">用户</p>
+                  <p className="text-slate-500">用户</p>
                   <p>{selectedFeedback.userName || '游客'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">手机号</p>
+                  <p className="text-slate-500">手机号</p>
                   <p>{selectedFeedback.userPhone || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">联系方式</p>
+                  <p className="text-slate-500">联系方式</p>
                   <p>{selectedFeedback.contact || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">提交时间</p>
+                  <p className="text-slate-500">提交时间</p>
                   <p>{new Date(selectedFeedback.createdAt).toLocaleString()}</p>
                 </div>
               </div>
 
               {/* Content */}
               <div>
-                <p className="text-gray-500 text-sm mb-1">反馈内容</p>
+                <p className="text-slate-500 text-sm mb-1">反馈内容</p>
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="whitespace-pre-wrap">{selectedFeedback.content}</p>
                 </div>
@@ -356,7 +356,7 @@ export default function AdminFeedbackPage() {
               {/* Reply History */}
               {selectedFeedback.reply && (
                 <div>
-                  <p className="text-gray-500 text-sm mb-1">回复内容</p>
+                  <p className="text-slate-500 text-sm mb-1">回复内容</p>
                   <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                     <p className="whitespace-pre-wrap">{selectedFeedback.reply}</p>
                   </div>
@@ -365,7 +365,7 @@ export default function AdminFeedbackPage() {
 
               {/* Reply Input */}
               <div>
-                <p className="text-gray-500 text-sm mb-1">回复内容</p>
+                <p className="text-slate-500 text-sm mb-1">回复内容</p>
                 <Textarea
                   placeholder="请输入回复内容..."
                   rows={4}

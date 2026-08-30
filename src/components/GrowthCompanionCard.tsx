@@ -28,8 +28,8 @@ export default function GrowthCompanionCard({
       <Card className="border-0 shadow-lg">
         <CardContent className="text-center py-10">
           <div className="text-6xl mb-4">🎉</div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">今天是我们相识的第一天 🎊</h3>
-          <p className="text-gray-500 mb-6">未来的每一步，小职都会陪你一起走</p>
+          <h3 className="text-xl font-bold text-slate-800 mb-2">今天是我们相识的第一天 🎊</h3>
+          <p className="text-slate-500 mb-6">未来的每一步，小职都会陪你一起走</p>
           <Link
             href="/"
             className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90 transition-colors"
@@ -59,7 +59,7 @@ export default function GrowthCompanionCard({
                 {companionDays > 0 ? companionDays : companionHours}
               </div>
             )}
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="text-sm text-slate-500 mt-1">
               {companionDays > 0 ? '陪伴天' : '陪伴小时'}
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function GrowthCompanionCard({
             ) : (
               <div className="text-3xl font-bold text-blue-600">{totalReports}</div>
             )}
-            <div className="text-sm text-gray-500 mt-1">产出报告</div>
+            <div className="text-sm text-slate-500 mt-1">产出报告</div>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             {isLoading ? (
@@ -77,7 +77,7 @@ export default function GrowthCompanionCard({
             ) : (
               <div className="text-3xl font-bold text-blue-600">{totalFavorites}</div>
             )}
-            <div className="text-sm text-gray-500 mt-1">收藏岗位</div>
+            <div className="text-sm text-slate-500 mt-1">收藏岗位</div>
           </div>
           <div className="text-center p-3 bg-gray-50 rounded-lg">
             {isLoading ? (
@@ -85,7 +85,7 @@ export default function GrowthCompanionCard({
             ) : (
               <div className="text-3xl font-bold text-blue-600">{totalAssessments}</div>
             )}
-            <div className="text-sm text-gray-500 mt-1">测评次数</div>
+            <div className="text-sm text-slate-500 mt-1">测评次数</div>
           </div>
         </div>
 

@@ -106,7 +106,7 @@ export default function JdSubmissionsPage() {
       default:
         return {
           label: '未知',
-          color: 'bg-gray-100 text-gray-700',
+          color: 'bg-gray-100 text-slate-700',
           icon: <AlertCircle className="w-4 h-4" />
         };
     }
@@ -144,7 +144,7 @@ export default function JdSubmissionsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* 返回按钮 */}
-        <Link href="/profile" className="inline-flex items-center text-gray-600 hover:text-[#165DFF] mb-6">
+        <Link href="/profile" className="inline-flex items-center text-slate-600 hover:text-[#165DFF] mb-6">
           <ArrowLeft className="w-4 h-4 mr-1" />
           返回个人中心
         </Link>
@@ -152,11 +152,11 @@ export default function JdSubmissionsPage() {
         {/* 页面标题 */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <Upload className="w-7 h-7 text-[#165DFF]" />
               我的JD提交
             </h1>
-            <p className="text-gray-500 mt-2">
+            <p className="text-slate-500 mt-2">
               查看您提交的JD审核状态和奖励记录
             </p>
           </div>
@@ -175,7 +175,7 @@ export default function JdSubmissionsPage() {
               <div className="text-3xl font-bold text-[#165DFF]">
                 {submissions.filter(s => s.status === 1).length}
               </div>
-              <div className="text-sm text-gray-500 mt-1 flex items-center justify-center gap-1">
+              <div className="text-sm text-slate-500 mt-1 flex items-center justify-center gap-1">
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 已通过
               </div>
@@ -186,7 +186,7 @@ export default function JdSubmissionsPage() {
               <div className="text-3xl font-bold text-yellow-500">
                 {submissions.filter(s => s.status === 0).length}
               </div>
-              <div className="text-sm text-gray-500 mt-1 flex items-center justify-center gap-1">
+              <div className="text-sm text-slate-500 mt-1 flex items-center justify-center gap-1">
                 <Clock className="w-4 h-4 text-yellow-500" />
                 待审核
               </div>
@@ -194,10 +194,10 @@ export default function JdSubmissionsPage() {
           </Card>
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 text-center">
-              <div className="text-3xl font-bold text-gray-400">
+              <div className="text-3xl font-bold text-slate-400">
                 {submissions.length}
               </div>
-              <div className="text-sm text-gray-500 mt-1 flex items-center justify-center gap-1">
+              <div className="text-sm text-slate-500 mt-1 flex items-center justify-center gap-1">
                 <Briefcase className="w-4 h-4" />
                 总计提交
               </div>
@@ -226,9 +226,9 @@ export default function JdSubmissionsPage() {
             {submissions.length === 0 ? (
               <Card className="hover:shadow-md transition-shadow">
                 <CardContent className="p-12 text-center">
-                  <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">暂无提交记录</h3>
-                  <p className="text-gray-400 mb-6">快去上传真实JD，赢取免费奖励吧！</p>
+                  <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-slate-600 mb-2">暂无提交记录</h3>
+                  <p className="text-slate-400 mb-6">快去上传真实JD，赢取免费奖励吧！</p>
                   <Link href="/jobs/submit">
                     <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                       <Upload className="w-4 h-4 mr-2" />
@@ -247,7 +247,7 @@ export default function JdSubmissionsPage() {
                         <div className="flex-1">
                           {/* 岗位名称和企业 */}
                           <div className="flex items-center gap-3 mb-3">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-slate-900">
                               {submission.job_name}
                             </h3>
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusInfo.color}`}>
@@ -257,7 +257,7 @@ export default function JdSubmissionsPage() {
                           </div>
                           
                           {/* 企业信息 */}
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 mb-3">
                             <span className="flex items-center gap-1">
                               <Briefcase className="w-4 h-4" />
                               {submission.company_name}
@@ -266,7 +266,7 @@ export default function JdSubmissionsPage() {
                               <span>{submission.city}</span>
                             )}
                             {submission.industry && (
-                              <span className="text-gray-400">|</span>
+                              <span className="text-slate-400">|</span>
                             )}
                             {submission.industry && (
                               <span>{submission.industry}</span>
@@ -297,7 +297,7 @@ export default function JdSubmissionsPage() {
                         </div>
 
                         {/* 提交时间 */}
-                        <div className="text-right text-sm text-gray-400">
+                        <div className="text-right text-sm text-slate-400">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             {formatDate(submission.create_time)}

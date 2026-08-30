@@ -35,7 +35,7 @@ function ScoreBar({ score, maxScore, color }: { score: number; maxScore: number;
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="text-sm font-medium text-gray-600 min-w-[48px] text-right">
+      <span className="text-sm font-medium text-slate-600 min-w-[48px] text-right">
         {score}/{maxScore}
       </span>
     </div>
@@ -55,7 +55,7 @@ export default function InterviewResultCard({ data }: InterviewResultCardProps) 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-400 text-sm text-center py-6">暂无面试结果数据</p>
+          <p className="text-slate-400 text-sm text-center py-6">暂无面试结果数据</p>
         </CardContent>
       </Card>
     );
@@ -94,11 +94,11 @@ export default function InterviewResultCard({ data }: InterviewResultCardProps) 
         {/* 各维度评分 */}
         {dimensions.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-700">各维度评分</h4>
+            <h4 className="text-sm font-medium text-slate-700">各维度评分</h4>
             {dimensions.map((dim, idx) => (
               <div key={idx} className="space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{dim.name}</span>
+                  <span className="text-slate-600">{dim.name}</span>
                 </div>
                 <ScoreBar score={dim.score} maxScore={dim.max_score || maxScore} color="bg-blue-500" />
               </div>
@@ -109,10 +109,10 @@ export default function InterviewResultCard({ data }: InterviewResultCardProps) 
         {/* 改进建议 */}
         {suggestions.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">改进建议</h4>
+            <h4 className="text-sm font-medium text-slate-700">改进建议</h4>
             <ul className="space-y-1.5">
               {suggestions.map((suggestion, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                   {suggestion}
                 </li>
@@ -123,7 +123,7 @@ export default function InterviewResultCard({ data }: InterviewResultCardProps) 
 
         {/* 摘要 */}
         {data.summary && (
-          <div className="bg-blue-50 rounded-lg p-3 text-sm text-gray-600">
+          <div className="bg-blue-50 rounded-lg p-3 text-sm text-slate-600">
             {data.summary}
           </div>
         )}

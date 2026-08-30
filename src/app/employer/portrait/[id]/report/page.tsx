@@ -22,7 +22,7 @@ function DistributionBar({ label, data }: { label: string; data: number[] }) {
   const max = Math.max(...data, 1);
   return (
     <div className="mb-3">
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+      <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
         <span className="font-medium">{label}</span>
       </div>
       <div className="flex gap-1 h-5">
@@ -37,12 +37,12 @@ function DistributionBar({ label, data }: { label: string; data: number[] }) {
           </div>
         ))}
       </div>
-      <div className="flex gap-1 text-[10px] text-gray-400 mt-0.5">
+      <div className="flex gap-1 text-[10px] text-slate-400 mt-0.5">
         {['极低','低','中','高','极高'].map((l, i) => (
           <div key={i} className="flex-1 text-center">{l}</div>
         ))}
       </div>
-      <div className="flex gap-1 text-[10px] text-gray-500 mt-0.5">
+      <div className="flex gap-1 text-[10px] text-slate-500 mt-0.5">
         {data.slice(1).map((v, i) => (
           <div key={i} className="flex-1 text-center">{v}人</div>
         ))}
@@ -97,12 +97,12 @@ export default function PortraitReportPage() {
     </div>
   );
 
-  if (error) return <div className="text-gray-500 text-center py-16">{error}</div>;
+  if (error) return <div className="text-slate-500 text-center py-16">{error}</div>;
   if (!data || data.candidates.length === 0) return (
     <div className="text-center py-16">
-      <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-      <p className="text-gray-500">暂无评估数据</p>
-      <p className="text-sm text-gray-400 mt-2">需要至少评估1位候选人后才能生成报告</p>
+      <BarChart3 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+      <p className="text-slate-500">暂无评估数据</p>
+      <p className="text-sm text-slate-400 mt-2">需要至少评估1位候选人后才能生成报告</p>
       <Link href={`/employer/portrait/${portraitId}`} className="inline-block mt-4 text-sm text-[#165DFF] hover:underline">返回盲评</Link>
     </div>
   );
@@ -139,51 +139,51 @@ export default function PortraitReportPage() {
 
   return (
     <div>
-      <Link href={`/employer/portrait/${portraitId}`} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#165DFF] mb-4 transition">
+      <Link href={`/employer/portrait/${portraitId}`} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#165DFF] mb-4 transition">
         <ArrowLeft className="w-4 h-4" />
         返回盲评
       </Link>
 
-      <h1 className="text-xl font-bold text-gray-900 mb-2">{data.portrait.title} · 真实画像报告</h1>
-      <p className="text-sm text-gray-500 mb-6">基于 {n} 位候选人的盲评数据生成</p>
+      <h1 className="text-xl font-bold text-slate-900 mb-2">{data.portrait.title} · 真实画像报告</h1>
+      <p className="text-sm text-slate-500 mb-6">基于 {n} 位候选人的盲评数据生成</p>
 
       {/* Overview */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+        <div className="bg-white rounded-xl border border-slate-100 p-4 text-center">
           <Users className="w-5 h-5 text-[#165DFF] mx-auto mb-1" />
-          <div className="text-2xl font-bold text-gray-900">{n}</div>
-          <div className="text-xs text-gray-500">评估人数</div>
+          <div className="text-2xl font-bold text-slate-900">{n}</div>
+          <div className="text-xs text-slate-500">评估人数</div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+        <div className="bg-white rounded-xl border border-slate-100 p-4 text-center">
           <TrendingUp className="w-5 h-5 text-[#165DFF] mx-auto mb-1" />
-          <div className="text-2xl font-bold text-gray-900">{Math.round(highSkill / n * 100)}%</div>
-          <div className="text-xs text-gray-500">技能高占比(≥4级)</div>
+          <div className="text-2xl font-bold text-slate-900">{Math.round(highSkill / n * 100)}%</div>
+          <div className="text-xs text-slate-500">技能高占比(≥4级)</div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+        <div className="bg-white rounded-xl border border-slate-100 p-4 text-center">
           <BarChart3 className="w-5 h-5 text-[#165DFF] mx-auto mb-1" />
-          <div className="text-2xl font-bold text-gray-900">{allHigh}</div>
-          <div className="text-xs text-gray-500">全维度强型</div>
+          <div className="text-2xl font-bold text-slate-900">{allHigh}</div>
+          <div className="text-xs text-slate-500">全维度强型</div>
         </div>
       </div>
 
       {/* Distribution */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">各维度分布</h2>
+      <div className="bg-white rounded-xl border border-slate-100 p-5 mb-6">
+        <h2 className="text-base font-semibold text-slate-900 mb-4">各维度分布</h2>
         <DistributionBar label="Skill（技术能力）" data={skillDist} />
         <DistributionBar label="Exp（经验对口度）" data={expDist} />
         <DistributionBar label="Soft（软素质）" data={softDist} />
       </div>
 
       {/* Pattern Analysis */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">组态路径分析</h2>
+      <div className="bg-white rounded-xl border border-slate-100 p-5 mb-6">
+        <h2 className="text-base font-semibold text-slate-900 mb-4">组态路径分析</h2>
         <div className="space-y-2">
           {highSkill >= n * 0.5 && (
             <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
               <span className="text-lg">🔵</span>
               <div>
-                <div className="text-sm font-medium text-gray-900">技能主导型路径</div>
-                <div className="text-xs text-gray-600 mt-0.5">{highSkill}/{n} 人技能≥4级（{Math.round(highSkill/n*100)}%），技能可能是该岗位的基础门槛</div>
+                <div className="text-sm font-medium text-slate-900">技能主导型路径</div>
+                <div className="text-xs text-slate-600 mt-0.5">{highSkill}/{n} 人技能≥4级（{Math.round(highSkill/n*100)}%），技能可能是该岗位的基础门槛</div>
               </div>
             </div>
           )}
@@ -191,8 +191,8 @@ export default function PortraitReportPage() {
             <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
               <span className="text-lg">🟢</span>
               <div>
-                <div className="text-sm font-medium text-gray-900">经验+软素质型路径</div>
-                <div className="text-xs text-gray-600 mt-0.5">{expSoft}/{n} 人经验且软素质同时≥4级，经验+软素质的组态效应明显</div>
+                <div className="text-sm font-medium text-slate-900">经验+软素质型路径</div>
+                <div className="text-xs text-slate-600 mt-0.5">{expSoft}/{n} 人经验且软素质同时≥4级，经验+软素质的组态效应明显</div>
               </div>
             </div>
           )}
@@ -200,8 +200,8 @@ export default function PortraitReportPage() {
             <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
               <span className="text-lg">🟣</span>
               <div>
-                <div className="text-sm font-medium text-gray-900">技能+软素质型路径</div>
-                <div className="text-xs text-gray-600 mt-0.5">{skillSoft}/{n} 人技能且软素质同时≥4级</div>
+                <div className="text-sm font-medium text-slate-900">技能+软素质型路径</div>
+                <div className="text-xs text-slate-600 mt-0.5">{skillSoft}/{n} 人技能且软素质同时≥4级</div>
               </div>
             </div>
           )}
@@ -209,8 +209,8 @@ export default function PortraitReportPage() {
             <div className="flex items-start gap-3 p-3 bg-amber-50 rounded-lg">
               <span className="text-lg">⚠️</span>
               <div>
-                <div className="text-sm font-medium text-gray-900">无全维度强型候选人</div>
-                <div className="text-xs text-gray-600 mt-0.5">没有人在 Skill/Exp/Soft 三维度同时达到4级以上</div>
+                <div className="text-sm font-medium text-slate-900">无全维度强型候选人</div>
+                <div className="text-xs text-slate-600 mt-0.5">没有人在 Skill/Exp/Soft 三维度同时达到4级以上</div>
               </div>
             </div>
           )}
@@ -218,8 +218,8 @@ export default function PortraitReportPage() {
             <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
               <span className="text-lg">📊</span>
               <div>
-                <div className="text-sm font-medium text-gray-900">fsQCA 完整分析</div>
-                <div className="text-xs text-gray-600 mt-0.5">当前 {n} 人，达到 15 人后自动跑完整模糊集定性比较分析（模糊校准→真值表→组态解→决策规则）</div>
+                <div className="text-sm font-medium text-slate-900">fsQCA 完整分析</div>
+                <div className="text-xs text-slate-600 mt-0.5">当前 {n} 人，达到 15 人后自动跑完整模糊集定性比较分析（模糊校准→真值表→组态解→决策规则）</div>
               </div>
             </div>
           )}
@@ -227,21 +227,21 @@ export default function PortraitReportPage() {
       </div>
 
       {/* Top Ranking */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-xl border border-slate-100 p-5 mb-6">
+        <h2 className="text-base font-semibold text-slate-900 mb-4">
           推荐排名 Top{top5.length}
-          <span className="text-gray-400 font-normal text-xs ml-2">综合评分 = Skill×30% + Exp×25% + Soft×35%</span>
+          <span className="text-slate-400 font-normal text-xs ml-2">综合评分 = Skill×30% + Exp×25% + Soft×35%</span>
         </h2>
         <div className="space-y-2">
           {top5.map((c, i) => (
-            <div key={i} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100">
+            <div key={i} className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-slate-100">
               <div className="flex items-center gap-3">
                 <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] text-white text-xs font-bold flex items-center justify-center">
                   {i + 1}
                 </span>
                 <div>
-                  <div className="text-sm font-medium text-gray-900">{c.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-sm font-medium text-slate-900">{c.name}</div>
+                  <div className="text-xs text-slate-500">
                     Skl={c.skill_level} · Exp={c.exp_level} · Sft={c.soft_level}
                     {c.education && ` · ${c.education}`}
                   </div>
@@ -254,35 +254,35 @@ export default function PortraitReportPage() {
       </div>
 
       {/* All candidates table */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">全部候选人评分明细</h2>
+      <div className="bg-white rounded-xl border border-slate-100 p-5">
+        <h2 className="text-base font-semibold text-slate-900 mb-4">全部候选人评分明细</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-2 text-gray-500 font-medium">姓名</th>
-                <th className="text-center py-2 text-gray-500 font-medium">Skill</th>
-                <th className="text-center py-2 text-gray-500 font-medium">Exp</th>
-                <th className="text-center py-2 text-gray-500 font-medium">Soft</th>
-                <th className="text-center py-2 text-gray-500 font-medium">综合分</th>
-                <th className="text-left py-2 text-gray-500 font-medium">学历</th>
+              <tr className="border-b border-slate-100">
+                <th className="text-left py-2 text-slate-500 font-medium">姓名</th>
+                <th className="text-center py-2 text-slate-500 font-medium">Skill</th>
+                <th className="text-center py-2 text-slate-500 font-medium">Exp</th>
+                <th className="text-center py-2 text-slate-500 font-medium">Soft</th>
+                <th className="text-center py-2 text-slate-500 font-medium">综合分</th>
+                <th className="text-left py-2 text-slate-500 font-medium">学历</th>
               </tr>
             </thead>
             <tbody>
               {scored.map((c, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <td className="py-2 font-medium text-gray-900">{c.name}</td>
+                <tr key={i} className="border-b border-slate-50 hover:bg-gray-50/50">
+                  <td className="py-2 font-medium text-slate-900">{c.name}</td>
                   <td className="py-2 text-center">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${c.skill_level >= 4 ? 'bg-blue-100 text-[#165DFF]' : 'bg-gray-100 text-gray-600'}`}>{c.skill_level}</span>
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${c.skill_level >= 4 ? 'bg-blue-100 text-[#165DFF]' : 'bg-gray-100 text-slate-600'}`}>{c.skill_level}</span>
                   </td>
                   <td className="py-2 text-center">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${c.exp_level >= 4 ? 'bg-blue-100 text-[#165DFF]' : 'bg-gray-100 text-gray-600'}`}>{c.exp_level}</span>
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${c.exp_level >= 4 ? 'bg-blue-100 text-[#165DFF]' : 'bg-gray-100 text-slate-600'}`}>{c.exp_level}</span>
                   </td>
                   <td className="py-2 text-center">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${c.soft_level >= 4 ? 'bg-blue-100 text-[#165DFF]' : 'bg-gray-100 text-gray-600'}`}>{c.soft_level}</span>
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs ${c.soft_level >= 4 ? 'bg-blue-100 text-[#165DFF]' : 'bg-gray-100 text-slate-600'}`}>{c.soft_level}</span>
                   </td>
-                  <td className="py-2 text-center font-semibold text-gray-900">{c.score}</td>
-                  <td className="py-2 text-gray-500 text-xs">{c.education || '-'}</td>
+                  <td className="py-2 text-center font-semibold text-slate-900">{c.score}</td>
+                  <td className="py-2 text-slate-500 text-xs">{c.education || '-'}</td>
                 </tr>
               ))}
             </tbody>

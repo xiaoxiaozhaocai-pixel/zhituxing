@@ -287,7 +287,7 @@ export function ResumeRadar({ data, className = '' }: ResumeRadarProps) {
     return (
       <div
         ref={containerRef}
-        className="flex items-center justify-center text-gray-400 text-sm"
+        className="flex items-center justify-center text-slate-400 text-sm"
         style={{ width: '100%', height: 400 }}
       >
         数据不足，无法生成雷达图
@@ -333,7 +333,7 @@ export function ResumeRadar({ data, className = '' }: ResumeRadarProps) {
         )}
       </svg>
 
-      <div className="flex justify-center gap-4 mt-1 text-xs text-gray-400">
+      <div className="flex justify-center gap-4 mt-1 text-xs text-slate-400">
         <div className="flex items-center gap-1">
           <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: RADAR_COLORS.darkBlue }} />
           <span>≥8分</span>

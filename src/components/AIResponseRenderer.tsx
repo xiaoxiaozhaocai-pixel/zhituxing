@@ -24,11 +24,11 @@ function renderInline(text: string, keyPrefix = ''): ReactNode[] {
     if (m.index > lastIdx) parts.push(text.slice(lastIdx, m.index));
     const key = `${keyPrefix}-${k++}`;
     if (m[1] !== undefined) {
-      parts.push(<strong key={key} className="font-semibold text-gray-900">{m[1]}</strong>);
+      parts.push(<strong key={key} className="font-semibold text-slate-900">{m[1]}</strong>);
     } else if (m[2] !== undefined) {
       parts.push(<em key={key} className="italic">{m[2]}</em>);
     } else if (m[3] !== undefined) {
-      parts.push(<code key={key} className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono">{m[3]}</code>);
+      parts.push(<code key={key} className="bg-gray-100 text-slate-800 px-1 py-0.5 rounded text-xs font-mono">{m[3]}</code>);
     } else if (m[4] !== undefined && m[5] !== undefined) {
       parts.push(
         <a key={key} href={m[5]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-700">{m[4]}</a>
@@ -190,15 +190,15 @@ function parseBlocks(src: string): Block[] {
 function MarkdownText({ text }: { text: string }) {
   const blocks = useMemo(() => parseBlocks(text), [text]);
   return (
-    <div className="text-sm leading-relaxed text-gray-800">
+    <div className="text-sm leading-relaxed text-slate-800">
       {blocks.map((b, idx) => {
         const k = `b-${idx}`;
         switch (b.type) {
           case 'heading': {
-            const cls = b.level === 1 ? 'text-lg font-bold text-gray-900 mt-3 mb-2'
-              : b.level === 2 ? 'text-base font-bold text-gray-900 mt-3 mb-2'
-              : b.level === 3 ? 'text-sm font-bold text-gray-900 mt-2 mb-1.5'
-              : 'text-sm font-semibold text-gray-900 mt-2 mb-1';
+            const cls = b.level === 1 ? 'text-lg font-bold text-slate-900 mt-3 mb-2'
+              : b.level === 2 ? 'text-base font-bold text-slate-900 mt-3 mb-2'
+              : b.level === 3 ? 'text-sm font-bold text-slate-900 mt-2 mb-1.5'
+              : 'text-sm font-semibold text-slate-900 mt-2 mb-1';
             const content = renderInline(b.text, k);
             if (b.level === 1) return <h1 key={k} className={cls}>{content}</h1>;
             if (b.level === 2) return <h2 key={k} className={cls}>{content}</h2>;
@@ -221,12 +221,12 @@ function MarkdownText({ text }: { text: string }) {
             );
           case 'table':
             return (
-              <div key={k} className="overflow-x-auto my-3 rounded-lg border border-gray-200">
+              <div key={k} className="overflow-x-auto my-3 rounded-lg border border-slate-200">
                 <table className="min-w-full text-sm border-collapse">
                   <thead className="bg-gray-50">
                     <tr>
                       {b.header.map((h, i) => (
-                        <th key={i} className="px-3 py-2 text-left font-semibold text-gray-700 border-b border-gray-200">{renderInline(h, `${k}-h-${i}`)}</th>
+                        <th key={i} className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200">{renderInline(h, `${k}-h-${i}`)}</th>
                       ))}
                     </tr>
                   </thead>
@@ -234,7 +234,7 @@ function MarkdownText({ text }: { text: string }) {
                     {b.rows.map((row, ri) => (
                       <tr key={ri}>
                         {row.map((c, ci) => (
-                          <td key={ci} className="px-3 py-2 text-gray-700 border-b border-gray-100 align-top">{renderInline(c, `${k}-${ri}-${ci}`)}</td>
+                          <td key={ci} className="px-3 py-2 text-slate-700 border-b border-slate-100 align-top">{renderInline(c, `${k}-${ri}-${ci}`)}</td>
                         ))}
                       </tr>
                     ))}
@@ -244,16 +244,16 @@ function MarkdownText({ text }: { text: string }) {
             );
           case 'blockquote':
             return (
-              <blockquote key={k} className="border-l-4 border-blue-200 pl-3 my-2 text-gray-600 italic">
+              <blockquote key={k} className="border-l-4 border-blue-200 pl-3 my-2 text-slate-600 italic">
                 {renderInlineMultiline(b.text, k)}
               </blockquote>
             );
           case 'hr':
-            return <hr key={k} className="my-3 border-gray-200" />;
+            return <hr key={k} className="my-3 border-slate-200" />;
           case 'codeblock':
             return (
               <pre key={k} className="my-2">
-                <code className="block bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto text-xs whitespace-pre">{b.code}</code>
+                <code className="block bg-gray-900 text-slate-100 p-3 rounded-lg overflow-x-auto text-xs whitespace-pre">{b.code}</code>
               </pre>
             );
 
@@ -275,20 +275,20 @@ function CardListRenderer({ cards }: { cards: CardItem[] }) {
         <div
           key={idx}
           className={`bg-white border rounded-xl p-4 shadow-sm transition-all hover:shadow-md ${
-            card.isBest ? 'border-amber-300 ring-1 ring-amber-200' : 'border-gray-200'
+            card.isBest ? 'border-amber-300 ring-1 ring-amber-200' : 'border-slate-200'
           }`}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 {card.isBest && <Award className="w-4 h-4 text-amber-500 flex-shrink-0" />}
-                <h4 className="font-semibold text-gray-900 break-words">{card.title}</h4>
+                <h4 className="font-semibold text-slate-900 break-words">{card.title}</h4>
               </div>
               {card.subtitle && (
-                <p className="text-sm text-gray-500 mt-0.5">{card.subtitle}</p>
+                <p className="text-sm text-slate-500 mt-0.5">{card.subtitle}</p>
               )}
               {card.description && (
-                <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{card.description}</p>
+                <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{card.description}</p>
               )}
             </div>
             {card.score !== undefined && (
@@ -298,7 +298,7 @@ function CardListRenderer({ cards }: { cards: CardItem[] }) {
                 'text-orange-500'
               }`}>
                 {card.score}
-                <span className="text-xs font-normal text-gray-400">%</span>
+                <span className="text-xs font-normal text-slate-400">%</span>
               </div>
             )}
           </div>
@@ -351,12 +351,12 @@ function TimelineRenderer({ items }: { items: TimelineItem[] }) {
                 {item.phase}
               </span>
             </div>
-            <h4 className="font-semibold text-gray-900 mt-1">{item.title}</h4>
+            <h4 className="font-semibold text-slate-900 mt-1">{item.title}</h4>
             {item.tasks.length > 0 && (
               <ul className="mt-1.5 space-y-1">
                 {item.tasks.map((task, ti) => (
-                  <li key={ti} className="text-sm text-gray-600 flex items-start gap-1.5">
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <li key={ti} className="text-sm text-slate-600 flex items-start gap-1.5">
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
                     {task}
                   </li>
                 ))}
@@ -375,7 +375,7 @@ function TagGroupRenderer({ groups }: { groups: TagGroup[] }) {
     <div className="mt-3 space-y-3">
       {groups.map((group, gi) => (
         <div key={gi}>
-          <h4 className="text-sm font-medium text-gray-700 mb-1.5">{group.label}</h4>
+          <h4 className="text-sm font-medium text-slate-700 mb-1.5">{group.label}</h4>
           <div className="flex flex-wrap gap-1.5">
             {group.tags.map((tag, ti) => (
               <span
@@ -484,8 +484,8 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
             </svg>
             {/* 中心总分 */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-bold text-gray-800 leading-none">{avg}</span>
-              <span className="text-xs text-gray-500 mt-1">综合评分</span>
+              <span className="text-2xl font-bold text-slate-800 leading-none">{avg}</span>
+              <span className="text-xs text-slate-500 mt-1">综合评分</span>
             </div>
           </div>
           {/* 图例 */}
@@ -496,13 +496,13 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
                   className="w-3 h-3 rounded-sm flex-shrink-0"
                   style={{ background: s.color }}
                 />
-                <span className="text-gray-700 flex-1 truncate" title={s.name}>{s.name}</span>
+                <span className="text-slate-700 flex-1 truncate" title={s.name}>{s.name}</span>
                 <span className={`font-semibold tabular-nums ${
                   s.score >= 80 ? 'text-green-600' :
                   s.score >= 60 ? 'text-blue-600' :
                   'text-orange-500'
                 }`}>{s.score}{s.max ? `/${s.max}` : ''}</span>
-                <span className="text-gray-400 text-[10px] tabular-nums whitespace-nowrap">
+                <span className="text-slate-400 text-[10px] tabular-nums whitespace-nowrap">
                   权重{hasWeights ? weights[i] : s.weight}%
                 </span>
               </div>
@@ -519,7 +519,7 @@ function ScoreListRenderer({ scores }: { scores: ScoreItem[] }) {
           return (
             <div key={idx}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-gray-700">{item.name}</span>
+                <span className="text-sm text-slate-700">{item.name}</span>
                 <span className={`text-sm font-semibold ${
                   clamped >= 80 ? 'text-green-600' :
                   clamped >= 60 ? 'text-blue-600' :
@@ -597,8 +597,8 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
             </ResponsiveContainer>
             {/* 中心总分 */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-              <span className="text-2xl font-bold text-gray-800 leading-none">{overallScore ?? avgScore}</span>
-              <span className="text-xs text-gray-500 mt-1">综合评分</span>
+              <span className="text-2xl font-bold text-slate-800 leading-none">{overallScore ?? avgScore}</span>
+              <span className="text-xs text-slate-500 mt-1">综合评分</span>
             </div>
           </div>
           {/* 图例 */}
@@ -611,14 +611,14 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
                     className="w-3 h-3 rounded-sm flex-shrink-0"
                     style={{ background: palette[i % palette.length] }}
                   />
-                  <span className="text-gray-700 flex-1 truncate" title={d.name}>{d.name}</span>
+                  <span className="text-slate-700 flex-1 truncate" title={d.name}>{d.name}</span>
                   <span className={`font-semibold tabular-nums ${
                     pct >= 80 ? 'text-green-600' :
                     pct >= 60 ? 'text-blue-600' :
                     'text-orange-500'
                   }`}>{d.score}/{d.max}</span>
                   {d.weight != null && (
-                    <span className="text-gray-400 text-[10px] tabular-nums whitespace-nowrap">权重{d.weight}%</span>
+                    <span className="text-slate-400 text-[10px] tabular-nums whitespace-nowrap">权重{d.weight}%</span>
                   )}
                 </div>
               );
@@ -629,7 +629,7 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
 
       {/* 汇总文字 + 详细进度条 */}
       {summary && (
-        <div className="text-sm text-gray-600 mb-3 leading-relaxed bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+        <div className="text-sm text-slate-600 mb-3 leading-relaxed bg-blue-50/50 rounded-lg p-3 border border-blue-100">
           {summary}
         </div>
       )}
@@ -640,7 +640,7 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
           return (
             <div key={i}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-gray-700">{d.name}</span>
+                <span className="text-sm text-slate-700">{d.name}</span>
                 <span className={`text-sm font-semibold ${
                   pct >= 80 ? 'text-green-600' :
                   pct >= 60 ? 'text-blue-600' :
@@ -672,14 +672,14 @@ function RadarChartRenderer({ data }: { data: RadarData }) {
 function TableRenderer({ data }: { data: TableData }) {
   if (!data?.headers?.length) return null;
   return (
-    <div className="my-3 overflow-x-auto rounded-lg border border-gray-200">
+    <div className="my-3 overflow-x-auto rounded-lg border border-slate-200">
       <table className="min-w-full text-sm">
         <thead className="bg-gray-50">
           <tr>
             {data.headers.map((h, i) => (
               <th
                 key={i}
-                className="px-3 py-2 text-left font-semibold text-gray-700 border-b border-gray-200 whitespace-nowrap"
+                className="px-3 py-2 text-left font-semibold text-slate-700 border-b border-slate-200 whitespace-nowrap"
               >
                 {h}
               </th>
@@ -692,7 +692,7 @@ function TableRenderer({ data }: { data: TableData }) {
               {row.map((cell, ci) => (
                 <td
                   key={ci}
-                  className="px-3 py-2 text-gray-800 border-b border-gray-100 align-top"
+                  className="px-3 py-2 text-slate-800 border-b border-slate-100 align-top"
                 >
                   {cell}
                 </td>
@@ -804,7 +804,7 @@ export default function AIResponseRenderer({ rawText, streaming = false, role = 
 
           case 'disclaimer':
             return (
-              <div key={idx} className="text-sm text-gray-500 mt-3 pt-2 border-t border-gray-100 leading-relaxed">
+              <div key={idx} className="text-sm text-slate-500 mt-3 pt-2 border-t border-slate-100 leading-relaxed">
                 {seg.data as string}
               </div>
             );

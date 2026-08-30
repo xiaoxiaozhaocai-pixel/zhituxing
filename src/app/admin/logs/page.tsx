@@ -38,7 +38,7 @@ const operationTypeLabels: Record<string, string> = {
 
 const operationTypeColors: Record<string, string> = {
   login: 'bg-blue-100 text-blue-700',
-  logout: 'bg-gray-100 text-gray-700',
+  logout: 'bg-gray-100 text-slate-700',
   jd_review_pass: 'bg-green-100 text-green-700',
   jd_review_reject: 'bg-red-100 text-red-700',
   jd_create: 'bg-blue-100 text-blue-700',
@@ -109,7 +109,7 @@ export default function LogsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">操作日志</h1>
+        <h1 className="text-2xl font-bold text-slate-900">操作日志</h1>
         
         <Button
           variant="outline"
@@ -180,18 +180,18 @@ export default function LogsPage() {
       <Card>
         <CardContent className="p-0">
           <div className="px-6 py-4 border-b flex justify-between items-center">
-            <span className="text-sm text-gray-500">共 {total} 条记录</span>
+            <span className="text-sm text-slate-500">共 {total} 条记录</span>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作人</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作类型</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作内容</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">IP地址</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作人</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作类型</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作内容</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">IP地址</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作时间</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -203,7 +203,7 @@ export default function LogsPage() {
                   </tr>
                 ) : logs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500">
                       暂无日志记录
                     </td>
                   </tr>
@@ -212,22 +212,22 @@ export default function LogsPage() {
                     <tr key={log.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="w-4 h-4 text-slate-400" />
                           <span className="font-medium">{log.admin_username || '系统'}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge className={operationTypeColors[log.operation_type] || 'bg-gray-100 text-gray-700'}>
+                        <Badge className={operationTypeColors[log.operation_type] || 'bg-gray-100 text-slate-700'}>
                           {operationTypeLabels[log.operation_type] || log.operation_type}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm max-w-md truncate">
                         {log.operation_content}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         {log.ip_address || '-'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           {formatDate(log.created_at)}

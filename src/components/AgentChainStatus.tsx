@@ -51,7 +51,7 @@ export default function AgentChainStatus({ currentBot }: { currentBot?: string }
   if (!user || loading || !status) return null;
 
   return (
-    <div className="mb-6 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
+    <div className="mb-6 rounded-2xl bg-white border border-slate-100 shadow-sm overflow-hidden">
       {/* 进度条头部 */}
       <div className="px-5 py-3.5 bg-gradient-to-r from-[#f0f5ff] via-white to-[#fff7ed] flex items-center gap-4">
         <div className="flex-1 min-w-0">
@@ -105,7 +105,7 @@ export default function AgentChainStatus({ currentBot }: { currentBot?: string }
                       ? 'bg-green-50/60 border-green-200/60 hover:border-green-300 hover:shadow-sm'
                       : isCurrent
                         ? 'bg-[#165DFF]/5 border-[#165DFF]/30 ring-1 ring-[#165DFF]/20'
-                        : 'bg-white border-gray-100 hover:border-[#165DFF]/30 hover:bg-[#165DFF]/5 hover:shadow-sm'
+                        : 'bg-white border-slate-100 hover:border-[#165DFF]/30 hover:bg-[#165DFF]/5 hover:shadow-sm'
                   }`}
                 >
                   <span className="text-base shrink-0" aria-hidden>
@@ -122,7 +122,7 @@ export default function AgentChainStatus({ currentBot }: { currentBot?: string }
                   {a.completed ? (
                     <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                   ) : (
-                    <Circle className="w-3.5 h-3.5 text-gray-300 shrink-0 group-hover:text-[#165DFF]" />
+                    <Circle className="w-3.5 h-3.5 text-slate-300 shrink-0 group-hover:text-[#165DFF]" />
                   )}
                 </Link>
               );

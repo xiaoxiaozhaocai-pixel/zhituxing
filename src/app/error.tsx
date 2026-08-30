@@ -24,18 +24,18 @@ export default function Error({
           <div className="mx-auto mb-3 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
-          <CardTitle className="text-xl font-bold text-gray-900">
+          <CardTitle className="text-xl font-bold text-slate-900">
             页面加载出错
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-600">
             抱歉，页面加载时发生了错误。请尝试刷新页面或返回首页。
           </p>
           
           {process.env.NODE_ENV === 'development' && (
             <div className="p-3 bg-gray-50 rounded-lg text-left">
-              <p className="text-xs font-mono text-gray-500 break-all">
+              <p className="text-xs font-mono text-slate-500 break-all">
                 {error.message}
               </p>
             </div>

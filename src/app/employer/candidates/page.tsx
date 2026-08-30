@@ -117,11 +117,11 @@ export default function CandidatesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-[#165DFF]" />
             候选人库
           </h1>
-          <p className="text-sm text-gray-500 mt-1">¥10/条 · 24 小时内重复查看免费</p>
+          <p className="text-sm text-slate-500 mt-1">¥10/条 · 24 小时内重复查看免费</p>
         </div>
         <div className="flex items-center gap-3">
           {selectedIds.size > 0 && (
@@ -148,7 +148,7 @@ export default function CandidatesPage() {
           <select
             value={grade}
             onChange={(e) => setGrade(e.target.value)}
-            className="px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:border-[#165DFF] outline-none"
+            className="px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:border-[#165DFF] outline-none"
           >
             {GRADES.map((g) => (
               <option key={g} value={g}>
@@ -160,24 +160,24 @@ export default function CandidatesPage() {
             value={major}
             onChange={(e) => setMajor(e.target.value)}
             placeholder="专业"
-            className="px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:border-[#165DFF] outline-none"
+            className="px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:border-[#165DFF] outline-none"
           />
           <input
             value={targetJob}
             onChange={(e) => setTargetJob(e.target.value)}
             placeholder="目标岗位"
-            className="px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:border-[#165DFF] outline-none"
+            className="px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:border-[#165DFF] outline-none"
           />
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
             placeholder="目标城市"
-            className="px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:border-[#165DFF] outline-none"
+            className="px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:border-[#165DFF] outline-none"
           />
           <select
             value={hasInternship}
             onChange={(e) => setHasInternship(e.target.value)}
-            className="px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:border-[#165DFF] outline-none"
+            className="px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:border-[#165DFF] outline-none"
           >
             <option value="">实习经历不限</option>
             <option value="true">有实习</option>
@@ -186,7 +186,7 @@ export default function CandidatesPage() {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as 'completeness' | 'assessment' | 'recent')}
-            className="px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:border-[#165DFF] outline-none"
+            className="px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:border-[#165DFF] outline-none"
           >
             <option value="completeness">画像完整度</option>
             <option value="assessment">测评得分</option>
@@ -196,7 +196,7 @@ export default function CandidatesPage() {
         <div className="flex justify-end gap-2 mt-3">
           <button
             onClick={resetFilter}
-            className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition"
+            className="px-3 py-1.5 text-sm text-slate-600 hover:bg-gray-100 rounded-md transition"
           >
             重置
           </button>
@@ -212,20 +212,20 @@ export default function CandidatesPage() {
 
       {/* 列表 */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-slate-400">
           <Loader2 className="w-8 h-8 mx-auto animate-spin mb-2" />
           加载中...
         </div>
       ) : !data || data.items.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">没有符合条件的候选人</div>
+        <div className="text-center py-20 text-slate-400">没有符合条件的候选人</div>
       ) : (
         <>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+              <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer">
                 <input
                   type="checkbox"
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-[#165DFF] focus:ring-[#165DFF]"
+                  className="w-3.5 h-3.5 rounded border-slate-300 text-[#165DFF] focus:ring-[#165DFF]"
                   checked={data.items.length > 0 && selectedIds.size === data.items.length}
                   onChange={(e) => {
                     if (e.target.checked) {
@@ -243,7 +243,7 @@ export default function CandidatesPage() {
                 </span>
               )}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-slate-500">
               共 {data.total} 名候选人，第 {data.page}/{data.total_pages} 页
             </div>
           </div>
@@ -267,17 +267,17 @@ export default function CandidatesPage() {
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
-              className="p-2 rounded-md border border-gray-200 disabled:opacity-30 hover:bg-gray-50 transition"
+              className="p-2 rounded-md border border-slate-200 disabled:opacity-30 hover:bg-gray-50 transition"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-slate-600">
               {page} / {data.total_pages}
             </span>
             <button
               disabled={page >= data.total_pages}
               onClick={() => setPage((p) => p + 1)}
-              className="p-2 rounded-md border border-gray-200 disabled:opacity-30 hover:bg-gray-50 transition"
+              className="p-2 rounded-md border border-slate-200 disabled:opacity-30 hover:bg-gray-50 transition"
             >
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -319,14 +319,14 @@ function CandidateCard({ c, selected, onToggleSelect, onUnlock }: {
   return (
     <div className={cn(
         "bg-white/90 backdrop-blur-sm border rounded-xl p-4 transition hover:-translate-y-0.5 flex flex-col",
-        selected ? "border-[#165DFF] ring-1 ring-[#165DFF]/30" : "border-gray-100 hover:border-[#165DFF]/30 hover:shadow-lg hover:shadow-[#165DFF]/5"
+        selected ? "border-[#165DFF] ring-1 ring-[#165DFF]/30" : "border-slate-100 hover:border-[#165DFF]/30 hover:shadow-lg hover:shadow-[#165DFF]/5"
       )}>
       <div className="flex items-start gap-2 mb-2">
         <button
           onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
           className={cn(
             "mt-0.5 flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition",
-            selected ? "bg-[#165DFF] border-[#165DFF]" : "border-gray-300 hover:border-[#165DFF]"
+            selected ? "bg-[#165DFF] border-[#165DFF]" : "border-slate-300 hover:border-[#165DFF]"
           )}
         >
           {selected && (
@@ -337,8 +337,8 @@ function CandidateCard({ c, selected, onToggleSelect, onUnlock }: {
         </button>
         <div className="flex-1">
         <div>
-          <div className="font-semibold text-gray-900">{c.nickname || '匿名候选人'}</div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+          <div className="font-semibold text-slate-900">{c.nickname || '匿名候选人'}</div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
             <GraduationCap className="w-3 h-3" />
             {c.grade ?? '—'} · {c.graduation_year ?? '—'}届 · {c.major ?? '—'}
           </div>
@@ -357,12 +357,12 @@ function CandidateCard({ c, selected, onToggleSelect, onUnlock }: {
         </div>
         </div>
       </div>
-      <div className="text-xs text-gray-600 mb-1.5 flex items-center gap-1">
+      <div className="text-xs text-slate-600 mb-1.5 flex items-center gap-1">
         <Briefcase className="w-3 h-3" />
         意向：{c.target_job ?? '—'}
       </div>
       {c.target_cities && c.target_cities.length > 0 && (
-        <div className="text-xs text-gray-500 mb-1.5 flex items-center gap-1">
+        <div className="text-xs text-slate-500 mb-1.5 flex items-center gap-1">
           <MapPin className="w-3 h-3" />
           {c.target_cities.slice(0, 3).join('·')}
         </div>
@@ -382,13 +382,13 @@ function CandidateCard({ c, selected, onToggleSelect, onUnlock }: {
       {c.hard_skills && c.hard_skills.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-3">
           {c.hard_skills.slice(0, 4).map((s) => (
-            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-slate-600">
               {s}
             </span>
           ))}
         </div>
       )}
-      <div className="flex items-center gap-3 text-[10px] text-gray-400 mb-3 flex-1">
+      <div className="flex items-center gap-3 text-[10px] text-slate-400 mb-3 flex-1">
         {c.has_internship && <span className="flex items-center gap-0.5"><Award className="w-3 h-3" />实习</span>}
         {c.has_project && <span className="flex items-center gap-0.5"><Sparkles className="w-3 h-3" />项目</span>}
       </div>
@@ -454,15 +454,15 @@ function UnlockDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+          <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
             {stage === 'unlocked' ? (
               <><Unlock className="w-5 h-5 text-emerald-500" />解锁成功</>
             ) : (
               <><Lock className="w-5 h-5 text-[#165DFF]" />解锁候选人</>
             )}
           </h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -470,20 +470,20 @@ function UnlockDialog({
           {stage === 'confirm' && (
             <>
               <div className="bg-gradient-to-br from-[#f0f5ff] to-white border border-[#165DFF]/10 rounded-xl p-4 mb-4">
-                <div className="font-medium text-gray-900">{candidate.nickname}</div>
-                <div className="text-sm text-gray-500 mt-1">
+                <div className="font-medium text-slate-900">{candidate.nickname}</div>
+                <div className="text-sm text-slate-500 mt-1">
                   {candidate.grade} · {candidate.major} · {candidate.target_job ?? '未填意向'}
                 </div>
               </div>
-              <div className="text-sm text-gray-600 mb-2">解锁后可查看：</div>
-              <ul className="text-sm text-gray-700 space-y-1 mb-4 list-disc pl-5">
+              <div className="text-sm text-slate-600 mb-2">解锁后可查看：</div>
+              <ul className="text-sm text-slate-700 space-y-1 mb-4 list-disc pl-5">
                 <li>完整实习/项目经历</li>
                 <li>测评雷达图与详细得分</li>
                 <li>真实姓名（如对方授权）</li>
                 <li>24 小时内重复查看免费</li>
               </ul>
               <div className="bg-[#FF7D00]/5 border border-[#FF7D00]/20 rounded-lg px-3 py-2 mb-4 text-sm flex items-center justify-between">
-                <span className="text-gray-600">本次扣费</span>
+                <span className="text-slate-600">本次扣费</span>
                 <span className="font-semibold text-[#FF7D00]">1 条 · ¥10</span>
               </div>
               {balance !== null && balance < 1 && (
@@ -494,7 +494,7 @@ function UnlockDialog({
               <div className="flex gap-2">
                 <button
                   onClick={onClose}
-                  className="flex-1 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                  className="flex-1 py-2 text-slate-700 border border-slate-200 rounded-lg hover:bg-gray-50 transition"
                 >
                   取消
                 </button>
@@ -515,12 +515,12 @@ function UnlockDialog({
                 <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-50 text-emerald-500 mb-3">
                   <Unlock className="w-7 h-7" />
                 </div>
-                <div className="text-base font-medium text-gray-900 mb-1">{unlockedData.message}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-base font-medium text-slate-900 mb-1">{unlockedData.message}</div>
+                <div className="text-xs text-slate-500">
                   到期时间：{new Date(unlockedData.expires_at).toLocaleString('zh-CN')}
                 </div>
                 {unlockedData.balance_after !== null && (
-                  <div className="mt-3 text-sm text-gray-600">
+                  <div className="mt-3 text-sm text-slate-600">
                     余额：<span className="font-semibold text-[#FF7D00]">{unlockedData.balance_after}</span> 条
                   </div>
                 )}
@@ -542,7 +542,7 @@ function UnlockDialog({
                 <div className="text-red-600 mb-3">{errorMsg}</div>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition text-gray-700"
+                  className="px-4 py-2 border border-slate-200 rounded-lg hover:bg-gray-50 transition text-slate-700"
                 >
                   关闭
                 </button>
@@ -605,18 +605,18 @@ function BatchPushDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+          <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-[#165DFF]" />
             批量推送消息
           </h3>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="p-5 space-y-4">
           <div>
-            <div className="text-sm font-medium text-gray-700 mb-2">
+            <div className="text-sm font-medium text-slate-700 mb-2">
               发送给 {selectedIds.size} 位候选人
             </div>
             <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1">
@@ -626,7 +626,7 @@ function BatchPushDialog({
                 </span>
               ))}
               {selectedNames.length > 20 && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-slate-500">
                   +{selectedNames.length - 20} 人
                 </span>
               )}
@@ -634,13 +634,13 @@ function BatchPushDialog({
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">推送消息</label>
+            <label className="text-sm font-medium text-slate-700 block mb-1">推送消息</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="输入你想发送给候选人的消息..."
               rows={4}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-[#165DFF] outline-none resize-none"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:border-[#165DFF] outline-none resize-none"
             />
           </div>
 
@@ -652,7 +652,7 @@ function BatchPushDialog({
 
           <div className="flex gap-2">
             <button onClick={onClose} disabled={loading}
-              className="flex-1 py-2 text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-50">
+              className="flex-1 py-2 text-slate-700 border border-slate-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-50">
               取消
             </button>
             <button onClick={handlePush} disabled={loading || !message.trim()}

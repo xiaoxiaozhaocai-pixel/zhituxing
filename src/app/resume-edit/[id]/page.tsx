@@ -278,7 +278,7 @@ export default function ResumeEditPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#f8fafd] to-white gap-5">
         <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center">
-          <FileText className="h-9 w-9 text-gray-300" />
+          <FileText className="h-9 w-9 text-slate-300" />
         </div>
         <p className="text-[#999] text-sm">简历不存在或已被删除</p>
         <Link href="/resume-builder">
@@ -291,7 +291,7 @@ export default function ResumeEditPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8fafd] to-white">
       {/* 顶部导航 */}
-      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-gray-100/80">
+      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-slate-100/80">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/resume-builder">
@@ -303,7 +303,7 @@ export default function ResumeEditPage() {
             <div className="h-5 w-px bg-gray-200" />
             <h1 className="font-bold text-[#1a1a1a] text-sm">编辑简历</h1>
             {/* 完整度进度条 */}
-            <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-100">
+            <div className="flex items-center gap-2 ml-4 pl-4 border-l border-slate-100">
               <div className="flex items-center gap-1.5">
                 <Target className="h-3.5 w-3.5 text-[#165DFF]" />
                 <span className="text-xs text-[#888]">完整度</span>
@@ -370,7 +370,7 @@ export default function ResumeEditPage() {
                   value={resumeName}
                   onChange={e => setResumeName(e.target.value)}
                   placeholder="例如：校招版、实习版"
-                  className="border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg h-10 text-sm"
+                  className="border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg h-10 text-sm"
                 />
               </CardContent>
             </Card>
@@ -397,9 +397,9 @@ export default function ResumeEditPage() {
                       value={field.value}
                       onChange={e => field.setter(e.target.value)}
                       placeholder={field.placeholder}
-                      className="h-9 text-sm border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg"
+                      className="h-9 text-sm border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg"
                     />
-                    {field.hint && <p className="text-[10px] text-gray-300 pl-0.5">{field.hint}</p>}
+                    {field.hint && <p className="text-[10px] text-slate-300 pl-0.5">{field.hint}</p>}
                   </div>
                 ))}
               </CardContent>
@@ -415,7 +415,7 @@ export default function ResumeEditPage() {
                   onChange={setSkillsList}
                   placeholder="搜索并选择技能标签..."
                 />
-                <p className="text-[11px] text-gray-400">从预设技能库中搜索添加，支持多选</p>
+                <p className="text-[11px] text-slate-400">从预设技能库中搜索添加，支持多选</p>
               </CardContent>
             </Card>
 
@@ -433,7 +433,7 @@ export default function ResumeEditPage() {
                   value={content}
                   onChange={e => setContent(e.target.value)}
                   placeholder="在此编辑简历内容…&#10;&#10;可包含：教育经历、实习经历、项目经历、获奖情况等"
-                  className="min-h-[180px] text-sm leading-relaxed border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg resize-y"
+                  className="min-h-[180px] text-sm leading-relaxed border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8 rounded-lg resize-y"
                 />
               </CardContent>
             </Card>
@@ -484,8 +484,8 @@ export default function ResumeEditPage() {
             )}
 
             {/* AI 逐段分析面板 */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2 bg-gradient-to-r from-[#f0f5ff]/60 to-white">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2 bg-gradient-to-r from-[#f0f5ff]/60 to-white">
                 <Sparkles className="h-4 w-4 text-[#165DFF]" />
                 <span className="text-sm font-bold text-[#1a1a1a]">小职 AI 分析</span>
                 <Badge className="bg-[#165DFF]/8 text-[#165DFF] border-0 text-[10px] ml-auto">逐段精准反馈</Badge>
@@ -507,11 +507,11 @@ export default function ResumeEditPage() {
                   </button>
                 ))}
               </div>
-              <div className="border-t border-gray-50">
+              <div className="border-t border-slate-50">
                 {analysisError && <div className="p-4 text-center"><p className="text-xs text-[#999]">{analysisError}</p></div>}
                 {!analyzing && !analysis && !analysisError && (
                   <div className="p-6 text-center">
-                    <Lightbulb className="h-8 w-8 text-gray-200 mx-auto mb-2" />
+                    <Lightbulb className="h-8 w-8 text-slate-200 mx-auto mb-2" />
                     <p className="text-xs text-[#bbb]">点击上方模块，逐段获取 AI 分析建议</p>
                   </div>
                 )}
@@ -576,7 +576,7 @@ export default function ResumeEditPage() {
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
                         active
                           ? 'bg-[#165DFF] text-white border-[#165DFF] shadow-sm'
-                          : 'bg-white text-[#999] border-gray-200 hover:border-[#165DFF]/40 hover:text-[#165DFF]'
+                          : 'bg-white text-[#999] border-slate-200 hover:border-[#165DFF]/40 hover:text-[#165DFF]'
                       }`}
                       title={tpl.desc}
                     >
@@ -607,11 +607,11 @@ export default function ResumeEditPage() {
                       </h2>
                       <div className="flex items-center justify-center gap-3 text-[13px] text-[#666] flex-wrap">
                         {phone && <span>{phone}</span>}
-                        {email && <><span className="text-gray-300">|</span><span>{email}</span></>}
-                        {school && <><span className="text-gray-300">|</span><span>{school}</span></>}
-                        {major && <><span className="text-gray-300">|</span><span>{major}</span></>}
+                        {email && <><span className="text-slate-300">|</span><span>{email}</span></>}
+                        {school && <><span className="text-slate-300">|</span><span>{school}</span></>}
+                        {major && <><span className="text-slate-300">|</span><span>{major}</span></>}
                         {!phone && !email && !school && (
-                          <span className="text-gray-300 italic">联系方式将在此显示</span>
+                          <span className="text-slate-300 italic">联系方式将在此显示</span>
                         )}
                       </div>
                     </div>

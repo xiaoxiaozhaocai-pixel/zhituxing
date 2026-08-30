@@ -163,8 +163,8 @@ const BiometricConsentModal = ({
                   <Fingerprint className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">处理目的</h4>
-                  <p className="text-sm text-gray-600 mt-1">{CONSENT_DISCLOSURE.purpose}</p>
+                  <h4 className="font-medium text-slate-900">处理目的</h4>
+                  <p className="text-sm text-slate-600 mt-1">{CONSENT_DISCLOSURE.purpose}</p>
                 </div>
               </div>
 
@@ -173,8 +173,8 @@ const BiometricConsentModal = ({
                   <Shield className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">处理范围</h4>
-                  <p className="text-sm text-gray-600 mt-1">{CONSENT_DISCLOSURE.scope}</p>
+                  <h4 className="font-medium text-slate-900">处理范围</h4>
+                  <p className="text-sm text-slate-600 mt-1">{CONSENT_DISCLOSURE.scope}</p>
                 </div>
               </div>
 
@@ -183,14 +183,14 @@ const BiometricConsentModal = ({
                   <Clock className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">保存期限</h4>
-                  <p className="text-sm text-gray-600 mt-1">{CONSENT_DISCLOSURE.retention}</p>
+                  <h4 className="font-medium text-slate-900">保存期限</h4>
+                  <p className="text-sm text-slate-600 mt-1">{CONSENT_DISCLOSURE.retention}</p>
                 </div>
               </div>
             </div>
 
             {/* 用户权利说明 */}
-            <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">
+            <div className="bg-gray-50 rounded-lg p-4 text-sm text-slate-600">
               <p>
                 <strong>您的权利：</strong>
                 您可以随时在
@@ -209,7 +209,7 @@ const BiometricConsentModal = ({
                   onChange={(e) => setChecked(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-5 h-5 rounded border-2 border-gray-300 peer-checked:border-[#165DFF] peer-checked:bg-[#165DFF] transition-colors flex items-center justify-center">
+                <div className="w-5 h-5 rounded border-2 border-slate-300 peer-checked:border-[#165DFF] peer-checked:bg-[#165DFF] transition-colors flex items-center justify-center">
                   {checked && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -217,7 +217,7 @@ const BiometricConsentModal = ({
                   )}
                 </div>
               </div>
-              <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+              <span className="text-sm text-slate-700 group-hover:text-slate-900 transition-colors">
                 我已阅读并理解上述告知内容，同意职途星按照上述目的、范围和期限处理我的生物识别信息。
                 我知晓可以随时在隐私设置中撤回此授权。
               </span>
@@ -232,12 +232,12 @@ const BiometricConsentModal = ({
           </div>
 
           {/* 底部按钮 */}
-          <div className="border-t border-gray-100 p-4 flex flex-col sm:flex-row gap-3">
+          <div className="border-t border-slate-100 p-4 flex flex-col sm:flex-row gap-3">
             {!required && (
               <button
                 onClick={handleDecline}
                 type="button"
-                className="flex-1 px-6 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-6 py-2.5 text-sm font-medium text-slate-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 暂不使用
               </button>
@@ -249,7 +249,7 @@ const BiometricConsentModal = ({
               className={`flex-1 px-6 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 checked && !loading
                   ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white hover:opacity-90 shadow-sm'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               {loading ? '提交中...' : '同意并继续'}

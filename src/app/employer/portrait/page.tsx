@@ -32,9 +32,9 @@ export default function PortraitListPage() {
 
   const statusBadge = (s: string) => {
     const map: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-600',
+      draft: 'bg-gray-100 text-slate-600',
       active: 'bg-blue-100 text-[#165DFF]',
-      closed: 'bg-gray-100 text-gray-400',
+      closed: 'bg-gray-100 text-slate-400',
     };
     const label: Record<string, string> = { draft: '草稿', active: '评估中', closed: '已关闭' };
     return <span className={`text-xs px-2 py-0.5 rounded-full ${map[s] || map.draft}`}>{label[s] || s}</span>;
@@ -50,8 +50,8 @@ export default function PortraitListPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">岗位真实画像</h1>
-          <p className="text-sm text-gray-500 mt-1">创建岗位画像项目，让HR批量评估候选人，自动生成该岗位的真实人才画像</p>
+          <h1 className="text-xl font-bold text-slate-900">岗位真实画像</h1>
+          <p className="text-sm text-slate-500 mt-1">创建岗位画像项目，让HR批量评估候选人，自动生成该岗位的真实人才画像</p>
         </div>
         <Link
           href="/employer/portrait/new"
@@ -63,10 +63,10 @@ export default function PortraitListPage() {
       </div>
 
       {portraits.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-          <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">还没有画像项目</p>
-          <p className="text-sm text-gray-400 mt-2">创建一个项目，导入候选人后开始盲评</p>
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
+          <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-500">还没有画像项目</p>
+          <p className="text-sm text-slate-400 mt-2">创建一个项目，导入候选人后开始盲评</p>
           <Link
             href="/employer/portrait/new"
             className="inline-block mt-4 text-sm text-[#165DFF] hover:underline"
@@ -80,15 +80,15 @@ export default function PortraitListPage() {
             <Link
               key={p.id}
               href={`/employer/portrait/${p.id}`}
-              className="block bg-white rounded-xl border border-gray-100 p-4 hover:border-[#165DFF]/20 hover:shadow-md transition-all"
+              className="block bg-white rounded-xl border border-slate-100 p-4 hover:border-[#165DFF]/20 hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-gray-900">{p.title}</h3>
+                    <h3 className="font-semibold text-slate-900">{p.title}</h3>
                     {statusBadge(p.status)}
                   </div>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
                     <span>候选人 {p.candidate_count}人</span>
                     <span>已评 {p.evaluated_count}人</span>
                     {p.evaluated_count > 0 && (
@@ -105,7 +105,7 @@ export default function PortraitListPage() {
                       报告已生成
                     </span>
                   )}
-                  <ChevronRight className="w-5 h-5 text-gray-300" />
+                  <ChevronRight className="w-5 h-5 text-slate-300" />
                 </div>
               </div>
             </Link>

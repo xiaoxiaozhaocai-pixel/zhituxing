@@ -48,7 +48,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
   mastered: { label: '已掌握', color: 'text-green-600 bg-green-50 border-green-200', icon: <CheckCircle2 className="w-5 h-5 text-green-500" /> },
   practicing: { label: '练习中', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: <Circle className="w-5 h-5 text-blue-500 fill-blue-200" /> },
   learning: { label: '学习中', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: <Circle className="w-5 h-5 text-blue-500 fill-blue-200" /> },
-  not_started: { label: '未开始', color: 'text-gray-500 bg-gray-50 border-gray-200', icon: <Circle className="w-5 h-5 text-gray-300" /> },
+  not_started: { label: '未开始', color: 'text-slate-500 bg-gray-50 border-slate-200', icon: <Circle className="w-5 h-5 text-slate-300" /> },
 };
 
 export default function LearningPathPage() {
@@ -170,8 +170,8 @@ export default function LearningPathPage() {
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white pt-24 pb-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <AlertTriangle className="w-16 h-16 text-orange-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">请先登录</h2>
-          <p className="text-gray-500">登录后即可查看学习路径</p>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">请先登录</h2>
+          <p className="text-slate-500">登录后即可查看学习路径</p>
         </div>
       </div>
     );
@@ -186,22 +186,22 @@ export default function LearningPathPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
               <Route className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">学习路径</h1>
+            <h1 className="text-2xl font-bold text-slate-900">学习路径</h1>
           </div>
-          <p className="text-gray-500 ml-13">根据技能缺口分析，为你规划最高效的学习路线</p>
+          <p className="text-slate-500 ml-13">根据技能缺口分析，为你规划最高效的学习路线</p>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center py-20">
             <Spinner className="w-10 h-10 text-[#165DFF]" />
-            <p className="mt-4 text-gray-500">正在分析你的学习路径...</p>
+            <p className="mt-4 text-slate-500">正在分析你的学习路径...</p>
           </div>
         ) : matchResults.length === 0 ? (
           <Card className="border-blue-100">
             <CardContent className="py-16 text-center">
               <BookOpen className="w-16 h-16 text-blue-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-700 mb-2">暂无学习路径</h3>
-              <p className="text-gray-400 text-sm mb-4">先完成岗位匹配，系统将根据你的技能缺口生成学习路径</p>
+              <h3 className="text-lg font-medium text-slate-700 mb-2">暂无学习路径</h3>
+              <p className="text-slate-400 text-sm mb-4">先完成岗位匹配，系统将根据你的技能缺口生成学习路径</p>
               <Button onClick={() => window.location.href = '/match'} className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                 前往匹配 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
@@ -211,19 +211,19 @@ export default function LearningPathPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* 左侧：岗位选择 */}
             <div className="lg:col-span-1 space-y-3">
-              <h3 className="text-sm font-medium text-gray-500">选择目标岗位</h3>
+              <h3 className="text-sm font-medium text-slate-500">选择目标岗位</h3>
               {matchResults.map((result, idx) => (
                 <Card
                   key={result.job.id}
                   className={`cursor-pointer transition-all border ${
                     idx === selectedJobIdx
                       ? 'border-blue-400 ring-2 ring-blue-100'
-                      : 'border-gray-100 hover:border-blue-200'
+                      : 'border-slate-100 hover:border-blue-200'
                   }`}
                   onClick={() => setSelectedJobIdx(idx)}
                 >
                   <CardContent className="py-3 px-4">
-                    <div className="text-sm font-medium text-gray-800 truncate">{result.job.jobName}</div>
+                    <div className="text-sm font-medium text-slate-800 truncate">{result.job.jobName}</div>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge className={`text-xs ${
                         result.matchScore >= 80 ? 'bg-green-50 text-green-700' :
@@ -232,7 +232,7 @@ export default function LearningPathPage() {
                       }`}>
                         匹配 {result.matchScore}%
                       </Badge>
-                      <span className="text-xs text-gray-400">{result.gapSkills.length}个缺口</span>
+                      <span className="text-xs text-slate-400">{result.gapSkills.length}个缺口</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -247,14 +247,14 @@ export default function LearningPathPage() {
                 <CardContent className="py-5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900">{selectedJob?.job.jobName}</h2>
-                      <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                      <h2 className="text-lg font-bold text-slate-900">{selectedJob?.job.jobName}</h2>
+                      <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                         {selectedJob?.job.city && <span>{selectedJob.job.city}</span>}
                         <span>匹配度 {selectedJob?.matchScore}%</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-gray-500">技能缺口</div>
+                      <div className="text-sm text-slate-500">技能缺口</div>
                       <div className="text-2xl font-bold text-blue-600">{selectedJob?.gapSkills.length || 0}</div>
                     </div>
                   </div>
@@ -268,7 +268,7 @@ export default function LearningPathPage() {
                     <CardTitle className="text-blue-700 flex items-center gap-1">
                       <Target className="w-4 h-4" /> 推荐学习路径
                     </CardTitle>
-                    <p className="text-xs text-gray-400 -mt-1">💡 点击技能标签可按「未开始→学习中→练习中→已掌握」更新进度，并同步到「我的求职档案」</p>
+                    <p className="text-xs text-slate-400 -mt-1">💡 点击技能标签可按「未开始→学习中→练习中→已掌握」更新进度，并同步到「我的求职档案」</p>
                   </CardHeader>
                   <CardContent>
                     <div className="relative">
@@ -287,8 +287,8 @@ export default function LearningPathPage() {
                             </div>
                             <div className="flex-1 pb-2">
                               <div className="flex items-center gap-2">
-                                <h4 className="font-medium text-gray-800">{phase.phase}</h4>
-                                <Badge variant="outline" className="text-xs text-gray-400">
+                                <h4 className="font-medium text-slate-800">{phase.phase}</h4>
+                                <Badge variant="outline" className="text-xs text-slate-400">
                                   <Clock className="w-3 h-3 mr-1" /> 约{phase.estimatedDays}天
                                 </Badge>
                               </div>
@@ -332,16 +332,16 @@ export default function LearningPathPage() {
                       <Crown className="w-5 h-5" /> 升级会员查看完整学习路径
                     </button>
                   </div>
-                  <Card className="border-gray-100 opacity-50">
+                  <Card className="border-slate-100 opacity-50">
                     <CardHeader>
-                      <CardTitle className="text-gray-400 text-sm">更多学习路径...</CardTitle>
+                      <CardTitle className="text-slate-400 text-sm">更多学习路径...</CardTitle>
                     </CardHeader>
                     <CardContent className="py-8">
                       <div className="space-y-4">
                         {[1, 2].map((i) => (
                           <div key={i} className="flex items-start gap-4 pl-2">
                             <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                              <Crown className="w-4 h-4 text-gray-400" />
+                              <Crown className="w-4 h-4 text-slate-400" />
                             </div>
                             <div className="flex-1 h-16 bg-gray-100 rounded-lg" />
                           </div>
@@ -429,9 +429,9 @@ export default function LearningPathPage() {
 
               {/* 技能进度追踪 */}
               {Object.keys(skillProgress).length > 0 && (
-                <Card className="border-gray-100">
+                <Card className="border-slate-100">
                   <CardHeader>
-                    <CardTitle className="text-gray-700">技能掌握进度</CardTitle>
+                    <CardTitle className="text-slate-700">技能掌握进度</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -442,10 +442,10 @@ export default function LearningPathPage() {
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
                                 {cfg!.icon}
-                                <span className="text-sm font-medium text-gray-700">{name}</span>
+                                <span className="text-sm font-medium text-slate-700">{name}</span>
                                 <Badge className={`text-xs ${cfg!.color}`}>{cfg!.label}</Badge>
                               </div>
-                              <span className="text-sm text-gray-500">{prog.completionPct}%</span>
+                              <span className="text-sm text-slate-500">{prog.completionPct}%</span>
                             </div>
                             <Progress value={prog.completionPct} className="h-2" />
                           </div>
@@ -464,7 +464,7 @@ export default function LearningPathPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-500 mb-4">让小职根据你的技能缺口和面试表现，现讲一门针对性课程</p>
+                  <p className="text-sm text-slate-500 mb-4">让小职根据你的技能缺口和面试表现，现讲一门针对性课程</p>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: '技能补强课', desc: '针对技能缺口精准提升', topic: 'skill_gap' },
@@ -474,8 +474,8 @@ export default function LearningPathPage() {
                     ].map((c) => (
                       <Link key={c.topic} href={`/assistant?bot=course&topic=${c.topic}`}>
                         <div className="p-3 rounded-lg bg-white border border-blue-100 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer">
-                          <div className="text-sm font-medium text-gray-800">{c.label}</div>
-                          <div className="text-xs text-gray-400 mt-1">{c.desc}</div>
+                          <div className="text-sm font-medium text-slate-800">{c.label}</div>
+                          <div className="text-xs text-slate-400 mt-1">{c.desc}</div>
                         </div>
                       </Link>
                     ))}

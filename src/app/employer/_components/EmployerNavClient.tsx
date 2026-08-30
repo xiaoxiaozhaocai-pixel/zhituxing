@@ -60,7 +60,7 @@ export default function EmployerNavClient() {
       <div className="flex items-center gap-2">
         <Link
           href="/employer/auth/login"
-          className="text-sm text-gray-700 hover:text-[#165DFF] px-3 py-1.5 rounded-md transition"
+          className="text-sm text-slate-700 hover:text-[#165DFF] px-3 py-1.5 rounded-md transition"
         >
           登录
         </Link>
@@ -86,7 +86,7 @@ export default function EmployerNavClient() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition ${
                 active
                   ? 'bg-[#165DFF]/10 text-[#165DFF] font-medium'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  : 'text-slate-700 hover:bg-gray-100'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -100,12 +100,12 @@ export default function EmployerNavClient() {
         <span className="text-sm font-semibold text-[#FF7D00]">{me.credit_balance}</span>
       </div>
       <div className="hidden sm:flex flex-col text-right ml-2 leading-tight">
-        <span className="text-xs font-medium text-gray-900">{me.real_name}</span>
-        <span className="text-[10px] text-gray-500">{me.company?.name ?? '未关联公司'}</span>
+        <span className="text-xs font-medium text-slate-900">{me.real_name}</span>
+        <span className="text-[10px] text-slate-500">{me.company?.name ?? '未关联公司'}</span>
       </div>
       <button
         onClick={handleLogout}
-        className="ml-2 p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+        className="ml-2 p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-md transition"
         title="退出登录"
       >
         <LogOut className="w-4 h-4" />

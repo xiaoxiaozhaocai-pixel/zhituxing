@@ -62,9 +62,9 @@ function TierColumn({
   if (!items || items.length === 0) {
     return (
       <div className={`flex-1 min-w-[220px] rounded-xl border-2 border-dashed ${borderClass} ${bgClass} p-5 flex flex-col items-center justify-center text-center`}>
-        <div className="text-gray-400 mb-2">{icon}</div>
-        <p className="text-sm font-medium text-gray-600">{title}</p>
-        <p className="text-xs text-gray-400 mt-1">{emptyText}</p>
+        <div className="text-slate-400 mb-2">{icon}</div>
+        <p className="text-sm font-medium text-slate-600">{title}</p>
+        <p className="text-xs text-slate-400 mt-1">{emptyText}</p>
       </div>
     );
   }
@@ -75,7 +75,7 @@ function TierColumn({
       <div className={`flex items-center gap-2 px-1`}>
         <span className={accentClass}>{icon}</span>
         <span className={`text-sm font-bold ${accentClass}`}>{title}</span>
-        <span className="text-xs text-gray-400 ml-auto">{items.length}个</span>
+        <span className="text-xs text-slate-400 ml-auto">{items.length}个</span>
       </div>
       {/* 卡片列表 */}
       {items.map((job, idx) => (
@@ -86,7 +86,7 @@ function TierColumn({
             {/* 岗位名 + 匹配度 */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-sm truncate" title={job.job_name}>
+                <h4 className="font-bold text-slate-900 text-sm truncate" title={job.job_name}>
                   {job.job_name}
                 </h4>
               </div>
@@ -94,7 +94,7 @@ function TierColumn({
             </div>
 
             {/* 公司/行业/城市 */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
               {job.company && (
                 <span className="inline-flex items-center gap-1">
                   <Building2 className="w-3 h-3" />
@@ -116,7 +116,7 @@ function TierColumn({
             </div>
 
             {/* 匹配理由 */}
-            <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded-lg p-2.5">
+            <p className="text-xs text-slate-600 leading-relaxed bg-gray-50 rounded-lg p-2.5">
               {job.match_reason}
             </p>
 
@@ -132,7 +132,7 @@ function TierColumn({
                   </span>
                 ))}
                 {job.required_skills.length > 4 && (
-                  <span className="text-[10px] text-gray-400">+{job.required_skills.length - 4}</span>
+                  <span className="text-[10px] text-slate-400">+{job.required_skills.length - 4}</span>
                 )}
               </div>
             )}
@@ -153,7 +153,7 @@ export default function TierMatchCard({ data }: TierMatchCardProps) {
   if (!data) {
     return (
       <Card className="border-blue-100">
-        <CardContent className="p-6 text-center text-gray-400 text-sm">
+        <CardContent className="p-6 text-center text-slate-400 text-sm">
           暂无岗位匹配数据
         </CardContent>
       </Card>
@@ -168,7 +168,7 @@ export default function TierMatchCard({ data }: TierMatchCardProps) {
   if (!hasAny) {
     return (
       <Card className="border-blue-100">
-        <CardContent className="p-6 text-center text-gray-400 text-sm">
+        <CardContent className="p-6 text-center text-slate-400 text-sm">
           暂无匹配岗位，试试提供更多关于你的专业和技能信息~
         </CardContent>
       </Card>
@@ -214,7 +214,7 @@ export default function TierMatchCard({ data }: TierMatchCardProps) {
       </div>
 
       {/* 底部说明 */}
-      <p className="text-xs text-gray-400 mt-3 text-center">
+      <p className="text-xs text-slate-400 mt-3 text-center">
         以上推荐基于真实JD库的语义匹配，匹配度仅供参考
       </p>
     </div>

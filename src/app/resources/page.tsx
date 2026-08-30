@@ -137,14 +137,14 @@ export default function ResourcesPage() {
           <span className="text-blue-700">
             💡 先生成你的职业规划，获得更精准的个性化建议
           </span>
-          <span className="text-gray-300">|</span>
+          <span className="text-slate-300">|</span>
           <span className="text-blue-700">
             完善信息，精准度提升100%
           </span>
           <Link href="/profile/info?from=/resources" className="text-[#165DFF] underline hover:text-[#165DFF]/80 ml-2">
             完善信息
           </Link>
-          <span className="text-gray-300">|</span>
+          <span className="text-slate-300">|</span>
           <Link href="/growth" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
             立即生成
             <ArrowRight className="w-4 h-4" />
@@ -155,10 +155,10 @@ export default function ResourcesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
             求职干货库
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-slate-600">
             免费提供海量求职资料，助你顺利拿到offer
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function ResourcesPage() {
               className={`flex items-center space-x-2 px-5 py-2.5 rounded-full transition-all duration-300 ${
                 activeCategory === category.id
                   ? 'bg-[#165DFF] text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
               }`}
             >
               {category.icon}
@@ -191,7 +191,7 @@ export default function ResourcesPage() {
             {filteredResources.map((resource) => (
               <Card
                 key={resource.id}
-                className="border-2 border-gray-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.12)] hover:-translate-y-2 relative"
+                className="border-2 border-slate-100 hover:border-[#165DFF]/20 transition-all duration-300 hover:shadow-[0_8px_24px_rgba(22,93,255,0.12)] hover:-translate-y-2 relative"
               >
                 {'isFeatured' in resource && resource.isFeatured && (
                   <span className="absolute top-3 right-3 bg-[#FF7D00] text-white text-xs font-medium px-2.5 py-1 rounded-full shadow-sm z-10">
@@ -199,15 +199,15 @@ export default function ResourcesPage() {
                   </span>
                 )}
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2 pr-16">
+                  <CardTitle className="text-lg font-semibold text-slate-900 line-clamp-2 pr-16">
                     {resource.title}
                   </CardTitle>
-                  <CardDescription className="mt-2 line-clamp-2 text-gray-500">
+                  <CardDescription className="mt-2 line-clamp-2 text-slate-500">
                     {resource.summary}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between text-sm text-gray-400">
+                  <div className="flex items-center justify-between text-sm text-slate-400">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       {formatDate(resource.createdAt)}
@@ -232,9 +232,9 @@ export default function ResourcesPage() {
 
         {filteredResources.length === 0 && !loading && (
           <div className="text-center py-12">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-2">暂无相关资源</p>
-            <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">换个分类看看，或生成职业规划获取个性化推荐</p>
+            <BookOpen className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500 mb-2">暂无相关资源</p>
+            <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">换个分类看看，或生成职业规划获取个性化推荐</p>
             <Link href="/growth">
               <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg px-6 py-5">
                 <Sparkles className="w-4 h-4 mr-2" />

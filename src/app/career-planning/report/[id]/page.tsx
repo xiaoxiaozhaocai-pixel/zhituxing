@@ -239,8 +239,8 @@ export default function ReportPage() {
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">获取报告失败</h2>
-            <p className="text-gray-500 mb-6">{error || '报告不存在'}</p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">获取报告失败</h2>
+            <p className="text-slate-500 mb-6">{error || '报告不存在'}</p>
             <Link href="/career-planning">
               <Button className="bg-[#722ED1] hover:bg-[#722ED1]/90">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -256,13 +256,13 @@ export default function ReportPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 顶部状态栏 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/career-planning/my-reports" className="text-gray-500 hover:text-gray-700">
+            <Link href="/career-planning/my-reports" className="text-slate-500 hover:text-slate-700">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-xl font-bold text-gray-900">我的职业规划报告</h1>
+            <h1 className="text-xl font-bold text-slate-900">我的职业规划报告</h1>
             {report.is_latest === 1 && (
               <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">最新</span>
             )}
@@ -295,12 +295,12 @@ export default function ReportPage() {
                 <Card key={index} className="bg-white hover:shadow-lg transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-900">{job.name}</h3>
+                      <h3 className="font-semibold text-slate-900">{job.name}</h3>
                       <span className="px-2 py-1 bg-[#165DFF]/10 text-[#165DFF] text-sm font-medium rounded-full">
                         {job.match_score}%匹配
                       </span>
                     </div>
-                    <div className="space-y-1 text-sm text-gray-600">
+                    <div className="space-y-1 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />
                         {job.industry}
@@ -338,9 +338,9 @@ export default function ReportPage() {
                   6维诊断模型
                 </CardTitle>
                 {expandedPanels.dimensions ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                  <ChevronUp className="w-5 h-5 text-slate-400" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
                 )}
               </div>
             </CardHeader>
@@ -375,21 +375,21 @@ export default function ReportPage() {
                         return (
                           <div key={d.key} className="rounded-xl border border-[#165DFF]/15 bg-[#165DFF]/5 p-4">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium text-gray-800">{d.label}</span>
+                              <span className="font-medium text-slate-800">{d.label}</span>
                               <span className="text-sm text-[#165DFF]">得分 {report.dimensions[d.key]}%</span>
                             </div>
-                            <div className="space-y-1.5 text-sm text-gray-600">
-                              <p><span className="text-gray-400">依据：</span>{ins.evidence}</p>
-                              <p><span className="text-gray-400">判定：</span>{ins.reason}</p>
-                              <p><span className="text-gray-400">提升：</span>{ins.path}</p>
-                              <p><span className="text-gray-400">建议：</span>{ins.suggestion}</p>
+                            <div className="space-y-1.5 text-sm text-slate-600">
+                              <p><span className="text-slate-400">依据：</span>{ins.evidence}</p>
+                              <p><span className="text-slate-400">判定：</span>{ins.reason}</p>
+                              <p><span className="text-slate-400">提升：</span>{ins.path}</p>
+                              <p><span className="text-slate-400">建议：</span>{ins.suggestion}</p>
                             </div>
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-400">报告生成时间较早，暂无逐维度判断依据；重新生成报告可获得完整判断力详解。</p>
+                    <p className="text-sm text-slate-400">报告生成时间较早，暂无逐维度判断依据；重新生成报告可获得完整判断力详解。</p>
                   )}
                 </div>
               </CardContent>
@@ -408,9 +408,9 @@ export default function ReportPage() {
                   职业发展路径
                 </CardTitle>
                 {expandedPanels.careerPath ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                  <ChevronUp className="w-5 h-5 text-slate-400" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
                 )}
               </div>
             </CardHeader>
@@ -427,7 +427,7 @@ export default function ReportPage() {
                           </span>
                         </div>
                         <div className="flex-1 pb-4 border-b border-[#165DFF]/10 last:border-0 last:pb-0">
-                          <p className="text-gray-700">{item.action}</p>
+                          <p className="text-slate-700">{item.action}</p>
                         </div>
                       </div>
                     ))}
@@ -449,9 +449,9 @@ export default function ReportPage() {
                   技能缺口分析
                 </CardTitle>
                 {expandedPanels.skillsGap ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                  <ChevronUp className="w-5 h-5 text-slate-400" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
                 )}
               </div>
             </CardHeader>
@@ -463,8 +463,8 @@ export default function ReportPage() {
                     {report.skills_gap.map((item, index) => (
                       <div key={index}>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-700">{item.skill}</span>
-                          <span className="text-sm text-gray-500">
+                          <span className="font-medium text-slate-700">{item.skill}</span>
+                          <span className="text-sm text-slate-500">
                             当前{item.current}% → 目标{item.target}%
                           </span>
                         </div>
@@ -494,9 +494,9 @@ export default function ReportPage() {
                   全年行动清单
                 </CardTitle>
                 {expandedPanels.actionPlan ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400" />
+                  <ChevronUp className="w-5 h-5 text-slate-400" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
                 )}
               </div>
             </CardHeader>
@@ -508,16 +508,16 @@ export default function ReportPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-green-200">
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">月份</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">任务</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">状态</th>
+                          <th className="text-left py-2 px-3 font-medium text-slate-700">月份</th>
+                          <th className="text-left py-2 px-3 font-medium text-slate-700">任务</th>
+                          <th className="text-left py-2 px-3 font-medium text-slate-700">状态</th>
                         </tr>
                       </thead>
                       <tbody>
                         {report.action_plan.map((item, index) => (
                           <tr key={index} className="border-b border-green-100 last:border-0">
-                            <td className="py-3 px-3 text-gray-600">{item.month}</td>
-                            <td className="py-3 px-3 text-gray-700">{item.task}</td>
+                            <td className="py-3 px-3 text-slate-600">{item.month}</td>
+                            <td className="py-3 px-3 text-slate-700">{item.task}</td>
                             <td className="py-3 px-3">
                               <span className={`px-2 py-1 text-xs rounded-full ${
                                 item.status === 'completed' 
@@ -547,7 +547,7 @@ export default function ReportPage() {
                 <ListChecks className="w-5 h-5" />
                 我要怎么做
               </CardTitle>
-              <p className="text-sm text-gray-400 -mt-2">勾选你已完成的阶段目标，进度会自动同步到「我的求职档案」</p>
+              <p className="text-sm text-slate-400 -mt-2">勾选你已完成的阶段目标，进度会自动同步到「我的求职档案」</p>
             </CardHeader>
             <CardContent className="pb-6">
               <div className="space-y-3">
@@ -560,20 +560,20 @@ export default function ReportPage() {
                       onClick={() => toggleGoal(k)}
                       disabled={goalSaving}
                       className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
-                        done ? 'border-blue-200 bg-blue-50/60' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                        done ? 'border-blue-200 bg-blue-50/60' : 'border-slate-200 hover:border-blue-300 hover:bg-gray-50'
                       }`}
                     >
                       {done ? (
                         <CheckCircle2 className="w-5 h-5 text-[#165DFF] mt-0.5 shrink-0" />
                       ) : (
-                        <Circle className="w-5 h-5 text-gray-300 mt-0.5 shrink-0" />
+                        <Circle className="w-5 h-5 text-slate-300 mt-0.5 shrink-0" />
                       )}
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 bg-[#165DFF]/10 text-[#165DFF] text-xs rounded font-medium">{item.stage}</span>
                           {done && <span className="text-xs text-green-600">已完成</span>}
                         </div>
-                        <p className="mt-1 text-sm text-gray-700">{item.action}</p>
+                        <p className="mt-1 text-sm text-slate-700">{item.action}</p>
                       </div>
                     </button>
                   );
@@ -618,7 +618,7 @@ export default function ReportPage() {
         </Card>
 
         {/* 行动按钮区 - 固定底部 */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-4 z-10">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-4 px-4 z-10">
           <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-3">
             <Link href="/jobs">
               <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90">

@@ -150,10 +150,10 @@ const CookieConsent = () => {
           <div className="flex items-start gap-3 mb-3">
             <Cookie className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" aria-hidden="true" />
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              <h3 className="text-lg font-semibold text-slate-900 mb-1">
                 🍪 我们使用 Cookie 提升您的体验
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 职途星使用必要 Cookie 维持登录与安全，并希望使用分析 Cookie 帮助我们改进产品。
                 您可以选择&ldquo;全部接受&rdquo;或仅保留必要功能。详情请查看
                 <a href="/privacy" className="text-blue-600 hover:text-blue-700 underline mx-1">
@@ -164,7 +164,7 @@ const CookieConsent = () => {
             </div>
             <button
               onClick={() => setShowBanner(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+              className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0"
               aria-label="关闭 Cookie 横幅"
               type="button"
             >
@@ -206,11 +206,11 @@ const CookieConsent = () => {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <Settings className="w-5 h-5 text-blue-600" aria-hidden="true" />
-                  <h3 className="text-lg font-semibold text-gray-900">Cookie 偏好设置</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Cookie 偏好设置</h3>
                 </div>
                 <button
                   onClick={() => setShowDetails(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
                   aria-label="关闭偏好设置"
                   type="button"
                 >
@@ -224,12 +224,12 @@ const CookieConsent = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-medium text-gray-900">必要 Cookie</h4>
+                        <h4 className="font-medium text-slate-900">必要 Cookie</h4>
                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
                           始终启用
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-slate-600 mt-1">
                         用于维持登录状态、会话安全、CSRF 防护。这是网站正常运行所必需的。
                       </p>
                     </div>
@@ -240,18 +240,18 @@ const CookieConsent = () => {
                         disabled
                         readOnly
                         aria-label="必要 Cookie 始终启用"
-                        className="w-5 h-5 rounded border-gray-300 bg-blue-100 cursor-not-allowed"
+                        className="w-5 h-5 rounded border-slate-300 bg-blue-100 cursor-not-allowed"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Analytics Cookies */}
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-slate-200 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">分析 Cookie</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <h4 className="font-medium text-slate-900">分析 Cookie</h4>
+                      <p className="text-sm text-slate-600 mt-1">
                         帮助我们了解访客如何使用网站，用于改进产品体验。
                       </p>
                     </div>
@@ -263,17 +263,17 @@ const CookieConsent = () => {
                         aria-label="分析 Cookie 开关"
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#165DFF]"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#165DFF]"></div>
                     </label>
                   </div>
                 </div>
 
                 {/* Marketing Cookies */}
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-slate-200 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">营销 Cookie</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <h4 className="font-medium text-slate-900">营销 Cookie</h4>
+                      <p className="text-sm text-slate-600 mt-1">
                         用于个性化推荐和广告投放，目前职途星暂未启用。
                       </p>
                     </div>
@@ -285,7 +285,7 @@ const CookieConsent = () => {
                         aria-label="营销 Cookie 开关"
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#165DFF]"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#165DFF]"></div>
                     </label>
                   </div>
                 </div>
@@ -302,7 +302,7 @@ const CookieConsent = () => {
                 <button
                   onClick={() => setShowDetails(false)}
                   type="button"
-                  className="px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-slate-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   取消
                 </button>

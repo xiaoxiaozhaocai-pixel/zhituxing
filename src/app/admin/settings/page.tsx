@@ -103,7 +103,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">系统设置</h1>
+        <h1 className="text-2xl font-bold text-slate-900">系统设置</h1>
         
         <Button onClick={handleSave} disabled={saving}>
           {saving ? (
@@ -224,7 +224,7 @@ export default function SettingsPage() {
                 value={settings.jd_reward_for_new}
                 onChange={(e) => updateSetting('jd_reward_for_new', e.target.value)}
               />
-              <p className="text-xs text-gray-500 mt-1">通过审核后获得终身会员</p>
+              <p className="text-xs text-slate-500 mt-1">通过审核后获得终身会员</p>
             </div>
             
             <div>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                 value={settings.jd_reward_monthly}
                 onChange={(e) => updateSetting('jd_reward_monthly', e.target.value)}
               />
-              <p className="text-xs text-gray-500 mt-1">已有月度会员的奖励</p>
+              <p className="text-xs text-slate-500 mt-1">已有月度会员的奖励</p>
             </div>
             
             <div>
@@ -244,7 +244,7 @@ export default function SettingsPage() {
                 value={settings.jd_reward_limit}
                 onChange={(e) => updateSetting('jd_reward_limit', e.target.value)}
               />
-              <p className="text-xs text-gray-500 mt-1">防止刷奖励</p>
+              <p className="text-xs text-slate-500 mt-1">防止刷奖励</p>
             </div>
           </div>
         </CardContent>

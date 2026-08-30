@@ -157,7 +157,7 @@ export default function ArticlePDFGenerator({
       onClick={generatePDF}
       disabled={generating || !isMember}
       variant="outline"
-      className={`${isMember ? 'border-[#165DFF] text-[#165DFF]' : 'border-gray-300 text-gray-400 cursor-not-allowed'}`}
+      className={`${isMember ? 'border-[#165DFF] text-[#165DFF]' : 'border-slate-300 text-slate-400 cursor-not-allowed'}`}
     >
       {generating ? (
         <>

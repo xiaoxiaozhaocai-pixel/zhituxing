@@ -220,10 +220,10 @@ export default function ResumeOptimizePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
                 简历智能优化
               </h1>
-              <p className="text-gray-600">
+              <p className="text-slate-600">
                 AI智能分析，量身定制简历优化建议
               </p>
             </div>
@@ -238,11 +238,11 @@ export default function ResumeOptimizePage() {
           <div className="p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-[#165DFF]" />
                   先看看「示范改写」的力量
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-slate-600 mt-1">
                   把「流水账式经历」改写成「让HR眼前一亮的专业表述」，只需一步
                 </p>
               </div>
@@ -253,12 +253,12 @@ export default function ResumeOptimizePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* 改写前 */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium text-gray-500">改写前 · 常见流水账</span>
+                  <span className="text-xs font-medium text-slate-500">改写前 · 常见流水账</span>
                   <Badge variant="secondary" className="text-xs">空洞</Badge>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-slate-600 leading-relaxed">
                   做过产品相关工作，负责公司APP的运营和推广，参与过几个项目，平时和开发沟通需求、跟进进度。
                 </p>
               </div>
@@ -268,7 +268,7 @@ export default function ResumeOptimizePage() {
                   <span className="text-xs font-medium text-[#165DFF]">改写后 · STAR + 量化</span>
                   <Badge className="bg-green-500 text-white text-xs">专业</Badge>
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-sm text-slate-700 leading-relaxed">
                   主导移动端App产品迭代与用户增长：通过用户调研锁定3大核心痛点，联动开发/设计/市场完成方案落地，14天推动新功能上线；上线后次日留存提升25%，日活增长18%，获业务方高度认可。
                 </p>
               </div>
@@ -281,7 +281,7 @@ export default function ResumeOptimizePage() {
                 { icon: '②', text: '用「量化数据」替代「负责/参与」等空洞表述' },
                 { icon: '③', text: '对标目标岗位，突出最相关的核心能力与成绩' },
               ].map((tip) => (
-                <div key={tip.icon} className="flex items-center gap-2 text-sm text-gray-700 bg-white/70 backdrop-blur rounded-lg border border-gray-100 px-3 py-2">
+                <div key={tip.icon} className="flex items-center gap-2 text-sm text-slate-700 bg-white/70 backdrop-blur rounded-lg border border-slate-100 px-3 py-2">
                   <span className="text-[#165DFF] font-bold">{tip.icon}</span>
                   <span>{tip.text}</span>
                 </div>
@@ -295,7 +295,7 @@ export default function ResumeOptimizePage() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-slate-400 mt-3">
               填入后点击「开始智能优化」，即可看到针对示例简历的真实AI改写建议
             </p>
           </div>
@@ -305,7 +305,7 @@ export default function ResumeOptimizePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Upload Form */}
           <div className="lg:col-span-2 space-y-6">
-            <Card id="resume-form" className="border-2 border-gray-100">
+            <Card id="resume-form" className="border-2 border-slate-100">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#165DFF]" />
@@ -317,7 +317,7 @@ export default function ResumeOptimizePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">
                     目标岗位
                   </label>
                   <Select value={targetPosition} onValueChange={setTargetPosition}>
@@ -335,7 +335,7 @@ export default function ResumeOptimizePage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">
                     简历内容
                   </label>
                   <Textarea
@@ -348,7 +348,7 @@ export default function ResumeOptimizePage() {
                     onChange={(e) => setResumeContent(e.target.value)}
                     className="min-h-[300px] font-mono text-sm"
                   />
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-slate-500 mt-2">
                     {resumeContent.length} 字，建议至少100字以获得更准确的优化建议
                   </p>
                 </div>
@@ -426,15 +426,15 @@ export default function ResumeOptimizePage() {
                           <CheckCircle className="w-4 h-4 text-[#165DFF]" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-gray-900">{item.title}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{item.suggestion}</p>
+                          <h4 className="font-medium text-slate-900">{item.title}</h4>
+                          <p className="text-sm text-slate-600 mt-1">{item.suggestion}</p>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   <div className="mt-6 pt-6 border-t">
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-sm text-slate-600 mb-4">
                       完整的优化后简历模板和面试准备建议已生成
                     </p>
                     <div className="flex gap-3">
@@ -471,7 +471,7 @@ export default function ResumeOptimizePage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left: Radar Chart */}
                     <div className="bg-white/70 backdrop-blur rounded-2xl border border-[#165DFF]/20 p-4">
-                      <h4 className="text-sm font-semibold text-gray-800 mb-3 text-center">
+                      <h4 className="text-sm font-semibold text-slate-800 mb-3 text-center">
                         能力雷达图
                       </h4>
                       <ResumeRadar
@@ -486,7 +486,7 @@ export default function ResumeOptimizePage() {
                   </div>
 
                   {/* 评分→编辑闭环：去优化按钮 */}
-                  <div className="flex justify-center mt-6 pt-4 border-t border-gray-100">
+                  <div className="flex justify-center mt-6 pt-4 border-t border-slate-100">
                     <Button
                       className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white px-8 hover:shadow-lg hover:shadow-[#165DFF]/20 transition-all"
                       onClick={() => router.push("/resume-builder?focus=experience")}
@@ -503,13 +503,13 @@ export default function ResumeOptimizePage() {
 
           {/* Right: Recent Records */}
           <div>
-            <Card className="border-2 border-gray-100">
+            <Card className="border-2 border-slate-100">
               <CardHeader>
                 <CardTitle className="text-lg">最近优化记录</CardTitle>
               </CardHeader>
               <CardContent>
                 {recentRecords.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-slate-500">
                     <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p className="text-sm">暂无优化记录</p>
                   </div>
@@ -522,14 +522,14 @@ export default function ResumeOptimizePage() {
                         onClick={() => router.push(`/resume-optimize/${record.id}`)}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-slate-900">
                             {record.target_position}
                           </span>
                           <Badge variant={record.status === 'completed' ? 'default' : 'secondary'} className="text-xs">
                             {record.status === 'completed' ? '已完成' : '处理中'}
                           </Badge>
                         </div>
-                        <div className="flex items-center text-xs text-gray-500">
+                        <div className="flex items-center text-xs text-slate-500">
                           <Clock className="w-3 h-3 mr-1" />
                           {new Date(record.created_at).toLocaleDateString('zh-CN')}
                         </div>
@@ -543,8 +543,8 @@ export default function ResumeOptimizePage() {
             {/* Tips */}
             <Card className="mt-4 border-2 border-[#165DFF]/20 bg-gradient-to-br from-[#165DFF]/5 to-white">
               <CardContent className="p-4">
-                <h4 className="font-medium text-gray-900 mb-2">优化小贴士</h4>
-                <ul className="text-sm text-gray-600 space-y-2">
+                <h4 className="font-medium text-slate-900 mb-2">优化小贴士</h4>
+                <ul className="text-sm text-slate-600 space-y-2">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
                     简历内容越详细，优化建议越精准
@@ -579,8 +579,8 @@ export default function ResumeOptimizePage() {
             <DialogDescription className="space-y-3 pt-2">
               <p>您本月的免费简历优化次数已用完</p>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                <p className="font-medium text-gray-900">会员专属权益</p>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <p className="font-medium text-slate-900">会员专属权益</p>
+                <ul className="text-sm text-slate-600 space-y-1">
                   <li>无限次简历优化</li>
                   <li>完整优化后简历模板</li>
                   <li>AI模拟面试无限次</li>

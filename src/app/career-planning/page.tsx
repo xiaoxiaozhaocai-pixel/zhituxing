@@ -766,13 +766,13 @@ export default function CareerPlanningPage() {
                         )}
                             <span className={`px-2.5 py-1 text-xs rounded-full ${
                               d.matchLevel === '高度对口' ? 'bg-green-50 text-green-600' :
-                              d.matchLevel === '中等对口' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'
+                              d.matchLevel === '中等对口' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-slate-500'
                             }`}>{d.matchLevel}</span>
                           </div>
                           <p className="text-sm text-[#64748B] leading-relaxed">{d.why}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {d.skills.map((sk, j) => (
-                              <span key={j} className="px-2 py-0.5 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-200">{sk}</span>
+                              <span key={j} className="px-2 py-0.5 bg-gray-50 text-slate-600 text-xs rounded-md border border-slate-200">{sk}</span>
                             ))}
                           </div>
                         </div>
@@ -857,7 +857,7 @@ export default function CareerPlanningPage() {
                             <p className="text-sm text-[#64748B] mb-2">{f.how}</p>
                             <div className="flex flex-wrap gap-2">
                               {f.questions.map((q, j) => (
-                                <span key={j} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs rounded-md border border-gray-200">{q}</span>
+                                <span key={j} className="px-2.5 py-1 bg-gray-50 text-slate-600 text-xs rounded-md border border-slate-200">{q}</span>
                               ))}
                             </div>
                           </div>

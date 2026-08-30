@@ -25,8 +25,8 @@ interface Progress {
 }
 
 const LEVEL_LABELS = ['极低', '低', '中', '高', '极高'];
-const LEVEL_COLORS = ['bg-gray-100 text-gray-500 hover:bg-gray-200 border-gray-200',
-  'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200',
+const LEVEL_COLORS = ['bg-gray-100 text-slate-500 hover:bg-gray-200 border-slate-200',
+  'bg-gray-100 text-slate-600 hover:bg-gray-200 border-slate-200',
   'bg-[#165DFF]/10 text-[#165DFF] hover:bg-[#165DFF]/20 border-[#165DFF]/20',
   'bg-[#165DFF]/15 text-[#165DFF] hover:bg-[#165DFF]/25 border-[#165DFF]/30',
   'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border-[#165DFF]/40 hover:from-[#165DFF]/20 hover:to-[#3D7FFF]/20'];
@@ -143,7 +143,7 @@ export default function BlindReviewPage() {
     </div>
   );
 
-  if (!portrait) return <div className="text-gray-500 text-center py-16">画像项目不存在</div>;
+  if (!portrait) return <div className="text-slate-500 text-center py-16">画像项目不存在</div>;
 
   const evaluatedCount = progress?.evaluated || 0;
   const totalCount = progress?.total || 0;
@@ -152,13 +152,13 @@ export default function BlindReviewPage() {
 
   return (
     <div>
-      <Link href="/employer/portrait" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#165DFF] mb-4 transition">
+      <Link href="/employer/portrait" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#165DFF] mb-4 transition">
         <ArrowLeft className="w-4 h-4" />
         返回列表
       </Link>
 
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-gray-900">{portrait.title}</h1>
+        <h1 className="text-xl font-bold text-slate-900">{portrait.title}</h1>
         {allDone && (
           <Link
             href={`/employer/portrait/${portraitId}/report`}
@@ -171,13 +171,13 @@ export default function BlindReviewPage() {
       </div>
 
       {/* Progress bar */}
-      <div className="bg-white rounded-xl border border-gray-100 p-4 mb-4">
+      <div className="bg-white rounded-xl border border-slate-100 p-4 mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-gray-600">
+          <span className="text-slate-600">
             <UserCheck className="w-4 h-4 inline mr-1 text-[#165DFF]" />
             评估进度
           </span>
-          <span className="text-gray-500">{evaluatedCount}/{totalCount} 人 ({pct}%)</span>
+          <span className="text-slate-500">{evaluatedCount}/{totalCount} 人 ({pct}%)</span>
         </div>
         <div className="w-full bg-gray-100 rounded-full h-2">
           <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] h-2 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
@@ -190,7 +190,7 @@ export default function BlindReviewPage() {
               const dist = progress.distribution[dim];
               return (
                 <div key={dim}>
-                  <div className="text-gray-500 mb-1 font-medium">{labels[['skill', 'exp', 'soft'].indexOf(dim)]}</div>
+                  <div className="text-slate-500 mb-1 font-medium">{labels[['skill', 'exp', 'soft'].indexOf(dim)]}</div>
                   <div className="flex gap-0.5">
                     {[1,2,3,4,5].map(l => (
                       <div key={l} className="flex-1 h-1.5 rounded-full" style={{
@@ -206,7 +206,7 @@ export default function BlindReviewPage() {
         )}
         {/* Insights */}
         {progress && progress.insights.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-50">
+          <div className="mt-3 pt-3 border-t border-slate-50">
             {progress.insights.map((ins, i) => (
               <div key={i} className="text-xs text-[#165DFF] bg-[#165DFF]/10 rounded-lg px-3 py-1.5 mb-1 last:mb-0">
                 💡 {ins}
@@ -218,31 +218,31 @@ export default function BlindReviewPage() {
 
       {/* Blind review card */}
       {current ? (
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-white rounded-xl border border-slate-100 p-5">
           {/* Candidate header */}
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-50">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-50">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">{current.name}</h2>
-              <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+              <h2 className="text-lg font-bold text-slate-900">{current.name}</h2>
+              <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                 <span>{current.education || '学历未知'}</span>
                 {current.edu_level && <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">Edu={current.edu_level}</span>}
               </div>
             </div>
-            <span className="text-xs text-gray-400">{currentIdx + 1}/{candidates.length}</span>
+            <span className="text-xs text-slate-400">{currentIdx + 1}/{candidates.length}</span>
           </div>
 
           {/* Experience summary */}
           {current.experience_summary && (
-            <div className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2 mb-4">
+            <div className="text-sm text-slate-600 bg-gray-50 rounded-lg px-3 py-2 mb-4">
               {current.experience_summary}
             </div>
           )}
 
           {/* Skill */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
               Skill（技术能力）
-              <span className="text-gray-400 font-normal ml-1">— 该候选人在目标岗位领域的技术深度</span>
+              <span className="text-slate-400 font-normal ml-1">— 该候选人在目标岗位领域的技术深度</span>
             </label>
             <div className="flex gap-2">
               {[1,2,3,4,5].map(v => (
@@ -253,9 +253,9 @@ export default function BlindReviewPage() {
 
           {/* Exp */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
               Exp（经验对口度）
-              <span className="text-gray-400 font-normal ml-1">— 经验与岗位要求的匹配深度</span>
+              <span className="text-slate-400 font-normal ml-1">— 经验与岗位要求的匹配深度</span>
             </label>
             <div className="flex gap-2">
               {[1,2,3,4,5].map(v => (
@@ -266,9 +266,9 @@ export default function BlindReviewPage() {
 
           {/* Soft */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
               Soft（软素质）
-              <span className="text-gray-400 font-normal ml-1">— 沟通/抗压/学习力</span>
+              <span className="text-slate-400 font-normal ml-1">— 沟通/抗压/学习力</span>
             </label>
             <div className="flex gap-2">
               {[1,2,3,4,5].map(v => (
@@ -284,17 +284,17 @@ export default function BlindReviewPage() {
               onChange={e => setNotes(e.target.value)}
               placeholder="备注（可选）：如电聊印象、关注点..."
               rows={2}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+          <div className="flex items-center justify-between pt-3 border-t border-slate-50">
             <div className="flex gap-2">
               <button onClick={goPrev} disabled={currentIdx === 0}
-                className="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 transition">← 上一个</button>
+                className="px-4 py-2 text-sm text-slate-500 border border-slate-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 transition">← 上一个</button>
               <button onClick={goNext} disabled={currentIdx >= candidates.length - 1}
-                className="px-4 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 transition">下一个 →</button>
+                className="px-4 py-2 text-sm text-slate-500 border border-slate-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 transition">下一个 →</button>
             </div>
             <button
               onClick={handleSubmit}
@@ -307,10 +307,10 @@ export default function BlindReviewPage() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-          <UserCheck className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">暂无候选人</p>
-          <p className="text-sm text-gray-400 mt-2">请先导入候选人</p>
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
+          <UserCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-500">暂无候选人</p>
+          <p className="text-sm text-slate-400 mt-2">请先导入候选人</p>
         </div>
       )}
     </div>

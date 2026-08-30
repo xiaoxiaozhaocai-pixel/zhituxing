@@ -65,15 +65,15 @@ export default function UniversityPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge variant="secondary" className="mb-4 px-3 py-1 bg-[#1E3A8A]/10 text-[#1E3A8A] border-[#1E3A8A]/20">核心优势</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">三大核心能力，全方位赋能高校就业</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">三大核心能力，全方位赋能高校就业</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {advantages.map((adv, idx) => (
               <Card key={idx} className="border-0 shadow-lg shadow-gray-200/60 hover:shadow-xl transition-all duration-300 group">
                 <CardContent className="p-8">
                   <div className="w-14 h-14 rounded-xl bg-[#1E3A8A]/10 flex items-center justify-center text-[#1E3A8A] group-hover:bg-[#1E3A8A] group-hover:text-white transition-colors duration-300">{adv.icon}</div>
-                  <h3 className="mt-6 text-xl font-bold text-gray-900">{adv.title}</h3>
-                  <p className="mt-3 text-gray-500 leading-relaxed">{adv.desc}</p>
+                  <h3 className="mt-6 text-xl font-bold text-slate-900">{adv.title}</h3>
+                  <p className="mt-3 text-slate-500 leading-relaxed">{adv.desc}</p>
                   <div className="mt-5 flex flex-wrap gap-2">{adv.badges.map(b => <Badge key={b} variant="outline" className="text-xs bg-[#1E3A8A]/5 text-[#1E3A8A] border-[#1E3A8A]/20">{b}</Badge>)}</div>
                 </CardContent>
               </Card>
@@ -86,7 +86,7 @@ export default function UniversityPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge variant="secondary" className="mb-4 px-3 py-1 bg-[#1E3A8A]/10 text-[#1E3A8A] border-[#1E3A8A]/20">合作流程</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">三步轻松接入，快速落地</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">三步轻松接入，快速落地</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {steps.map((s, idx) => (
@@ -95,8 +95,8 @@ export default function UniversityPage() {
                 <div className="relative z-10 w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] flex items-center justify-center shadow-lg shadow-blue-200/50">
                   <span className="text-2xl font-bold text-white">{s.step}</span>
                 </div>
-                <h3 className="mt-6 text-xl font-bold text-gray-900">{s.title}</h3>
-                <p className="mt-3 text-gray-500 leading-relaxed">{s.desc}</p>
+                <h3 className="mt-6 text-xl font-bold text-slate-900">{s.title}</h3>
+                <p className="mt-3 text-slate-500 leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -124,7 +124,7 @@ export default function UniversityPage() {
             <Users className="w-5 h-5 text-[#1E3A8A]" />
             <span className="text-sm font-medium text-[#1E3A8A] uppercase tracking-wider">联系我们</span>
           </div>
-          <p className="text-gray-500 max-w-xl mx-auto">
+          <p className="text-slate-500 max-w-xl mx-auto">
             如对高校合作计划感兴趣，请通过 <Link href="/contact" className="text-[#1E3A8A] underline hover:text-blue-700">联系我们</Link> 页面提交申请，我们将在24小时内回复。
           </p>
         </div>

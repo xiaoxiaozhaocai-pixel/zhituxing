@@ -97,15 +97,15 @@ const COHORT_BADGE: Record<CohortResult['overall'], { label: string; className: 
 function CohortSummary({ cohort }: { cohort: CohortResult }) {
   const badge = COHORT_BADGE[cohort.overall] ?? COHORT_BADGE.not_suitable;
   return (
-    <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50/70 p-3">
+    <div className="mt-3 rounded-xl border border-slate-100 bg-gray-50/70 p-3">
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${badge.className}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
           {badge.label}
         </span>
-        <span className="text-xs text-gray-500">组态匹配 {cohort.pathFit} 分</span>
+        <span className="text-xs text-slate-500">组态匹配 {cohort.pathFit} 分</span>
       </div>
-      <p className="mt-2 text-sm text-gray-600 leading-relaxed">{cohort.advice}</p>
+      <p className="mt-2 text-sm text-slate-600 leading-relaxed">{cohort.advice}</p>
     </div>
   );
 }
@@ -164,7 +164,7 @@ function WeightingSummary({ weighting }: { weighting: WeightingResult }) {
       </div>
 
       {/* 加权理由 */}
-      <p className="text-xs text-gray-500 leading-relaxed mb-3">
+      <p className="text-xs text-slate-500 leading-relaxed mb-3">
         {weighting.role.rationale}
       </p>
 
@@ -172,14 +172,14 @@ function WeightingSummary({ weighting }: { weighting: WeightingResult }) {
       <div className="space-y-2">
         {weighting.breakdown.map((d) => (
           <div key={d.dimension} className="flex items-center gap-2">
-            <span className="w-16 text-xs text-gray-500 shrink-0">{d.label}</span>
+            <span className="w-16 text-xs text-slate-500 shrink-0">{d.label}</span>
             <div className="flex-1 h-2 rounded-full bg-violet-100 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-violet-400 to-violet-600"
                 style={{ width: `${(d.contribution / maxContribution) * 100}%` }}
               />
             </div>
-            <span className="w-20 text-right text-[11px] text-gray-400 shrink-0">
+            <span className="w-20 text-right text-[11px] text-slate-400 shrink-0">
               {d.score} × {d.weight} = {d.contribution}
             </span>
           </div>
@@ -199,7 +199,7 @@ function WeightingSummary({ weighting }: { weighting: WeightingResult }) {
       </div>
 
       {/* 建议 */}
-      <p className="mt-3 text-sm text-gray-700 leading-relaxed">{weighting.advice}</p>
+      <p className="mt-3 text-sm text-slate-700 leading-relaxed">{weighting.advice}</p>
     </div>
   );
 }
@@ -310,9 +310,9 @@ export default function MatchPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center">
                 <Target className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">岗位匹配</h1>
+              <h1 className="text-2xl font-bold text-slate-900">岗位匹配</h1>
             </div>
-            <p className="text-gray-500 ml-13">基于你的技能画像，智能匹配最适合的岗位</p>
+            <p className="text-slate-500 ml-13">基于你的技能画像，智能匹配最适合的岗位</p>
           </div>
 
           {/* 登录提示卡片 */}
@@ -321,8 +321,8 @@ export default function MatchPage() {
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Lock className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录后解锁完整功能</h3>
-              <p className="text-gray-500 mb-6">登录后可保存匹配结果，查看详细技能分析，获取专属学习建议</p>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">登录后解锁完整功能</h3>
+              <p className="text-slate-500 mb-6">登录后可保存匹配结果，查看详细技能分析，获取专属学习建议</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
                   <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg">
@@ -352,9 +352,9 @@ export default function MatchPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center">
               <Target className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">岗位匹配</h1>
+            <h1 className="text-2xl font-bold text-slate-900">岗位匹配</h1>
           </div>
-          <p className="text-gray-500 ml-13">基于你的技能画像，智能匹配最适合的岗位</p>
+          <p className="text-slate-500 ml-13">基于你的技能画像，智能匹配最适合的岗位</p>
         </div>
 
         {/* 搜索和筛选栏 */}
@@ -362,7 +362,7 @@ export default function MatchPage() {
           <CardContent className="py-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   placeholder="输入目标岗位，如：新媒体运营、Java开发"
                   value={targetPosition}
@@ -381,7 +381,7 @@ export default function MatchPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortKey)}
-                  className="h-9 rounded-md border border-gray-200 bg-white px-3 text-sm"
+                  className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm"
                 >
                   <option value="matchScore">按匹配度</option>
                   <option value="salary">按薪资</option>
@@ -396,7 +396,7 @@ export default function MatchPage() {
             {/* 用户技能展示 */}
             {userSkills.length > 0 && (
               <div className="mt-3 flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-gray-500">你的技能：</span>
+                <span className="text-xs text-slate-500">你的技能：</span>
                 {userSkills.map((s, i) => (
                   <Badge key={i} variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
                     {s}
@@ -411,7 +411,7 @@ export default function MatchPage() {
         {loading && (
           <div className="flex flex-col items-center py-20">
             <Spinner className="w-10 h-10 text-[#165DFF]" />
-            <p className="mt-4 text-gray-500">正在匹配最适合你的岗位...</p>
+            <p className="mt-4 text-slate-500">正在匹配最适合你的岗位...</p>
           </div>
         )}
 
@@ -421,8 +421,8 @@ export default function MatchPage() {
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Briefcase className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">还没有找到匹配的岗位</h3>
-              <p className="text-gray-500 max-w-md mx-auto mb-8">
+              <h3 className="text-xl font-bold text-slate-800 mb-3">还没有找到匹配的岗位</h3>
+              <p className="text-slate-500 max-w-md mx-auto mb-8">
                 别着急，好工作值得等待～先完善你的技能信息，让AI更懂你
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -444,7 +444,7 @@ export default function MatchPage() {
         {!loading && filtered.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">共找到 <strong className="text-[#165DFF]">{filtered.length}</strong> 个匹配岗位</span>
+              <span className="text-sm text-slate-500">共找到 <strong className="text-[#165DFF]">{filtered.length}</strong> 个匹配岗位</span>
             </div>
             {filtered.map((item) => {
               const isExpanded = expandedId === item.job.id;
@@ -491,8 +491,8 @@ export default function MatchPage() {
 
                       {/* 岗位信息 */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-900 truncate">{item.job.jobName}</h3>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                        <h3 className="text-lg font-bold text-slate-900 truncate">{item.job.jobName}</h3>
+                        <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
                           {item.job.city && (
                             <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{item.job.city}</span>
                           )}
@@ -532,7 +532,7 @@ export default function MatchPage() {
                                 {item.weighting.role.label}
                               </Badge>
                             </div>
-                            <p className="mt-1 text-xs text-gray-600 leading-relaxed">{item.weighting.advice}</p>
+                            <p className="mt-1 text-xs text-slate-600 leading-relaxed">{item.weighting.advice}</p>
                           </div>
                         )}
                       </div>
@@ -560,7 +560,7 @@ export default function MatchPage() {
 
                     {/* 展开详情 */}
                     {isExpanded && (
-                      <div className="mt-5 pt-5 border-t border-gray-100 space-y-5">
+                      <div className="mt-5 pt-5 border-t border-slate-100 space-y-5">
                         {/* 组态诊断「差多少」双维错位缺口 */}
                         {item.cohort && <CohortGaps cohort={item.cohort} />}
 
@@ -604,21 +604,21 @@ export default function MatchPage() {
                                 <div className="text-2xl font-bold text-amber-600">
                                   {(item.salary.estimatedMin / 1000).toFixed(1)}k
                                 </div>
-                                <div className="text-xs text-gray-500">预估最低</div>
+                                <div className="text-xs text-slate-500">预估最低</div>
                               </div>
-                              <span className="text-gray-400">—</span>
+                              <span className="text-slate-400">—</span>
                               <div className="text-center">
                                 <div className="text-2xl font-bold text-amber-600">
                                   {(item.salary.estimatedMax / 1000).toFixed(1)}k
                                 </div>
-                                <div className="text-xs text-gray-500">预估最高</div>
+                                <div className="text-xs text-slate-500">预估最高</div>
                               </div>
-                              <span className="text-gray-400">|</span>
+                              <span className="text-slate-400">|</span>
                               <div className="text-center">
-                                <div className="text-lg font-semibold text-gray-700">
+                                <div className="text-lg font-semibold text-slate-700">
                                   {(item.salary.estimatedMedian / 1000).toFixed(1)}k
                                 </div>
-                                <div className="text-xs text-gray-500">中位数</div>
+                                <div className="text-xs text-slate-500">中位数</div>
                               </div>
                             </div>
                           </div>
@@ -635,13 +635,13 @@ export default function MatchPage() {
                                     {i + 1}
                                   </div>
                                   <div className="flex-1">
-                                    <div className="text-sm font-medium text-gray-700">{phase.phase}</div>
+                                    <div className="text-sm font-medium text-slate-700">{phase.phase}</div>
                                     <div className="flex flex-wrap gap-1.5 mt-1">
                                       {phase.skills.map((s, j) => (
                                         <Badge key={j} variant="outline" className="text-xs">{s}</Badge>
                                       ))}
                                     </div>
-                                    <div className="text-xs text-gray-400 mt-1">预计 {phase.estimatedDays} 天</div>
+                                    <div className="text-xs text-slate-400 mt-1">预计 {phase.estimatedDays} 天</div>
                                   </div>
                                 </div>
                               ))}
@@ -665,8 +665,8 @@ export default function MatchPage() {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">被你忽略的好机会</h2>
-                <p className="text-sm text-gray-500">根据你的能力，你可能低估了这些岗位</p>
+                <h2 className="text-xl font-bold text-slate-900">被你忽略的好机会</h2>
+                <p className="text-sm text-slate-500">根据你的能力，你可能低估了这些岗位</p>
               </div>
             </div>
 
@@ -674,7 +674,7 @@ export default function MatchPage() {
               <Card className="border-blue-100">
                 <CardContent className="py-10 text-center">
                   <Spinner className="w-8 h-8 text-blue-500 mx-auto" />
-                  <p className="mt-3 text-gray-500 text-sm">正在分析你的隐藏优势...</p>
+                  <p className="mt-3 text-slate-500 text-sm">正在分析你的隐藏优势...</p>
                 </CardContent>
               </Card>
             ) : underratedJobs.length > 0 ? (
@@ -684,7 +684,7 @@ export default function MatchPage() {
                     <div className="h-1 bg-gradient-to-r from-blue-500 to-blue-600" />
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between mb-3">
-                        <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                           {job.jobName}
                         </h3>
                         <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full text-xs font-medium">
@@ -692,15 +692,15 @@ export default function MatchPage() {
                           被低估
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 mb-2 text-sm text-slate-500">
                         {job.city && <span><MapPin className="w-3 h-3 inline mr-1" />{job.city}</span>}
                         {job.industry && <span><Briefcase className="w-3 h-3 inline mr-1" />{job.industry}</span>}
                       </div>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="text-2xl font-bold text-blue-600">{job.matchScore}%</div>
-                        <div className="text-xs text-gray-500">匹配度</div>
+                        <div className="text-xs text-slate-500">匹配度</div>
                       </div>
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-sm text-slate-600 leading-relaxed">
                         <span className="text-blue-600 font-medium">为什么被低估：</span>
                         {job.reason}
                       </p>
@@ -712,8 +712,8 @@ export default function MatchPage() {
               <Card className="border-blue-100">
                 <CardContent className="py-10 text-center">
                   <Sparkles className="w-10 h-10 text-blue-300 mx-auto mb-3" />
-                  <p className="text-gray-500">暂无被低估的岗位推荐</p>
-                  <p className="text-gray-400 text-sm mt-1">完善更多技能信息，解锁隐藏机会</p>
+                  <p className="text-slate-500">暂无被低估的岗位推荐</p>
+                  <p className="text-slate-400 text-sm mt-1">完善更多技能信息，解锁隐藏机会</p>
                 </CardContent>
               </Card>
             )}
@@ -728,8 +728,8 @@ export default function MatchPage() {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">解锁反向匹配</h3>
-                <p className="text-gray-500 text-sm mb-4">完成技能画像后，发现你被低估的好机会</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">解锁反向匹配</h3>
+                <p className="text-slate-500 text-sm mb-4">完成技能画像后，发现你被低估的好机会</p>
                 <Link href="/growth">
                   <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90">
                     去完善技能画像

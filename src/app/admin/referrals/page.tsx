@@ -99,7 +99,7 @@ export default function AdminReferralsPage() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">内推管理</h1>
+            <h1 className="text-2xl font-bold text-slate-900">内推管理</h1>
           </div>
           <Button className="bg-[#165DFF]" onClick={() => {
             setEditingReferral({});
@@ -114,7 +114,7 @@ export default function AdminReferralsPage() {
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
                 placeholder="搜索公司或职位..."
                 value={searchKeyword}
@@ -139,13 +139,13 @@ export default function AdminReferralsPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-gray-900">{referral.position}</h3>
+                          <h3 className="font-semibold text-slate-900">{referral.position}</h3>
                           <Badge className={referral.isActive ? 'bg-green-500' : 'bg-gray-400'}>
                             {referral.isActive ? '进行中' : '已结束'}
                           </Badge>
                         </div>
-                        <p className="text-gray-600 mb-2">{referral.company} · {referral.location}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <p className="text-slate-600 mb-2">{referral.company} · {referral.location}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-500">
                           <span className="text-orange-600 font-medium">{referral.salary}</span>
                           <span className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
@@ -191,7 +191,7 @@ export default function AdminReferralsPage() {
         )}
 
         {filteredReferrals.length === 0 && !loading && (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-slate-500">
             暂无内推信息
           </div>
         )}
@@ -206,36 +206,36 @@ export default function AdminReferralsPage() {
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">公司名称</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">公司名称</label>
                 <Input placeholder="请输入公司名称" defaultValue={editingReferral.company} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">职位名称</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">职位名称</label>
                 <Input placeholder="请输入职位名称" defaultValue={editingReferral.position} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">薪资范围</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">薪资范围</label>
                 <Input placeholder="如：25-40K·14薪" defaultValue={editingReferral.salary} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">工作地点</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">工作地点</label>
                 <Input placeholder="如：北京" defaultValue={editingReferral.location} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">截止日期</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">截止日期</label>
                 <Input type="date" defaultValue={editingReferral.deadline?.split('T')[0]} />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">职位描述</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">职位描述</label>
               <textarea className="w-full px-3 py-2 border rounded-lg h-24" placeholder="请输入职位描述" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">岗位要求（每行一条）</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">岗位要求（每行一条）</label>
               <textarea className="w-full px-3 py-2 border rounded-lg h-20" placeholder="本科及以上学历&#10;3年以上工作经验&#10;熟练掌握React" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">福利待遇（每行一条）</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">福利待遇（每行一条）</label>
               <textarea className="w-full px-3 py-2 border rounded-lg h-20" placeholder="六险一金&#10;年度旅游&#10;弹性工作" />
             </div>
           </div>

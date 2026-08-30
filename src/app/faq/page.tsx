@@ -219,7 +219,7 @@ export default function FaqPage() {
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               activeCategory === null
                 ? 'bg-[#165DFF] text-white shadow-md'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                : 'bg-white text-slate-600 hover:bg-gray-100 border border-slate-200'
             }`}
           >
             全部问题
@@ -231,7 +231,7 @@ export default function FaqPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeCategory === cat.id
                   ? 'bg-[#165DFF] text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  : 'bg-white text-slate-600 hover:bg-gray-100 border border-slate-200'
               }`}
             >
               {cat.icon}
@@ -251,11 +251,11 @@ export default function FaqPage() {
                       <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
                         {index + 1}
                       </span>
-                      <span className="font-medium text-gray-900">{faq.question}</span>
+                      <span className="font-medium text-slate-900">{faq.question}</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="px-6 pb-4 pl-14 text-gray-600 leading-relaxed">
+                    <div className="px-6 pb-4 pl-14 text-slate-600 leading-relaxed">
                       {faq.answer}
                     </div>
                   </AccordionContent>
@@ -269,10 +269,10 @@ export default function FaqPage() {
         <Card className="mt-12 bg-gradient-to-r from-blue-50 to-blue-50 border-blue-200">
           <CardContent className="p-8 text-center">
             <MessageSquare className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl font-bold text-slate-900 mb-2">
               没有找到答案？
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-600 mb-6">
               我们的客服团队随时为你解答疑问
             </p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -304,7 +304,7 @@ export default function FaqPage() {
 
         {/* Related Links */}
         <div className="mt-8 text-center">
-          <p className="text-gray-500 mb-4">相关链接</p>
+          <p className="text-slate-500 mb-4">相关链接</p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/guide" className="text-blue-600 hover:text-blue-700 flex items-center gap-1">
               使用流程 <ChevronRight className="w-4 h-4" />

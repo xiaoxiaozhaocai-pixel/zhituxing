@@ -138,10 +138,10 @@ export default function HistoryPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
               我的对话历史
             </h1>
-            <p className="text-gray-600">
+            <p className="text-slate-600">
               共 {histories.length} 条对话记录
             </p>
           </div>
@@ -173,11 +173,11 @@ export default function HistoryPage() {
 
           <TabsContent value={activeTab} className="mt-6">
             {filteredHistories.length === 0 ? (
-              <Card className="border-2 border-gray-100">
+              <Card className="border-2 border-slate-100">
                 <CardContent className="py-16 text-center">
-                  <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">暂无对话记录</h3>
-                  <p className="text-gray-500 mb-4">开始和AI助手对话，记录会自动保存到这里</p>
+                  <MessageSquare className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">暂无对话记录</h3>
+                  <p className="text-slate-500 mb-4">开始和AI助手对话，记录会自动保存到这里</p>
                   <Button 
                     className="bg-[#165DFF] hover:bg-[#165DFF]/90"
                     onClick={() => router.push('/assistant')}
@@ -203,17 +203,17 @@ export default function HistoryPage() {
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-gray-900 line-clamp-1">
+                            <h3 className="font-medium text-slate-900 line-clamp-1">
                               {history.title}
                             </h3>
                             <span className={`text-xs px-2 py-0.5 rounded ${botColors[history.bot_type] || ''}`}>
                               {botNames[history.bot_type] || 'AI助手'}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-500 line-clamp-2 mb-2">
+                          <p className="text-sm text-slate-500 line-clamp-2 mb-2">
                             {history.preview || '暂无预览'}
                           </p>
-                          <div className="flex items-center gap-4 text-xs text-gray-400">
+                          <div className="flex items-center gap-4 text-xs text-slate-400">
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {new Date(history.updated_at).toLocaleString('zh-CN')}
@@ -240,7 +240,7 @@ export default function HistoryPage() {
                             {deleting === history.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <Trash2 className="w-4 h-4 text-gray-400" />
+                              <Trash2 className="w-4 h-4 text-slate-400" />
                             )}
                           </Button>
                         </div>

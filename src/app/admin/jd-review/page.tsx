@@ -219,7 +219,7 @@ export default function JdReviewPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">JD审核管理</h1>
+        <h1 className="text-2xl font-bold text-slate-900">JD审核管理</h1>
         <Button onClick={() => fetchData()} variant="outline" size="sm">
           <RefreshCw className="w-4 h-4 mr-2" />
           刷新
@@ -235,7 +235,7 @@ export default function JdReviewPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               status === item.value 
                 ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-600 hover:bg-gray-50 border'
+                : 'bg-white text-slate-600 hover:bg-gray-50 border'
             }`}
           >
             {item.label}
@@ -253,7 +253,7 @@ export default function JdReviewPage() {
         <CardContent className="pt-6">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
                 placeholder="搜索岗位名称、企业名称..."
                 value={keyword}
@@ -311,13 +311,13 @@ export default function JdReviewPage() {
                       className="rounded"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">岗位名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">企业名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">城市</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">薪资</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">提交者</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">提交时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">岗位名称</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">企业名称</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">城市</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">薪资</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">提交者</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">提交时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -329,7 +329,7 @@ export default function JdReviewPage() {
                   </tr>
                 ) : submissions.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                       暂无数据
                     </td>
                   </tr>
@@ -344,12 +344,12 @@ export default function JdReviewPage() {
                           className="rounded"
                         />
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.job_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{item.company_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{item.city || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{formatSalary(item.salary_min, item.salary_max)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{item.username || '未知'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.job_name}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600">{item.company_name}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600">{item.city || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600">{formatSalary(item.salary_min, item.salary_max)}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600">{item.username || '未知'}</td>
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         {new Date(item.created_at).toLocaleDateString('zh-CN')}
                       </td>
                       <td className="px-4 py-3">
@@ -394,7 +394,7 @@ export default function JdReviewPage() {
           {/* 分页 */}
           {total > 20 && (
             <div className="px-4 py-3 border-t flex items-center justify-between">
-              <span className="text-sm text-gray-500">共 {total} 条</span>
+              <span className="text-sm text-slate-500">共 {total} 条</span>
               <div className="flex gap-2">
                 <Button
                   size="sm"
@@ -429,25 +429,25 @@ export default function JdReviewPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-gray-500">岗位名称</label>
+                    <label className="text-sm text-slate-500">岗位名称</label>
                     <p className="font-medium">{detailItem.job_name}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">企业名称</label>
+                    <label className="text-sm text-slate-500">企业名称</label>
                     <p className="font-medium">{detailItem.company_name}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">工作城市</label>
+                    <label className="text-sm text-slate-500">工作城市</label>
                     <p>{detailItem.city || '-'}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500">薪资范围</label>
+                    <label className="text-sm text-slate-500">薪资范围</label>
                     <p>{formatSalary(detailItem.salary_min, detailItem.salary_max)}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-500 mb-2 block">JD内容</label>
+                  <label className="text-sm text-slate-500 mb-2 block">JD内容</label>
                   <div className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap max-h-60 overflow-y-auto">
                     {detailItem.jd_content}
                   </div>

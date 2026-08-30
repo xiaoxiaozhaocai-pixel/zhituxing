@@ -143,9 +143,9 @@ export default function ContactPage() {
                 <div className={`w-14 h-14 rounded-2xl ${method.color} flex items-center justify-center mx-auto mb-4 transition-transform group-hover:scale-110`}>
                   {method.icon}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{method.title}</h3>
-                <p className="text-sm text-gray-600 mb-2">{method.value}</p>
-                <p className="text-xs text-gray-400">{method.description}</p>
+                <h3 className="font-semibold text-slate-900 mb-1">{method.title}</h3>
+                <p className="text-sm text-slate-600 mb-2">{method.value}</p>
+                <p className="text-xs text-slate-400">{method.description}</p>
                 <div className="mt-3 flex items-center justify-center gap-1 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
                   {copied === method.title ? (
                     <>
@@ -168,7 +168,7 @@ export default function ContactPage() {
           {/* Feedback Form */}
           <Card className="border-2 border-blue-100">
             <CardContent className="p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-600" />
                 意见反馈
               </h2>
@@ -178,14 +178,14 @@ export default function ContactPage() {
                   <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">提交成功！</h3>
-                  <p className="text-gray-600">感谢你的反馈，我们会尽快处理</p>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">提交成功！</h3>
+                  <p className="text-slate-600">感谢你的反馈，我们会尽快处理</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="contact-name" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="contact-name" className="block text-sm font-medium text-slate-700 mb-1">
                         姓名（选填）
                       </label>
                       <Input
@@ -197,7 +197,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="contact-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="contact-phone" className="block text-sm font-medium text-slate-700 mb-1">
                         手机号（选填）
                       </label>
                       <Input
@@ -212,7 +212,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="contact-type" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="contact-type" className="block text-sm font-medium text-slate-700 mb-1">
                       反馈类型
                     </label>
                     <Select
@@ -233,7 +233,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="contact-message" className="block text-sm font-medium text-slate-700 mb-1">
                       反馈内容 <span className="text-red-500" aria-hidden="true">*</span>
                       <span className="sr-only">必填</span>
                     </label>
@@ -275,8 +275,8 @@ export default function ContactPage() {
                 <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-green-600" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">扫码添加客服微信</h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">扫码添加客服微信</h3>
+                <p className="text-sm text-slate-600 mb-4">
                   微信搜索：zhituxing_kefu<br />
                   工作日 9:00-18:00 即时回复
                 </p>
@@ -303,35 +303,35 @@ export default function ContactPage() {
             {/* Quick Links */}
             <Card className="bg-white">
               <CardContent className="p-6">
-                <h3 className="font-bold text-gray-900 mb-4">你可能想了解</h3>
+                <h3 className="font-bold text-slate-900 mb-4">你可能想了解</h3>
                 <div className="space-y-3">
                   <Link 
                     href="/faq"
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group"
                   >
-                    <span className="text-gray-700 group-hover:text-blue-600">常见问题</span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                    <span className="text-slate-700 group-hover:text-blue-600">常见问题</span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
                   </Link>
                   <Link 
                     href="/guide"
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group"
                   >
-                    <span className="text-gray-700 group-hover:text-blue-600">使用流程</span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                    <span className="text-slate-700 group-hover:text-blue-600">使用流程</span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
                   </Link>
                   <Link 
                     href="/membership"
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group"
                   >
-                    <span className="text-gray-700 group-hover:text-blue-600">会员权益</span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                    <span className="text-slate-700 group-hover:text-blue-600">会员权益</span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
                   </Link>
                   <Link 
                     href="/feedback"
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group"
                   >
-                    <span className="text-gray-700 group-hover:text-blue-600">意见反馈</span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                    <span className="text-slate-700 group-hover:text-blue-600">意见反馈</span>
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
                   </Link>
                 </div>
               </CardContent>
@@ -341,7 +341,7 @@ export default function ContactPage() {
             <Card className="bg-gradient-to-r from-blue-50 to-blue-50 border-blue-200">
               <CardContent className="p-6 text-center">
                 <Heart className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-slate-600">
                   感谢你使用职途星！<br />
                   你的反馈是我们进步的动力
                 </p>

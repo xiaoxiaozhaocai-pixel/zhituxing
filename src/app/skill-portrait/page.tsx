@@ -135,12 +135,12 @@ function AutumnRecruitProgressBar() {
   };
 
   return (
-    <div className="bg-white border-b border-gray-100 py-3 px-4">
+    <div className="bg-white border-b border-slate-100 py-3 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">秋招备战进度</span>
+            <Calendar className="w-4 h-4 text-slate-500" />
+            <span className="text-sm font-medium text-slate-700">秋招备战进度</span>
           </div>
           <span className={`text-sm font-bold ${getTextColor()}`}>{Math.round(progress)}%</span>
         </div>
@@ -150,7 +150,7 @@ function AutumnRecruitProgressBar() {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
           <span className={checkedItems.skillPortrait ? 'text-green-600' : ''}>
             {checkedItems.skillPortrait ? '✓' : '○'} 技能画像
           </span>
@@ -165,7 +165,7 @@ function AutumnRecruitProgressBar() {
           </span>
         </div>
         {progress < 100 && (
-          <p className="text-xs text-gray-400 mt-1.5">完成所有步骤，秋招胜率提升50%</p>
+          <p className="text-xs text-slate-400 mt-1.5">完成所有步骤，秋招胜率提升50%</p>
         )}
       </div>
     </div>
@@ -270,9 +270,9 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
           <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
             <Target className="w-7 h-7 text-white" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">目标岗位差距分析</h3>
-          <p className="text-gray-500 text-sm mb-4">完成技能画像后，解锁与目标岗位的差距分析</p>
-          <p className="text-gray-400 text-xs">先完成当前技能画像，再进行差距分析</p>
+          <h3 className="text-lg font-bold text-slate-900 mb-2">目标岗位差距分析</h3>
+          <p className="text-slate-500 text-sm mb-4">完成技能画像后，解锁与目标岗位的差距分析</p>
+          <p className="text-slate-400 text-xs">先完成当前技能画像，再进行差距分析</p>
         </CardContent>
       </Card>
     );
@@ -289,11 +289,11 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
       <CardContent className="space-y-4">
         {/* 岗位选择 */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1.5 block">选择目标岗位</label>
+          <label className="text-sm font-medium text-slate-700 mb-1.5 block">选择目标岗位</label>
           <select
             value={selectedJob}
             onChange={(e) => analyzeGap(e.target.value)}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
           >
             <option value="">请选择目标岗位...</option>
             {jobs.map((job, i) => (
@@ -306,7 +306,7 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
         {loading && (
           <div className="py-6 text-center">
             <Loader2 className="w-6 h-6 text-blue-500 animate-spin mx-auto" />
-            <p className="text-sm text-gray-500 mt-2">正在分析差距...</p>
+            <p className="text-sm text-slate-500 mt-2">正在分析差距...</p>
           </div>
         )}
 
@@ -333,15 +333,15 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">当前匹配度</p>
-                <p className="text-xs text-gray-500">与「{selectedJob}」岗位对比</p>
+                <p className="text-sm font-medium text-slate-700">当前匹配度</p>
+                <p className="text-xs text-slate-500">与「{selectedJob}」岗位对比</p>
               </div>
             </div>
 
             {/* 技能差距清单 */}
             {analysis.gaps.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-1">
+                <h4 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-1">
                   <AlertTriangle className="w-4 h-4 text-orange-500" />
                   技能差距清单
                 </h4>
@@ -349,14 +349,14 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
                   {analysis.gaps.map((gap, i) => (
                     <div key={i} className="bg-gray-50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">{gap.skill}</span>
+                        <span className="text-sm font-medium text-slate-900">{gap.skill}</span>
                         <span className="text-xs text-blue-600 font-medium">预计需 {gap.weeks} 周</span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
                         <span>当前：{'★'.repeat(gap.current)}{'☆'.repeat(4 - gap.current)}</span>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-slate-300">|</span>
                         <span>需要：{'★'.repeat(gap.required)}{'☆'.repeat(4 - gap.required)}</span>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-slate-300">|</span>
                         <span className="text-orange-600 font-medium">差距 {gap.gap} 级</span>
                       </div>
                     </div>
@@ -376,7 +376,7 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
         )}
 
         {!loading && selectedJob && !analysis && (
-          <p className="text-sm text-gray-500 text-center py-4">暂无差距数据</p>
+          <p className="text-sm text-slate-500 text-center py-4">暂无差距数据</p>
         )}
       </CardContent>
     </Card>
@@ -385,7 +385,7 @@ function TargetJobGapAnalysis({ userSkills, hasSkillPortrait }: { userSkills: { 
 
 function StepProgressBar({ currentStep }: { currentStep: number }) {
   return (
-    <div className="w-full sticky top-[57px] z-10 bg-white/95 backdrop-blur-sm border-b border-gray-100 py-4 px-2">
+    <div className="w-full sticky top-[57px] z-10 bg-white/95 backdrop-blur-sm border-b border-slate-100 py-4 px-2">
       <div className="flex items-center justify-between max-w-2xl mx-auto">
         {STEPS.map((step, index) => {
           const isCompleted = currentStep > step.id;
@@ -401,13 +401,13 @@ function StepProgressBar({ currentStep }: { currentStep: number }) {
                       ? 'bg-[#165DFF] text-white shadow-md shadow-[#165DFF]/30'
                       : isCurrent
                         ? 'bg-[#165DFF]/10 text-[#165DFF] ring-2 ring-[#165DFF]/30'
-                        : 'bg-gray-100 text-gray-400'
+                        : 'bg-gray-100 text-slate-400'
                   }`}
                 >
                   {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                 </div>
                 <span className={`text-xs mt-1.5 font-medium whitespace-nowrap ${
-                  isCurrent ? 'text-[#165DFF]' : isCompleted ? 'text-gray-700' : 'text-gray-400'
+                  isCurrent ? 'text-[#165DFF]' : isCompleted ? 'text-slate-700' : 'text-slate-400'
                 }`}>
                   {step.title}
                 </span>
@@ -439,10 +439,10 @@ function Combobox({ options, value, onChange, placeholder = '请选择或输入.
           role="combobox"
           aria-expanded={open}
           aria-controls="skills-listbox"
-          className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-left hover:border-[#165DFF] focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition-colors bg-white"
+          className="w-full flex items-center justify-between px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-left hover:border-[#165DFF] focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition-colors bg-white"
         >
-          <span className={value ? 'text-gray-900' : 'text-gray-400'}>{value || placeholder}</span>
-          <ChevronsUpDown className="w-4 h-4 text-gray-400 shrink-0" />
+          <span className={value ? 'text-slate-900' : 'text-slate-400'}>{value || placeholder}</span>
+          <ChevronsUpDown className="w-4 h-4 text-slate-400 shrink-0" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -488,10 +488,10 @@ function SelectCombobox({ options, value, onChange, placeholder = '请选择...'
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-left hover:border-[#165DFF] focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition-colors bg-white"
+          className="w-full flex items-center justify-between px-3 py-2.5 border border-slate-200 rounded-lg text-sm text-left hover:border-[#165DFF] focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition-colors bg-white"
         >
-          <span className={value ? 'text-gray-900' : 'text-gray-400'}>{value ? options.find(o => o.value === value)?.label : placeholder}</span>
-          <ChevronsUpDown className="w-4 h-4 text-gray-400 shrink-0" />
+          <span className={value ? 'text-slate-900' : 'text-slate-400'}>{value ? options.find(o => o.value === value)?.label : placeholder}</span>
+          <ChevronsUpDown className="w-4 h-4 text-slate-400 shrink-0" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -521,26 +521,26 @@ function SkillSelectItem({ skill, selected, level, onToggle, onLevelChange }: {
   const levels: ProficiencyLevel[] = ['了解', '熟悉', '熟练', '精通'];
 
   return (
-    <div className={`border rounded-lg p-3 transition-all ${selected ? 'border-[#165DFF]/40 bg-blue-50/30' : 'border-gray-100'}`}>
+    <div className={`border rounded-lg p-3 transition-all ${selected ? 'border-[#165DFF]/40 bg-blue-50/30' : 'border-slate-100'}`}>
       <div className="flex items-start gap-2">
         <input
           type="checkbox"
           checked={selected}
           onChange={onToggle}
-          className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#165DFF] focus:ring-[#165DFF]"
+          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#165DFF] focus:ring-[#165DFF]"
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`text-sm font-medium ${selected ? 'text-gray-900' : 'text-gray-500'}`}>{skill.name}</span>
+            <span className={`text-sm font-medium ${selected ? 'text-slate-900' : 'text-slate-500'}`}>{skill.name}</span>
             {skill.hotness === 'hot' && (
               <span className="text-xs px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded">热门</span>
             )}
             {skill.hotness === 'optional' && (
-              <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">可选</span>
+              <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-slate-500 rounded">可选</span>
             )}
           </div>
           {skill.description && (
-            <p className="text-xs text-gray-500 mt-0.5">{skill.description}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{skill.description}</p>
           )}
           {selected && (
             <div className="flex gap-1 mt-2 flex-wrap">
@@ -554,7 +554,7 @@ function SkillSelectItem({ skill, selected, level, onToggle, onLevelChange }: {
                     className={`text-xs px-2 py-1 rounded-full border transition-all ${
                       isActive
                         ? 'text-white border-transparent'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
                     }`}
                     style={isActive ? { backgroundColor: config.color } : undefined}
                   >
@@ -892,8 +892,8 @@ export default function SkillPortraitPage() {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30 mb-4">
               <Target className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">AI技能画像</h1>
-            <p className="text-gray-500 mt-2">基于你的专业和求职方向，AI为你推荐最匹配的技能组合</p>
+            <h1 className="text-2xl font-bold text-slate-900">AI技能画像</h1>
+            <p className="text-slate-500 mt-2">基于你的专业和求职方向，AI为你推荐最匹配的技能组合</p>
           </div>
 
           {/* 登录提示卡片 */}
@@ -902,8 +902,8 @@ export default function SkillPortraitPage() {
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Lock className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">登录解锁完整功能</h3>
-              <p className="text-gray-500 mb-6">登录后可保存技能画像，追踪学习进度，获取个性化推荐</p>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">登录解锁完整功能</h3>
+              <p className="text-slate-500 mb-6">登录后可保存技能画像，追踪学习进度，获取个性化推荐</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
                   <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg">
@@ -997,8 +997,8 @@ export default function SkillPortraitPage() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30">
                 <Target className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900 mt-4">AI技能画像分析</h2>
-              <p className="text-sm text-gray-500 mt-1">基于你的专业和求职方向，AI为你推荐最匹配的技能组合</p>
+              <h2 className="text-xl font-bold text-slate-900 mt-4">AI技能画像分析</h2>
+              <p className="text-sm text-slate-500 mt-1">基于你的专业和求职方向，AI为你推荐最匹配的技能组合</p>
             </div>
 
             <Card>
@@ -1010,16 +1010,16 @@ export default function SkillPortraitPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-1.5 block">专业 <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-medium text-slate-700 mb-1.5 block">专业 <span className="text-red-500">*</span></Label>
                   <Combobox options={MAJOR_OPTIONS} value={form.major} onChange={(v) => updateForm('major', v)} placeholder="选择或输入你的专业" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1.5 block">年级</Label>
+                    <Label className="text-sm font-medium text-slate-700 mb-1.5 block">年级</Label>
                     <SelectCombobox options={GRADE_OPTIONS.map(g => ({ value: g, label: g }))} value={form.grade} onChange={(v) => updateForm('grade', v)} placeholder="选择年级" />
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-1.5 block">毕业年份</Label>
+                    <Label className="text-sm font-medium text-slate-700 mb-1.5 block">毕业年份</Label>
                     <SelectCombobox options={GRADUATION_YEAR_OPTIONS.map(y => ({ value: y, label: y + '年' }))} value={form.graduation_year} onChange={(v) => updateForm('graduation_year', v)} placeholder="选择年份" />
                   </div>
                 </div>
@@ -1035,15 +1035,15 @@ export default function SkillPortraitPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-1.5 block">意向城市 <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-medium text-slate-700 mb-1.5 block">意向城市 <span className="text-red-500">*</span></Label>
                   <Combobox options={CITY_OPTIONS} value={form.city} onChange={(v) => updateForm('city', v)} placeholder="选择或输入意向城市" />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-1.5 block">求职意向 <span className="text-red-500">*</span></Label>
+                  <Label className="text-sm font-medium text-slate-700 mb-1.5 block">求职意向 <span className="text-red-500">*</span></Label>
                   <Combobox options={JOB_INTENTION_OPTIONS} value={form.job_intention} onChange={(v) => updateForm('job_intention', v)} placeholder="选择或输入求职方向" />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-1.5 block">意向行业</Label>
+                  <Label className="text-sm font-medium text-slate-700 mb-1.5 block">意向行业</Label>
                   <Combobox options={INDUSTRY_OPTIONS} value={form.target_industry} onChange={(v) => updateForm('target_industry', v)} placeholder="选择意向行业（可选）" />
                 </div>
               </CardContent>
@@ -1063,8 +1063,8 @@ export default function SkillPortraitPage() {
                     </div>
                     <div className="absolute -inset-2 rounded-full border-2 border-[#165DFF]/20 border-t-[#165DFF] animate-spin" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mt-6">AI正在分析你的专业能力画像</h3>
-                  <p className="text-sm text-gray-500 mt-2 text-center max-w-sm">
+                  <h3 className="text-lg font-semibold text-slate-900 mt-6">AI正在分析你的专业能力画像</h3>
+                  <p className="text-sm text-slate-500 mt-2 text-center max-w-sm">
                     基于你的专业「{form.major}」和目标行业「{form.target_industry || '综合'}」，正在为你推荐最佳技能组合...
                   </p>
                   <div className="flex items-center gap-1 mt-4">
@@ -1083,8 +1083,8 @@ export default function SkillPortraitPage() {
                         <Sparkles className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">技能画像分析完成</h3>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <h3 className="text-lg font-semibold text-slate-900">技能画像分析完成</h3>
+                        <p className="text-sm text-slate-600 mt-1">
                           基于你的专业「{form.major}」和求职方向「{form.job_intention}」，为你推荐了{' '}
                           <span className="text-[#165DFF] font-semibold">{aiResult.professionalSkills.length + aiResult.officeSkills.length + aiResult.softSkills.length}</span> 项技能
                         </p>
@@ -1099,14 +1099,14 @@ export default function SkillPortraitPage() {
                 </Card>
 
                 {aiRawText && (
-                  <Card><CardContent className="py-4"><p className="text-sm text-gray-600 whitespace-pre-line">{aiRawText}</p></CardContent></Card>
+                  <Card><CardContent className="py-4"><p className="text-sm text-slate-600 whitespace-pre-line">{aiRawText}</p></CardContent></Card>
                 )}
                 {aiResult.summary && (
                   <Card className="border-l-4 border-l-[#165DFF]">
                     <CardContent className="py-4">
                       <div className="flex items-start gap-2">
                         <Lightbulb className="w-4 h-4 text-[#165DFF] mt-0.5 shrink-0" />
-                        <p className="text-sm text-gray-700">{aiResult.summary}</p>
+                        <p className="text-sm text-slate-700">{aiResult.summary}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1115,8 +1115,8 @@ export default function SkillPortraitPage() {
             ) : (
               <Card>
                 <CardContent className="py-12 flex flex-col items-center">
-                  <AlertCircle className="w-10 h-10 text-gray-400 mb-3" />
-                  <p className="text-gray-500">AI推荐暂未生成</p>
+                  <AlertCircle className="w-10 h-10 text-slate-400 mb-3" />
+                  <p className="text-slate-500">AI推荐暂未生成</p>
                   <Button className="mt-4 bg-[#165DFF] hover:bg-[#165DFF]/90" onClick={fetchSkillRecommendation}>重新生成</Button>
                 </CardContent>
               </Card>
@@ -1132,7 +1132,7 @@ export default function SkillPortraitPage() {
                 <CardTitle className="text-base flex items-center gap-2">
                   <Target className="w-5 h-5 text-blue-600" />
                   专业核心技能
-                  <span className="text-xs font-normal text-gray-500 ml-1">基于你的专业和目标行业推荐</span>
+                  <span className="text-xs font-normal text-slate-500 ml-1">基于你的专业和目标行业推荐</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1204,7 +1204,7 @@ export default function SkillPortraitPage() {
                     <Sparkles className="w-4 h-4 text-[#165DFF] mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-[#165DFF] mb-1">AI综合分析</p>
-                      <p className="text-sm text-gray-700">{aiResult.summary}</p>
+                      <p className="text-sm text-slate-700">{aiResult.summary}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -1213,11 +1213,11 @@ export default function SkillPortraitPage() {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2 text-gray-600">+ 手动添加技能</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2 text-slate-600">+ 手动添加技能</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2 items-center">
-                  <select value={customSkillCategory} onChange={(e) => setCustomSkillCategory(e.target.value as 'professional' | 'office' | 'soft')} className="px-2 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                  <select value={customSkillCategory} onChange={(e) => setCustomSkillCategory(e.target.value as 'professional' | 'office' | 'soft')} className="px-2 py-2 border border-slate-200 rounded-lg text-sm bg-white">
                     <option value="professional">专业</option>
                     <option value="office">办公</option>
                     <option value="soft">软技能</option>
@@ -1230,7 +1230,7 @@ export default function SkillPortraitPage() {
               </CardContent>
             </Card>
 
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-slate-500">
               已选择 <span className="text-[#165DFF] font-semibold">{selectedSkillCount}</span> 项技能
             </div>
           </div>
@@ -1245,28 +1245,28 @@ export default function SkillPortraitPage() {
                   <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto">
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mt-4">信息确认</h3>
-                  <p className="text-sm text-gray-500 mt-1">确认以下信息无误后保存</p>
+                  <h3 className="text-xl font-semibold text-slate-900 mt-4">信息确认</h3>
+                  <p className="text-sm text-slate-500 mt-1">确认以下信息无误后保存</p>
                 </div>
                 <div className="mt-6 space-y-3">
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">专业</span>
-                    <span className="text-sm font-medium text-gray-900">{form.major || '未填写'}</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">专业</span>
+                    <span className="text-sm font-medium text-slate-900">{form.major || '未填写'}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">年级</span>
-                    <span className="text-sm font-medium text-gray-900">{form.grade || '未填写'}</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">年级</span>
+                    <span className="text-sm font-medium text-slate-900">{form.grade || '未填写'}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">意向城市</span>
-                    <span className="text-sm font-medium text-gray-900">{form.city || '未填写'}</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">意向城市</span>
+                    <span className="text-sm font-medium text-slate-900">{form.city || '未填写'}</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-500">求职意向</span>
-                    <span className="text-sm font-medium text-gray-900">{form.job_intention || '未填写'}</span>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">求职意向</span>
+                    <span className="text-sm font-medium text-slate-900">{form.job_intention || '未填写'}</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-500">已选技能</span>
+                    <span className="text-sm text-slate-500">已选技能</span>
                     <span className="text-sm font-semibold text-[#165DFF]">{selectedSkillCount} 项</span>
                   </div>
                 </div>
@@ -1276,7 +1276,7 @@ export default function SkillPortraitPage() {
             {aiResult && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-gray-700">技能概览</CardTitle>
+                  <CardTitle className="text-sm text-slate-700">技能概览</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -1352,7 +1352,7 @@ export default function SkillPortraitPage() {
       </div>
 
       {/* 底部固定按钮 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-20">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           {currentStep > 1 && (
             <Button variant="outline" onClick={goPrev} className="flex-1">

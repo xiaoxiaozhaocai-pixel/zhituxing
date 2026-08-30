@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-gray-400">
+      <div className="text-center py-20 text-slate-400">
         <Loader2 className="w-8 h-8 mx-auto animate-spin mb-2" />
         加载中...
       </div>
@@ -95,14 +95,14 @@ export default function DashboardPage() {
           className="group bg-white/80 backdrop-blur-md border border-[#FF7D00]/20 rounded-2xl p-5 hover:shadow-lg hover:shadow-[#FF7D00]/10 transition hover:-translate-y-0.5"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-500">当前余额</span>
+            <span className="text-sm text-slate-500">当前余额</span>
             <Coins className="w-5 h-5 text-[#FF7D00]" />
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-bold text-[#FF7D00]">
               {balance?.credit_balance ?? 0}
             </span>
-            <span className="text-sm text-gray-500">条</span>
+            <span className="text-sm text-slate-500">条</span>
           </div>
           <div className="text-xs text-[#FF7D00] mt-2 flex items-center gap-1 group-hover:gap-2 transition-all">
             前往充值 <ArrowRight className="w-3 h-3" />
@@ -111,37 +111,37 @@ export default function DashboardPage() {
 
         <div className="bg-white/80 backdrop-blur-md border border-[#165DFF]/10 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-500">已解锁</span>
+            <span className="text-sm text-slate-500">已解锁</span>
             <Users className="w-5 h-5 text-[#165DFF]" />
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">
+            <span className="text-3xl font-bold text-slate-900">
               {balance?.total_consumed ?? 0}
             </span>
-            <span className="text-sm text-gray-500">人</span>
+            <span className="text-sm text-slate-500">人</span>
           </div>
-          <div className="text-xs text-gray-400 mt-2">累计候选人解锁次数</div>
+          <div className="text-xs text-slate-400 mt-2">累计候选人解锁次数</div>
         </div>
 
         <div className="bg-white/80 backdrop-blur-md border border-[#165DFF]/10 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-gray-500">累计充值</span>
+            <span className="text-sm text-slate-500">累计充值</span>
             <TrendingUp className="w-5 h-5 text-[#165DFF]" />
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-gray-900">
+            <span className="text-3xl font-bold text-slate-900">
               {balance?.total_recharged ?? 0}
             </span>
-            <span className="text-sm text-gray-500">条</span>
+            <span className="text-sm text-slate-500">条</span>
           </div>
-          <div className="text-xs text-gray-400 mt-2">¥10/条 · 解锁完整画像</div>
+          <div className="text-xs text-slate-400 mt-2">¥10/条 · 解锁完整画像</div>
         </div>
       </div>
 
       {/* 推荐候选人 */}
       <div className="bg-white/60 backdrop-blur-md border border-[#165DFF]/10 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-[#165DFF]" />
             推荐候选人
           </h2>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
           </Link>
         </div>
         {candidates.length === 0 ? (
-          <div className="text-center py-8 text-gray-400 text-sm">暂无候选人</div>
+          <div className="text-center py-8 text-slate-400 text-sm">暂无候选人</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {candidates.map((c) => (
@@ -169,11 +169,11 @@ export default function DashboardPage() {
 
 function CandidateCard({ c }: { c: Candidate }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-xl p-4 hover:border-[#165DFF]/30 hover:shadow-md transition">
+    <div className="bg-white border border-slate-100 rounded-xl p-4 hover:border-[#165DFF]/30 hover:shadow-md transition">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <div className="font-medium text-gray-900">{c.nickname || '匿名候选人'}</div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+          <div className="font-medium text-slate-900">{c.nickname || '匿名候选人'}</div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
             <GraduationCap className="w-3 h-3" />
             {c.grade ?? '—'} · {c.major ?? '—'}
           </div>
@@ -184,7 +184,7 @@ function CandidateCard({ c }: { c: Candidate }) {
           </span>
         )}
       </div>
-      <div className="text-xs text-gray-600 mb-2 flex items-center gap-1">
+      <div className="text-xs text-slate-600 mb-2 flex items-center gap-1">
         <Briefcase className="w-3 h-3" />
         意向：{c.target_job ?? '—'}
       </div>
@@ -201,7 +201,7 @@ function CandidateCard({ c }: { c: Candidate }) {
         </div>
       )}
       {c.assessment_overall_score !== null && (
-        <div className="flex items-center gap-1 text-xs text-gray-500">
+        <div className="flex items-center gap-1 text-xs text-slate-500">
           <Award className="w-3 h-3" />
           测评综合：{c.assessment_overall_score}
         </div>

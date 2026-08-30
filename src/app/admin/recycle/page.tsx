@@ -119,7 +119,7 @@ export default function RecyclePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">回收站</h1>
+      <h1 className="text-2xl font-bold text-slate-900">回收站</h1>
 
       {/* 告警提示 */}
       {stats.expiringSoon > 0 && (
@@ -137,10 +137,10 @@ export default function RecyclePage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gray-100 rounded-lg">
-                <Trash2 className="w-5 h-5 text-gray-600" />
+                <Trash2 className="w-5 h-5 text-slate-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">回收站总数</p>
+                <p className="text-sm text-slate-500">回收站总数</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function RecyclePage() {
                 <Clock className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">即将过期</p>
+                <p className="text-sm text-slate-500">即将过期</p>
                 <p className="text-2xl font-bold text-orange-600">{stats.expiringSoon}</p>
               </div>
             </div>
@@ -168,7 +168,7 @@ export default function RecyclePage() {
                 <Clock className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">保留期限</p>
+                <p className="text-sm text-slate-500">保留期限</p>
                 <p className="text-lg font-medium">7天后自动删除</p>
               </div>
             </div>
@@ -211,12 +211,12 @@ export default function RecyclePage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">类型</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">内容预览</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">删除人</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">删除时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">过期时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">类型</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">内容预览</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">删除人</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">删除时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">过期时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -228,7 +228,7 @@ export default function RecyclePage() {
                   </tr>
                 ) : items.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-12 text-center text-slate-500">
                       回收站为空
                     </td>
                   </tr>
@@ -243,7 +243,7 @@ export default function RecyclePage() {
                     return (
                       <tr key={item.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
-                          <Badge className="bg-gray-100 text-gray-700">
+                          <Badge className="bg-gray-100 text-slate-700">
                             <Icon className="w-3 h-3 mr-1" />
                             {tableLabels[item.original_table] || item.original_table}
                           </Badge>
@@ -251,14 +251,14 @@ export default function RecyclePage() {
                         <td className="px-4 py-3">
                           <p className="font-medium max-w-[300px] truncate">{title}</p>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-slate-500">
                           {item.deleted_by || '系统'}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-slate-500">
                           {formatDate(item.deleted_at)}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-sm ${isExpiringSoon ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                          <span className={`text-sm ${isExpiringSoon ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
                             {getExpireTime(item.expire_at)}
                           </span>
                         </td>
@@ -318,12 +318,12 @@ export default function RecyclePage() {
               <h2 className="text-xl font-bold mb-4">
                 {confirmModal.action === 'restore' ? '确认恢复' : '确认永久删除'}
               </h2>
-              <p className="text-gray-600 mb-2">
+              <p className="text-slate-600 mb-2">
                 {confirmModal.action === 'restore' 
                   ? '确定要恢复这条内容吗？恢复后内容将回到原来的位置。'
                   : '确定要永久删除这条内容吗？此操作不可撤销！'}
               </p>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-slate-500 mb-6">
                 类型: {tableLabels[confirmModal.item.original_table]} | ID: {confirmModal.item.original_id}
               </p>
               <div className="flex justify-end gap-2">

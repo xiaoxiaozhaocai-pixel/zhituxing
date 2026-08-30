@@ -132,7 +132,7 @@ export default function SkillTagInput({
           <button
             type="button"
             className={cn(
-              'w-full flex items-center justify-between px-3 py-2 rounded-lg border border-gray-200 bg-white',
+              'w-full flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 bg-white',
               'text-sm text-left transition-all',
               'focus:outline-none focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/8',
               value.length > 0 ? 'h-auto min-h-[36px]' : 'h-9',
@@ -140,7 +140,7 @@ export default function SkillTagInput({
           >
             <div className="flex-1 flex flex-wrap gap-1.5">
               {value.length === 0 && (
-                <span className="text-gray-400 text-sm">{placeholder}</span>
+                <span className="text-slate-400 text-sm">{placeholder}</span>
               )}
               {value.slice(0, 8).map((skill) => (
                 <Badge
@@ -158,12 +158,12 @@ export default function SkillTagInput({
                 </Badge>
               ))}
               {value.length > 8 && (
-                <Badge className="bg-gray-100 text-gray-500 border-0 text-xs rounded-full px-2">
+                <Badge className="bg-gray-100 text-slate-500 border-0 text-xs rounded-full px-2">
                   +{value.length - 8}
                 </Badge>
               )}
             </div>
-            <ChevronDown className="h-4 w-4 text-gray-400 shrink-0 ml-2" />
+            <ChevronDown className="h-4 w-4 text-slate-400 shrink-0 ml-2" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-[360px] p-0" align="start">

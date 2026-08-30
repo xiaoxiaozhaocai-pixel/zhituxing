@@ -12,7 +12,7 @@ const verdictConfig = {
   strong_match: { label: '强匹配', color: 'bg-green-50 text-green-700 border-green-200', icon: '🟢' },
   match: { label: '匹配', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: '🔵' },
   partial_match: { label: '弱匹配', color: 'bg-amber-50 text-amber-700 border-amber-200', icon: '🟡' },
-  no_match: { label: '不匹配', color: 'bg-gray-50 text-gray-500 border-gray-200', icon: '⚪' },
+  no_match: { label: '不匹配', color: 'bg-gray-50 text-slate-500 border-slate-200', icon: '⚪' },
 };
 
 export default function MatchStats({ summary }: MatchStatsProps) {

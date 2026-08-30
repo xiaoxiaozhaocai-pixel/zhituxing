@@ -190,7 +190,7 @@ export default function JobAnalysisPage() {
   if (!jobId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#f8fafd] via-white to-[#f0f5ff]/40 flex items-center justify-center">
-        <p className="text-gray-500">缺少岗位 ID</p>
+        <p className="text-slate-500">缺少岗位 ID</p>
       </div>
     );
   }
@@ -202,7 +202,7 @@ export default function JobAnalysisPage() {
         <div className="mb-6">
           <Link
             href="/jobs"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#165DFF] transition"
+            className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-[#165DFF] transition"
           >
             <span aria-hidden>←</span>
             <span>返回岗位列表</span>
@@ -210,13 +210,13 @@ export default function JobAnalysisPage() {
         </div>
 
         {/* 岗位卡片 */}
-        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">
                 {job?.job_title || '岗位深度分析'}
               </h1>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
                 {(job?.company_name || job?.company) && (
                   <span>🏢 {job?.company_name || job?.company}</span>
                 )}
@@ -234,13 +234,13 @@ export default function JobAnalysisPage() {
         </div>
 
         {/* 进度条 */}
-        <div className="mb-4 px-2 flex items-center justify-between text-xs text-gray-500 flex-wrap gap-2">
+        <div className="mb-4 px-2 flex items-center justify-between text-xs text-slate-500 flex-wrap gap-2">
           <span>
             ✅ {overall.done} 已就绪
             {overall.streaming > 0 && ` · ⏳ ${overall.streaming} 生成中`}
             {overall.error > 0 && ` · ❌ ${overall.error} 失败`}
           </span>
-          <span className="text-gray-400">点击卡片展开查看 →</span>
+          <span className="text-slate-400">点击卡片展开查看 →</span>
         </div>
 
         {/* 5 个 Card */}
@@ -251,12 +251,12 @@ export default function JobAnalysisPage() {
               s.status === 'done'      ? { label: '✅ 已就绪', cls: 'bg-green-50 text-green-700 border-green-200' } :
               s.status === 'streaming' ? { label: '⏳ 生成中', cls: 'bg-blue-50 text-blue-700 border-blue-200 animate-pulse' } :
               s.status === 'error'     ? { label: '❌ 失败',   cls: 'bg-red-50 text-red-700 border-red-200' } :
-                                         { label: '⏸ 等待',   cls: 'bg-gray-50 text-gray-500 border-gray-200' };
+                                         { label: '⏸ 等待',   cls: 'bg-gray-50 text-slate-500 border-slate-200' };
 
             const canExpand = s.status === 'done' || s.text.length > 0 || s.status === 'error';
 
             return (
-              <div key={key} className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md">
+              <div key={key} className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-shadow hover:shadow-md">
                 <button
                   type="button"
                   onClick={() => canExpand && toggle(key)}
@@ -269,21 +269,21 @@ export default function JobAnalysisPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-gray-400">维度 {idx + 1}</span>
-                      <h3 className="text-base font-bold text-gray-900">{title}</h3>
+                      <span className="text-xs text-slate-400">维度 {idx + 1}</span>
+                      <h3 className="text-base font-bold text-slate-900">{title}</h3>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{hint}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{hint}</p>
                   </div>
                   <span className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${badge.cls}`}>
                     {badge.label}
                   </span>
-                  <span className={`shrink-0 text-gray-400 text-sm transition-transform ${s.expanded ? 'rotate-180' : ''}`}>
+                  <span className={`shrink-0 text-slate-400 text-sm transition-transform ${s.expanded ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
                 </button>
 
                 {s.expanded && (
-                  <div className="border-t border-gray-100 p-5 md:p-6">
+                  <div className="border-t border-slate-100 p-5 md:p-6">
                     {s.status === 'error' ? (
                       <div className="text-center py-6">
                         <p className="text-red-500 text-sm mb-3">⚠️ {s.error}</p>
@@ -295,14 +295,14 @@ export default function JobAnalysisPage() {
                         </button>
                       </div>
                     ) : s.text ? (
-                      <article className="prose prose-blue prose-sm max-w-none prose-strong:text-gray-900">
+                      <article className="prose prose-blue prose-sm max-w-none prose-strong:text-slate-900">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.text}</ReactMarkdown>
                         {s.status === 'streaming' && (
                           <span className="inline-block w-2 h-4 bg-[#165DFF] animate-pulse ml-1" aria-hidden />
                         )}
                       </article>
                     ) : (
-                      <p className="text-gray-400 text-sm text-center py-4">等待数据...</p>
+                      <p className="text-slate-400 text-sm text-center py-4">等待数据...</p>
                     )}
                   </div>
                 )}
@@ -312,7 +312,7 @@ export default function JobAnalysisPage() {
         </div>
 
         {/* 底部说明 */}
-        <div className="mt-6 text-center text-xs text-gray-400">
+        <div className="mt-6 text-center text-xs text-slate-400">
           <p>分析仅供参考，AI 可能存在偏差。具体投递决策请结合实际情况判断。</p>
         </div>
       </div>

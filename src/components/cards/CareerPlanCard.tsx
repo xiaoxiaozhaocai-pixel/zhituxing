@@ -40,7 +40,7 @@ export default function CareerPlanCard({ data }: CareerPlanCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-400 text-sm text-center py-6">暂无职业规划数据</p>
+          <p className="text-slate-400 text-sm text-center py-6">暂无职业规划数据</p>
         </CardContent>
       </Card>
     );
@@ -81,7 +81,7 @@ export default function CareerPlanCard({ data }: CareerPlanCardProps) {
         {/* 分阶段学习路径 — 时间线样式 */}
         {stages.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">学习路径</h4>
+            <h4 className="text-sm font-medium text-slate-700">学习路径</h4>
             <div className="relative pl-6">
               {/* 竖线 */}
               <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-green-200" />
@@ -101,7 +101,7 @@ export default function CareerPlanCard({ data }: CareerPlanCardProps) {
                     {stage.tasks && stage.tasks.length > 0 && (
                       <ul className="space-y-1">
                         {stage.tasks.map((task, taskIdx) => (
-                          <li key={taskIdx} className="flex items-start gap-1.5 text-sm text-gray-600">
+                          <li key={taskIdx} className="flex items-start gap-1.5 text-sm text-slate-600">
                             <span className="mt-1.5 w-1 h-1 rounded-full bg-green-400 shrink-0" />
                             {task}
                           </li>
@@ -118,7 +118,7 @@ export default function CareerPlanCard({ data }: CareerPlanCardProps) {
         {/* 所需技能标签 */}
         {skillsNeeded.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">所需技能</h4>
+            <h4 className="text-sm font-medium text-slate-700">所需技能</h4>
             <div className="flex flex-wrap gap-2">
               {skillsNeeded.map((skill, idx) => (
                 <span
@@ -134,7 +134,7 @@ export default function CareerPlanCard({ data }: CareerPlanCardProps) {
 
         {/* 摘要 */}
         {data.summary && (
-          <div className="bg-green-50 rounded-lg p-3 text-sm text-gray-600">
+          <div className="bg-green-50 rounded-lg p-3 text-sm text-slate-600">
             {data.summary}
           </div>
         )}

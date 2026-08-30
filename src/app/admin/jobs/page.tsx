@@ -159,7 +159,7 @@ export default function JobsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">JD管理</h1>
+        <h1 className="text-2xl font-bold text-slate-900">JD管理</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowBatchImport(true)}>
             <Upload className="w-4 h-4 mr-2" />
@@ -181,7 +181,7 @@ export default function JobsPage() {
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px] relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
                 placeholder="搜索岗位名称、企业名称..."
                 value={filters.keyword}
@@ -215,19 +215,19 @@ export default function JobsPage() {
       <Card>
         <CardContent className="p-0">
           <div className="px-6 py-4 border-b flex justify-between items-center">
-            <span className="text-sm text-gray-500">共 {total} 条</span>
+            <span className="text-sm text-slate-500">共 {total} 条</span>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">岗位名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">企业</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">城市</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">薪资</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">来源</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">岗位名称</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">企业</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">城市</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">薪资</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">来源</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -239,7 +239,7 @@ export default function JobsPage() {
                   </tr>
                 ) : jobs.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-gray-500">暂无数据</td>
+                    <td colSpan={6} className="px-4 py-12 text-center text-slate-500">暂无数据</td>
                   </tr>
                 ) : (
                   jobs.map(job => (
@@ -250,8 +250,8 @@ export default function JobsPage() {
                           <Badge className="ml-2 bg-green-100 text-green-700 text-xs">应届</Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{job.company_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{job.city}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600">{job.company_name}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600">{job.city}</td>
                       <td className="px-4 py-3 text-sm">
                         <span className="text-orange-600 font-medium">{formatSalary(job.salary_min, job.salary_max)}</span>
                       </td>
@@ -380,7 +380,7 @@ export default function JobsPage() {
           <Card className="w-full max-w-md">
             <CardContent className="p-6">
               <h2 className="text-xl font-bold mb-4">确认删除</h2>
-              <p className="text-gray-600 mb-6">确定要删除这条JD吗？此操作不可撤销。</p>
+              <p className="text-slate-600 mb-6">确定要删除这条JD吗？此操作不可撤销。</p>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
                 <Button variant="destructive" onClick={handleDelete}>确认删除</Button>

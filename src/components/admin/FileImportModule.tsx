@@ -229,7 +229,7 @@ export default function FileImportModule({
           border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all
           ${isDragging 
             ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-300 hover:border-blue-400 bg-gray-50 hover:bg-gray-100'
+            : 'border-slate-300 hover:border-blue-400 bg-gray-50 hover:bg-gray-100'
           }
         `}
         onDragOver={handleDragOver}
@@ -248,15 +248,15 @@ export default function FileImportModule({
         {isLoading ? (
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            <p className="text-sm text-gray-600">正在解析文件，请稍候...</p>
+            <p className="text-sm text-slate-600">正在解析文件，请稍候...</p>
           </div>
         ) : (
           <>
-            <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm font-medium text-gray-700 mb-1">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+            <p className="text-sm font-medium text-slate-700 mb-1">
               <span className="text-blue-600">选择文件导入</span> 或 拖拽文件至此处
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-slate-500">
               支持格式：TXT / Word(.docx) / PDF / Markdown(.md)
             </p>
           </>
@@ -264,7 +264,7 @@ export default function FileImportModule({
       </div>
 
       {/* 大小限制提示 */}
-      <p className="text-xs text-gray-400 text-right">
+      <p className="text-xs text-slate-400 text-right">
         单文件大小不超过10MB
       </p>
 
@@ -291,7 +291,7 @@ export default function FileImportModule({
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-bold mb-4">导入文件内容</h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-slate-600 mb-4">
               内容输入框已有内容，请选择导入方式：
             </p>
             <div className="flex gap-3">
@@ -311,7 +311,7 @@ export default function FileImportModule({
             </div>
             <Button
               variant="ghost"
-              className="w-full mt-3 text-gray-500"
+              className="w-full mt-3 text-slate-500"
               onClick={() => {
                 setShowModeDialog(false);
                 setPendingContent('');

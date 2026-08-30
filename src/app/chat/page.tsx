@@ -72,9 +72,9 @@ function DispatchCard({ card }: { card: DispatchCardData }) {
   const target = card.url || dispatchTabRoute(card.tabId);
   return (
     <div className="mt-3 rounded-xl border border-blue-100 bg-gradient-to-br from-[#f8fafd] via-white to-[#f0f5ff]/40 p-4">
-      <div className="text-sm font-semibold text-gray-900">{card.title}</div>
+      <div className="text-sm font-semibold text-slate-900">{card.title}</div>
       {card.description && (
-        <div className="mt-1 text-xs text-gray-600 leading-relaxed">{card.description}</div>
+        <div className="mt-1 text-xs text-slate-600 leading-relaxed">{card.description}</div>
       )}
       {card.actionLabel && (
         <Link
@@ -1229,7 +1229,7 @@ function ChatContent() {
             <span className="text-blue-700">
               AI职业规划免费体验
             </span>
-            <span className="text-gray-300">|</span>
+            <span className="text-slate-300">|</span>
             <span className="text-blue-700">
               完整报告会员专享
             </span>
@@ -1246,10 +1246,10 @@ function ChatContent() {
         {/* 页面标题 + 导出按钮 */}
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">
               AI职业助手
             </h1>
-            <p className="text-gray-600 text-sm">
+            <p className="text-slate-600 text-sm">
               七大AI能力协同服务，助你求职无忧
             </p>
           </div>
@@ -1260,7 +1260,7 @@ function ChatContent() {
               {/* 小职人格按钮 */}
               <button
                 onClick={() => setShowPersonaDialog(true)}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all"
               >
                 <Smile className="w-4 h-4" />
                 小职人格
@@ -1271,7 +1271,7 @@ function ChatContent() {
                 className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-all ${
                   selectMode
                     ? 'bg-[#165DFF] text-white border-[#165DFF]'
-                    : 'text-gray-600 bg-white border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
+                    : 'text-slate-600 bg-white border-slate-200 hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50'
                 }`}
               >
                 <CheckSquare className="w-4 h-4" />
@@ -1280,7 +1280,7 @@ function ChatContent() {
               {/* 清空消息按钮 */}
               <button
                 onClick={() => setShowClearConfirm(true)}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-500 bg-white border border-slate-200 rounded-lg hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-all"
               >
                 <Trash2 className="w-4 h-4" />
                 清空消息
@@ -1291,7 +1291,7 @@ function ChatContent() {
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   disabled={exportLoading || shareLoading}
-                  className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-blue-50 transition-all disabled:opacity-50"
                 >
                   {exportLoading || shareLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -1299,44 +1299,44 @@ function ChatContent() {
                     <Download className="w-4 h-4" />
                   )}
                   导出/分享
-                  <span className="text-xs text-gray-400 ml-1">
+                  <span className="text-xs text-slate-400 ml-1">
                     ({quota?.is_member ? '无限' : `${getRemainingExports()}/3`})
                   </span>
                   {!quota?.is_member && (
-                    <span className="text-[10px] text-gray-400 ml-0.5" title="每日0点重置">每日</span>
+                    <span className="text-[10px] text-slate-400 ml-0.5" title="每日0点重置">每日</span>
                   )}
                 </button>
                 
                 {showExportMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-50 py-1">
                       {/* 分享链接 */}
                       <button
                         onClick={handleShare}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50"
                       >
                         <Share2 className="w-4 h-4 text-green-500" />
                         生成分享链接
                       </button>
-                      <div className="border-t border-gray-100 my-1" />
+                      <div className="border-t border-slate-100 my-1" />
                       <button
                         onClick={() => handleExport('md')}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50"
                       >
                         <FileTextIcon className="w-4 h-4 text-blue-500" />
                         导出 Markdown
                       </button>
                       <button
                         onClick={() => handleExport('docx')}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50"
                       >
                         <File className="w-4 h-4 text-blue-600" />
                         导出 Word 文档
                       </button>
                       <button
                         onClick={() => handleExport('pdf')}
-                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-gray-50"
                       >
                         <Printer className="w-4 h-4 text-red-500" />
                         导出 PDF
@@ -1354,7 +1354,7 @@ function ChatContent() {
           {/* 折叠按钮 */}
           <button
             onClick={() => setTabsCollapsed(!tabsCollapsed)}
-            className="w-full flex items-center justify-center gap-1 py-1 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-1"
+            className="w-full flex items-center justify-center gap-1 py-1 text-xs text-slate-400 hover:text-slate-600 transition-colors mb-1"
           >
             {tabsCollapsed ? (
               <><ChevronDown className="w-3.5 h-3.5" /><span>展开功能列表</span></>
@@ -1381,8 +1381,8 @@ function ChatContent() {
                     activeBot === bot.id
                       ? `bg-gradient-to-r ${bot.gradient} text-white shadow-lg`
                       : bot.isVipOnly && !quota?.is_member
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
-                        : 'text-gray-600 hover:bg-white hover:shadow'
+                        ? 'bg-gray-200 text-slate-400 cursor-not-allowed opacity-60'
+                        : 'text-slate-600 hover:bg-white hover:shadow'
                   }`}
                 >
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
@@ -1391,13 +1391,13 @@ function ChatContent() {
                     {bot.icon}
                   </div>
                   <div className="text-left">
-                    <div className={`font-semibold text-xs ${activeBot === bot.id ? 'text-white' : 'text-gray-900'}`}>
+                    <div className={`font-semibold text-xs ${activeBot === bot.id ? 'text-white' : 'text-slate-900'}`}>
                       {bot.name}
                       {bot.isVipOnly && (
                         <span className="ml-1 text-[10px] px-1 py-0.5 bg-[#FF7D00] text-white rounded">VIP</span>
                       )}
                     </div>
-                    <div className={`text-[10px] ${activeBot === bot.id ? 'text-white/80' : 'text-gray-500'} hidden md:block`}>
+                    <div className={`text-[10px] ${activeBot === bot.id ? 'text-white/80' : 'text-slate-500'} hidden md:block`}>
                       {bot.description}
                     </div>
                   </div>
@@ -1424,8 +1424,8 @@ function ChatContent() {
                     activeBot === bot.id
                       ? `bg-gradient-to-r ${bot.gradient} text-white shadow`
                       : bot.isVipOnly && !quota?.is_member
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
-                        : 'text-gray-600 hover:bg-white hover:shadow'
+                        ? 'bg-gray-200 text-slate-400 cursor-not-allowed opacity-60'
+                        : 'text-slate-600 hover:bg-white hover:shadow'
                   }`}
                   title={bot.description}
                 >
@@ -1434,7 +1434,7 @@ function ChatContent() {
                   }`}>
                     {bot.icon}
                   </div>
-                  <span className={`text-xs font-medium whitespace-nowrap ${activeBot === bot.id ? 'text-white' : 'text-gray-700'}`}>
+                  <span className={`text-xs font-medium whitespace-nowrap ${activeBot === bot.id ? 'text-white' : 'text-slate-700'}`}>
                     {bot.name}
                   </span>
                 </button>
@@ -1450,14 +1450,14 @@ function ChatContent() {
           {/* 快捷问题 */}
           {messages.length <= 1 && (
             <div className="p-4 border-b bg-gradient-to-r from-gray-50 to-white">
-              <p className="text-xs text-gray-500 mb-3">试试这些问题：</p>
+              <p className="text-xs text-slate-500 mb-3">试试这些问题：</p>
               <div className="flex flex-wrap gap-2">
                 {currentBot.quickQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => handleQuickQuestion(q)}
                     disabled={isLoading}
-                    className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                    className="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                   >
                     {q}
                   </button>
@@ -1481,7 +1481,7 @@ function ChatContent() {
                 {selectMode && (
                   <button
                     onClick={() => toggleMessage(index)}
-                    className="flex-shrink-0 mt-3 text-gray-400 hover:text-[#165DFF] transition-colors"
+                    className="flex-shrink-0 mt-3 text-slate-400 hover:text-[#165DFF] transition-colors"
                   >
                     {selectedIndices.has(index) ? (
                       <CheckSquare className="w-5 h-5 text-[#165DFF]" />
@@ -1494,7 +1494,7 @@ function ChatContent() {
                   className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     msg.role === 'user' 
                       ? `bg-gradient-to-br ${currentBot.gradient}` 
-                      : 'bg-white border-2 border-gray-200'
+                      : 'bg-white border-2 border-slate-200'
                   }`}
                 >
                   {msg.role === 'user' 
@@ -1506,7 +1506,7 @@ function ChatContent() {
                   className={`max-w-[85%] rounded-2xl p-4 ${
                     msg.role === 'user'
                       ? `bg-gradient-to-br ${currentBot.gradient} text-white rounded-tr-sm`
-                      : 'bg-white border border-gray-200 text-gray-900 rounded-tl-sm'
+                      : 'bg-white border border-slate-200 text-slate-900 rounded-tl-sm'
                   }`}
                 >
                   {msg.role === 'user' ? (
@@ -1525,7 +1525,7 @@ function ChatContent() {
                   )}
                   {/* 加载动画 */}
                   {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
-                    <div className="flex items-center gap-2 text-gray-400">
+                    <div className="flex items-center gap-2 text-slate-400">
                       <div className="flex gap-1">
                         <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -1554,14 +1554,14 @@ function ChatContent() {
           {/* ============================================================ */}
           {false && (
             <div className="p-4 border-b bg-gradient-to-r from-green-50 to-white">
-              <p className="text-sm font-medium text-gray-700 mb-3">选择面试模式：</p>
+              <p className="text-sm font-medium text-slate-700 mb-3">选择面试模式：</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => handleInterviewModeSelect('text')}
                   disabled={isLoading}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-green-500 hover:text-white rounded-xl transition-all disabled:opacity-50 group"
                 >
-                  <FileText className="w-5 h-5 text-gray-500 group-hover:text-white" />
+                  <FileText className="w-5 h-5 text-slate-500 group-hover:text-white" />
                   <span className="font-medium">文字面试</span>
                 </button>
                 <button
@@ -1569,7 +1569,7 @@ function ChatContent() {
                   disabled={isLoading}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-green-500 hover:text-white rounded-xl transition-all disabled:opacity-50 group"
                 >
-                  <Video className="w-5 h-5 text-gray-500 group-hover:text-white" />
+                  <Video className="w-5 h-5 text-slate-500 group-hover:text-white" />
                   <span className="font-medium">视频面试</span>
                   <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-600 rounded-full group-hover:bg-white/20 group-hover:text-white">即将上线</span>
                 </button>
@@ -1586,7 +1586,7 @@ function ChatContent() {
               </div>
               <button
                 onClick={handleExitInterviewMode}
-                className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                className="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1"
               >
                 <X className="w-3 h-3" />
                 退出
@@ -1604,7 +1604,7 @@ function ChatContent() {
                   onChange={e => setJdUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleFetchJd(jdUrl)}
                   placeholder="粘贴招聘链接，自动解析岗位JD"
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                   disabled={isLoading}
                 />
                 <button
@@ -1622,7 +1622,7 @@ function ChatContent() {
                 {jdUrl && !jdLoading && (
                   <button
                     onClick={() => { setJdUrl(''); setJdText(''); setJdError(''); }}
-                    className="px-2 py-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="px-2 py-2 text-slate-400 hover:text-slate-600 transition-colors"
                     title="清除"
                   >
                     <XCircle className="w-4 h-4" />
@@ -1653,8 +1653,8 @@ function ChatContent() {
                 <span>已自动读取您的个人信息，提供更精准的个性化建议</span>
               </div>
             ) : user ? (
-              <div className="mb-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
+              <div className="mb-3 px-3 py-2 bg-gray-50 border border-slate-200 rounded-lg flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 text-slate-600">
                   <Sparkles className="w-4 h-4 text-[#165DFF] flex-shrink-0" />
                   <span>完善个人信息，获得更精准的AI建议</span>
                 </div>
@@ -1697,10 +1697,10 @@ function ChatContent() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading}
-                className="flex-shrink-0 w-12 h-12 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50"
+                className="flex-shrink-0 w-12 h-12 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50"
                 title="上传文件（PDF/DOC/TXT/图片）"
               >
-                <Paperclip className="w-5 h-5 text-gray-400 hover:text-blue-500" />
+                <Paperclip className="w-5 h-5 text-slate-400 hover:text-blue-500" />
               </button>
               <Input
                 ref={inputRef}
@@ -1731,21 +1731,21 @@ function ChatContent() {
                 <span className="text-sm text-blue-700 truncate max-w-[200px]">{uploadedFile.name}</span>
                 <button
                   onClick={handleRemoveFile}
-                  className="ml-auto text-gray-400 hover:text-gray-600"
+                  className="ml-auto text-slate-400 hover:text-slate-600"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             )}
             
-            <p className="text-xs text-gray-400 mt-2 text-center">
+            <p className="text-xs text-slate-400 mt-2 text-center">
               AI 辅助建议，仅供参考
             </p>
           </div>
         </Card>
 
         {/* 底部提示 */}
-        <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+        <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-slate-500">
           <Link href="/assistant?bot=jobs" className="flex items-center gap-2 hover:text-[#165DFF] transition-colors">
             <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></div>
             <span>全行业岗位百科</span>
@@ -1813,21 +1813,21 @@ function ChatContent() {
                 className={`text-left p-3 rounded-lg border transition-all ${
                   personaPreset === p.id
                     ? 'border-[#165DFF] bg-blue-50 ring-1 ring-[#165DFF]'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-center gap-2 font-medium text-gray-900">
+                <div className="flex items-center gap-2 font-medium text-slate-900">
                   <span className="text-lg">{p.emoji}</span>
                   {p.name}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">{p.tagline}</div>
+                <div className="text-xs text-slate-500 mt-1">{p.tagline}</div>
               </button>
             ))}
           </div>
 
           {/* 一句话人设 */}
           <div className="mt-3">
-            <label className="text-sm font-medium text-gray-700">一句话人设（可选）</label>
+            <label className="text-sm font-medium text-slate-700">一句话人设（可选）</label>
             <Input
               value={personaDesc}
               onChange={(e) => setPersonaDesc(e.target.value)}
@@ -1871,7 +1871,7 @@ function ChatContent() {
               <input
                 readOnly
                 value={shareUrl || ''}
-                className="flex-1 text-sm bg-transparent outline-none text-gray-700"
+                className="flex-1 text-sm bg-transparent outline-none text-slate-700"
               />
               <Button
                 onClick={copyShareLink}
@@ -1880,7 +1880,7 @@ function ChatContent() {
                 {shareCopied ? '已复制 ✓' : '复制链接'}
               </Button>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-slate-400">
               💡 链接 30 天有效，对方无需登录即可查看
             </p>
           </div>
@@ -1897,8 +1897,8 @@ function ChatContent() {
             <DialogDescription className="space-y-3 pt-2">
               <p>你正在尝试使用「{quotaFeature || 'VIP功能'}」，该功能仅对会员开放。开通会员可解锁全部高级功能。</p>
               <div className="space-y-2">
-                <p className="font-medium text-gray-900">会员专属权益：</p>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <p className="font-medium text-slate-900">会员专属权益：</p>
+                <ul className="text-sm text-slate-600 space-y-1">
                   <li>无限次AI模拟面试</li>
                   <li>完整版能力测评报告</li>
                   <li>胜任力评估雷达图</li>
@@ -1934,7 +1934,7 @@ function ChatContent() {
               登录后使用AI助手
             </DialogTitle>
             <DialogDescription className="space-y-4 pt-3">
-              <p className="text-gray-600">登录后可保存对话记录和获取个性化推荐</p>
+              <p className="text-slate-600">登录后可保存对话记录和获取个性化推荐</p>
               <div className="flex flex-col gap-3">
                 <Link href="/auth?redirect=/chat" onClick={() => setShowLoginModal(false)}>
                   <Button className="w-full bg-gradient-to-r from-[#165DFF] to-[#0E4FD9] hover:opacity-90 text-white h-12 text-base">
@@ -1947,7 +1947,7 @@ function ChatContent() {
                   </Button>
                 </Link>
               </div>
-              <p className="text-xs text-gray-400 text-center mt-2">
+              <p className="text-xs text-slate-400 text-center mt-2">
                 登录即表示同意《用户协议》和《隐私政策》
               </p>
             </DialogDescription>

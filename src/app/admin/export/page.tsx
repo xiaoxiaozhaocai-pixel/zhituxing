@@ -117,7 +117,7 @@ export default function ExportPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">数据导出</h1>
+        <h1 className="text-2xl font-bold text-slate-900">数据导出</h1>
       </div>
 
       {/* 导出类型选择 */}
@@ -136,7 +136,7 @@ export default function ExportPage() {
             >
               <CardContent className="p-4 text-center">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
-                  isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
+                  isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-slate-600'
                 }`}>
                   <Icon className="w-6 h-6" />
                 </div>
@@ -170,8 +170,8 @@ export default function ExportPage() {
               <h4 className="text-sm font-medium mb-2">时间范围（可选）</h4>
               <div className="flex gap-4 items-center">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">从</span>
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm text-slate-500">从</span>
                   <Input 
                     type="date" 
                     value={dateRange.start}
@@ -179,7 +179,7 @@ export default function ExportPage() {
                     className="w-40"
                   />
                 </div>
-                <span className="text-gray-400">至</span>
+                <span className="text-slate-400">至</span>
                 <Input 
                   type="date" 
                   value={dateRange.end}
@@ -230,7 +230,7 @@ export default function ExportPage() {
                 </div>
                 {exportResult.files && exportResult.files.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-sm text-gray-600 mb-2">已生成文件：</p>
+                    <p className="text-sm text-slate-600 mb-2">已生成文件：</p>
                     <ul className="space-y-1">
                       {exportResult.files.map((file, index) => (
                         <li key={index} className="text-sm text-blue-600 flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function ExportPage() {
       <Card className="bg-gray-50">
         <CardContent className="p-4">
           <h3 className="font-medium mb-2">导出说明</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
+          <ul className="text-sm text-slate-600 space-y-1">
             <li>• 导出的数据格式为 Excel (.xlsx)</li>
             <li>• 大量数据导出可能需要数秒，请耐心等待</li>
             <li>• 可选择时间范围筛选导出的数据</li>

@@ -14,7 +14,7 @@ interface FeatureFlag {
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   core: { label: '核心', color: 'bg-green-100 text-green-700 border-green-200' },
   experiment: { label: '实验', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  future: { label: '未来', color: 'bg-gray-100 text-gray-500 border-gray-200' },
+  future: { label: '未来', color: 'bg-gray-100 text-slate-500 border-slate-200' },
 };
 
 export default function FeatureFlagsPage() {
@@ -103,7 +103,7 @@ function FlagCategory({ title, flags }: { title: string; flags: FeatureFlag[] })
           <div
             key={flag.key}
             className={`border rounded-xl p-4 flex items-start justify-between ${
-              flag.enabled ? 'bg-white border-[#E2E8F0]' : 'bg-gray-50 border-gray-200 opacity-75'
+              flag.enabled ? 'bg-white border-[#E2E8F0]' : 'bg-gray-50 border-slate-200 opacity-75'
             }`}
           >
             <div>

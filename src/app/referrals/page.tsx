@@ -132,9 +132,9 @@ export default function ReferralsPage() {
             <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">内推专区</h1>
+            <h1 className="text-3xl font-bold text-slate-900">内推专区</h1>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-slate-600 max-w-2xl mx-auto">
             汇聚各大厂真实内推机会，跳过简历筛选，直通面试！
             <span className="text-orange-600 font-medium">会员优先查看完整联系方式</span>
           </p>
@@ -165,7 +165,7 @@ export default function ReferralsPage() {
             <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <Input
                     placeholder="搜索公司、职位..."
                     value={searchKeyword}
@@ -204,7 +204,7 @@ export default function ReferralsPage() {
 
         {/* Results Count */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
+          <p className="text-slate-600">
             共找到 <strong className="text-[#165DFF]">{total || displayReferrals.length}</strong> 个内推机会
           </p>
         </div>
@@ -220,7 +220,7 @@ export default function ReferralsPage() {
               <Card 
                 key={referral.id}
                 className={`border-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${
-                  referral.isFeatured ? 'border-orange-200' : 'border-gray-100'
+                  referral.isFeatured ? 'border-orange-200' : 'border-slate-100'
                 }`}
               >
                 <CardHeader className="pb-3">
@@ -230,12 +230,12 @@ export default function ReferralsPage() {
                         {referral.logoUrl ? (
                           <Image src={referral.logoUrl} alt={referral.company} width={40} height={40} className="rounded-lg object-cover" unoptimized />
                         ) : (
-                          <span className="text-lg font-bold text-gray-600">{referral.company.charAt(0)}</span>
+                          <span className="text-lg font-bold text-slate-600">{referral.company.charAt(0)}</span>
                         )}
                       </div>
                       <div>
                         <CardTitle className="text-base font-bold">{referral.company}</CardTitle>
-                        <p className="text-sm text-gray-500">{referral.position}</p>
+                        <p className="text-sm text-slate-500">{referral.position}</p>
                       </div>
                     </div>
                     {referral.isFeatured && (
@@ -250,7 +250,7 @@ export default function ReferralsPage() {
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
                       {referral.location && (
-                        <Badge variant="outline" className="text-gray-600">
+                        <Badge variant="outline" className="text-slate-600">
                           <MapPin className="w-3 h-3 mr-1" />
                           {referral.location}
                         </Badge>
@@ -269,11 +269,11 @@ export default function ReferralsPage() {
                       )}
                     </div>
 
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <p className="text-sm text-slate-600 line-clamp-2">
                       {referral.title}
                     </p>
 
-                    <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
                       <span className="flex items-center gap-1">
                         <Users className="w-3 h-3" />
                         {referral.appliesCount}人已申请
@@ -298,9 +298,9 @@ export default function ReferralsPage() {
 
         {displayReferrals.length === 0 && !loading && (
           <div className="text-center py-16">
-            <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">暂无内推信息</p>
-            <p className="text-sm text-gray-400 mt-2">敬请期待更多内推机会</p>
+            <Users className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500">暂无内推信息</p>
+            <p className="text-sm text-slate-400 mt-2">敬请期待更多内推机会</p>
           </div>
         )}
       </div>

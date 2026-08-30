@@ -108,7 +108,7 @@ export default function SyncPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">同步任务管理</h1>
+        <h1 className="text-2xl font-bold text-slate-900">同步任务管理</h1>
       </div>
 
       {/* 统计卡片 */}
@@ -120,7 +120,7 @@ export default function SyncPage() {
                 <RefreshCw className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">总同步次数</p>
+                <p className="text-sm text-slate-500">总同步次数</p>
                 <p className="text-2xl font-bold">{stats.total_syncs}</p>
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function SyncPage() {
                 <TrendingUp className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">今日同步</p>
+                <p className="text-sm text-slate-500">今日同步</p>
                 <p className="text-2xl font-bold">{stats.today_syncs}</p>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function SyncPage() {
                 <Database className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">累计成功</p>
+                <p className="text-sm text-slate-500">累计成功</p>
                 <p className="text-2xl font-bold">{stats.total_success}</p>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function SyncPage() {
                 <AlertCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">累计失败</p>
+                <p className="text-sm text-slate-500">累计失败</p>
                 <p className="text-2xl font-bold">{stats.total_fail}</p>
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function SyncPage() {
           </div>
           
           {syncing && (
-            <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+            <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
               <Loader2 className="w-4 h-4 animate-spin" />
               正在同步{platforms.find(p => p.id === syncingPlatform)?.name}...
             </div>
@@ -219,20 +219,20 @@ export default function SyncPage() {
         <CardContent className="p-0">
           <div className="px-6 py-4 border-b flex justify-between items-center">
             <h2 className="text-lg font-semibold">同步历史</h2>
-            <span className="text-sm text-gray-500">共 {total} 条记录</span>
+            <span className="text-sm text-slate-500">共 {total} 条记录</span>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">来源平台</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">拉取数量</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">成功</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">失败</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">状态</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">同步时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">来源平台</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">拉取数量</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">成功</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">失败</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">状态</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">同步时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -244,7 +244,7 @@ export default function SyncPage() {
                   </tr>
                 ) : logs.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
                       暂无同步记录
                     </td>
                   </tr>
@@ -261,7 +261,7 @@ export default function SyncPage() {
                         <span className="text-green-600 font-medium">{log.success_count}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={log.fail_count > 0 ? 'text-red-600 font-medium' : 'text-gray-500'}>
+                        <span className={log.fail_count > 0 ? 'text-red-600 font-medium' : 'text-slate-500'}>
                           {log.fail_count}
                         </span>
                       </td>
@@ -270,7 +270,7 @@ export default function SyncPage() {
                           {log.status === 'completed' ? '成功' : '进行中'}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         {formatDate(log.created_at)}
                       </td>
                       <td className="px-4 py-3">

@@ -276,8 +276,8 @@ export default function ArticleDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">文章不存在</h2>
-          <p className="text-gray-500 mb-4">{error}</p>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">文章不存在</h2>
+          <p className="text-slate-500 mb-4">{error}</p>
           <Link
             href="/resources"
             className="inline-block px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90"
@@ -296,7 +296,7 @@ export default function ArticleDetailPage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link
             href="/resources"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             返回列表
@@ -329,7 +329,7 @@ export default function ArticleDetailPage() {
               {article.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-sm rounded-full"
+                  className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-slate-600 text-sm rounded-full"
                 >
                   <Tag className="w-3 h-3" />
                   {tag}
@@ -338,12 +338,12 @@ export default function ArticleDetailPage() {
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl font-bold text-slate-900 mb-4">
               {article.title}
             </h1>
 
             {/* Meta */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 pb-6 border-b">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 pb-6 border-b">
               {article.author && (
                 <span className="flex items-center gap-1">
                   <User className="w-4 h-4" />
@@ -384,7 +384,7 @@ export default function ArticleDetailPage() {
                 <ThumbsUp className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
                 {likeCount} 赞
               </Button>
-              <span className="text-gray-500 text-sm">
+              <span className="text-slate-500 text-sm">
                 <MessageSquare className="w-4 h-4 inline mr-1" />
                 {comments.length} 评论
               </span>
@@ -392,7 +392,7 @@ export default function ArticleDetailPage() {
 
             {/* Source */}
             {article.source && (
-              <div className="mt-4 pt-4 border-t text-sm text-gray-500">
+              <div className="mt-4 pt-4 border-t text-sm text-slate-500">
                 <span>来源：{article.source}</span>
               </div>
             )}
@@ -401,7 +401,7 @@ export default function ArticleDetailPage() {
 
         {/* Comments Section */}
         <div className="mt-8 bg-white rounded-xl shadow-sm p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-blue-600" />
             评论 ({comments.length})
           </h2>
@@ -433,7 +433,7 @@ export default function ArticleDetailPage() {
               <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
             </div>
           ) : comments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-slate-500">
               暂无评论，来发表第一条评论吧
             </div>
           ) : (
@@ -450,13 +450,13 @@ export default function ArticleDetailPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900">{comment.userName}</span>
-                        <span className="text-xs text-gray-400">{formatTime(comment.createdAt)}</span>
+                        <span className="font-medium text-slate-900">{comment.userName}</span>
+                        <span className="text-xs text-slate-400">{formatTime(comment.createdAt)}</span>
                       </div>
-                      <p className="text-gray-700 mb-2">{comment.content}</p>
+                      <p className="text-slate-700 mb-2">{comment.content}</p>
                       <button
                         onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                        className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                        className="text-sm text-slate-500 hover:text-blue-600 flex items-center gap-1"
                       >
                         <Reply className="w-3 h-3" />
                         回复
@@ -497,22 +497,22 @@ export default function ArticleDetailPage() {
 
                       {/* Replies */}
                       {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-4 pl-4 space-y-4 border-l-2 border-gray-100">
+                        <div className="mt-4 pl-4 space-y-4 border-l-2 border-slate-100">
                           {comment.replies.map((reply) => (
                             <div key={reply.id} className="flex items-start gap-3">
                               <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                                 {reply.userAvatar ? (
                                   <Image src={reply.userAvatar} alt="用户头像" width={32} height={32} className="rounded-full" unoptimized />
                                 ) : (
-                                  <User className="w-4 h-4 text-gray-500" />
+                                  <User className="w-4 h-4 text-slate-500" />
                                 )}
                               </div>
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-gray-900 text-sm">{reply.userName}</span>
-                                  <span className="text-xs text-gray-400">{formatTime(reply.createdAt)}</span>
+                                  <span className="font-medium text-slate-900 text-sm">{reply.userName}</span>
+                                  <span className="text-xs text-slate-400">{formatTime(reply.createdAt)}</span>
                                 </div>
-                                <p className="text-gray-700 text-sm">{reply.content}</p>
+                                <p className="text-slate-700 text-sm">{reply.content}</p>
                               </div>
                             </div>
                           ))}

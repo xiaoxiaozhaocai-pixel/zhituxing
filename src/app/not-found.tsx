@@ -19,10 +19,10 @@ export default function NotFound() {
       </div>
 
       {/* 文字提示 */}
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 text-center">
+      <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4 text-center">
         页面未找到
       </h1>
-      <p className="text-lg text-gray-500 mb-8 text-center max-w-md">
+      <p className="text-lg text-slate-500 mb-8 text-center max-w-md">
         您访问的页面不存在或已被移除，请检查网址是否正确
       </p>
 

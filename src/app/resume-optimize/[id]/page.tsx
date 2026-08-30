@@ -177,7 +177,7 @@ export default function ResumeDetailPage() {
               <CardDescription className="text-xs">你提交的原始内容</CardDescription>
             </CardHeader>
             <CardContent className="pb-5">
-              <div className="bg-gray-50 rounded-xl p-5 text-sm leading-relaxed whitespace-pre-wrap text-[#555] max-h-[500px] overflow-y-auto font-mono text-xs border border-gray-100">
+              <div className="bg-gray-50 rounded-xl p-5 text-sm leading-relaxed whitespace-pre-wrap text-[#555] max-h-[500px] overflow-y-auto font-mono text-xs border border-slate-100">
                 {detail.original_content}
               </div>
             </CardContent>
@@ -192,7 +192,7 @@ export default function ResumeDetailPage() {
                   <Sparkles className="w-4 h-4" />
                   优化后简历
                 </CardTitle>
-                <Button variant="outline" size="sm" onClick={handleCopy} className="h-8 text-xs rounded-lg border-gray-200 hover:border-[#165DFF]/30 hover:text-[#165DFF]">
+                <Button variant="outline" size="sm" onClick={handleCopy} className="h-8 text-xs rounded-lg border-slate-200 hover:border-[#165DFF]/30 hover:text-[#165DFF]">
                   {copied ? (
                     <><CheckCircle className="w-3.5 h-3.5 mr-1 text-green-500" /> 已复制</>
                   ) : (
@@ -212,7 +212,7 @@ export default function ResumeDetailPage() {
                     {detail.optimized_content}
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[2px] rounded-xl">
-                    <div className="text-center p-8 bg-white/90 rounded-2xl shadow-xl border border-gray-100">
+                    <div className="text-center p-8 bg-white/90 rounded-2xl shadow-xl border border-slate-100">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF7D00]/10 to-[#FFB800]/10 flex items-center justify-center mx-auto mb-3">
                         <Crown className="w-6 h-6 text-[#FF7D00]" />
                       </div>
@@ -279,10 +279,10 @@ export default function ResumeDetailPage() {
 
       {/* 底部操作 */}
       <section className="max-w-5xl mx-auto px-6 pb-14">
-        <div className="flex flex-wrap gap-3 pt-5 border-t border-gray-100">
+        <div className="flex flex-wrap gap-3 pt-5 border-t border-slate-100">
           <Button
             variant="outline"
-            className="border-gray-200 text-[#666] hover:border-[#165DFF]/30 hover:text-[#165DFF] rounded-xl transition-all"
+            className="border-slate-200 text-[#666] hover:border-[#165DFF]/30 hover:text-[#165DFF] rounded-xl transition-all"
             onClick={() => router.push('/resume-optimize')}
           >
             <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />

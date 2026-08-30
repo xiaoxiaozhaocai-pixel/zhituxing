@@ -378,8 +378,8 @@ export default function ResumeBuilderPage() {
       <header className="h-14 bg-white border-b flex items-center px-4 justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/" className="text-blue-600 font-bold text-lg">职途星</Link>
-          <span className="text-gray-400">/</span>
-          <span className="text-gray-700 font-medium">简历创作助手</span>
+          <span className="text-slate-400">/</span>
+          <span className="text-slate-700 font-medium">简历创作助手</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={handleSave} disabled={saveStatus === 'saving'}>
@@ -427,7 +427,7 @@ export default function ResumeBuilderPage() {
         <div className="w-[45%] min-w-[400px] border-r bg-white flex flex-col">
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
-              <div className="text-center text-gray-400 mt-12">
+              <div className="text-center text-slate-400 mt-12">
                 <MessageCircle className="h-12 w-12 mx-auto mb-3 text-blue-300" />
                 <p className="text-lg font-medium mb-2">我是小职，帮你写简历～</p>
                 <p className="text-sm">告诉我你的教育背景、项目经历、实习经验</p>
@@ -439,7 +439,7 @@ export default function ResumeBuilderPage() {
                 <div className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                   msg.role === 'user' 
                     ? 'bg-[#165DFF] text-white' 
-                    : 'bg-gray-100 text-gray-800'
+                    : 'bg-gray-100 text-slate-800'
                 }`}>
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
                 </div>
@@ -497,12 +497,12 @@ export default function ResumeBuilderPage() {
                         ))}
                       </div>
                     )}
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">{resume.basic.name || '姓名'}</h1>
-                    <div className="text-sm text-gray-500 space-x-3">
+                    <h1 className="text-2xl font-bold text-slate-900 mb-2">{resume.basic.name || '姓名'}</h1>
+                    <div className="text-sm text-slate-500 space-x-3">
                       {resume.basic.phone && <span>📱 {resume.basic.phone}</span>}
                       {resume.basic.email && <span>📧 {resume.basic.email}</span>}
                     </div>
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-sm text-slate-500 mt-1">
                       {resume.basic.school && <span>{resume.basic.school}</span>}
                       {resume.basic.major && <span> · {resume.basic.major}</span>}
                       {resume.basic.graduation && <span> · {resume.basic.graduation}届</span>}
@@ -527,10 +527,10 @@ export default function ResumeBuilderPage() {
                       <div key={i} className="mb-3">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium">{edu.school}</span>
-                          <span className="text-gray-500">{edu.time}</span>
+                          <span className="text-slate-500">{edu.time}</span>
                         </div>
-                        <div className="text-sm text-gray-600">{edu.major} · {edu.degree}</div>
-                        {edu.gpa && <div className="text-xs text-gray-400">GPA: {edu.gpa}</div>}
+                        <div className="text-sm text-slate-600">{edu.major} · {edu.degree}</div>
+                        {edu.gpa && <div className="text-xs text-slate-400">GPA: {edu.gpa}</div>}
                       </div>
                     ))}
                   </Section>
@@ -553,9 +553,9 @@ export default function ResumeBuilderPage() {
                       <div key={i} className="mb-4">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium">{exp.company} · {exp.role}</span>
-                          <span className="text-gray-500">{exp.time}</span>
+                          <span className="text-slate-500">{exp.time}</span>
                         </div>
-                        <ul className="mt-1 list-disc list-inside text-sm text-gray-700 space-y-0.5">
+                        <ul className="mt-1 list-disc list-inside text-sm text-slate-700 space-y-0.5">
                           {exp.description.map((desc, j) => (
                             <li key={j}>{desc}</li>
                           ))}
@@ -582,9 +582,9 @@ export default function ResumeBuilderPage() {
                       <div key={i} className="mb-4">
                         <div className="flex justify-between text-sm">
                           <span className="font-medium">{proj.name} · {proj.role}</span>
-                          <span className="text-gray-500">{proj.time}</span>
+                          <span className="text-slate-500">{proj.time}</span>
                         </div>
-                        <ul className="mt-1 list-disc list-inside text-sm text-gray-700 space-y-0.5">
+                        <ul className="mt-1 list-disc list-inside text-sm text-slate-700 space-y-0.5">
                           {proj.description.map((desc, j) => (
                             <li key={j}>{desc}</li>
                           ))}
@@ -619,7 +619,7 @@ export default function ResumeBuilderPage() {
 
                 {/* 空白状态 */}
                 {!resume.basic.name && resume.education.length === 0 && resume.experience.length === 0 && (
-                  <div className="text-center text-gray-300 py-16">
+                  <div className="text-center text-slate-300 py-16">
                     <FileText className="h-16 w-16 mx-auto mb-4" />
                     <p className="text-lg">简历预览区</p>
                     <p className="text-sm mt-1">在左侧和小职聊聊，简历会实时生成</p>
@@ -675,16 +675,16 @@ export default function ResumeBuilderPage() {
                 }`} style={{width: `${skillMatchResult.match_rate}%`}} />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">已具备的技能（{skillMatchResult.matched.length}项）</p>
+                <p className="text-sm font-medium text-slate-700 mb-2">已具备的技能（{skillMatchResult.matched.length}项）</p>
                 <div className="flex flex-wrap gap-1.5">
                   {skillMatchResult.matched.map((s, i) => (
                     <Badge key={i} variant="secondary" className="bg-green-50 text-green-700 border-green-200">{s}</Badge>
                   ))}
-                  {skillMatchResult.matched.length === 0 && <span className="text-xs text-gray-400">暂无</span>}
+                  {skillMatchResult.matched.length === 0 && <span className="text-xs text-slate-400">暂无</span>}
                 </div>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">待补充的技能（{skillMatchResult.missing.length}项）</p>
+                <p className="text-sm font-medium text-slate-700 mb-2">待补充的技能（{skillMatchResult.missing.length}项）</p>
                 <div className="flex flex-wrap gap-1.5">
                   {skillMatchResult.missing.map((s, i) => (
                     <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1">
@@ -695,16 +695,16 @@ export default function ResumeBuilderPage() {
                       >添加</button>
                     </Badge>
                   ))}
-                  {skillMatchResult.missing.length === 0 && <span className="text-xs text-gray-400">完美匹配！</span>}
+                  {skillMatchResult.missing.length === 0 && <span className="text-xs text-slate-400">完美匹配！</span>}
                 </div>
               </div>
               {skillMatchResult.missing.length > 0 && (
-                <p className="text-xs text-gray-500 mt-1">点击「添加」可将缺失技能一键加入你的技能清单</p>
+                <p className="text-xs text-slate-500 mt-1">点击「添加」可将缺失技能一键加入你的技能清单</p>
               )}
             </div>
           )}
           {!skillMatchResult && !isSkillMatching && !skillMatchError && (
-            <div className="text-center text-gray-400 py-8">
+            <div className="text-center text-slate-400 py-8">
               <Target className="h-10 w-10 mx-auto mb-2 opacity-40" />
               <p className="text-sm">输入目标岗位，查看你的技能匹配度</p>
             </div>
@@ -725,7 +725,7 @@ export default function ResumeBuilderPage() {
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">你的口语化经历描述</label>
+            <label className="text-xs text-slate-500 mb-1 block">你的口语化经历描述</label>
             <Textarea
               placeholder="用你自己的话说说这段经历，比如「我在学生会组织过活动，负责宣传和协调，效果还不错」..."
               value={translateInput}
@@ -734,7 +734,7 @@ export default function ResumeBuilderPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">目标行业（可选）</label>
+            <label className="text-xs text-slate-500 mb-1 block">目标行业（可选）</label>
             <Input
               placeholder="如：互联网、金融、快消、新能源..."
               value={targetIndustry}
@@ -756,18 +756,18 @@ export default function ResumeBuilderPage() {
           {translateResult && (
             <div className="space-y-3 border rounded-lg p-4 bg-gray-50">
               <div>
-                <p className="text-xs text-gray-400 mb-1">原始描述</p>
-                <p className="text-sm text-gray-600 bg-white p-2 rounded border">{translateResult.original}</p>
+                <p className="text-xs text-slate-400 mb-1">原始描述</p>
+                <p className="text-sm text-slate-600 bg-white p-2 rounded border">{translateResult.original}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-1">专业简历描述</p>
-                <div className="text-sm text-gray-800 bg-white p-2 rounded border whitespace-pre-wrap">
+                <p className="text-xs text-slate-400 mb-1">专业简历描述</p>
+                <div className="text-sm text-slate-800 bg-white p-2 rounded border whitespace-pre-wrap">
                   {translateResult.translated}
                 </div>
               </div>
               {translateResult.gaps.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">建议补充突出</p>
+                  <p className="text-xs text-slate-400 mb-1">建议补充突出</p>
                   <div className="flex flex-wrap gap-1">
                     {translateResult.gaps.map((g, i) => (
                       <Badge key={i} variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">{g}</Badge>
@@ -792,13 +792,13 @@ export default function ResumeBuilderPage() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex">
         <button 
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-3 text-center text-sm ${activeTab === 'chat' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}
+          className={`flex-1 py-3 text-center text-sm ${activeTab === 'chat' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-slate-500'}`}
         >
           <MessageCircle className="h-4 w-4 inline mr-1" /> 对话
         </button>
         <button 
           onClick={() => setActiveTab('preview')}
-          className={`flex-1 py-3 text-center text-sm ${activeTab === 'preview' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-gray-500'}`}
+          className={`flex-1 py-3 text-center text-sm ${activeTab === 'preview' ? 'text-blue-600 border-t-2 border-blue-600' : 'text-slate-500'}`}
         >
           <Eye className="h-4 w-4 inline mr-1" /> 简历预览
         </button>
@@ -810,7 +810,7 @@ export default function ResumeBuilderPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <h2 className="text-base font-bold text-gray-900 border-b-2 border-blue-500 pb-1 mb-3">{title}</h2>
+      <h2 className="text-base font-bold text-slate-900 border-b-2 border-blue-500 pb-1 mb-3">{title}</h2>
       {children}
     </div>
   );

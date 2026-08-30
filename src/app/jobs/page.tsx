@@ -506,15 +506,15 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
                 placeholder="搜索岗位名称、技能标签，如：Java开发、Python、数据分析..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 text-base rounded-lg border-2 border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all duration-300"
+                className="pl-10 h-12 text-base rounded-lg border-2 border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all duration-300"
                 data-gui-allowed="search-input"
               />
             </div>
@@ -536,11 +536,11 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
         <div className="md:hidden mb-4">
           <button
             onClick={() => setFilterOpen(!filterOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-sm border border-gray-200"
+            className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-200"
             data-gui-allowed="mobile-filter-toggle"
           >
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+              <SlidersHorizontal className="w-4 h-4 text-slate-500" />
               <span className="font-medium">筛选条件</span>
               {/* 已选筛选条件数量 badge */}
               {(() => {
@@ -557,20 +557,20 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 ) : null;
               })()}
             </div>
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${filterOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${filterOpen ? 'rotate-180' : ''}`} />
           </button>
         </div>
 
         {/* 筛选区域 - 桌面端始终显示，移动端根据状态显示 */}
-        <div className={`${filterOpen ? 'block' : 'hidden'} md:block bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6`}>
+        <div className={`${filterOpen ? 'block' : 'hidden'} md:block bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
             {/* 行业筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">行业</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">行业</label>
               <select
                 value={filters.industry}
                 onChange={(e) => handleFilterChange('industry', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
                 data-gui-allowed="filter-industry"
               >
@@ -582,11 +582,11 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
             {/* 城市筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">城市</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">城市</label>
               <select
                 value={filters.city}
                 onChange={(e) => handleFilterChange('city', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
                 data-gui-allowed="filter-city"
               >
@@ -598,11 +598,11 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
             {/* 学历要求 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">学历要求</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">学历要求</label>
               <select
                 value={filters.education}
                 onChange={(e) => handleFilterChange('education', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
                 data-gui-allowed="filter-education"
               >
@@ -614,11 +614,11 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
             {/* 工作经验 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">工作经验</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">工作经验</label>
               <select
                 value={filters.experience}
                 onChange={(e) => handleFilterChange('experience', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
                 data-gui-allowed="filter-experience"
               >
@@ -630,11 +630,11 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
             {/* 企业类型 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">企业类型</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">企业类型</label>
               <select
                 value={filters.companyType}
                 onChange={(e) => handleFilterChange('companyType', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 disabled={filtersLoading}
                 data-gui-allowed="filter-company-type"
               >
@@ -646,11 +646,11 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
             {/* 排序 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">排序</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">排序</label>
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-gray-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
+                className="w-full h-10 px-3 rounded-lg border border-slate-200 focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 transition-all"
                 data-gui-allowed="filter-sort"
               >
                 {sortOptions.map(opt => (
@@ -661,13 +661,13 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
 
             {/* 应届生友好 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
-              <label className="flex items-center h-10 px-3 rounded-lg border border-gray-200 hover:border-[#165DFF] cursor-pointer transition-all" data-gui-allowed="filter-fresh-only">
+              <label className="block text-sm font-medium text-slate-700 mb-2">&nbsp;</label>
+              <label className="flex items-center h-10 px-3 rounded-lg border border-slate-200 hover:border-[#165DFF] cursor-pointer transition-all" data-gui-allowed="filter-fresh-only">
                 <input
                   type="checkbox"
                   checked={filters.freshOnly}
                   onChange={(e) => handleFilterChange('freshOnly', e.target.checked)}
-                  className="w-4 h-4 text-[#165DFF] rounded border-gray-300 focus:ring-[#165DFF]"
+                  className="w-4 h-4 text-[#165DFF] rounded border-slate-300 focus:ring-[#165DFF]"
                 />
                 <span className="ml-2 text-sm whitespace-nowrap">应届友好</span>
               </label>
@@ -691,10 +691,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
             <SkeletonCardList count={8} />
           </div>
         ) : jobs.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-slate-500">
             <div className="text-6xl mb-4">📋</div>
-            <p className="text-lg font-medium text-gray-700 mb-2">暂无岗位数据，敬请期待</p>
-            <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">我们正在马不停蹄更新中～先去看看AI为你匹配的岗位吧</p>
+            <p className="text-lg font-medium text-slate-700 mb-2">暂无岗位数据，敬请期待</p>
+            <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">我们正在马不停蹄更新中～先去看看AI为你匹配的岗位吧</p>
             <Link href="/match">
               <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#3D7FFF] hover:to-[#5A9BFF] shadow-lg px-6 py-5">
                 <Briefcase className="w-4 h-4 mr-2" />
@@ -731,22 +731,22 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   </div>
 
                   {/* 信息标签行：城市 | 学历 | 经验 */}
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-4">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 mb-4">
                     {job.city && (
                       <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
                         {job.city}
                       </span>
                     )}
                     {job.education && job.education !== '不限' && (
                       <span className="flex items-center gap-1">
-                        <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
+                        <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
                         {job.education}
                       </span>
                     )}
                     {job.experience && job.experience !== '不限' && (
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
                         {job.experience}
                       </span>
                     )}
@@ -755,7 +755,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   {/* 技能标签 */}
                   <div className="flex flex-wrap gap-1 mb-3">
                     {((job.hardSkills && job.hardSkills.length > 0 ? job.hardSkills : job.skills) || []).slice(0, 3).map((tag, idx) => (
-                      <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">
+                      <span key={idx} className="text-xs px-2 py-1 bg-gray-100 text-slate-600 rounded hover:bg-[#165DFF] hover:text-white transition-all duration-300 cursor-default">
                         {tag}
                       </span>
                     ))}
@@ -846,7 +846,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 </div>
                 职搭子
               </DialogTitle>
-              <span className="text-xs text-gray-500">岗位百科专属助手</span>
+              <span className="text-xs text-slate-500">岗位百科专属助手</span>
             </div>
           </DialogHeader>
           
@@ -866,7 +866,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     msg.role === 'user' 
                       ? 'bg-[#165DFF] text-white rounded-tr-sm' 
-                      : 'bg-gray-100 text-gray-800 rounded-tl-sm'
+                      : 'bg-gray-100 text-slate-800 rounded-tl-sm'
                   }`}
                 >
                   {msg.role === 'user' ? (
@@ -875,14 +875,14 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     <AIResponseRenderer rawText={msg.content} role="assistant" streaming={isTyping && index === messages.length - 1 && !chatError} />
                   )}
                   {isTyping && msg.role === 'assistant' && index === messages.length - 1 && !chatError && (
-                    <span className="inline-block ml-2 animate-pulse text-gray-400 text-xs">
+                    <span className="inline-block ml-2 animate-pulse text-slate-400 text-xs">
                       {typingSeconds >= 30 ? '生成时间较长，请耐心等待...' : typingSeconds >= 15 ? 'AI正在思考，请耐心等待...' : ''}
                     </span>
                   )}
                 </div>
                 {msg.role === 'user' && (
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-gray-600" />
+                    <User className="w-4 h-4 text-slate-600" />
                   </div>
                 )}
               </div>
@@ -923,7 +923,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
           {/* 输入框 */}
           {/* JD 链接粘贴 */}
           {showAssistant && (
-            <div className="px-4 pb-3 border-b border-gray-100 flex-shrink-0">
+            <div className="px-4 pb-3 border-b border-slate-100 flex-shrink-0">
               <div className="flex gap-2">
                 <Input
                   placeholder="粘贴招聘链接，自动解析岗位JD"
@@ -991,10 +991,10 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 </DialogTitle>
                 <DialogDescription className="flex flex-wrap items-center gap-3 mt-2">
                   {selectedJob.industry && (
-                    <span className="text-gray-600">{selectedJob.industry}</span>
+                    <span className="text-slate-600">{selectedJob.industry}</span>
                   )}
                   {selectedJob.city && (
-                    <span className="flex items-center gap-1 text-gray-600">
+                    <span className="flex items-center gap-1 text-slate-600">
                       <MapPin className="w-3.5 h-3.5" />
                       {selectedJob.city}
                     </span>
@@ -1006,19 +1006,19 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 {/* 薪资 + 基本信息 */}
                 <div className="flex flex-wrap items-center gap-4">
                   <div>
-                    <span className="text-sm text-gray-500">薪资</span>
+                    <span className="text-sm text-slate-500">薪资</span>
                     <p className="text-lg font-bold text-[#FF7D00]">{selectedJob.salary}</p>
                   </div>
                   {selectedJob.education && (
                     <div>
-                      <span className="text-sm text-gray-500">学历</span>
-                      <p className="text-gray-900">{selectedJob.education}</p>
+                      <span className="text-sm text-slate-500">学历</span>
+                      <p className="text-slate-900">{selectedJob.education}</p>
                     </div>
                   )}
                   {selectedJob.experience && (
                     <div>
-                      <span className="text-sm text-gray-500">经验</span>
-                      <p className="text-gray-900">{selectedJob.experience}</p>
+                      <span className="text-sm text-slate-500">经验</span>
+                      <p className="text-slate-900">{selectedJob.experience}</p>
                     </div>
                   )}
                 </div>
@@ -1026,7 +1026,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 <Separator />
                 {/* 职位要求 - 卡片式拆解 */}
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                     <span className="text-base">📋</span> 职位要求
                   </h4>
 
@@ -1034,7 +1034,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   {selectedJob.coreDutyModule && (
                     <div className="border border-blue-100 rounded-lg p-3 bg-blue-50/50">
                       <p className="text-xs font-semibold text-blue-600 mb-1.5">🎯 核心职责</p>
-                      <p className="text-sm text-gray-700 leading-relaxed">{selectedJob.coreDutyModule}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{selectedJob.coreDutyModule}</p>
                     </div>
                   )}
 
@@ -1043,13 +1043,13 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     {selectedJob.majorRequire && (
                       <div className="border border-blue-200 rounded-lg p-3 bg-blue-50/50">
                         <p className="text-xs font-semibold text-blue-600 mb-1.5">📚 专业要求</p>
-                        <p className="text-sm text-gray-700">{selectedJob.majorRequire}</p>
+                        <p className="text-sm text-slate-700">{selectedJob.majorRequire}</p>
                       </div>
                     )}
                     {selectedJob.bonusSkillCert && (
                       <div className="border border-orange-100 rounded-lg p-3 bg-orange-50/50">
                         <p className="text-xs font-semibold text-orange-600 mb-1.5">🏅 加分证书</p>
-                        <p className="text-sm text-gray-700">{selectedJob.bonusSkillCert}</p>
+                        <p className="text-sm text-slate-700">{selectedJob.bonusSkillCert}</p>
                       </div>
                     )}
                   </div>
@@ -1067,20 +1067,20 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   {/* JD原文折叠 */}
                   {selectedJob.jdContent ? (
                     <details className="border rounded-lg overflow-hidden">
-                      <summary className="px-3 py-2 text-xs text-gray-500 bg-gray-50 cursor-pointer hover:bg-gray-100">
+                      <summary className="px-3 py-2 text-xs text-slate-500 bg-gray-50 cursor-pointer hover:bg-gray-100">
                         查看完整职位描述原文
                       </summary>
-                      <div className="p-3 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                      <div className="p-3 text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
                         {selectedJob.jdContent}
                       </div>
                     </details>
                   ) : (
-                    <p className="text-sm text-gray-400">暂无职位描述</p>
+                    <p className="text-sm text-slate-400">暂无职位描述</p>
                   )}
                 </div>
                 {/* 技能要求 - 只展示前3个 */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                     <span className="text-base">💡</span> 技能要求
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -1098,7 +1098,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     ))}
                     {/* 无技能 */}
                     {(!selectedJob.hardSkills?.length && !selectedJob.skills?.length && !selectedJob.softSkills?.length) && (
-                      <p className="text-sm text-gray-400">暂无技能要求</p>
+                      <p className="text-sm text-slate-400">暂无技能要求</p>
                     )}
                   </div>
                 </div>
@@ -1116,7 +1116,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
               {/* 免责声明 + 原始JD折叠区域 */}
               {selectedJob.raw_jd && (
                 <div className="mt-4">
-                  <p className="text-xs text-gray-400 mb-2">
+                  <p className="text-xs text-slate-400 mb-2">
                     以上信息由AI从公开招聘平台自动解析，可能与原始发布内容存在差异，具体以原始发布为准
                   </p>
                   <div className="border rounded-lg overflow-hidden">
@@ -1124,16 +1124,16 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                       className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
                       onClick={() => setShowRawJd(!showRawJd)}
                     >
-                      <span className="text-sm font-medium text-gray-700">查看原始招聘信息</span>
+                      <span className="text-sm font-medium text-slate-700">查看原始招聘信息</span>
                       {showRawJd ? (
-                        <ChevronUp className="w-4 h-4 text-gray-500" />
+                        <ChevronUp className="w-4 h-4 text-slate-500" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-500" />
+                        <ChevronDown className="w-4 h-4 text-slate-500" />
                       )}
                     </button>
                     {showRawJd && (
                       <div className="p-4 bg-white border-t">
-                        <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed">
+                        <pre className="whitespace-pre-wrap text-sm text-slate-700 font-sans leading-relaxed">
                           {selectedJob.raw_jd}
                         </pre>
                       </div>
@@ -1159,7 +1159,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                   </Button>
                 </div>
                 {/* 版权声明 */}
-                <p className="text-xs text-gray-400 text-center w-full mt-2">
+                <p className="text-xs text-slate-400 text-center w-full mt-2">
                   岗位信息来源于国聘网、国家24365大学生就业服务平台、中国公共招聘网、广西人才网等合规招聘平台，职途星仅提供搜索和AI分析服务
                 </p>
               </DialogFooter>

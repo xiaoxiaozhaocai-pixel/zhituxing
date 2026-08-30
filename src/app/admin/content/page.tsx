@@ -165,7 +165,7 @@ export default function ContentPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">内容管理</h1>
+      <h1 className="text-2xl font-bold text-slate-900">内容管理</h1>
 
       {/* 类型切换 */}
       <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function ContentPage() {
 
       {/* 操作栏 */}
       <div className="flex justify-between items-center">
-        <span className="text-gray-500">共 {total} 条</span>
+        <span className="text-slate-500">共 {total} 条</span>
         <Button onClick={() => { setForm({ title: '', content: '', category: '' }); setModal({ show: true, mode: 'create' }); }}>
           <Plus className="w-4 h-4 mr-2" />
           新增{typeConfig[activeType].label}
@@ -202,13 +202,13 @@ export default function ContentPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">标题</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">标题</th>
                   {activeType !== 'announcement' && (
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">分类</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">分类</th>
                   )}
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">状态</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">更新时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">状态</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">更新时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -220,7 +220,7 @@ export default function ContentPage() {
                   </tr>
                 ) : items.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500">
                       暂无数据
                     </td>
                   </tr>
@@ -234,16 +234,16 @@ export default function ContentPage() {
                         </div>
                       </td>
                       {activeType !== 'announcement' && (
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-slate-500">
                           {item.category || '-'}
                         </td>
                       )}
                       <td className="px-4 py-3">
-                        <Badge className={item.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}>
+                        <Badge className={item.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-slate-500'}>
                           {item.is_published ? '已发布' : '草稿'}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         {new Date(item.updated_at).toLocaleDateString('zh-CN')}
                       </td>
                       <td className="px-4 py-3">
@@ -350,7 +350,7 @@ export default function ContentPage() {
           <Card className="w-full max-w-md">
             <CardContent className="p-6">
               <h2 className="text-xl font-bold mb-4">确认删除</h2>
-              <p className="text-gray-600 mb-2">确定要删除这篇「{deleteConfirm.title}」吗？</p>
+              <p className="text-slate-600 mb-2">确定要删除这篇「{deleteConfirm.title}」吗？</p>
               <p className="text-red-500 text-sm">此操作不可撤销</p>
               <div className="flex justify-end gap-2 mt-6">
                 <Button variant="outline" onClick={() => setDeleteConfirm(null)}>

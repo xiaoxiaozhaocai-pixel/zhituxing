@@ -86,10 +86,10 @@ export default function NotificationsPage() {
       quota: 'bg-blue-100 text-blue-700',
       invite: 'bg-orange-100 text-orange-700',
       membership: 'bg-blue-100 text-blue-700',
-      system: 'bg-gray-100 text-gray-700',
+      system: 'bg-gray-100 text-slate-700',
       tip: 'bg-green-100 text-green-700'
     };
-    return colors[type] || 'bg-gray-100 text-gray-700';
+    return colors[type] || 'bg-gray-100 text-slate-700';
   };
 
   const formatTime = (time: string) => {
@@ -119,8 +119,8 @@ export default function NotificationsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Bell className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-600 mb-4">请先登录查看通知</p>
+          <Bell className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+          <p className="text-slate-600 mb-4">请先登录查看通知</p>
           <a
             href="/login"
             className="inline-block px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90"
@@ -137,7 +137,7 @@ export default function NotificationsPage() {
       <div className="max-w-2xl mx-auto px-4">
         {/* 头部 */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">消息通知</h1>
+          <h1 className="text-2xl font-bold text-slate-900">消息通知</h1>
           {unread > 0 && (
             <button
               onClick={markAllAsRead}
@@ -170,9 +170,9 @@ export default function NotificationsPage() {
         {/* 通知列表 */}
         {notifications.length === 0 ? (
           <div className="text-center py-16">
-            <Bell className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-2">暂无通知</p>
-            <p className="text-sm text-gray-400">有新消息时会在这里通知你，记得常来看看～</p>
+            <Bell className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500 mb-2">暂无通知</p>
+            <p className="text-sm text-slate-400">有新消息时会在这里通知你，记得常来看看～</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -182,7 +182,7 @@ export default function NotificationsPage() {
                 className={`bg-white rounded-lg border ${
                   !notification.is_read
                     ? 'border-blue-300 bg-blue-50/30'
-                    : 'border-gray-200'
+                    : 'border-slate-200'
                 } p-4 hover:shadow-sm transition-shadow`}
               >
                 <div className="flex items-start gap-3">
@@ -194,17 +194,17 @@ export default function NotificationsPage() {
                   {/* 内容 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className={`font-medium ${!notification.is_read ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <h3 className={`font-medium ${!notification.is_read ? 'text-slate-900' : 'text-slate-700'}`}>
                         {notification.title}
                         {!notification.is_read && (
                           <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block" />
                         )}
                       </h3>
-                      <span className="text-sm text-gray-400 whitespace-nowrap">
+                      <span className="text-sm text-slate-400 whitespace-nowrap">
                         {formatTime(notification.created_at)}
                       </span>
                     </div>
-                    <p className="mt-1 text-gray-600 text-sm">
+                    <p className="mt-1 text-slate-600 text-sm">
                       {notification.content}
                     </p>
 

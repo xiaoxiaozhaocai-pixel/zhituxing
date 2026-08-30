@@ -79,7 +79,7 @@ export default function OrdersPage() {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">我的订单</h1>
+          <h1 className="text-2xl font-bold text-slate-900">我的订单</h1>
         </div>
 
         {loading ? (
@@ -89,7 +89,7 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <Card>
             <CardContent className="text-center py-16">
-              <p className="text-gray-500 mb-4">暂无订单</p>
+              <p className="text-slate-500 mb-4">暂无订单</p>
               <Link href="/membership">
                 <Button>查看会员套餐</Button>
               </Link>
@@ -103,11 +103,11 @@ export default function OrdersPage() {
                 <Card key={`${order.source}-${order.id}`}>
                   <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
                     <div>
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-slate-900">
                         {planLabel[order.plan] || order.plan}
-                        <span className="ml-3 text-sm text-gray-500">{methodLabel[order.payment_method] || order.payment_method}</span>
+                        <span className="ml-3 text-sm text-slate-500">{methodLabel[order.payment_method] || order.payment_method}</span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-slate-500 mt-1">
                         提交：{new Date(order.created_at).toLocaleString('zh-CN')}
                         {order.expires_at && ` · 到期：${new Date(order.expires_at).toLocaleDateString('zh-CN')}`}
                       </div>

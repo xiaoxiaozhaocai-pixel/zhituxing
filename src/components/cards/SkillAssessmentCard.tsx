@@ -43,14 +43,14 @@ function SkillBar({ name, score, max_score, level }: SkillScore) {
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-600">{name}</span>
+        <span className="text-slate-600">{name}</span>
         <div className="flex items-center gap-2">
           {level && (
             <span className="text-xs text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded">
               {level}
             </span>
           )}
-          <span className="font-medium text-gray-700">{score}/{effectiveMax}</span>
+          <span className="font-medium text-slate-700">{score}/{effectiveMax}</span>
         </div>
       </div>
       <div className="h-2 bg-blue-50 rounded-full overflow-hidden">
@@ -76,7 +76,7 @@ export default function SkillAssessmentCard({ data }: SkillAssessmentCardProps) 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-400 text-sm text-center py-6">暂无技能测评数据</p>
+          <p className="text-slate-400 text-sm text-center py-6">暂无技能测评数据</p>
         </CardContent>
       </Card>
     );
@@ -108,7 +108,7 @@ export default function SkillAssessmentCard({ data }: SkillAssessmentCardProps) 
         {/* 技能评分列表 */}
         {skills.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-700">技能评分</h4>
+            <h4 className="text-sm font-medium text-slate-700">技能评分</h4>
             {skills.map((skill, idx) => (
               <SkillBar key={idx} {...skill} />
             ))}
@@ -118,10 +118,10 @@ export default function SkillAssessmentCard({ data }: SkillAssessmentCardProps) 
         {/* 优势 */}
         {strengths.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">核心优势</h4>
+            <h4 className="text-sm font-medium text-slate-700">核心优势</h4>
             <ul className="space-y-1">
               {strengths.map((s, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                   {s}
                 </li>
@@ -133,10 +133,10 @@ export default function SkillAssessmentCard({ data }: SkillAssessmentCardProps) 
         {/* 不足 */}
         {weaknesses.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">待提升方向</h4>
+            <h4 className="text-sm font-medium text-slate-700">待提升方向</h4>
             <ul className="space-y-1">
               {weaknesses.map((w, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                <li key={idx} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-300 shrink-0" />
                   {w}
                 </li>
@@ -148,7 +148,7 @@ export default function SkillAssessmentCard({ data }: SkillAssessmentCardProps) 
         {/* 推荐岗位标签 */}
         {recommendedJobs.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">推荐岗位</h4>
+            <h4 className="text-sm font-medium text-slate-700">推荐岗位</h4>
             <div className="flex flex-wrap gap-2">
               {recommendedJobs.map((job, idx) => (
                 <span
@@ -164,7 +164,7 @@ export default function SkillAssessmentCard({ data }: SkillAssessmentCardProps) 
 
         {/* 摘要 */}
         {data.summary && (
-          <div className="bg-blue-50 rounded-lg p-3 text-sm text-gray-600">
+          <div className="bg-blue-50 rounded-lg p-3 text-sm text-slate-600">
             {data.summary}
           </div>
         )}

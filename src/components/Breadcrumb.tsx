@@ -44,8 +44,8 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ theme = 'light', className = ''
   });
 
   const themeClasses: Record<string, string> = {
-    light: 'text-gray-800',
-    dark: 'text-gray-100',
+    light: 'text-slate-800',
+    dark: 'text-slate-100',
     transparent: 'text-white/80',
   };
 

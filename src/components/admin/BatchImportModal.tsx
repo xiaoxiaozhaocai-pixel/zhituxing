@@ -450,7 +450,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-bold">批量导入JD</h2>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-slate-500">
               {step === 1 && '步骤1: 上传文件'}
               {step === 2 && '步骤2: 解析与校验'}
               {step === 3 && '步骤3: 预览与编辑'}
@@ -466,7 +466,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
             <div key={s} className="flex items-center">
               <div className={`
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-500'}
+                ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-slate-500'}
               `}>
                 {step > s ? <CheckCircle className="w-5 h-5" /> : s}
               </div>
@@ -484,8 +484,8 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
               {/* 下载模板 */}
               <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
                 <div>
-                  <h3 className="font-medium text-gray-900">标准导入模板</h3>
-                  <p className="text-sm text-gray-600 mt-1">请下载标准模板并按格式填写，确保数据正确导入</p>
+                  <h3 className="font-medium text-slate-900">标准导入模板</h3>
+                  <p className="text-sm text-slate-600 mt-1">请下载标准模板并按格式填写，确保数据正确导入</p>
                 </div>
                 <Button variant="outline" onClick={downloadTemplate}>
                   <Download className="w-4 h-4 mr-2" />
@@ -495,7 +495,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
 
               {/* 上传区域 */}
               <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                className="border-2 border-dashed border-slate-300 rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
@@ -507,11 +507,11 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-lg font-medium text-gray-700 mb-2">
+                <Upload className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+                <p className="text-lg font-medium text-slate-700 mb-2">
                   点击选择文件 或 拖拽文件到此处
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-slate-500">
                   支持 .xlsx、.xls、.csv 格式
                 </p>
               </div>
@@ -540,7 +540,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
               {isCheckingDuplicates ? (
                 <div className="text-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600 mb-4" />
-                  <p className="text-gray-600">正在解析文件并校验数据...</p>
+                  <p className="text-slate-600">正在解析文件并校验数据...</p>
                 </div>
               ) : (
                 <>
@@ -548,19 +548,19 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                   <div className="grid grid-cols-4 gap-4">
                     <div className="bg-blue-50 rounded-lg p-4 text-center">
                       <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
-                      <p className="text-sm text-gray-600">总行数</p>
+                      <p className="text-sm text-slate-600">总行数</p>
                     </div>
                     <div className="bg-green-50 rounded-lg p-4 text-center">
                       <p className="text-2xl font-bold text-green-600">{stats.valid}</p>
-                      <p className="text-sm text-gray-600">校验通过</p>
+                      <p className="text-sm text-slate-600">校验通过</p>
                     </div>
                     <div className="bg-red-50 rounded-lg p-4 text-center">
                       <p className="text-2xl font-bold text-red-600">{stats.error}</p>
-                      <p className="text-sm text-gray-600">校验失败</p>
+                      <p className="text-sm text-slate-600">校验失败</p>
                     </div>
                     <div className="bg-yellow-50 rounded-lg p-4 text-center">
                       <p className="text-2xl font-bold text-yellow-600">{stats.duplicate}</p>
-                      <p className="text-sm text-gray-600">重复数据</p>
+                      <p className="text-sm text-slate-600">重复数据</p>
                     </div>
                   </div>
 
@@ -772,17 +772,17 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                 <div className="bg-green-50 rounded-lg p-6 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-600" />
                   <p className="text-2xl font-bold text-green-600">{importResult.success}</p>
-                  <p className="text-sm text-gray-600">成功导入</p>
+                  <p className="text-sm text-slate-600">成功导入</p>
                 </div>
                 <div className="bg-red-50 rounded-lg p-6 text-center">
                   <XCircle className="w-12 h-12 mx-auto mb-2 text-red-600" />
                   <p className="text-2xl font-bold text-red-600">{importResult.failed}</p>
-                  <p className="text-sm text-gray-600">导入失败</p>
+                  <p className="text-sm text-slate-600">导入失败</p>
                 </div>
                 <div className="bg-yellow-50 rounded-lg p-6 text-center">
                   <AlertTriangle className="w-12 h-12 mx-auto mb-2 text-yellow-600" />
                   <p className="text-2xl font-bold text-yellow-600">{importResult.skipped}</p>
-                  <p className="text-sm text-gray-600">已跳过</p>
+                  <p className="text-sm text-slate-600">已跳过</p>
                 </div>
               </div>
 
@@ -803,7 +803,7 @@ export default function BatchImportModal({ show, onClose, onSuccess }: BatchImpo
                       </p>
                     ))}
                     {importResult.errors.length > 10 && (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-slate-500">
                         ...还有 {importResult.errors.length - 10} 条错误
                       </p>
                     )}

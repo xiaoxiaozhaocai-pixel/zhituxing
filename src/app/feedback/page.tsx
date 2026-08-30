@@ -93,8 +93,8 @@ export default function FeedbackPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">感谢反馈！</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">感谢反馈！</h2>
+          <p className="text-slate-600 mb-6">
             您的反馈已提交，我们会尽快处理。<br />
             页面将在 <span className="text-blue-600 font-semibold">5秒</span> 后自动返回首页...
           </p>
@@ -126,13 +126,13 @@ export default function FeedbackPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 在哪个页面 <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.page}
                 onChange={(e) => setFormData({ ...formData, page: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
               >
                 <option value="">请选择页面</option>
                 {PAGE_OPTIONS.map((option) => (
@@ -144,13 +144,13 @@ export default function FeedbackPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 反馈类型 <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
               >
                 <option value="">请选择类型</option>
                 {TYPE_OPTIONS.map((option) => (
@@ -162,13 +162,13 @@ export default function FeedbackPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 严重程度
               </label>
               <select
                 value={formData.severity}
                 onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
               >
                 <option value="">请选择（可选）</option>
                 {SEVERITY_OPTIONS.map((option) => (
@@ -180,7 +180,7 @@ export default function FeedbackPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 问题描述 <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -189,9 +189,9 @@ export default function FeedbackPage() {
                 rows={5}
                 maxLength={2000}
                 placeholder="请详细描述您遇到的问题或建议..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none bg-white"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none bg-white"
               />
-              <p className="mt-1 text-sm text-gray-400 text-right">
+              <p className="mt-1 text-sm text-slate-400 text-right">
                 {formData.description.length}/2000
               </p>
             </div>
@@ -216,7 +216,7 @@ export default function FeedbackPage() {
           </form>
 
           <div className="bg-gray-50 px-6 py-4 border-t">
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-sm text-slate-500 text-center">
               您的反馈对我们非常重要，感谢您的支持！
             </p>
           </div>

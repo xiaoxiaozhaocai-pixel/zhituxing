@@ -189,7 +189,7 @@ export default function JdSubmitPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* 返回按钮 */}
-        <Link href="/jobs" className="inline-flex items-center text-gray-600 hover:text-[#165DFF] mb-6">
+        <Link href="/jobs" className="inline-flex items-center text-slate-600 hover:text-[#165DFF] mb-6">
           <ArrowLeft className="w-4 h-4 mr-1" />
           返回岗位百科
         </Link>
@@ -212,11 +212,11 @@ export default function JdSubmitPage() {
 
         {/* 页面标题 */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Upload className="w-7 h-7 text-[#165DFF]" />
             上传真实JD，赢取免费会员
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-slate-500 mt-2">
             上传1条真实校招JD，审核通过即可获得
             <span className="text-[#FF7D00] font-semibold mx-1">免费会员，畅享全部AI功能</span>
           </p>
@@ -231,8 +231,8 @@ export default function JdSubmitPage() {
                   <Award className="w-6 h-6 text-[#165DFF]" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">奖励说明</h3>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <h3 className="font-semibold text-slate-900 mb-2">奖励说明</h3>
+                  <ul className="text-sm text-slate-600 space-y-1">
                     <li className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       上传1条真实校招JD（审核通过）
@@ -282,7 +282,7 @@ export default function JdSubmitPage() {
                     id="industry"
                     value={form.industry}
                     onChange={(e) => updateField('industry', e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
                   >
                     <option value="">请选择行业</option>
                     {industries.map(ind => (
@@ -338,7 +338,7 @@ export default function JdSubmitPage() {
                     id="company_type"
                     value={form.company_type}
                     onChange={(e) => updateField('company_type', e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
+                    className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
                   >
                     <option value="">请选择企业类型</option>
                     {companyTypes.map(type => (
@@ -361,7 +361,7 @@ export default function JdSubmitPage() {
                       onChange={(e) => updateField('salary_min', e.target.value)}
                       placeholder="最低薪资"
                     />
-                    <span className="text-gray-400">-</span>
+                    <span className="text-slate-400">-</span>
                     <Input
                       id="salary_max"
                       type="number"
@@ -428,7 +428,7 @@ export default function JdSubmitPage() {
                   rows={10}
                   className="resize-none"
                 />
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-slate-400">
                   请尽量提供完整的JD信息，这将有助于我们更快审核
                 </p>
               </div>

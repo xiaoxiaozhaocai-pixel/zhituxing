@@ -52,7 +52,7 @@ export default function AIDashboardPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <span className="ml-3 text-gray-500">加载数据中...</span>
+        <span className="ml-3 text-slate-500">加载数据中...</span>
       </div>
     );
   }
@@ -73,8 +73,8 @@ export default function AIDashboardPage() {
       {/* 顶栏 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">AI 数据大屏</h1>
-          <p className="text-sm text-gray-500 mt-1">描述性分析 · 基于平台实时数据生成</p>
+          <h1 className="text-2xl font-bold text-slate-900">AI 数据大屏</h1>
+          <p className="text-sm text-slate-500 mt-1">描述性分析 · 基于平台实时数据生成</p>
         </div>
         <Button onClick={fetchData} variant="outline" size="sm" disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -96,21 +96,21 @@ export default function AIDashboardPage() {
             <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-700">{cards?.trend.data.totalUsers || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">总用户</p>
+                <p className="text-xs text-slate-500 mt-1">总用户</p>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-700">+{cards?.trend.data.monthNewUsers || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">本月新增</p>
+                <p className="text-xs text-slate-500 mt-1">本月新增</p>
               </div>
               <div className="text-center p-3 bg-orange-50 rounded-lg">
                 <p className="text-2xl font-bold text-orange-700">{cards?.trend.data.monthNewJds || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">本月新JD</p>
+                <p className="text-xs text-slate-500 mt-1">本月新JD</p>
               </div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-700 leading-relaxed">{cards?.trend.insight}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{cards?.trend.insight}</p>
             </div>
-            <div className="mt-3 flex gap-2 text-xs text-gray-400">
+            <div className="mt-3 flex gap-2 text-xs text-slate-400">
               <span>面试: {cards?.trend.data.monthInterviews || 0}次</span>
               <span>·</span>
               <span>评估: {cards?.trend.data.monthAssessments || 0}次</span>
@@ -132,17 +132,17 @@ export default function AIDashboardPage() {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="text-center p-3 bg-red-50 rounded-lg">
                 <p className="text-2xl font-bold text-red-700">{cards?.highRisk.data.totalUsers || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">平台总用户</p>
+                <p className="text-xs text-slate-500 mt-1">平台总用户</p>
               </div>
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-700">{cards?.highRisk.data.lowActivityUsers || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">低活跃用户</p>
+                <p className="text-xs text-slate-500 mt-1">低活跃用户</p>
               </div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-700 leading-relaxed">{cards?.highRisk.insight}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{cards?.highRisk.insight}</p>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-slate-400 mt-2">
               ⚠️ 重点群体识别功能需行为埋点完善后启用
             </p>
           </CardContent>
@@ -160,24 +160,24 @@ export default function AIDashboardPage() {
             <div className="mb-4">
               <div className="text-center p-3 bg-green-50 rounded-lg mb-3">
                 <p className="text-2xl font-bold text-green-700">{cards?.opportunities.data.totalJdsThisMonth || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">本月新增岗位</p>
+                <p className="text-xs text-slate-500 mt-1">本月新增岗位</p>
               </div>
               {cards?.opportunities.data.topCompanies?.length > 0 ? (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-500 font-medium">活跃雇主 TOP10：</p>
+                  <p className="text-xs text-slate-500 font-medium">活跃雇主 TOP10：</p>
                   {cards!.opportunities.data.topCompanies.map((c: { name: string; count: number }, i: number) => (
                     <div key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-700 truncate flex-1">{i + 1}. {c.name}</span>
-                      <span className="text-gray-500 ml-2">{c.count}条</span>
+                      <span className="text-slate-700 truncate flex-1">{i + 1}. {c.name}</span>
+                      <span className="text-slate-500 ml-2">{c.count}条</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 text-center py-4">暂无活跃雇主数据</p>
+                <p className="text-sm text-slate-400 text-center py-4">暂无活跃雇主数据</p>
               )}
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-700 leading-relaxed">{cards?.opportunities.insight}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{cards?.opportunities.insight}</p>
             </div>
           </CardContent>
         </Card>
@@ -194,22 +194,22 @@ export default function AIDashboardPage() {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="text-center p-3 bg-yellow-50 rounded-lg">
                 <p className="text-2xl font-bold text-yellow-700">{cards?.suggestions.data.pendingJds || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">待审核JD</p>
+                <p className="text-xs text-slate-500 mt-1">待审核JD</p>
               </div>
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-700">{cards?.suggestions.data.monthNewUsers || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">本月新用户</p>
+                <p className="text-xs text-slate-500 mt-1">本月新用户</p>
               </div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-700 leading-relaxed">{cards?.suggestions.insight}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{cards?.suggestions.insight}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* 底部提示 */}
-      <div className="text-center text-xs text-gray-400 pt-4 border-t">
+      <div className="text-center text-xs text-slate-400 pt-4 border-t">
         数据来源：Supabase 实时查询 · AI 洞察基于 DeepSeek 生成 · 大屏 v1 描述性分析阶段
       </div>
     </div>

@@ -235,7 +235,7 @@ export default function FloatingXiaoZhi() {
       `}</style>
 
       {isOpen && (
-        <div className="w-[360px] sm:w-[400px] h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+        <div className="w-[360px] sm:w-[400px] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           {/* 头部 */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white flex-shrink-0">
             <div className="flex items-center gap-2.5">
@@ -278,7 +278,7 @@ export default function FloatingXiaoZhi() {
                     className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                       msg.role === 'user'
                         ? 'bg-[#165DFF] text-white rounded-br-sm'
-                        : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm shadow-sm'
+                        : 'bg-white text-slate-800 border border-slate-100 rounded-bl-sm shadow-sm'
                     }`}
                   >
                     {msg.content === '...' ? (
@@ -293,7 +293,7 @@ export default function FloatingXiaoZhi() {
                   </div>
                   {msg.role === 'user' && (
                     <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1">
-                      <User className="w-3.5 h-3.5 text-gray-500" />
+                      <User className="w-3.5 h-3.5 text-slate-500" />
                     </div>
                   )}
                 </div>
@@ -303,16 +303,16 @@ export default function FloatingXiaoZhi() {
             {/* 快捷引导卡片 */}
             {showQuickActions && (
               <div className="pt-1 pb-2">
-                <p className="text-[11px] text-gray-400 mb-2 text-center">试试这些👇</p>
+                <p className="text-[11px] text-slate-400 mb-2 text-center">试试这些👇</p>
                 <div className="grid grid-cols-2 gap-2">
                   {quickActions.map((action) => (
                     <button
                       key={action.label}
                       onClick={() => handleQuickAction(action.text)}
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 text-left shadow-sm hover:shadow-md"
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 text-left shadow-sm hover:shadow-md"
                     >
                       <span className="text-base flex-shrink-0">{action.icon}</span>
-                      <span className="text-xs font-medium text-gray-700">{action.label}</span>
+                      <span className="text-xs font-medium text-slate-700">{action.label}</span>
                     </button>
                   ))}
                 </div>
@@ -326,7 +326,7 @@ export default function FloatingXiaoZhi() {
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center flex-shrink-0 mt-1">
                     <Sparkles className="w-3.5 h-3.5 text-white" />
                   </div>
-                  <div className="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap bg-white text-gray-800 border border-gray-100 rounded-bl-sm shadow-sm">
+                  <div className="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap bg-white text-slate-800 border border-slate-100 rounded-bl-sm shadow-sm">
                     {streamingContent}
                     <span className="inline-block w-1.5 h-4 bg-[#165DFF] ml-0.5 animate-pulse" />
                   </div>
@@ -360,7 +360,7 @@ export default function FloatingXiaoZhi() {
                 onKeyDown={handleKeyDown}
                 placeholder="和小职聊聊..."
                 disabled={isSending || isLoggedIn === false}
-                className="flex-1 text-sm px-3.5 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 disabled:opacity-50"
+                className="flex-1 text-sm px-3.5 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 disabled:opacity-50"
               />
               <button
                 onClick={() => handleSend()}
@@ -374,7 +374,7 @@ export default function FloatingXiaoZhi() {
                 )}
               </button>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1.5 text-center">AI辅助建议，仅供参考</p>
+            <p className="text-[10px] text-slate-400 mt-1.5 text-center">AI辅助建议，仅供参考</p>
           </div>
         </div>
       )}

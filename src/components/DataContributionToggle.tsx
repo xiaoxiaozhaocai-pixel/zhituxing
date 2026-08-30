@@ -69,7 +69,7 @@ const DataContributionToggle = () => {
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+      <div className="bg-white border border-slate-200 rounded-lg p-6 animate-pulse">
         <div className="h-5 bg-gray-200 rounded w-1/3 mb-3" />
         <div className="h-4 bg-gray-100 rounded w-2/3" />
       </div>
@@ -77,10 +77,10 @@ const DataContributionToggle = () => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white border border-slate-200 rounded-lg p-6">
       <div className="flex items-center gap-3 mb-4">
         <Database className="w-6 h-6 text-blue-600" />
-        <h3 className="text-lg font-semibold text-gray-900">数据贡献设置</h3>
+        <h3 className="text-lg font-semibold text-slate-900">数据贡献设置</h3>
       </div>
 
       <div className="flex items-center gap-2 mb-3">
@@ -89,15 +89,15 @@ const DataContributionToggle = () => {
             <CheckCircle className="w-5 h-5 text-green-500" />
             <span className="text-green-700 font-medium">数据贡献已开启</span>
             {status.consented_at && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-slate-400">
                 开启时间：{new Date(status.consented_at).toLocaleString('zh-CN')}
               </span>
             )}
           </>
         ) : (
           <>
-            <XCircle className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-600">数据贡献已关闭</span>
+            <XCircle className="w-5 h-5 text-slate-400" />
+            <span className="text-slate-600">数据贡献已关闭</span>
           </>
         )}
       </div>
@@ -140,7 +140,7 @@ const DataContributionToggle = () => {
         <button
           onClick={fetchStatus}
           type="button"
-          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+          className="p-2 text-slate-500 hover:text-slate-700 transition-colors"
           title="刷新状态"
         >
           <RefreshCw className="w-4 h-4" />
@@ -151,7 +151,7 @@ const DataContributionToggle = () => {
       {message && (
         <div className={`mt-3 p-3 rounded-lg text-sm ${
           message.includes('开启') ? 'bg-green-50 text-green-700' :
-          message.includes('关闭') ? 'bg-gray-50 text-gray-700' :
+          message.includes('关闭') ? 'bg-gray-50 text-slate-700' :
           'bg-red-50 text-red-700'
         }`}>
           {message}
@@ -159,8 +159,8 @@ const DataContributionToggle = () => {
       )}
 
       {/* 法律依据 */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="mt-4 pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
           <Shield className="w-3 h-3" />
           <span>您在《个人信息保护法》下的权利：数据贡献为单独授权，与基础服务相互独立，可随时撤回</span>
         </div>

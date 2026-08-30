@@ -62,41 +62,41 @@ export default function NewPortraitPage() {
 
   return (
     <div>
-      <Link href="/employer/portrait" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#165DFF] mb-4 transition">
+      <Link href="/employer/portrait" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-[#165DFF] mb-4 transition">
         <ArrowLeft className="w-4 h-4" />
         返回列表
       </Link>
 
-      <h1 className="text-xl font-bold text-gray-900 mb-6">新建画像项目</h1>
+      <h1 className="text-xl font-bold text-slate-900 mb-6">新建画像项目</h1>
 
       <div className="max-w-2xl space-y-6">
         {/* 岗位名称 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <label className="block text-sm font-medium text-gray-700 mb-2">岗位名称</label>
+        <div className="bg-white rounded-xl border border-slate-100 p-5">
+          <label className="block text-sm font-medium text-slate-700 mb-2">岗位名称</label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="如：电池工艺工程师"
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF]"
           />
-          <p className="text-xs text-gray-400 mt-1.5">名称会作为画像报告的标题</p>
+          <p className="text-xs text-slate-400 mt-1.5">名称会作为画像报告的标题</p>
         </div>
 
         {/* 候选人导入 */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white rounded-xl border border-slate-100 p-5">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             候选人列表
-            <span className="text-gray-400 font-normal ml-1">（每行一人，格式：姓名, 学历, 经验摘要）</span>
+            <span className="text-slate-400 font-normal ml-1">（每行一人，格式：姓名, 学历, 经验摘要）</span>
           </label>
           <textarea
             value={candidatesText}
             onChange={e => setCandidatesText(e.target.value)}
             placeholder={`张三, 本科, 涂布工艺3年\n李四, 硕士, CATL设备维护5年\n王五, 大专, 装配工序1年`}
             rows={10}
-            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] font-mono"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#165DFF]/20 focus:border-[#165DFF] font-mono"
           />
-          <p className="text-xs text-gray-400 mt-1.5">
+          <p className="text-xs text-slate-400 mt-1.5">
             学历可选填，系统自动编码为5级（博士/硕士/211本科/普通本科/大专/高中及以下）。
             经验摘要可选填，显示在盲评卡片上供参考。
           </p>

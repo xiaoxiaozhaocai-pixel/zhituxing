@@ -67,7 +67,7 @@ export default function JdMatchCard({ data }: JdMatchCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-400 text-sm text-center py-6">暂无岗位匹配数据</p>
+          <p className="text-slate-400 text-sm text-center py-6">暂无岗位匹配数据</p>
         </CardContent>
       </Card>
     );
@@ -102,9 +102,9 @@ export default function JdMatchCard({ data }: JdMatchCardProps) {
             {(() => {
               const fallback = [data.industry, data.company_type].filter(Boolean).join(' · ');
               const display = companyName || fallback;
-              return display ? <div className="text-sm text-gray-600 mt-0.5">{display}</div> : null;
+              return display ? <div className="text-sm text-slate-600 mt-0.5">{display}</div> : null;
             })()}
-            <div className="flex items-center justify-center sm:justify-start gap-2 mt-1 text-sm text-gray-500">
+            <div className="flex items-center justify-center sm:justify-start gap-2 mt-1 text-sm text-slate-500">
               {city && <span>{city}</span>}
               {industry && <span>· {industry}</span>}
             </div>
@@ -117,7 +117,7 @@ export default function JdMatchCard({ data }: JdMatchCardProps) {
         {/* 已匹配技能 */}
         {matchedSkills.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">已匹配技能</h4>
+            <h4 className="text-sm font-medium text-slate-700">已匹配技能</h4>
             <div className="flex flex-wrap gap-2">
               {matchedSkills.map((skill, idx) => (
                 <span
@@ -134,7 +134,7 @@ export default function JdMatchCard({ data }: JdMatchCardProps) {
         {/* 技能缺口 */}
         {skillGaps.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">技能缺口</h4>
+            <h4 className="text-sm font-medium text-slate-700">技能缺口</h4>
             <div className="flex flex-wrap gap-2">
               {skillGaps.map((skill, idx) => (
                 <span
@@ -150,7 +150,7 @@ export default function JdMatchCard({ data }: JdMatchCardProps) {
 
         {/* 摘要 */}
         {data.summary && (
-          <div className="bg-orange-50 rounded-lg p-3 text-sm text-gray-600">
+          <div className="bg-orange-50 rounded-lg p-3 text-sm text-slate-600">
             {data.summary}
           </div>
         )}

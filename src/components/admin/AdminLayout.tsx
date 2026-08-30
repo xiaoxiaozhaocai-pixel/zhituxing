@@ -93,7 +93,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
       {/* 侧边栏 - 固定左侧，深灰色背景 */}
       <aside className="fixed top-0 left-0 bottom-0 w-[240px] bg-[#1F2937] z-50 overflow-y-auto">
         {/* Logo区域 */}
-        <div className="h-16 flex items-center px-5 border-b border-gray-700">
+        <div className="h-16 flex items-center px-5 border-b border-slate-700">
           <div className="w-9 h-9 bg-gradient-to-br from-[#165DFF] to-blue-400 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-base">职</span>
           </div>
@@ -114,7 +114,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
                   flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200
                   ${active 
                     ? 'bg-[#165DFF] text-white' 
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    : 'text-slate-300 hover:bg-gray-700 hover:text-white'
                   }
                 `}
               >
@@ -139,8 +139,8 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-900">{admin?.username}</span>
-              <span className="text-xs text-gray-500">管理员</span>
+              <span className="text-sm font-medium text-slate-900">{admin?.username}</span>
+              <span className="text-xs text-slate-500">管理员</span>
             </div>
           </div>
 
@@ -149,7 +149,7 @@ function AdminMainLayout({ children }: AdminLayoutProps) {
           {/* 退出按钮 */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>退出登录</span>

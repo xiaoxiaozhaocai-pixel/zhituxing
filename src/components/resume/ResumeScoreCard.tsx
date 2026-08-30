@@ -54,11 +54,11 @@ function DimensionScoreBar({ dimension }: { dimension: Dimension }) {
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between group cursor-pointer text-left"
       >
-        <span className="text-sm font-medium text-gray-700 truncate flex items-center gap-1.5">
+        <span className="text-sm font-medium text-slate-700 truncate flex items-center gap-1.5">
           {dimension.name}
           <svg
             className={cn(
-              'w-3.5 h-3.5 text-gray-400 transition-transform duration-200',
+              'w-3.5 h-3.5 text-slate-400 transition-transform duration-200',
               expanded && 'rotate-180'
             )}
             fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -84,7 +84,7 @@ function DimensionScoreBar({ dimension }: { dimension: Dimension }) {
 
       {/* 展开评语 */}
       {expanded && dimension.comment && (
-        <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 mt-1 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
+        <div className="text-xs text-slate-500 bg-gray-50 rounded-lg px-3 py-2 mt-1 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
           {dimension.comment}
         </div>
       )}
@@ -111,10 +111,10 @@ export default function ResumeScoreCard({ data, className }: ResumeScoreCardProp
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {/* 大号分数 */}
             <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-gray-900 tabular-nums">
+              <span className="text-5xl font-bold text-slate-900 tabular-nums">
                 {displayTotal}
               </span>
-              <span className="text-base text-gray-400 font-medium">/ 10</span>
+              <span className="text-base text-slate-400 font-medium">/ 10</span>
             </div>
 
             {/* 分隔线（PC） */}
@@ -138,7 +138,7 @@ export default function ResumeScoreCard({ data, className }: ResumeScoreCardProp
             <div className="hidden sm:block flex-1" />
 
             {/* 维度数信息 */}
-            <div className="text-xs text-gray-400 text-center sm:text-right">
+            <div className="text-xs text-slate-400 text-center sm:text-right">
               <div>{dimensions.length} 个评估维度</div>
               <div>{improvements.length} 条改进建议</div>
             </div>
@@ -147,7 +147,7 @@ export default function ResumeScoreCard({ data, className }: ResumeScoreCardProp
 
         {/* ===== 维度评分条区 ===== */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
             <svg className="w-4 h-4 text-[#165DFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
@@ -162,11 +162,11 @@ export default function ResumeScoreCard({ data, className }: ResumeScoreCardProp
         </div>
 
         {/* ===== 分隔线 ===== */}
-        <div className="border-t border-gray-100" />
+        <div className="border-t border-slate-100" />
 
         {/* ===== 改进建议区 ===== */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
             <svg className="w-4 h-4 text-[#165DFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -187,7 +187,7 @@ export default function ResumeScoreCard({ data, className }: ResumeScoreCardProp
                 <span className="text-base leading-5 flex-shrink-0 mt-0.5">
                   {getImprovementIcon(idx)}
                 </span>
-                <span className="text-gray-700 leading-relaxed">{item}</span>
+                <span className="text-slate-700 leading-relaxed">{item}</span>
               </li>
             ))}
           </ol>

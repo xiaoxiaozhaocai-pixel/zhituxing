@@ -28,8 +28,8 @@ const verdictStyle: Record<string, { border: string; badge: string; tag: string 
     tag: '🟡 弱匹配',
   },
   no_match: {
-    border: 'border-gray-200',
-    badge: 'bg-gray-100 text-gray-500',
+    border: 'border-slate-200',
+    badge: 'bg-gray-100 text-slate-500',
     tag: '⚪ 不匹配',
   },
 };
@@ -45,25 +45,25 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
         {/* 头部 */}
         <div className="p-4 flex items-start justify-between">
           <div className="flex items-start gap-3">
-            <span className="text-lg font-bold text-gray-300 mt-0.5">#{rank}</span>
+            <span className="text-lg font-bold text-slate-300 mt-0.5">#{rank}</span>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900">{result.name}</h3>
+                <h3 className="font-semibold text-slate-900">{result.name}</h3>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${style.badge}`}>
                   {style.tag}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 mt-1">{result.scenario}</p>
+              <p className="text-sm text-slate-500 mt-1">{result.scenario}</p>
               {result.weighted_explanation && (
-                <p className="text-xs text-gray-400 mt-1">{result.weighted_explanation}</p>
+                <p className="text-xs text-slate-400 mt-1">{result.weighted_explanation}</p>
               )}
             </div>
           </div>
           <div className="text-right">
-            <div className={`text-xl font-bold ${result.verdict === 'no_match' ? 'text-gray-400' : 'text-blue-600'}`}>
+            <div className={`text-xl font-bold ${result.verdict === 'no_match' ? 'text-slate-400' : 'text-blue-600'}`}>
               {Math.round(result.match_rate * 100)}%
             </div>
-            <div className="text-xs text-gray-400">匹配度</div>
+            <div className="text-xs text-slate-400">匹配度</div>
           </div>
         </div>
 
@@ -71,7 +71,7 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
         <div className="px-4 pb-3">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-gray-400 border-b border-gray-100">
+              <tr className="text-slate-400 border-b border-slate-100">
                 <th className="text-left py-1.5 font-medium">条件</th>
                 <th className="text-left py-1.5 font-medium">要求</th>
                 <th className="text-left py-1.5 font-medium">你的</th>
@@ -81,11 +81,11 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
             </thead>
             <tbody>
               {result.field_details.map((fd) => (
-                <tr key={fd.field} className="border-b border-gray-50">
-                  <td className="py-1.5 text-gray-600">{fd.label}</td>
-                  <td className="py-1.5 text-gray-500">{fd.required}</td>
-                  <td className="py-1.5 text-gray-700 font-medium">{fd.current}</td>
-                  <td className="py-1.5 text-right text-gray-400">{Math.round(fd.contribution * 100)}%</td>
+                <tr key={fd.field} className="border-b border-slate-50">
+                  <td className="py-1.5 text-slate-600">{fd.label}</td>
+                  <td className="py-1.5 text-slate-500">{fd.required}</td>
+                  <td className="py-1.5 text-slate-700 font-medium">{fd.current}</td>
+                  <td className="py-1.5 text-right text-slate-400">{Math.round(fd.contribution * 100)}%</td>
                   <td className="py-1.5 text-right">
                     {fd.status === 'met' && <span className="text-green-500">✅</span>}
                     {fd.status === 'near_gap' && <span className="text-amber-500">⚠️ 差一点</span>}
@@ -101,7 +101,7 @@ export default function RouteCard({ result, rank }: RouteCardProps) {
         <div className="px-4 pb-4 flex gap-2">
           <button
             onClick={() => setShowJobs(!showJobs)}
-            className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+            className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 text-slate-600 hover:bg-gray-50 transition"
           >
             {showJobs ? '收起岗位' : '查看典型岗位'}
           </button>

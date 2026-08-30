@@ -125,7 +125,7 @@ export default function TermsPage() {
                 <span>{section.title}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-gray-700 leading-relaxed">
+            <CardContent className="text-slate-700 leading-relaxed">
               <p className="mb-4">{section.content}</p>
               <ul className="list-disc pl-6 space-y-2">
                 {section.list.map((item, idx) => (
@@ -133,7 +133,7 @@ export default function TermsPage() {
                 ))}
               </ul>
               {section.note && (
-                <p className="mt-4 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <p className="mt-4 text-sm text-slate-500 bg-gray-50 p-3 rounded-lg">
                   {section.note}
                 </p>
               )}
@@ -149,7 +149,7 @@ export default function TermsPage() {
               <span>同意条款</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-gray-700">
+          <CardContent className="text-slate-700">
             <p className="mb-4">
               当您注册账户或使用职途星服务时，即表示您已阅读、理解并同意：
             </p>
@@ -158,14 +158,14 @@ export default function TermsPage() {
               <li>遵守职途星隐私政策</li>
               <li>接受我们可能对条款进行的合理变更</li>
             </ul>
-            <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-slate-500">
               如您不同意本条款的任何内容，请立即停止使用本平台服务。
             </p>
           </CardContent>
         </Card>
 
         {/* Footer Note */}
-        <div className="text-center text-sm text-gray-500 py-8">
+        <div className="text-center text-sm text-slate-500 py-8">
           <p>
             如有任何疑问，请通过「联系我们」页面与我们沟通。
           </p>

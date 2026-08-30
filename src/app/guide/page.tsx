@@ -29,7 +29,7 @@ const STATUS_OPTIONS = [
   { value: '考研', label: '考研', desc: '准备研究生考试', color: 'border-green-500 bg-green-50' },
   { value: '考公', label: '考公', desc: '准备公务员考试', color: 'border-blue-500 bg-blue-50' },
   { value: '留学', label: '留学', desc: '准备出国留学', color: 'border-orange-500 bg-orange-50' },
-  { value: '未决定', label: '未决定', desc: '还在探索中', color: 'border-gray-400 bg-gray-50' },
+  { value: '未决定', label: '未决定', desc: '还在探索中', color: 'border-slate-400 bg-gray-50' },
 ];
 
 const INDUSTRIES = ['互联网/IT', '金融', '教育', '医疗健康', '制造业', '房地产/建筑', '零售/电商', '文化传媒', '能源/环保', '咨询/专业服务', '政府/公共事业', '其他'];
@@ -103,13 +103,13 @@ function QuickStartWizard() {
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <GraduationCap className="w-8 h-8 text-[#165DFF]" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">欢迎来到职途星</h2>
-        <p className="text-gray-500 mt-2">先简单认识一下你，AI 才能精准服务</p>
+        <h2 className="text-2xl font-bold text-slate-900">欢迎来到职途星</h2>
+        <p className="text-slate-500 mt-2">先简单认识一下你，AI 才能精准服务</p>
       </div>
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">你的年级</Label>
+          <Label className="text-sm font-medium text-slate-700">你的年级</Label>
           <div className="grid grid-cols-4 gap-2">
             {GRADE_OPTIONS.map(opt => (
               <button
@@ -118,7 +118,7 @@ function QuickStartWizard() {
                 className={`py-2.5 px-3 rounded-lg text-sm font-medium border transition-all ${
                   grade === opt.value
                     ? 'bg-[#165DFF] text-white border-[#165DFF] shadow-sm'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-[#165DFF] hover:text-[#165DFF]'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-[#165DFF] hover:text-[#165DFF]'
                 }`}
               >
                 {opt.label}
@@ -128,7 +128,7 @@ function QuickStartWizard() {
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">你的专业</Label>
+          <Label className="text-sm font-medium text-slate-700">你的专业</Label>
           <Input
             placeholder="例如：人力资源管理、计算机科学"
             value={major}
@@ -147,7 +147,7 @@ function QuickStartWizard() {
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
         <div className="text-center">
-          <button onClick={skipAll} className="text-sm text-gray-400 hover:text-gray-600">
+          <button onClick={skipAll} className="text-sm text-slate-400 hover:text-slate-600">
             跳过，直接开始
           </button>
         </div>
@@ -161,8 +161,8 @@ function QuickStartWizard() {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Target className="w-8 h-8 text-green-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">你目前在准备什么？</h2>
-        <p className="text-gray-500 mt-2">让我们为你推荐更合适的方向</p>
+        <h2 className="text-2xl font-bold text-slate-900">你目前在准备什么？</h2>
+        <p className="text-slate-500 mt-2">让我们为你推荐更合适的方向</p>
       </div>
 
       <div className="space-y-3">
@@ -175,18 +175,18 @@ function QuickStartWizard() {
               className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                 isSelected
                   ? 'border-[#165DFF] bg-blue-50 shadow-sm'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  isSelected ? 'border-[#165DFF] bg-[#165DFF]' : 'border-gray-300'
+                  isSelected ? 'border-[#165DFF] bg-[#165DFF]' : 'border-slate-300'
                 }`}>
                   {isSelected && <Check className="w-3 h-3 text-white" />}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{opt.label}</p>
-                  <p className="text-sm text-gray-500">{opt.desc}</p>
+                  <p className="font-medium text-slate-900">{opt.label}</p>
+                  <p className="text-sm text-slate-500">{opt.desc}</p>
                 </div>
               </div>
             </button>
@@ -202,7 +202,7 @@ function QuickStartWizard() {
           下一步
           <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
-        <button onClick={() => setStep(3)} className="w-full text-center text-sm text-gray-400 hover:text-gray-600">
+        <button onClick={() => setStep(3)} className="w-full text-center text-sm text-slate-400 hover:text-slate-600">
           跳过此步
         </button>
       </div>
@@ -215,8 +215,8 @@ function QuickStartWizard() {
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Sparkles className="w-8 h-8 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">最后一步（可选）</h2>
-        <p className="text-gray-500 mt-2">填了之后所有 AI 功能自动个性化，跳过也行</p>
+        <h2 className="text-2xl font-bold text-slate-900">最后一步（可选）</h2>
+        <p className="text-slate-500 mt-2">填了之后所有 AI 功能自动个性化，跳过也行</p>
       </div>
 
       <div className="space-y-3">
@@ -226,17 +226,17 @@ function QuickStartWizard() {
             <div className="flex items-center gap-3">
               <Target className="w-5 h-5 text-blue-600" />
               <div className="text-left">
-                <p className="font-medium text-gray-900">意向行业</p>
-                <p className="text-xs text-gray-400">用于岗位匹配和职业规划</p>
+                <p className="font-medium text-slate-900">意向行业</p>
+                <p className="text-xs text-slate-400">用于岗位匹配和职业规划</p>
               </div>
             </div>
-            {expandedCards.includes('target_industry') ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+            {expandedCards.includes('target_industry') ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
           </button>
           {expandedCards.includes('target_industry') && (
             <div className="px-4 pb-4">
               <div className="flex flex-wrap gap-2">
                 {INDUSTRIES.map(v => (
-                  <button key={v} onClick={() => toggleIndustry(v)} className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${targetIndustry.includes(v) ? 'bg-[#165DFF] text-white border-[#165DFF]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#165DFF]'}`}>
+                  <button key={v} onClick={() => toggleIndustry(v)} className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${targetIndustry.includes(v) ? 'bg-[#165DFF] text-white border-[#165DFF]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#165DFF]'}`}>
                     {v}
                   </button>
                 ))}
@@ -251,17 +251,17 @@ function QuickStartWizard() {
             <div className="flex items-center gap-3">
               <MapPin className="w-5 h-5 text-green-600" />
               <div className="text-left">
-                <p className="font-medium text-gray-900">意向城市</p>
-                <p className="text-xs text-gray-400">用于推荐目标城市的岗位</p>
+                <p className="font-medium text-slate-900">意向城市</p>
+                <p className="text-xs text-slate-400">用于推荐目标城市的岗位</p>
               </div>
             </div>
-            {expandedCards.includes('target_cities') ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+            {expandedCards.includes('target_cities') ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
           </button>
           {expandedCards.includes('target_cities') && (
             <div className="px-4 pb-4">
               <div className="flex flex-wrap gap-2">
                 {CITIES.map(v => (
-                  <button key={v} onClick={() => toggleCity(v)} className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${targetCities.includes(v) ? 'bg-[#165DFF] text-white border-[#165DFF]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#165DFF]'}`}>
+                  <button key={v} onClick={() => toggleCity(v)} className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${targetCities.includes(v) ? 'bg-[#165DFF] text-white border-[#165DFF]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#165DFF]'}`}>
                     {v}
                   </button>
                 ))}
@@ -279,7 +279,7 @@ function QuickStartWizard() {
         >
           {saving ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />保存中...</> : saved ? <><Check className="w-4 h-4 mr-1" />已完成</> : '完成，和小职聊聊'}
         </Button>
-        <button onClick={skipAll} className="w-full text-center text-sm text-gray-400 hover:text-gray-600">
+        <button onClick={skipAll} className="w-full text-center text-sm text-slate-400 hover:text-slate-600">
           先不填了，直接开始
         </button>
       </div>
@@ -295,7 +295,7 @@ function QuickStartWizard() {
             {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center flex-1">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                  step >= i ? 'bg-[#165DFF] text-white' : 'bg-gray-200 text-gray-500'
+                  step >= i ? 'bg-[#165DFF] text-white' : 'bg-gray-200 text-slate-500'
                 }`}>
                   {step > i ? <Check className="w-4 h-4" /> : i}
                 </div>
@@ -304,9 +304,9 @@ function QuickStartWizard() {
             ))}
           </div>
           <div className="flex justify-between px-1">
-            <span className="text-xs text-gray-400">基础信息</span>
-            <span className="text-xs text-gray-400">当前状态</span>
-            <span className="text-xs text-gray-400">偏好设置</span>
+            <span className="text-xs text-slate-400">基础信息</span>
+            <span className="text-xs text-slate-400">当前状态</span>
+            <span className="text-xs text-slate-400">偏好设置</span>
           </div>
         </div>
       </div>

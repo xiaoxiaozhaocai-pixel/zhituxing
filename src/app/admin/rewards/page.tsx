@@ -124,7 +124,7 @@ export default function RewardsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">奖励发放管理</h1>
+        <h1 className="text-2xl font-bold text-slate-900">奖励发放管理</h1>
       </div>
 
       {/* 告警提示 */}
@@ -149,7 +149,7 @@ export default function RewardsPage() {
                 <Gift className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">总发放记录</p>
+                <p className="text-sm text-slate-500">总发放记录</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function RewardsPage() {
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">成功</p>
+                <p className="text-sm text-slate-500">成功</p>
                 <p className="text-2xl font-bold text-green-600">{stats.success}</p>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function RewardsPage() {
                 <XCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">失败</p>
+                <p className="text-sm text-slate-500">失败</p>
                 <p className="text-2xl font-bold text-red-600">{stats.failed}</p>
               </div>
             </div>
@@ -191,7 +191,7 @@ export default function RewardsPage() {
                 <Clock className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">待处理</p>
+                <p className="text-sm text-slate-500">待处理</p>
                 <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
               </div>
             </div>
@@ -229,14 +229,14 @@ export default function RewardsPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">用户</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">奖励类型</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">奖励值</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">状态</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">失败原因</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">申请时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">处理信息</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">用户</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">奖励类型</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">奖励值</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">状态</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">失败原因</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">申请时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">处理信息</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -248,7 +248,7 @@ export default function RewardsPage() {
                   </tr>
                 ) : records.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                       暂无记录
                     </td>
                   </tr>
@@ -259,7 +259,7 @@ export default function RewardsPage() {
                       <tr key={record.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-gray-400" />
+                            <User className="w-4 h-4 text-slate-400" />
                             <span>{record.username || record.user_id}</span>
                           </div>
                         </td>
@@ -280,10 +280,10 @@ export default function RewardsPage() {
                         <td className="px-4 py-3 text-sm text-red-600 max-w-[200px] truncate">
                           {record.fail_reason || '-'}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-slate-500">
                           {formatDate(record.created_at)}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
+                        <td className="px-4 py-3 text-sm text-slate-500">
                           {record.processed_by ? `${record.processed_by} @ ${formatDate(record.processed_at)}` : '-'}
                         </td>
                         <td className="px-4 py-3">
@@ -331,7 +331,7 @@ export default function RewardsPage() {
                 <button onClick={() => setModal(null)}><X className="w-5 h-5" /></button>
               </div>
               
-              <p className="text-gray-600 mb-4">
+              <p className="text-slate-600 mb-4">
                 为用户 <strong>{modal.username || modal.userId}</strong> 补发奖励
               </p>
               

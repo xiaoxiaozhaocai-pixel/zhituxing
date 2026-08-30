@@ -129,7 +129,7 @@ export default function ReferralDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">内推不存在或已下架</p>
+          <p className="text-slate-600 mb-4">内推不存在或已下架</p>
           <Link href="/referrals">
             <Button>返回内推列表</Button>
           </Link>
@@ -142,7 +142,7 @@ export default function ReferralDetailPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Back Button */}
-        <Link href="/referrals" className="inline-flex items-center gap-2 text-gray-600 hover:text-[#165DFF] mb-6">
+        <Link href="/referrals" className="inline-flex items-center gap-2 text-slate-600 hover:text-[#165DFF] mb-6">
           <ArrowLeft className="w-4 h-4" />
           返回内推列表
         </Link>
@@ -156,12 +156,12 @@ export default function ReferralDetailPage() {
                   {referral.logoUrl ? (
                     <Image src={referral.logoUrl} alt={referral.company} width={56} height={56} className="rounded-lg object-cover" unoptimized />
                   ) : (
-                    <span className="text-2xl font-bold text-gray-600">{referral.company.charAt(0)}</span>
+                    <span className="text-2xl font-bold text-slate-600">{referral.company.charAt(0)}</span>
                   )}
                 </div>
                 <div>
                   <CardTitle className="text-2xl font-bold">{referral.company}</CardTitle>
-                  <p className="text-lg text-gray-600 mt-1">{referral.position}</p>
+                  <p className="text-lg text-slate-600 mt-1">{referral.position}</p>
                   <div className="flex items-center gap-2 mt-2">
                     {referral.isVerified && (
                       <Badge className="bg-green-500 text-white">
@@ -184,8 +184,8 @@ export default function ReferralDetailPage() {
           <CardContent>
             <div className="flex flex-wrap gap-4 mb-6 pb-6 border-b">
               {referral.location && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-5 h-5 text-gray-400" />
+                <div className="flex items-center gap-2 text-slate-600">
+                  <MapPin className="w-5 h-5 text-slate-400" />
                   {referral.location}
                 </div>
               )}
@@ -195,28 +195,28 @@ export default function ReferralDetailPage() {
                   {referral.salary}
                 </div>
               )}
-              <div className="flex items-center gap-2 text-gray-600">
-                <Users className="w-5 h-5 text-gray-400" />
+              <div className="flex items-center gap-2 text-slate-600">
+                <Users className="w-5 h-5 text-slate-400" />
                 {referral.appliesCount}人已申请
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="w-5 h-5 text-gray-400" />
+              <div className="flex items-center gap-2 text-slate-600">
+                <Clock className="w-5 h-5 text-slate-400" />
                 {new Date(referral.createdAt).toLocaleDateString('zh-CN')}
               </div>
             </div>
 
             {/* Title */}
             <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">职位描述</h3>
-              <p className="text-gray-600">{referral.title}</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">职位描述</h3>
+              <p className="text-slate-600">{referral.title}</p>
             </div>
 
             {/* Requirements */}
             {referral.requirements && (
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">岗位要求</h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">岗位要求</h3>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-gray-600 text-sm">{referral.requirements}</pre>
+                  <pre className="whitespace-pre-wrap text-slate-600 text-sm">{referral.requirements}</pre>
                 </div>
               </div>
             )}
@@ -224,7 +224,7 @@ export default function ReferralDetailPage() {
             {/* Benefits */}
             {referral.benefits && (
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">福利待遇</h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">福利待遇</h3>
                 <div className="bg-green-50 rounded-lg p-4">
                   <pre className="whitespace-pre-wrap text-green-700 text-sm">{referral.benefits}</pre>
                 </div>
@@ -236,20 +236,20 @@ export default function ReferralDetailPage() {
               <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Crown className="w-6 h-6 text-orange-500" />
-                  <h3 className="text-lg font-bold text-gray-900">内推联系方式</h3>
+                  <h3 className="text-lg font-bold text-slate-900">内推联系方式</h3>
                 </div>
                 
                 <div className="space-y-4">
                   {referral.contactName && (
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-500 w-20">联系人：</span>
+                      <span className="text-slate-500 w-20">联系人：</span>
                       <span className="font-medium">{referral.contactName}</span>
                     </div>
                   )}
                   
                   {referral.contactWechat && (
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-500 w-20">微信：</span>
+                      <span className="text-slate-500 w-20">微信：</span>
                       <span className="font-medium">{referral.contactWechat}</span>
                       <Button size="sm" variant="outline" onClick={copyWechat}>
                         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -260,7 +260,7 @@ export default function ReferralDetailPage() {
                   
                   {referral.contactEmail && (
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-500 w-20">邮箱：</span>
+                      <span className="text-slate-500 w-20">邮箱：</span>
                       <span className="font-medium">{referral.contactEmail}</span>
                     </div>
                   )}
@@ -289,10 +289,10 @@ export default function ReferralDetailPage() {
             ) : (
               <div className="bg-gray-100 rounded-xl p-6">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <Lock className="w-6 h-6 text-gray-400" />
-                  <h3 className="text-lg font-bold text-gray-900">会员专享联系方式</h3>
+                  <Lock className="w-6 h-6 text-slate-400" />
+                  <h3 className="text-lg font-bold text-slate-900">会员专享联系方式</h3>
                 </div>
-                <p className="text-center text-gray-600 mb-4">
+                <p className="text-center text-slate-600 mb-4">
                   开通会员即可查看完整联系方式，直接对接内推人
                 </p>
                 <Link href="/membership">

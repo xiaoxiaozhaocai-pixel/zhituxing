@@ -93,8 +93,8 @@ function SkillCategorySection({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span style={{ color: accentColor }}><Icon className="w-4 h-4" /></span>
-          <h4 className="text-sm font-semibold text-gray-800">{title}</h4>
-          <span className="text-xs text-gray-400">{skills.length} 项</span>
+          <h4 className="text-sm font-semibold text-slate-800">{title}</h4>
+          <span className="text-xs text-slate-400">{skills.length} 项</span>
         </div>
         <button
           onClick={onEdit}
@@ -109,7 +109,7 @@ function SkillCategorySection({
           {skills.map((skill) => (
             <div key={skill.name} className="flex items-center justify-between py-1.5 px-3 bg-gray-50/80 rounded-lg">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-800">{skill.name}</span>
+                <span className="text-sm text-slate-800">{skill.name}</span>
                 {skill.is_hot && <span className="text-xs">🔥</span>}
               </div>
               <ProficiencyBar level={skill.level} />
@@ -117,7 +117,7 @@ function SkillCategorySection({
           ))}
         </div>
       ) : (
-        <p className="text-xs text-gray-400 py-2">暂无技能，点击编辑添加</p>
+        <p className="text-xs text-slate-400 py-2">暂无技能，点击编辑添加</p>
       )}
     </div>
   );
@@ -276,7 +276,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">个人信息</h2>
+        <h2 className="text-xl font-bold text-slate-900">个人信息</h2>
         <Link href="/profile/info">
           <Button variant="outline" size="sm">
             <Pencil className="w-3 h-3 mr-1" />
@@ -302,16 +302,16 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                 const value = format ? format(rawValue) : rawValue;
                 return (
                   <div key={key} className="flex items-center gap-3 py-1.5">
-                    <Icon className="w-4 h-4 text-gray-400 shrink-0" />
-                    <span className="text-sm text-gray-500 w-20 shrink-0">{label}</span>
-                    <span className="text-sm font-medium text-gray-900">{value}</span>
+                    <Icon className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span className="text-sm text-slate-500 w-20 shrink-0">{label}</span>
+                    <span className="text-sm font-medium text-slate-900">{value}</span>
                   </div>
                 );
               })}
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-gray-400 text-sm mb-3">尚未填写基本信息</p>
+              <p className="text-slate-400 text-sm mb-3">尚未填写基本信息</p>
               <Link href="/profile/info">
                 <Button size="sm" className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                   去填写
@@ -329,7 +329,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
             <Sparkles className="w-5 h-5 text-blue-600" />
             补充信息（可选）
           </CardTitle>
-          <CardDescription className="text-xs text-gray-400">
+          <CardDescription className="text-xs text-slate-400">
             填写后可让所有AI服务获得更精准的上下文，一次填写处处生效
           </CardDescription>
         </CardHeader>
@@ -349,13 +349,13 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                 <div key={field.key} className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-2">
                     <Icon className={`w-4 h-4 ${field.color}`} />
-                    <span className="text-sm text-gray-600">{field.label}</span>
+                    <span className="text-sm text-slate-600">{field.label}</span>
                   </div>
                   <div>
                     {displayVal ? (
-                      <span className="text-sm text-gray-900 font-medium">{displayVal}</span>
+                      <span className="text-sm text-slate-900 font-medium">{displayVal}</span>
                     ) : (
-                      <span className="text-xs text-gray-400">未填写</span>
+                      <span className="text-xs text-slate-400">未填写</span>
                     )}
                   </div>
                 </div>
@@ -392,20 +392,20 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                 return (
                   <div key={key} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700">{label}</span>
+                      <Icon className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-700">{label}</span>
                     </div>
                     <div className="pl-6 space-y-1">
                       {value.map((item, idx) => {
                         // 实习经历格式化：company | role | duration，然后 description
                         if (key === 'internship_experience' && typeof item === 'object') {
                           return (
-                            <div key={idx} className="text-sm text-gray-600 space-y-1">
+                            <div key={idx} className="text-sm text-slate-600 space-y-1">
                               <div className="font-medium">
                                 {[item.company, item.role, item.duration].filter(Boolean).join(' | ')}
                               </div>
                               {item.description && (
-                                <div className="text-gray-500 pl-2 border-l-2 border-gray-200">
+                                <div className="text-slate-500 pl-2 border-l-2 border-slate-200">
                                   {item.description}
                                 </div>
                               )}
@@ -416,12 +416,12 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                         if (key === 'project_experience' && typeof item === 'object') {
                           const projectName = item.name || item.title;
                           return (
-                            <div key={idx} className="text-sm text-gray-600 space-y-1">
+                            <div key={idx} className="text-sm text-slate-600 space-y-1">
                               <div className="font-medium">
                                 {[projectName, item.role, item.duration].filter(Boolean).join(' | ')}
                               </div>
                               {item.description && (
-                                <div className="text-gray-500 pl-2 border-l-2 border-gray-200">
+                                <div className="text-slate-500 pl-2 border-l-2 border-slate-200">
                                   {item.description}
                                 </div>
                               )}
@@ -430,7 +430,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
                         }
                         // 默认渲染
                         return (
-                          <div key={idx} className="text-sm text-gray-600">
+                          <div key={idx} className="text-sm text-slate-600">
                             {typeof item === 'string' ? item : item.name || item.title || JSON.stringify(item)}
                           </div>
                         );
@@ -482,8 +482,8 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
               <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-3">
                 <Sparkles className="w-7 h-7 text-blue-400" />
               </div>
-              <p className="text-gray-500 text-sm mb-1">完善你的技能画像</p>
-              <p className="text-gray-400 text-xs mb-4">获取精准职业规划和岗位匹配</p>
+              <p className="text-slate-500 text-sm mb-1">完善你的技能画像</p>
+              <p className="text-slate-400 text-xs mb-4">获取精准职业规划和岗位匹配</p>
               <Link href="/profile/info?from=/profile">
                 <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF]/90 hover:to-[#3D7FFF]/90 text-white shadow-md shadow-blue-500/20">
                   AI智能推荐技能
@@ -567,7 +567,7 @@ function MessagesPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">我的消息</h2>
+        <h2 className="text-xl font-bold text-slate-900">我的消息</h2>
         {unreadCount > 0 && (
           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
             {unreadCount}条未读
@@ -578,8 +578,8 @@ function MessagesPanel({ userId }: { userId: string }) {
       {notifications.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Bell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">暂无消息通知</p>
+            <Bell className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500">暂无消息通知</p>
           </CardContent>
         </Card>
       ) : (
@@ -593,10 +593,10 @@ function MessagesPanel({ userId }: { userId: string }) {
                       {!notification.is_read && (
                         <span className="w-2 h-2 bg-red-500 rounded-full" />
                       )}
-                      <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                      <h3 className="font-medium text-slate-900">{notification.title}</h3>
                     </div>
-                    <p className="text-sm text-gray-600">{notification.content}</p>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-sm text-slate-600">{notification.content}</p>
+                    <p className="text-xs text-slate-400 mt-2">
                       {new Date(notification.created_at).toLocaleString('zh-CN')}
                     </p>
                   </div>
@@ -651,7 +651,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">我的会员</h2>
+        <h2 className="text-xl font-bold text-slate-900">我的会员</h2>
       </div>
 
       <Card className="bg-gradient-to-r from-[#165DFF] to-[#9B5AE7] text-white">
@@ -682,8 +682,8 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
                 <Sparkles className="w-6 h-6 text-orange-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-gray-900">开通会员解锁全部功能</h3>
-                <p className="text-sm text-gray-600">仅需{MEMBERSHIP_MONTHLY_PRICE_TEXT}，享受无限次AI服务</p>
+                <h3 className="font-bold text-slate-900">开通会员解锁全部功能</h3>
+                <p className="text-sm text-slate-600">仅需{MEMBERSHIP_MONTHLY_PRICE_TEXT}，享受无限次AI服务</p>
               </div>
               <Link href="/membership">
                 <Button className="bg-[#FF7D00] hover:bg-[#e67000]">立即开通</Button>
@@ -702,7 +702,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
             {memberBenefits.map((benefit, index) => (
               <div key={index} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50">
                 <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                <span className="text-sm text-gray-700">{benefit}</span>
+                <span className="text-sm text-slate-700">{benefit}</span>
               </div>
             ))}
           </div>
@@ -754,7 +754,7 @@ function ReportsPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">我的报告</h2>
+        <h2 className="text-xl font-bold text-slate-900">我的报告</h2>
         <Link href="/growth">
           <Button variant="outline" size="sm">生成新报告</Button>
         </Link>
@@ -763,8 +763,8 @@ function ReportsPanel({ userId }: { userId: string }) {
       {reports.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-4">还没有生成过职业规划报告</p>
+            <FileText className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500 mb-4">还没有生成过职业规划报告</p>
             <Link href="/growth">
               <Button className="bg-[#165DFF] hover:bg-[#6019c4]">去生成报告</Button>
             </Link>
@@ -777,8 +777,8 @@ function ReportsPanel({ userId }: { userId: string }) {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium text-gray-900">{report.title || `${report.major || '职业规划'}报告`}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h3 className="font-medium text-slate-900">{report.title || `${report.major || '职业规划'}报告`}</h3>
+                    <p className="text-sm text-slate-500 mt-1">
                       {report.core_job && <span className="mr-2">目标岗位: {report.core_job}</span>}
                       {report.city && <span className="mr-2">城市: {report.city}</span>}
                       {report.create_time && (
@@ -854,15 +854,15 @@ function FavoritesPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">我的收藏</h2>
-        <span className="text-gray-500">{favorites.length}个岗位</span>
+        <h2 className="text-xl font-bold text-slate-900">我的收藏</h2>
+        <span className="text-slate-500">{favorites.length}个岗位</span>
       </div>
 
       {favorites.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-4">还没有收藏任何岗位</p>
+            <Heart className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500 mb-4">还没有收藏任何岗位</p>
             <Link href="/jobs">
               <Button className="bg-[#165DFF] hover:bg-[#0d4acc]">去岗位百科看看</Button>
             </Link>
@@ -875,13 +875,13 @@ function FavoritesPanel({ userId }: { userId: string }) {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">{favorite.jobTitle}</h3>
+                    <h3 className="font-medium text-slate-900">{favorite.jobTitle}</h3>
                     {(() => {
                       const fallback = [favorite.industry, favorite.company_type].filter(Boolean).join(' · ');
                       const display = favorite.company || fallback;
-                      return display ? <p className="text-sm text-gray-600">{display}</p> : null;
+                      return display ? <p className="text-sm text-slate-600">{display}</p> : null;
                     })()}
-                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-slate-500">
                       {favorite.location && (
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
@@ -898,7 +898,7 @@ function FavoritesPanel({ userId }: { userId: string }) {
                   </div>
                   <button
                     onClick={() => handleDelete(favorite.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
                   >
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
                   </button>
@@ -957,7 +957,7 @@ function InvitePanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-900">我的邀请</h2>
+      <h2 className="text-xl font-bold text-slate-900">我的邀请</h2>
 
       <Card className="bg-gradient-to-r from-[#165DFF] to-[#34D399] text-white">
         <CardContent className="p-6">
@@ -978,7 +978,7 @@ function InvitePanel({ userId }: { userId: string }) {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <div className="flex-1 p-3 bg-gray-50 rounded-lg text-sm text-gray-600 truncate">
+            <div className="flex-1 p-3 bg-gray-50 rounded-lg text-sm text-slate-600 truncate">
               {typeof window !== 'undefined' ? `${window.location.origin}/auth?invite_code=${inviteCode}` : ''}
             </div>
             <Button onClick={handleCopyLink} className="bg-[#165DFF] hover:bg-[#0d4acc]">
@@ -996,15 +996,15 @@ function InvitePanel({ userId }: { userId: string }) {
           <ul className="space-y-2">
             <li className="flex items-start gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700">邀请1位好友注册并完成首次AI提问，双方各获得3次AI次数+7天会员</span>
+              <span className="text-sm text-slate-700">邀请1位好友注册并完成首次AI提问，双方各获得3次AI次数+7天会员</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700">累计邀请3人，额外获得30天会员</span>
+              <span className="text-sm text-slate-700">累计邀请3人，额外获得30天会员</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700">累计邀请10人，额外获得90天会员+1次免费简历精修服务</span>
+              <span className="text-sm text-slate-700">累计邀请10人，额外获得90天会员+1次免费简历精修服务</span>
             </li>
           </ul>
         </CardContent>
@@ -1071,7 +1071,7 @@ function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => voi
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-900">账号设置</h2>
+      <h2 className="text-xl font-bold text-slate-900">账号设置</h2>
 
       <Card>
         <CardHeader>
@@ -1079,7 +1079,7 @@ function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => voi
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">用户名</label>
             <input
               type="text"
               value={formData.nickname}
@@ -1088,12 +1088,12 @@ function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => voi
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">手机号</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">手机号</label>
             <input
               type="text"
               value={maskPhone(formData.phone)}
               disabled
-              className="w-full px-3 py-2 border rounded-lg bg-gray-50 text-gray-500"
+              className="w-full px-3 py-2 border rounded-lg bg-gray-50 text-slate-500"
             />
           </div>
           <Button onClick={handleSave} className="bg-[#165DFF] hover:bg-[#0d4acc]">
@@ -1106,16 +1106,16 @@ function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => voi
       <Card>
         <CardHeader>
           <CardTitle>账号绑定</CardTitle>
-          <p className="text-sm text-gray-500">绑定邮箱后可使用验证码登录</p>
+          <p className="text-sm text-slate-500">绑定邮箱后可使用验证码登录</p>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 手机号绑定状态 */}
           <div className="flex items-center justify-between py-2 border-b">
             <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5 text-gray-400" />
+              <Smartphone className="w-5 h-5 text-slate-400" />
               <div>
-                <p className="font-medium text-gray-900">手机号</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-medium text-slate-900">手机号</p>
+                <p className="text-sm text-slate-500">
                   {user?.phone ? maskPhone(user.phone) : '未绑定'}
                 </p>
               </div>
@@ -1123,17 +1123,17 @@ function SettingsPanel({ user, onLogout }: { user: AuthUser; onLogout: () => voi
             {user?.phone ? (
               <Badge className="bg-green-100 text-green-700">已绑定</Badge>
             ) : (
-              <span className="text-xs text-gray-400">即将开放</span>
+              <span className="text-xs text-slate-400">即将开放</span>
             )}
           </div>
           
           {/* 邮箱绑定状态 */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-gray-400" />
+              <Mail className="w-5 h-5 text-slate-400" />
               <div>
-                <p className="font-medium text-gray-900">邮箱</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-medium text-slate-900">邮箱</p>
+                <p className="text-sm text-slate-500">
                   {user?.email ? maskEmail(user.email) : '未绑定'}
                 </p>
               </div>
@@ -1214,7 +1214,7 @@ function LogoutConfirmModal({ show, onConfirm, onCancel }: { show: boolean; onCo
             <AlertCircle className="w-6 h-6 text-red-500" />
             <h2 className="text-xl font-bold">确认退出</h2>
           </div>
-          <p className="text-gray-600 mb-6">确定要退出登录吗？</p>
+          <p className="text-slate-600 mb-6">确定要退出登录吗？</p>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onCancel}>取消</Button>
             <Button className="bg-red-500 hover:bg-red-600" onClick={onConfirm}>确认退出</Button>
@@ -1362,8 +1362,8 @@ function ProfileContent() {
                 </span>
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-gray-900 text-sm truncate">{user.nickname || '用户'}</p>
-                <p className="text-xs text-gray-500">
+                <p className="font-semibold text-slate-900 text-sm truncate">{user.nickname || '用户'}</p>
+                <p className="text-xs text-slate-500">
                   {user.phone?.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}
                 </p>
               </div>
@@ -1404,7 +1404,7 @@ function ProfileContent() {
                   className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
                     isActive
                       ? 'bg-gradient-to-r from-[#165DFF] to-[#165DFF] text-white shadow-md shadow-blue-200/40'
-                      : 'text-gray-600 hover:bg-blue-50/60 hover:text-[#165DFF]'
+                      : 'text-slate-600 hover:bg-blue-50/60 hover:text-[#165DFF]'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
@@ -1420,7 +1420,7 @@ function ProfileContent() {
           {/* sidebar 底部装饰 */}
           <div className="px-3 pb-4">
             <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
-            <p className="text-[10px] text-gray-400 text-center mt-3">职途星 · 让求职更简单</p>
+            <p className="text-[10px] text-slate-400 text-center mt-3">职途星 · 让求职更简单</p>
           </div>
         </aside>
 

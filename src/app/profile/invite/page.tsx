@@ -127,35 +127,35 @@ export default function InvitePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
             邀请好友 免费领会员
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-slate-600">
             邀请好友一起使用职途星，双方都能获得丰厚奖励
           </p>
         </div>
 
         {/* Invite Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="border-2 border-gray-100 text-center">
+          <Card className="border-2 border-slate-100 text-center">
             <CardContent className="pt-6">
               <Users className="w-12 h-12 text-[#165DFF] mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.total_invites}</h3>
-              <p className="text-gray-600">累计邀请人数</p>
+              <h3 className="text-3xl font-bold text-slate-900 mb-1">{stats.total_invites}</h3>
+              <p className="text-slate-600">累计邀请人数</p>
             </CardContent>
           </Card>
-          <Card className="border-2 border-gray-100 text-center">
+          <Card className="border-2 border-slate-100 text-center">
             <CardContent className="pt-6">
               <Trophy className="w-12 h-12 text-[#FF7D00] mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.total_days_earned}天</h3>
-              <p className="text-gray-600">累计获得会员天数</p>
+              <h3 className="text-3xl font-bold text-slate-900 mb-1">{stats.total_days_earned}天</h3>
+              <p className="text-slate-600">累计获得会员天数</p>
             </CardContent>
           </Card>
-          <Card className="border-2 border-gray-100 text-center">
+          <Card className="border-2 border-slate-100 text-center">
             <CardContent className="pt-6">
               <Gift className="w-12 h-12 text-green-500 mx-auto mb-4" />
-              <h3 className="text-3xl font-bold text-gray-900 mb-1">{stats.total_quota_earned}次</h3>
-              <p className="text-gray-600">累计获得AI次数</p>
+              <h3 className="text-3xl font-bold text-slate-900 mb-1">{stats.total_quota_earned}次</h3>
+              <p className="text-slate-600">累计获得AI次数</p>
             </CardContent>
           </Card>
         </div>
@@ -163,16 +163,16 @@ export default function InvitePage() {
         {/* 里程碑进度 */}
         <Card className="mb-8 border-2 border-[#FF7D00]/30 bg-gradient-to-r from-[#FF7D00]/5 to-transparent">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">里程碑奖励进度</h3>
+            <h3 className="font-semibold text-slate-900 mb-4">里程碑奖励进度</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${stats.total_invites >= 3 ? 'bg-green-500' : 'bg-gray-300'}`}>
                     {stats.total_invites >= 3 ? <CheckCircle className="w-5 h-5 text-white" /> : <span className="text-white text-sm">3</span>}
                   </div>
-                  <span className="text-gray-700">邀请3人 → 额外30天会员</span>
+                  <span className="text-slate-700">邀请3人 → 额外30天会员</span>
                 </div>
-                <span className="text-sm text-gray-500">{Math.min(stats.total_invites, 3)}/3</span>
+                <span className="text-sm text-slate-500">{Math.min(stats.total_invites, 3)}/3</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
@@ -186,9 +186,9 @@ export default function InvitePage() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${stats.total_invites >= 10 ? 'bg-green-500' : 'bg-gray-300'}`}>
                     {stats.total_invites >= 10 ? <CheckCircle className="w-5 h-5 text-white" /> : <span className="text-white text-sm">10</span>}
                   </div>
-                  <span className="text-gray-700">邀请10人 → 90天会员+简历精修</span>
+                  <span className="text-slate-700">邀请10人 → 90天会员+简历精修</span>
                 </div>
-                <span className="text-sm text-gray-500">{Math.min(stats.total_invites, 10)}/10</span>
+                <span className="text-sm text-slate-500">{Math.min(stats.total_invites, 10)}/10</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
@@ -202,7 +202,7 @@ export default function InvitePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Invite Rules */}
-          <Card className="border-2 border-gray-100">
+          <Card className="border-2 border-slate-100">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Gift className="w-6 h-6 text-[#FF7D00] mr-2" />
@@ -216,7 +216,7 @@ export default function InvitePage() {
                     <div className="w-6 h-6 bg-[#165DFF]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 mr-3">
                       <span className="text-[#165DFF] text-sm font-bold">{index + 1}</span>
                     </div>
-                    <span className="text-gray-700">{rule}</span>
+                    <span className="text-slate-700">{rule}</span>
                   </li>
                 ))}
               </ul>
@@ -224,7 +224,7 @@ export default function InvitePage() {
           </Card>
 
           {/* Invite Methods */}
-          <Card className="border-2 border-gray-100">
+          <Card className="border-2 border-slate-100">
             <CardHeader>
               <CardTitle>邀请方式</CardTitle>
               <CardDescription>
@@ -234,7 +234,7 @@ export default function InvitePage() {
             <CardContent className="space-y-4">
               {/* 邀请码 */}
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">你的专属邀请码</p>
+                <p className="text-sm text-slate-600 mb-2">你的专属邀请码</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-white px-4 py-3 rounded border text-xl font-bold text-center tracking-wider">
                     {inviteCode || '加载中...'}
@@ -246,12 +246,12 @@ export default function InvitePage() {
                     {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">好友注册时填写此邀请码，双方都能获得奖励</p>
+                <p className="text-xs text-slate-500 mt-2">好友注册时填写此邀请码，双方都能获得奖励</p>
               </div>
 
               {/* 邀请链接 */}
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-3">你的专属邀请链接</p>
+                <p className="text-sm text-slate-600 mb-3">你的专属邀请链接</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-white px-3 py-2 rounded border text-sm break-all">
                     {inviteCode ? `${window.location.origin}/auth?invite_code=${inviteCode}` : '加载中...'}
@@ -287,7 +287,7 @@ export default function InvitePage() {
         </div>
 
         {/* Invite Records */}
-        <Card className="mt-8 border-2 border-gray-100">
+        <Card className="mt-8 border-2 border-slate-100">
           <CardHeader>
             <CardTitle>邀请记录</CardTitle>
             <CardDescription>
@@ -296,7 +296,7 @@ export default function InvitePage() {
           </CardHeader>
           <CardContent>
             {records.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-slate-500">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>暂无邀请记录</p>
                 <p className="text-sm">快去邀请好友吧！</p>
@@ -306,8 +306,8 @@ export default function InvitePage() {
                 {records.map((record) => (
                   <div key={record.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">{record.invitee_name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-slate-900">{record.invitee_name}</p>
+                      <p className="text-sm text-slate-500">
                         {new Date(record.created_at).toLocaleString('zh-CN')}
                       </p>
                     </div>
@@ -342,7 +342,7 @@ export default function InvitePage() {
             <h3 className="text-2xl font-bold mb-2">职途星</h3>
             <p className="mb-4 text-white/80">你的AI朋友</p>
             <div className="w-40 h-40 bg-white rounded-lg flex flex-col items-center justify-center mb-4">
-              <span className="text-gray-600 text-sm mb-2">邀请码</span>
+              <span className="text-slate-600 text-sm mb-2">邀请码</span>
               <span className="text-2xl font-bold text-[#165DFF] tracking-wider">{inviteCode}</span>
             </div>
             <p className="text-sm text-white/80">扫码注册，双方都能获得3次免费AI次数</p>

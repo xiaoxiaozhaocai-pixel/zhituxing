@@ -52,8 +52,8 @@ function LoginContent() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] shadow-lg shadow-[#165DFF]/30 mb-3">
             <Building2 className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">雇主登录</h1>
-          <p className="text-sm text-gray-500 mt-1">职途星·候选人精准匹配</p>
+          <h1 className="text-2xl font-bold text-slate-900">雇主登录</h1>
+          <p className="text-sm text-slate-500 mt-1">职途星·候选人精准匹配</p>
         </div>
 
         <form
@@ -61,19 +61,19 @@ function LoginContent() {
           className="bg-white/80 backdrop-blur-md border border-[#165DFF]/10 rounded-2xl p-6 shadow-xl shadow-[#165DFF]/5 space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">企业邮箱</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">企业邮箱</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="hr@company.com"
               autoComplete="email"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
               disabled={loading}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">密码</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">密码</label>
             <div className="relative">
               <input
                 type={showPwd ? 'text' : 'password'}
@@ -81,13 +81,13 @@ function LoginContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="至少 8 位"
                 autoComplete="current-password"
-                className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+                className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPwd((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
                 tabIndex={-1}
               >
                 {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -107,14 +107,14 @@ function LoginContent() {
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             登录
           </button>
-          <div className="text-center text-sm text-gray-500 pt-2 border-t border-gray-100">
+          <div className="text-center text-sm text-slate-500 pt-2 border-t border-slate-100">
             还没有账号？{' '}
             <Link href="/employer/auth/signup" className="text-[#165DFF] hover:underline font-medium">
               立即注册
             </Link>
           </div>
         </form>
-        <div className="text-center text-xs text-gray-400 mt-4">
+        <div className="text-center text-xs text-slate-400 mt-4">
           <Link href="/" className="hover:text-[#165DFF]">← 返回职途星首页（学生端）</Link>
         </div>
       </div>
@@ -124,7 +124,7 @@ function LoginContent() {
 
 export default function EmployerLoginPage() {
   return (
-    <Suspense fallback={<div className="text-center py-20 text-gray-400">加载中...</div>}>
+    <Suspense fallback={<div className="text-center py-20 text-slate-400">加载中...</div>}>
       <LoginContent />
     </Suspense>
   );

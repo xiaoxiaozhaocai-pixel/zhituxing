@@ -99,7 +99,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">数据看板</h1>
+        <h1 className="text-2xl font-bold text-slate-900">数据看板</h1>
         <Button onClick={fetchStats} variant="outline" size="sm">
           <RefreshCw className="w-4 h-4 mr-2" />
           刷新数据
@@ -112,8 +112,8 @@ export default function AdminDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">总用户数</p>
-                <p className="text-3xl font-bold text-gray-900">{formatNumber(stats?.overview.totalUsers || 0)}</p>
+                <p className="text-sm text-slate-500 mb-1">总用户数</p>
+                <p className="text-3xl font-bold text-slate-900">{formatNumber(stats?.overview.totalUsers || 0)}</p>
                 <p className="text-sm text-green-600 mt-1">今日 +{stats?.overview.todayUsers || 0}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -127,8 +127,8 @@ export default function AdminDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">总JD数</p>
-                <p className="text-3xl font-bold text-gray-900">{formatNumber(stats?.overview.totalJobs || 0)}</p>
+                <p className="text-sm text-slate-500 mb-1">总JD数</p>
+                <p className="text-3xl font-bold text-slate-900">{formatNumber(stats?.overview.totalJobs || 0)}</p>
                 <p className="text-sm text-green-600 mt-1">今日 +{stats?.overview.todayJobs || 0}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -142,8 +142,8 @@ export default function AdminDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">会员用户</p>
-                <p className="text-3xl font-bold text-gray-900">{formatNumber(stats?.overview.totalMembers || 0)}</p>
+                <p className="text-sm text-slate-500 mb-1">会员用户</p>
+                <p className="text-3xl font-bold text-slate-900">{formatNumber(stats?.overview.totalMembers || 0)}</p>
                 <p className="text-sm text-orange-600 mt-1">累计会员数</p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
@@ -158,8 +158,8 @@ export default function AdminDashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">待审核JD</p>
-                  <p className={`text-3xl font-bold ${(stats?.overview.pendingJDs || 0) > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  <p className="text-sm text-slate-500 mb-1">待审核JD</p>
+                  <p className={`text-3xl font-bold ${(stats?.overview.pendingJDs || 0) > 0 ? 'text-red-600' : 'text-slate-900'}`}>
                     {stats?.overview.pendingJDs || 0}
                   </p>
                   <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -191,16 +191,16 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full ${health.site === null ? 'bg-gray-300' : health.site ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className="text-sm text-gray-700">生产站点</span>
+                  <span className="text-sm text-slate-700">生产站点</span>
                 </div>
-                <span className="text-xs text-gray-400">zhituxing.tech</span>
+                <span className="text-xs text-slate-400">zhituxing.tech</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full ${health.api === null ? 'bg-gray-300' : health.api ? 'bg-green-500' : 'bg-red-500'}`} />
-                  <span className="text-sm text-gray-700">API服务</span>
+                  <span className="text-sm text-slate-700">API服务</span>
                 </div>
-                <span className="text-xs text-gray-400">/api/admin/auth</span>
+                <span className="text-xs text-slate-400">/api/admin/auth</span>
               </div>
             </div>
           </CardContent>
@@ -229,8 +229,8 @@ export default function AdminDashboardPage() {
                 <Link key={item.href} href={item.href}>
                   <div className="p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition cursor-pointer group border border-transparent hover:border-blue-200">
                     <item.icon className="w-5 h-5 text-blue-600 mb-1.5" />
-                    <p className="text-sm font-medium text-gray-800 group-hover:text-blue-700">{item.label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                    <p className="text-sm font-medium text-slate-800 group-hover:text-blue-700">{item.label}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{item.desc}</p>
                   </div>
                 </Link>
               ))}
@@ -259,7 +259,7 @@ export default function AdminDashboardPage() {
                       style={{ height: `${(item.users / maxValue(stats.weekUserData, 'users')) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-500">{item.label}</span>
+                  <span className="text-xs text-slate-500">{item.label}</span>
                   <span className="text-xs font-medium text-blue-600">{item.users}</span>
                 </div>
               ))}
@@ -285,7 +285,7 @@ export default function AdminDashboardPage() {
                       style={{ height: `${(item.jobs / maxValue(stats.weekJobData, 'jobs')) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-500">{item.label}</span>
+                  <span className="text-xs text-slate-500">{item.label}</span>
                   <span className="text-xs font-medium text-green-600">{item.jobs}</span>
                 </div>
               ))}
@@ -305,12 +305,12 @@ export default function AdminDashboardPage() {
             <div className="space-y-3">
               {stats?.sourceStats.slice(0, 5).map((item, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 truncate flex-1">{item.source}</span>
-                  <span className="text-sm font-medium text-gray-900 ml-4">{item.count}</span>
+                  <span className="text-sm text-slate-600 truncate flex-1">{item.source}</span>
+                  <span className="text-sm font-medium text-slate-900 ml-4">{item.count}</span>
                 </div>
               ))}
               {(!stats?.sourceStats || stats.sourceStats.length === 0) && (
-                <p className="text-sm text-gray-400 text-center py-4">暂无数据</p>
+                <p className="text-sm text-slate-400 text-center py-4">暂无数据</p>
               )}
             </div>
           </CardContent>
@@ -324,15 +324,15 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">待审核</span>
+                <span className="text-sm text-slate-600">待审核</span>
                 <span className="text-lg font-bold text-yellow-600">{stats?.reviewStats.pending || 0}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">已通过</span>
+                <span className="text-sm text-slate-600">已通过</span>
                 <span className="text-lg font-bold text-green-600">{stats?.reviewStats.approved || 0}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-600">已拒绝</span>
+                <span className="text-sm text-slate-600">已拒绝</span>
                 <span className="text-lg font-bold text-red-600">{stats?.reviewStats.rejected || 0}</span>
               </div>
             </div>

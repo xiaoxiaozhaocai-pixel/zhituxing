@@ -178,13 +178,13 @@ function AuthContent() {
     `flex-1 py-3 text-sm font-medium text-center cursor-pointer transition-colors border-b-2 ${
       tab === t
         ? 'text-blue-600 border-blue-600'
-        : 'text-gray-400 border-transparent hover:text-gray-600 hover:border-gray-300'
+        : 'text-slate-400 border-transparent hover:text-slate-600 hover:border-slate-300'
     }`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors">
+        <Link href="/" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-700 mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-1" />返回首页
         </Link>
 
@@ -197,7 +197,7 @@ function AuthContent() {
           </CardHeader>
 
           {/* Tabs */}
-          <div className="flex mx-6 mt-4 border-b border-gray-100">
+          <div className="flex mx-6 mt-4 border-b border-slate-100">
             <div className={tabCls('password')} onClick={() => switchTab('password')}>密码登录</div>
             <div className={tabCls('otp')} onClick={() => switchTab('otp')}>验证码登录</div>
             <div className={tabCls('register')} onClick={() => switchTab('register')}>注册</div>
@@ -222,7 +222,7 @@ function AuthContent() {
             {tab === 'password' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">邮箱地址</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
                   <Input
                     type="email" placeholder="请输入邮箱地址"
                     value={email} onChange={e => setEmail(e.target.value)}
@@ -231,7 +231,7 @@ function AuthContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">密码</label>
                   <div className="relative">
                     <Input
                       type={showPwd ? 'text' : 'password'} placeholder="请输入密码"
@@ -240,7 +240,7 @@ function AuthContent() {
                       className="h-12 pr-10"
                     />
                     <button type="button" onClick={() => setShowPwd(!showPwd)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                       {showPwd ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
@@ -262,14 +262,14 @@ function AuthContent() {
             {tab === 'otp' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">邮箱地址</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
                   <Input type="email" placeholder="请输入邮箱地址"
                     value={email} onChange={e => setEmail(e.target.value)}
                     className="h-12" autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">验证码</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">验证码</label>
                   <div className="flex gap-2">
                     <Input ref={codeInputRef} type="text" inputMode="numeric" placeholder="请输入验证码"
                       value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -286,7 +286,7 @@ function AuthContent() {
                   className="w-full h-12 text-base">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '登录'}
                 </Button>
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-slate-500">
                   没有账号？<button onClick={() => switchTab('register')} className="text-blue-600 hover:text-blue-700 font-medium">立即注册</button>
                 </div>
               </div>
@@ -296,47 +296,47 @@ function AuthContent() {
             {tab === 'register' && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">邮箱地址</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
                   <Input type="email" placeholder="请输入邮箱地址"
                     value={email} onChange={e => setEmail(e.target.value)}
                     className="h-12" autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">密码</label>
                   <div className="relative">
                     <Input type={showPwd ? 'text' : 'password'} placeholder="至少8位，含大写+小写+数字"
                       value={password} onChange={e => setPassword(e.target.value)}
                       className="h-12 pr-10"
                     />
                     <button type="button" onClick={() => setShowPwd(!showPwd)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                       {showPwd ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">确认密码</label>
                   <div className="relative">
                     <Input type={showConfirm ? 'text' : 'password'} placeholder="请再次输入密码"
                       value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
                       className="h-12 pr-10"
                     />
                     <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                       {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">昵称 <span className="text-gray-400 text-xs">（选填）</span></label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">昵称 <span className="text-slate-400 text-xs">（选填）</span></label>
                   <Input type="text" placeholder="给自己取个名字吧"
                     value={nickname} onChange={e => setNickname(e.target.value)}
                     className="h-12"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">验证码</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">验证码</label>
                   <div className="flex gap-2">
                     <Input ref={codeInputRef} type="text" inputMode="numeric" placeholder="请输入验证码"
                       value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -347,13 +347,13 @@ function AuthContent() {
                       {countdown > 0 ? `${countdown}s` : '获取验证码'}
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">先设置密码，再获取验证码完成注册</p>
+                  <p className="text-xs text-slate-400 mt-1">先设置密码，再获取验证码完成注册</p>
                 </div>
                 <label className="flex items-start gap-2 cursor-pointer">
                   <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-slate-600">
                     我已阅读并同意{' '}
                     <Link href="/terms" className="text-blue-600 hover:underline" target="_blank">服务条款</Link>
                     {' '}和{' '}
@@ -364,14 +364,14 @@ function AuthContent() {
                   className="w-full h-12 text-base">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : '注册'}
                 </Button>
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-slate-500">
                   已有账号？<button onClick={() => switchTab('password')} className="text-blue-600 hover:text-blue-700 font-medium">立即登录</button>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
-        <p className="text-center text-xs text-gray-400 mt-6">登录即表示您同意我们的服务条款和隐私政策</p>
+        <p className="text-center text-xs text-slate-400 mt-6">登录即表示您同意我们的服务条款和隐私政策</p>
       </div>
     </div>
   );

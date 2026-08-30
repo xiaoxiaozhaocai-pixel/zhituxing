@@ -264,9 +264,9 @@ export default function AdminOrdersPage() {
     return email.slice(0, 10) + '…' + email.slice(-9);
   }
 
-  const planMeta = (p: string) => planLabel[p] || { label: p, className: 'bg-gray-100 text-gray-700' };
-  const methodMeta = (m: string) => methodLabel[m] || { label: m, className: 'bg-gray-50 text-gray-700' };
-  const statusMeta = (s: string) => statusLabel[s] || { label: s, className: 'bg-gray-100 text-gray-700' };
+  const planMeta = (p: string) => planLabel[p] || { label: p, className: 'bg-gray-100 text-slate-700' };
+  const methodMeta = (m: string) => methodLabel[m] || { label: m, className: 'bg-gray-50 text-slate-700' };
+  const statusMeta = (s: string) => statusLabel[s] || { label: s, className: 'bg-gray-100 text-slate-700' };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -279,7 +279,7 @@ export default function AdminOrdersPage() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">订单审核</h1>
+            <h1 className="text-2xl font-bold text-slate-900">订单审核</h1>
             <Badge variant="outline" className="ml-2">人工审核 · MVP</Badge>
           </div>
           <Button onClick={() => fetchOrders(true)} disabled={refreshing} variant="outline">
@@ -296,8 +296,8 @@ export default function AdminOrdersPage() {
                 <Clock className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <div className="text-xs text-gray-500">待审核</div>
-                <div className="text-2xl font-bold text-gray-900">{stats.pending_count}</div>
+                <div className="text-xs text-slate-500">待审核</div>
+                <div className="text-2xl font-bold text-slate-900">{stats.pending_count}</div>
               </div>
             </CardContent>
           </Card>
@@ -307,8 +307,8 @@ export default function AdminOrdersPage() {
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <div className="text-xs text-gray-500">今日通过</div>
-                <div className="text-2xl font-bold text-gray-900">{stats.today_approved}</div>
+                <div className="text-xs text-slate-500">今日通过</div>
+                <div className="text-2xl font-bold text-slate-900">{stats.today_approved}</div>
               </div>
             </CardContent>
           </Card>
@@ -318,8 +318,8 @@ export default function AdminOrdersPage() {
                 <XCircle className="w-5 h-5 text-red-600" />
               </div>
               <div>
-                <div className="text-xs text-gray-500">今日拒绝</div>
-                <div className="text-2xl font-bold text-gray-900">{stats.today_rejected}</div>
+                <div className="text-xs text-slate-500">今日拒绝</div>
+                <div className="text-2xl font-bold text-slate-900">{stats.today_rejected}</div>
               </div>
             </CardContent>
           </Card>
@@ -329,8 +329,8 @@ export default function AdminOrdersPage() {
                 <TrendingUp className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <div className="text-xs text-gray-500">累计收入</div>
-                <div className="text-2xl font-bold text-gray-900">¥{stats.total_revenue.toFixed(1)}</div>
+                <div className="text-xs text-slate-500">累计收入</div>
+                <div className="text-2xl font-bold text-slate-900">¥{stats.total_revenue.toFixed(1)}</div>
               </div>
             </CardContent>
           </Card>
@@ -358,8 +358,8 @@ export default function AdminOrdersPage() {
           </div>
         ) : orders.length === 0 ? (
           <Card>
-            <CardContent className="py-16 text-center text-gray-500">
-              <Wallet className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <CardContent className="py-16 text-center text-slate-500">
+              <Wallet className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               当前筛选下没有订单
             </CardContent>
           </Card>
@@ -384,7 +384,7 @@ export default function AdminOrdersPage() {
                         {thumb ? (
                           <Image src={thumb} alt="付款截图" fill className="object-cover" unoptimized />
                         ) : (
-                          <ImageIcon className="w-6 h-6 text-gray-400" />
+                          <ImageIcon className="w-6 h-6 text-slate-400" />
                         )}
                       </button>
 
@@ -393,7 +393,7 @@ export default function AdminOrdersPage() {
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span
                             title={order.user_email || ''}
-                            className="font-medium text-gray-900 truncate max-w-[260px]"
+                            className="font-medium text-slate-900 truncate max-w-[260px]"
                           >
                             {truncateEmail(order.user_email)}
                           </span>
@@ -401,7 +401,7 @@ export default function AdminOrdersPage() {
                           <Badge variant="outline" className={mm.className}>{mm.label}</Badge>
                           <Badge className={sm.className}>{sm.label}</Badge>
                         </div>
-                        <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+                        <div className="text-sm text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
                           <span className="font-bold text-blue-600">¥{Number(order.amount).toFixed(1)}</span>
                           <span>提交：{new Date(order.created_at).toLocaleString('zh-CN', { hour12: false })}</span>
                           {order.approved_at && (
@@ -409,7 +409,7 @@ export default function AdminOrdersPage() {
                           )}
                         </div>
                         {order.user_note && (
-                          <div className="text-xs text-gray-500 mt-1 break-all">用户备注：{order.user_note}</div>
+                          <div className="text-xs text-slate-500 mt-1 break-all">用户备注：{order.user_note}</div>
                         )}
                         {order.admin_note && (
                           <div className="text-xs text-orange-600 mt-1 break-all">
@@ -464,7 +464,7 @@ export default function AdminOrdersPage() {
             <DialogDescription>
               {approveOrder && (
                 <>
-                  确定为 <span className="font-medium text-gray-900">{approveOrder.user_email || '匿名用户'}</span> 开通{' '}
+                  确定为 <span className="font-medium text-slate-900">{approveOrder.user_email || '匿名用户'}</span> 开通{' '}
                   <span className="font-medium text-blue-600">{planMeta(approveOrder.plan).label}</span>？
                   <br />
                   金额：<span className="font-bold">¥{Number(approveOrder.amount).toFixed(1)}</span>
@@ -473,7 +473,7 @@ export default function AdminOrdersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">备注（可选）</label>
+            <label className="text-sm font-medium text-slate-700">备注（可选）</label>
             <Textarea
               value={approveNote}
               onChange={(e) => setApproveNote(e.target.value)}
@@ -507,7 +507,7 @@ export default function AdminOrdersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-slate-700">
               拒绝原因 <span className="text-red-500">*</span>
             </label>
             <Textarea
@@ -556,7 +556,7 @@ export default function AdminOrdersPage() {
                 className="max-h-[70vh] w-auto object-contain rounded"
               />
             ) : (
-              <div className="text-gray-400">截图加载失败</div>
+              <div className="text-slate-400">截图加载失败</div>
             )}
           </div>
         </DialogContent>

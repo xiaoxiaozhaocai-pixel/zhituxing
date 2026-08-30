@@ -56,10 +56,10 @@ export default function CareerPathsPage() {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* 页面标题 */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-slate-900">
             🎯 求职方向匹配
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             填一下你的基本信息，看看桂电学生最常见的 8 条求职路径中，你最适合哪条
           </p>
         </div>
@@ -86,13 +86,13 @@ export default function CareerPathsPage() {
 
             {/* 概览区 */}
             <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-blue-100 shadow-sm p-4">
-              <p className="text-xs text-gray-400 mb-2">🔍 你的求职方向匹配报告</p>
+              <p className="text-xs text-slate-400 mb-2">🔍 你的求职方向匹配报告</p>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-slate-600">
                   学校：{report.profile.SCH_TIER < 0.5 ? '二本/其他' : report.profile.SCH_TIER < 0.75 ? '一本' : report.profile.SCH_TIER < 0.95 ? '211' : '985'}
                 </span>
-                <span className="text-gray-300">·</span>
-                <span className="text-sm text-gray-600">专业分类：{report.profile.MAJ_CAT}</span>
+                <span className="text-slate-300">·</span>
+                <span className="text-sm text-slate-600">专业分类：{report.profile.MAJ_CAT}</span>
               </div>
               <MatchStats summary={report.summary} />
             </div>

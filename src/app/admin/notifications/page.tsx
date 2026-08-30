@@ -133,7 +133,7 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">站内信管理</h1>
+        <h1 className="text-2xl font-bold text-slate-900">站内信管理</h1>
         <Button onClick={() => setModal(true)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90">
           <Send className="w-4 h-4 mr-2" />
           发送站内信
@@ -149,7 +149,7 @@ export default function NotificationsPage() {
                 <Mail className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">总发送量</p>
+                <p className="text-sm text-slate-500">总发送量</p>
                 <p className="text-2xl font-bold">{stats.totalSent}</p>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function NotificationsPage() {
                 <Send className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">今日发送</p>
+                <p className="text-sm text-slate-500">今日发送</p>
                 <p className="text-2xl font-bold">{stats.todaySent}</p>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
                 <Mail className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">活动通知</p>
+                <p className="text-sm text-slate-500">活动通知</p>
                 <p className="text-2xl font-bold">{stats.activityCount}</p>
               </div>
             </div>
@@ -210,11 +210,11 @@ export default function NotificationsPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">类型</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">标题</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">接收人</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">发送时间</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">类型</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">标题</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">接收人</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">发送时间</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-500">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -226,7 +226,7 @@ export default function NotificationsPage() {
                   </tr>
                 ) : notifications.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500">
                       暂无发送记录
                     </td>
                   </tr>
@@ -240,7 +240,7 @@ export default function NotificationsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <p className="font-medium">{notification.title}</p>
-                        <p className="text-sm text-gray-500 truncate max-w-[300px]">{notification.content}</p>
+                        <p className="text-sm text-slate-500 truncate max-w-[300px]">{notification.content}</p>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {notification.user_id === 'all' ? (
@@ -257,7 +257,7 @@ export default function NotificationsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-500">
                         {formatDate(notification.created_at)}
                       </td>
                       <td className="px-4 py-3">

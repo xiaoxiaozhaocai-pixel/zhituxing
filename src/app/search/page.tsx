@@ -176,7 +176,7 @@ function SearchContent() {
           <form onSubmit={handleSearch} className="relative">
             <div className="flex gap-3">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
                   value={inputValue}
@@ -187,14 +187,14 @@ function SearchContent() {
                   }}
                   onBlur={() => setFocused(false)}
                   placeholder="搜索岗位、文章..."
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
                 
                 {/* Search History Dropdown */}
                 {showHistory && histories.length > 0 && !searched && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-200 shadow-lg z-10 overflow-hidden">
-                    <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-lg z-10 overflow-hidden">
+                    <div className="px-4 py-2 bg-gray-50 border-b border-slate-100">
+                      <p className="text-xs text-slate-500 flex items-center gap-1">
                         <History className="w-3 h-3" />
                         搜索历史
                       </p>
@@ -206,15 +206,15 @@ function SearchContent() {
                         onClick={() => handleHistoryClick(history.keyword)}
                       >
                         <div className="flex items-center gap-3">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-700">{history.keyword}</span>
+                          <Clock className="w-4 h-4 text-slate-400" />
+                          <span className="text-slate-700">{history.keyword}</span>
                         </div>
                         <button
                           type="button"
                           onClick={(e) => handleDeleteHistory(history.id, e)}
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-opacity"
                         >
-                          <X className="w-4 h-4 text-gray-400" />
+                          <X className="w-4 h-4 text-slate-400" />
                         </button>
                       </div>
                     ))}
@@ -243,7 +243,7 @@ function SearchContent() {
                 className={`pb-3 px-2 font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                    : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 {tab.label}
@@ -263,7 +263,7 @@ function SearchContent() {
           <>
             {/* Results Summary */}
             <div className="mb-6">
-              <p className="text-gray-600">
+              <p className="text-slate-600">
                 {query && <span>关键词 &quot;<strong>{query}</strong>&quot;</span>}
                 找到 <strong>{totalResults}</strong> 个结果
               </p>
@@ -272,7 +272,7 @@ function SearchContent() {
             {/* Jobs Results */}
             {results.jobs.length > 0 && (activeTab === 'all' || activeTab === 'jobs') && (
               <div className="mb-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-blue-600" />
                   岗位 ({results.jobs.length})
                 </h2>
@@ -280,11 +280,11 @@ function SearchContent() {
                   {results.jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
+                      className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <Link href={`/jobs/${job.id}`} className="flex-1">
-                          <h3 className="font-semibold text-gray-900 hover:text-[#165DFF]">{job.jobTitle}</h3>
+                          <h3 className="font-semibold text-slate-900 hover:text-[#165DFF]">{job.jobTitle}</h3>
                         </Link>
                         {job.salary && (
                           <span className="text-orange-600 font-bold text-lg ml-2">
@@ -293,26 +293,26 @@ function SearchContent() {
                         )}
                       </div>
                       {job.company && (
-                        <p className="text-gray-600 text-sm mb-2">{job.company}</p>
+                        <p className="text-slate-600 text-sm mb-2">{job.company}</p>
                       )}
                       {/* 信息标签行：城市 | 学历 | 经验 */}
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
                           {job.location && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
                               {job.location}
                             </span>
                           )}
                           {job.education && job.education !== '不限' && (
                             <span className="flex items-center gap-1">
-                              <GraduationCap className="w-3.5 h-3.5 text-gray-400" />
+                              <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
                               {job.education}
                             </span>
                           )}
                           {job.experience && job.experience !== '不限' && (
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-gray-400" />
+                              <Clock className="w-3.5 h-3.5 text-slate-400" />
                               {job.experience}
                             </span>
                           )}
@@ -337,7 +337,7 @@ function SearchContent() {
             {/* Articles Results */}
             {results.articles.length > 0 && (activeTab === 'all' || activeTab === 'articles') && (
               <div className="mb-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-600" />
                   文章 ({results.articles.length})
                 </h2>
@@ -346,17 +346,17 @@ function SearchContent() {
                     <Link
                       key={article.id}
                       href={`/resources/${article.id}`}
-                      className="block bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
+                      className="block bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md hover:border-blue-200 transition-all"
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-gray-900">{article.title}</h3>
-                          <p className="text-gray-500 text-sm mt-1 line-clamp-1">
+                          <h3 className="font-semibold text-slate-900">{article.title}</h3>
+                          <p className="text-slate-500 text-sm mt-1 line-clamp-1">
                             {article.summary}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
                         {article.category && (
                           <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
                             {categoryLabels[article.category] || article.category}
@@ -378,9 +378,9 @@ function SearchContent() {
             {/* No Results */}
             {totalResults === 0 && (
               <div className="text-center py-20">
-                <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-700 text-lg font-medium mb-2">没有找到相关结果</p>
-                <p className="text-gray-500 mb-6">试试其他关键词，或者看看大家都在搜什么</p>
+                <Search className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+                <p className="text-slate-700 text-lg font-medium mb-2">没有找到相关结果</p>
+                <p className="text-slate-500 mb-6">试试其他关键词，或者看看大家都在搜什么</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {['前端开发', '产品经理', '数据分析', 'Java', 'Python', '实习', '校招', '运营'].map((tag) => (
                     <button
@@ -390,7 +390,7 @@ function SearchContent() {
                         url.searchParams.set('q', tag);
                         window.location.href = url.toString();
                       }}
-                      className="px-4 py-2 bg-gray-100 hover:bg-blue-50 hover:text-blue-600 rounded-full text-sm text-gray-600 transition-colors border border-gray-200 hover:border-blue-200"
+                      className="px-4 py-2 bg-gray-100 hover:bg-blue-50 hover:text-blue-600 rounded-full text-sm text-slate-600 transition-colors border border-slate-200 hover:border-blue-200"
                     >
                       {tag}
                     </button>
@@ -401,8 +401,8 @@ function SearchContent() {
           </>
         ) : (
           <div className="text-center py-20">
-            <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">输入关键词开始搜索</p>
+            <Search className="w-16 h-16 mx-auto mb-4 text-slate-300" />
+            <p className="text-slate-500">输入关键词开始搜索</p>
           </div>
         )}
       </div>

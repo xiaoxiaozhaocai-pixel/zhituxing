@@ -19,7 +19,7 @@ export default function AssessmentLoading() {
           <div className="lg:col-span-1 space-y-3">
             <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="border-gray-100">
+              <Card key={i} className="border-slate-100">
                 <CardContent className="py-3 px-4">
                   <div className="flex items-center justify-between">
                     <div>

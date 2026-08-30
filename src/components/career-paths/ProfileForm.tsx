@@ -49,37 +49,37 @@ export default function ProfileForm({ onSubmit, loading, initialMajor }: Profile
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* 学校 */}
       <div className="rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 p-4 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">学校</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">学校</label>
         <input
           type="text"
           value={form.school}
           onChange={(e) => setForm({ ...form, school: e.target.value })}
           placeholder="例：桂林电子科技大学"
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
           required
         />
       </div>
 
       {/* 专业 */}
       <div className="rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 p-4 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">专业</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">专业</label>
         <input
           type="text"
           value={form.major}
           onChange={(e) => setForm({ ...form, major: e.target.value })}
           placeholder="例：人力资源管理"
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
           required
         />
       </div>
 
       {/* 学历 */}
       <div className="rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 p-4 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">学历</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">学历</label>
         <select
           value={form.degree}
           onChange={(e) => setForm({ ...form, degree: e.target.value })}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
         >
           <option value="本科">本科</option>
           <option value="硕士">硕士</option>
@@ -89,7 +89,7 @@ export default function ProfileForm({ onSubmit, loading, initialMajor }: Profile
 
       {/* 实习数量 */}
       <div className="rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 p-4 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">
           实习经历：{form.internshipCount} 段
         </label>
         <input
@@ -100,18 +100,18 @@ export default function ProfileForm({ onSubmit, loading, initialMajor }: Profile
           onChange={(e) => setForm({ ...form, internshipCount: parseInt(e.target.value) })}
           className="w-full accent-blue-500"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-slate-400 mt-1">
           <span>0段</span><span>1段</span><span>2段</span><span>3段</span><span>4段+</span>
         </div>
       </div>
 
       {/* 实习质量 */}
       <div className="rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 p-4 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">最高质量实习</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">最高质量实习</label>
         <select
           value={form.internshipQuality}
           onChange={(e) => setForm({ ...form, internshipQuality: e.target.value })}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
         >
           <option value="无">无实习经历</option>
           <option value="小厂">小厂/普通公司</option>
@@ -123,7 +123,7 @@ export default function ProfileForm({ onSubmit, loading, initialMajor }: Profile
 
       {/* 技能 */}
       <div className="rounded-xl bg-white/80 backdrop-blur-sm border border-blue-100 p-4 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">
           已掌握技能（{form.skills.length} 项）
         </label>
         <div className="flex gap-2">
@@ -133,7 +133,7 @@ export default function ProfileForm({ onSubmit, loading, initialMajor }: Profile
             onChange={(e) => setSkillInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
             placeholder="输入技能后按回车添加"
-            className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
+            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none"
           />
           <button
             type="button"

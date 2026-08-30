@@ -76,8 +76,8 @@ function SignupContent() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] shadow-lg shadow-[#165DFF]/30 mb-3">
             <Building2 className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">雇主注册</h1>
-          <p className="text-sm text-gray-500 mt-1">开启精准候选人匹配</p>
+          <h1 className="text-2xl font-bold text-slate-900">雇主注册</h1>
+          <p className="text-sm text-slate-500 mt-1">开启精准候选人匹配</p>
         </div>
 
         <form
@@ -86,7 +86,7 @@ function SignupContent() {
         >
           {/* 必填：邮箱 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               企业邮箱 <span className="text-red-500">*</span>
             </label>
             <input
@@ -94,14 +94,14 @@ function SignupContent() {
               value={form.email}
               onChange={(e) => set('email', e.target.value)}
               placeholder="hr@company.com"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
               disabled={loading}
             />
           </div>
           {/* 必填：密码 */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 密码 <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -110,13 +110,13 @@ function SignupContent() {
                   value={form.password}
                   onChange={(e) => set('password', e.target.value)}
                   placeholder="至少 8 位"
-                  className="w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+                  className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPwd((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
                   tabIndex={-1}
                 >
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -124,7 +124,7 @@ function SignupContent() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 确认密码 <span className="text-red-500">*</span>
               </label>
               <input
@@ -132,14 +132,14 @@ function SignupContent() {
                 value={form.confirmPassword}
                 onChange={(e) => set('confirmPassword', e.target.value)}
                 placeholder="再输入一次"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
                 disabled={loading}
               />
             </div>
           </div>
           {/* 必填：真实姓名 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               真实姓名 <span className="text-red-500">*</span>
             </label>
             <input
@@ -147,44 +147,44 @@ function SignupContent() {
               value={form.real_name}
               onChange={(e) => set('real_name', e.target.value)}
               placeholder="您的姓名"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
               disabled={loading}
             />
           </div>
           {/* 可选：公司 + 职位 */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">公司名称</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">公司名称</label>
               <input
                 type="text"
                 value={form.company_name}
                 onChange={(e) => set('company_name', e.target.value)}
                 placeholder="选填"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">职位</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">职位</label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => set('title', e.target.value)}
                 placeholder="选填"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
                 disabled={loading}
               />
             </div>
           </div>
           {/* 可选：手机 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">手机号</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">手机号</label>
             <input
               type="tel"
               value={form.phone}
               onChange={(e) => set('phone', e.target.value)}
               placeholder="选填"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border-[#165DFF] focus:ring-2 focus:ring-[#165DFF]/20 outline-none transition"
               disabled={loading}
             />
           </div>
@@ -205,7 +205,7 @@ function SignupContent() {
             )}
             注册
           </button>
-          <div className="text-center text-sm text-gray-500 pt-2 border-t border-gray-100">
+          <div className="text-center text-sm text-slate-500 pt-2 border-t border-slate-100">
             已有账号？{' '}
             <Link href="/employer/auth/login" className="text-[#165DFF] hover:underline font-medium">
               立即登录
@@ -219,7 +219,7 @@ function SignupContent() {
 
 export default function EmployerSignupPage() {
   return (
-    <Suspense fallback={<div className="text-center py-20 text-gray-400">加载中...</div>}>
+    <Suspense fallback={<div className="text-center py-20 text-slate-400">加载中...</div>}>
       <SignupContent />
     </Suspense>
   );

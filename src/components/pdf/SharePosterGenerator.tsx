@@ -195,7 +195,7 @@ export default function SharePosterGenerator({
           <div className="space-y-4 py-4">
             {!posterData ? (
               <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">
+                <p className="text-slate-600 mb-4">
                   生成专属分享海报，好友扫码即可获得3次免费AI次数+7天会员
                 </p>
                 <Button
