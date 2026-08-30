@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { MEMBERSHIP_PRICE_TEXT } from '@/lib/config';
 import { LayoutGrid,
   Database,
   Crown,
@@ -84,7 +85,7 @@ const faqs = [
   // 会员服务
   {
     category: 'membership',
-    question: '月度会员9.9元包含什么？',
+    question: `月度会员${MEMBERSHIP_PRICE_TEXT}包含什么？`,
     answer: '月度会员可享受无限次AI模拟面试、无限次能力测评、胜任力评估、考研就业决策等专属功能，以及优先客服支持。'
   },
   {

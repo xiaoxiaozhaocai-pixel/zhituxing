@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { CANDIDATE_UNLOCK_PRICE } from '@/lib/config';
 import {
   TrendingUp, Users, Lock, Coins, Loader2, BarChart3,
   ArrowRight, RotateCw, Sparkles,
@@ -175,8 +176,8 @@ export default function AnalyticsPage() {
 
   const avgUnitPrice = useMemo(() => {
     if (!data || data.total_recharged === 0) return null;
-    // 占位：充值标价 ¥10/条，仅展示
-    return 10;
+    // 占位：充值标价 CANDIDATE_UNLOCK_PRICE/条，仅展示
+    return CANDIDATE_UNLOCK_PRICE;
   }, [data]);
 
   if (loading && !data) {

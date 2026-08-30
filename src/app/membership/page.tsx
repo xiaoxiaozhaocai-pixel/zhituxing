@@ -16,12 +16,13 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { MEMBERSHIP_MONTHLY_PRICE, MEMBERSHIP_SEMESTER_PRICE, MEMBERSHIP_YEARLY_PRICE, MEMBERSHIP_LIFETIME_PRICE } from '@/lib/config';
 import Image from 'next/image';
 
 const MEMBERSHIP_PLANS = [
   {
     name: '月度会员',
-    price: 9.9,
+    price: MEMBERSHIP_MONTHLY_PRICE,
     period: '月',
     description: '轻松体验会员权益',
     features: [
@@ -37,7 +38,7 @@ const MEMBERSHIP_PLANS = [
   },
   {
     name: '学期会员',
-    price: 29.9,
+    price: MEMBERSHIP_SEMESTER_PRICE,
     period: '学期',
     description: '适合短期求职准备',
     features: [
@@ -54,7 +55,7 @@ const MEMBERSHIP_PLANS = [
   },
   {
     name: '年度会员',
-    price: 69.9,
+    price: MEMBERSHIP_YEARLY_PRICE,
     period: '年',
     description: '最受欢迎的选择',
     features: [
@@ -73,7 +74,7 @@ const MEMBERSHIP_PLANS = [
   },
   {
     name: '永久会员',
-    price: 199,
+    price: MEMBERSHIP_LIFETIME_PRICE,
     period: '永久',
     description: '一次购买终身使用',
     features: [

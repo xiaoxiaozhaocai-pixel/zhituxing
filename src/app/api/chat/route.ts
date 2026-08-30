@@ -15,6 +15,7 @@ import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 import { detectInjection, createBlockedSSE } from '@/lib/injection-detect';
 import { jsonError, parseRequestBody, ErrorCode } from '@/lib/api-contracts/_shared';
 import { ChatRequestSchema } from '@/lib/api-contracts/chat';
+import { MEMBERSHIP_MONTHLY_PRICE } from '@/lib/config';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -575,7 +576,7 @@ export async function POST(request: NextRequest) {
           : '';
         const guideText = guide?.paywall
           ? guide.paywall + '\n\n' + quotaText
-          : (access.reason || '此功能需开通会员使用，¥9.9/月');
+          : (access.reason || `此功能需开通会员使用，¥${MEMBERSHIP_MONTHLY_PRICE}/月`);
         return new Response(createTextStream(guideText), { headers: SSE_HEADERS });
       }
     }

@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
+import { MEMBERSHIP_PRICE_TEXT } from '@/lib/config';
 import { 
   Upload, 
   Clock, 
@@ -225,7 +226,7 @@ export default function UploadJdRewardPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             <span className="text-yellow-300">上传3条</span>真实校招JD
             <br />
-            <span className="text-4xl md:text-5xl">免费领9.9元终身会员</span>
+            <span className="text-4xl md:text-5xl">免费领{MEMBERSHIP_PRICE_TEXT}终身会员</span>
           </h1>
           <p className="text-white/90 text-lg mb-6">
             永久解锁无限次AI模拟面试 + 全套求职工具
@@ -260,7 +261,7 @@ export default function UploadJdRewardPage() {
                   恭喜！终身会员已自动到账
                 </span>
               ) : (
-                <>还差 <span className="text-orange-500 font-bold">{remaining}条</span>，即可领取9.9元终身会员</>
+                <>还差 <span className="text-orange-500 font-bold">{remaining}条</span>，即可领取{MEMBERSHIP_PRICE_TEXT}终身会员</>
               )}
             </p>
           </CardContent>
@@ -560,9 +561,4 @@ export default function UploadJdRewardPage() {
           <span className="flex items-center gap-1">
             <Zap className="w-4 h-4" />
             快速审核
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
+          

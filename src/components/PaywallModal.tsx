@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { MEMBERSHIP_MONTHLY_PRICE, MEMBERSHIP_SEMESTER_PRICE, MEMBERSHIP_YEARLY_PRICE, MEMBERSHIP_LIFETIME_PRICE } from '@/lib/config';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +16,7 @@ const PLANS = [
   {
     key: 'monthly',
     name: '月度会员',
-    price: 9.9,
+    price: MEMBERSHIP_MONTHLY_PRICE,
     period: '月',
     highlight: false,
     features: ['30天基础体验', '每日50次AI对话', '岗位搜索无限制', '基础匹配分析'],
@@ -23,7 +24,7 @@ const PLANS = [
   {
     key: 'semester',
     name: '学期会员',
-    price: 29.9,
+    price: MEMBERSHIP_SEMESTER_PRICE,
     period: '学期',
     highlight: false,
     features: ['180天全功能体验', '无限AI对话', '完整匹配分析', '技能图谱全览'],
@@ -31,7 +32,7 @@ const PLANS = [
   {
     key: 'annual',
     name: '年度会员',
-    price: 69.9,
+    price: MEMBERSHIP_YEARLY_PRICE,
     period: '年',
     highlight: true,
     features: ['365天全功能体验', '无限AI对话', '完整匹配分析', '技能图谱全览', '测评报告下载', '学习路径定制'],
@@ -39,7 +40,7 @@ const PLANS = [
   {
     key: 'lifetime',
     name: '永久会员',
-    price: 199,
+    price: MEMBERSHIP_LIFETIME_PRICE,
     period: '永久',
     highlight: false,
     features: ['一次付费永久使用', '全功能无限制', '优先体验新功能', '专属客服支持'],

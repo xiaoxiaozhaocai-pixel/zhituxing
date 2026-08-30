@@ -12,6 +12,7 @@ import { useMembership } from '@/contexts/MembershipContext';
 import type { AuthUser, QuotaInfo } from '@/hooks/useAuth';
 import type {NotificationItem, FavoriteItem, ReportItem} from '@/lib/types';
 import { getSupabase } from '@/lib/supabase';
+import { MEMBERSHIP_MONTHLY_PRICE_TEXT } from '@/lib/config';
 import { Bell,
   Crown,
   FileText,
@@ -682,7 +683,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-gray-900">开通会员解锁全部功能</h3>
-                <p className="text-sm text-gray-600">仅需9.9元/月，享受无限次AI服务</p>
+                <p className="text-sm text-gray-600">仅需{MEMBERSHIP_MONTHLY_PRICE_TEXT}，享受无限次AI服务</p>
               </div>
               <Link href="/membership">
                 <Button className="bg-[#FF7D00] hover:bg-[#e67000]">立即开通</Button>
