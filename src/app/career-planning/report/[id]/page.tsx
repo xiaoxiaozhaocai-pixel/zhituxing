@@ -24,6 +24,7 @@ import { Sparkles,
   CheckCircle2,
   Circle,
   ListChecks } from 'lucide-react';
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 
 // 报告数据接口
 interface ReportData {
@@ -266,9 +267,9 @@ export default function ReportPage() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* 核心结论区 */}
-        <Card className="mb-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200">
+        <Card className="mb-6 bg-gradient-to-br from-[#165DFF]/5 to-[#3D7FFF]/5 border-[#165DFF]/15">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-700">
+            <CardTitle className="flex items-center gap-2 text-[#165DFF]">
               <Target className="w-6 h-6" />
               你的核心职业方向
             </CardTitle>
@@ -280,7 +281,7 @@ export default function ReportPage() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-semibold text-gray-900">{job.name}</h3>
-                      <span className="px-2 py-1 bg-purple-100 text-purple-700 text-sm font-medium rounded-full">
+                      <span className="px-2 py-1 bg-[#165DFF]/10 text-[#165DFF] text-sm font-medium rounded-full">
                         {job.match_score}%匹配
                       </span>
                     </div>
@@ -298,7 +299,7 @@ export default function ReportPage() {
                         {job.salary_range}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="w-full mt-3 text-purple-700 border-purple-300 hover:bg-purple-50">
+                    <Button variant="outline" size="sm" className="w-full mt-3 text-[#165DFF] border-[#165DFF]/30 hover:bg-[#165DFF]/5">
                       查看详细分析
                     </Button>
                   </CardContent>
@@ -318,7 +319,7 @@ export default function ReportPage() {
             >
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  <Sparkles className="w-5 h-5 text-[#165DFF]" />
                   6维诊断模型
                 </CardTitle>
                 {expandedPanels.dimensions ? (
@@ -330,15 +331,23 @@ export default function ReportPage() {
             </CardHeader>
             {expandedPanels.dimensions && (
               <CardContent className="pb-6">
-                {/* 雷达图占位容器 */}
-                <div className="border-2 border-dashed border-purple-200 rounded-xl bg-purple-50/50 h-80 flex items-center justify-center">
-                  <div className="text-center">
-                    <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-2" />
-                    <p className="text-purple-500">6维诊断雷达图</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      人格{report.dimensions.personality}% | 专业{report.dimensions.major}% | 能力{report.dimensions.ability}% | 兴趣{report.dimensions.interest}% | 价值观{report.dimensions.values}% | 风险{report.dimensions.risk}%
-                    </p>
-                  </div>
+                {/* 6维诊断雷达图（真实图表） */}
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={[
+                        { dim: '人格', value: report?.dimensions.personality ?? 0 },
+                        { dim: '专业', value: report?.dimensions.major ?? 0 },
+                        { dim: '能力', value: report?.dimensions.ability ?? 0 },
+                        { dim: '兴趣', value: report?.dimensions.interest ?? 0 },
+                        { dim: '价值观', value: report?.dimensions.values ?? 0 },
+                        { dim: '风险', value: report?.dimensions.risk ?? 0 },
+                      ]} cx="50%" cy="50%" outerRadius="72%">
+                        <PolarGrid stroke="#e5eefb" />
+                        <PolarAngleAxis dataKey="dim" tick={{ fill: '#4e5b6f', fontSize: 13 }} />
+                        <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} tickLine={false} />
+                        <Radar name="诊断" dataKey="value" stroke="#165DFF" fill="#165DFF" fillOpacity={0.32} strokeWidth={2} />
+                      </RadarChart>
+                    </ResponsiveContainer>
                 </div>
               </CardContent>
             )}
@@ -352,7 +361,7 @@ export default function ReportPage() {
             >
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-indigo-500" />
+                  <TrendingUp className="w-5 h-5 text-[#165DFF]" />
                   职业发展路径
                 </CardTitle>
                 {expandedPanels.careerPath ? (
@@ -365,16 +374,16 @@ export default function ReportPage() {
             {expandedPanels.careerPath && (
               <CardContent className="pb-6">
                 {/* 时间线占位容器 */}
-                <div className="border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/50 p-6">
+                <div className="border-2 border-dashed border-[#165DFF]/20 rounded-xl bg-[#165DFF]/5 p-6">
                   <div className="space-y-4">
                     {report.career_path.map((item, index) => (
                       <div key={index} className="flex items-start gap-4">
                         <div className="w-24 flex-shrink-0">
-                          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-sm rounded font-medium">
+                          <span className="px-2 py-1 bg-[#165DFF]/10 text-[#165DFF] text-sm rounded font-medium">
                             {item.stage}
                           </span>
                         </div>
-                        <div className="flex-1 pb-4 border-b border-indigo-100 last:border-0 last:pb-0">
+                        <div className="flex-1 pb-4 border-b border-[#165DFF]/10 last:border-0 last:pb-0">
                           <p className="text-gray-700">{item.action}</p>
                         </div>
                       </div>
@@ -393,7 +402,7 @@ export default function ReportPage() {
             >
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-500" />
+                  <BookOpen className="w-5 h-5 text-[#165DFF]" />
                   技能缺口分析
                 </CardTitle>
                 {expandedPanels.skillsGap ? (
@@ -406,7 +415,7 @@ export default function ReportPage() {
             {expandedPanels.skillsGap && (
               <CardContent className="pb-6">
                 {/* 对比图占位容器 */}
-                <div className="border-2 border-dashed border-blue-200 rounded-xl bg-blue-50/50 p-6">
+                <div className="border-2 border-dashed border-[#165DFF]/20 rounded-xl bg-[#165DFF]/5 p-6">
                   <div className="space-y-4">
                     {report.skills_gap.map((item, index) => (
                       <div key={index}>
@@ -418,7 +427,7 @@ export default function ReportPage() {
                         </div>
                         <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
+                            className="h-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full transition-all"
                             style={{ width: `${(item.current / item.target) * 100}%` }}
                           />
                         </div>
@@ -532,7 +541,7 @@ export default function ReportPage() {
         )}
 
         {/* 会员转化引导 - 仅非会员可见 */}
-        <Card className="mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 border-0 shadow-xl">
+        <Card className="mt-8 bg-gradient-to-r from-[#FF7D00] to-[#FF9A3D] border-0 shadow-xl">
           <CardContent className="p-6">
             <div className="text-center mb-4">
               <h3 className="text-xl font-bold text-white mb-2">📊 完整能力匹配雷达图已生成</h3>
@@ -557,7 +566,7 @@ export default function ReportPage() {
             </div>
             <div className="text-center">
               <Link href="/membership">
-                <Button className="bg-white text-purple-600 hover:bg-gray-100 font-bold text-lg px-8">
+                <Button className="bg-white text-[#FF7D00] hover:bg-gray-100 font-bold text-lg px-8">
                   立即开通9.9元终身会员
                 </Button>
               </Link>
