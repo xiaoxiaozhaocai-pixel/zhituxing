@@ -123,7 +123,7 @@ export default function InsightsPage() {
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#165DFF]" />{ALL_INDUSTRY_RADAR.length} 个行业雷达</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#3D7FFF]" />{glossary.length} 条潜台词词条</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#FF7D00]" />{ALL_COGNITIVE_KNOWLEDGE.length} 个专业认知</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#10B981]" />{JOBS.length} 个岗位能力</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#64748B]" />{JOBS.length} 个岗位能力</span>
           </div>
         </div>
       </section>
