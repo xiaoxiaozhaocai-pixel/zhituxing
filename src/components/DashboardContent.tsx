@@ -248,7 +248,7 @@ function GoalProgressCard({ goals }: { goals: Array<Record<string, unknown>> }) 
                     )}
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm truncate ${doneG ? 'text-gray-400 line-through' : 'text-[#1E293B]'}`}>
-                        {g.label || g.action || ''}
+                        {(g.label as string) || (g.action as string) || ''}
                       </p>
                     </div>
                   </div>
