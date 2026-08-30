@@ -19,11 +19,34 @@ interface TrainingTrack {
   updated_at: string;
 }
 
+interface TrackStage {
+  name: string;
+}
+
+interface TrackStudent {
+  user_id: string;
+  status: string;
+  stage_progress: number | null;
+  created_at: string;
+  nickname: string;
+  grade: string | null;
+  major: string | null;
+  portrait_completeness_score: number | null;
+}
+
+interface TrackDetail {
+  track: { id: number; title: string; stages: unknown[] | null };
+  students: TrackStudent[];
+}
+
 export default function TrainingPage() {
   const router = useRouter();
   const [tracks, setTracks] = useState<TrainingTrack[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [detail, setDetail] = useState<TrackDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
 
   const fetchTracks = useCallback(async () => {
     setLoading(true);
@@ -45,6 +68,30 @@ export default function TrainingPage() {
   useEffect(() => {
     fetchTracks();
   }, [fetchTracks]);
+
+  const viewTrack = useCallback(
+    async (track: TrainingTrack) => {
+      setDetail(null);
+      setDetailLoading(true);
+      setDetailError('');
+      try {
+        const r = await fetch(`/api/employer/training-tracks/${track.id}/students`, { credentials: 'include' });
+        if (r.status === 404 || r.status === 401) {
+          setDetailError('通道不存在或已无权限');
+          setDetailLoading(false);
+          return;
+        }
+        const j = await r.json();
+        if (j.success) setDetail(j.data);
+        else setDetailError(j.error || '加载失败');
+      } catch {
+        setDetailError('网络错误');
+      } finally {
+        setDetailLoading(false);
+      }
+    },
+    [],
+  );
 
   return (
     <div className="space-y-6">
@@ -115,8 +162,17 @@ export default function TrainingPage() {
                   </div>
                 )}
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
-                创建于 {new Date(t.created_at).toLocaleDateString('zh-CN')}
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                <span className="text-xs text-gray-400">
+                  创建于 {new Date(t.created_at).toLocaleDateString('zh-CN')}
+                </span>
+                <button
+                  onClick={() => viewTrack(t)}
+                  className="text-xs font-medium text-[#165DFF] hover:opacity-80 transition flex items-center gap-1"
+                >
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  查看进度
+                </button>
               </div>
             </div>
           ))}
@@ -130,6 +186,15 @@ export default function TrainingPage() {
             setShowCreate(false);
             fetchTracks();
           }}
+        />
+      )}
+
+      {(detail || detailLoading) && (
+        <TrackDetailDialog
+          loading={detailLoading}
+          error={detailError}
+          detail={detail}
+          onClose={() => setDetail(null)}
         />
       )}
     </div>
@@ -299,6 +364,128 @@ function CreateTrackDialog({
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               创建
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+// 状态徽章映射
+function statusBadge(status: string): { label: string; cls: string } {
+  switch (status) {
+    case 'invited':
+      return { label: '已邀请', cls: 'bg-blue-50 text-blue-600' };
+    case 'accepted':
+      return { label: '已接受', cls: 'bg-emerald-50 text-emerald-600' };
+    case 'active':
+    case 'learning':
+      return { label: '进行中', cls: 'bg-indigo-50 text-indigo-600' };
+    case 'completed':
+      return { label: '已完成', cls: 'bg-green-50 text-green-600' };
+    default:
+      return { label: status || '待确认', cls: 'bg-gray-100 text-gray-500' };
+  }
+}
+
+// 计算阶段进度百分比（stage_progress 为已完成阶段数 / 总阶段数）
+function stageProgressPct(detail: TrackDetail, student: TrackStudent): number {
+  const stages = (detail.track.stages || []) as TrackStage[];
+  const total = stages.length;
+  if (total <= 0) return 0;
+  const done = student.stage_progress ?? 0;
+  return Math.min(100, Math.round((done / total) * 100));
+}
+
+function TrackDetailDialog({
+  loading,
+  error,
+  detail,
+  onClose,
+}: {
+  loading: boolean;
+  error: string;
+  detail: TrackDetail | null;
+  onClose: () => void;
+}) {
+  const stages = (detail?.track.stages || []) as TrackStage[];
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 sticky top-0 bg-white">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-[#165DFF]" />
+            {detail?.track.title || '培养通道进度'}
+          </h3>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* 阶段安排 */}
+          {stages.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">阶段安排</h4>
+              <div className="flex flex-wrap gap-2">
+                {stages.map((s, i) => (
+                  <span
+                    key={i}
+                    className="text-xs px-2.5 py-1 rounded-full bg-[#165DFF]/5 text-[#165DFF] border border-[#165DFF]/10"
+                  >
+                    {i + 1}. {s.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 学生进度 */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-2">已加入候选人（{detail?.students.length ?? 0}）</h4>
+            {loading ? (
+              <div className="text-center py-10 text-gray-400">
+                <Loader2 className="w-6 h-6 mx-auto animate-spin mb-2" />
+                加载中...
+              </div>
+            ) : error ? (
+              <div className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>
+            ) : !detail || detail.students.length === 0 ? (
+              <div className="text-center py-10 text-gray-400">
+                <div className="w-12 h-12 rounded-full bg-[#165DFF]/10 flex items-center justify-center mx-auto mb-3">
+                  <GraduationCap className="w-6 h-6 text-[#165DFF]/60" />
+                </div>
+                <div className="text-sm text-gray-500">暂无候选人加入</div>
+              </div>
+            ) : (
+              <ul className="space-y-3">
+                {detail.students.map((s) => {
+                  const badge = statusBadge(s.status);
+                  const pct = stageProgressPct(detail, s);
+                  return (
+                    <li key={s.user_id} className="border border-gray-100 rounded-xl p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-900">{s.nickname}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${badge.cls}`}>{badge.label}</span>
+                        </div>
+                        <span className="text-xs text-gray-400">{pct}%</span>
+                      </div>
+                      {(s.grade || s.major) && (
+                        <p className="text-xs text-gray-500 mb-2">
+                          {[s.grade, s.major].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
       </div>
