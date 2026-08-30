@@ -101,14 +101,14 @@ function meanOf(values: number[]): number | null {
 const HIGH_PREFIX = '数值偏高（高于均值/中位区间/基线）';
 const LOW_PREFIX = '数值偏低（低于均值/中位区间/基线）';
 
-function zDesc(value: number, z: number, name: string): string {
+function zDesc(index: number, value: number, z: number, name: string): string {
   const dir = z > 0 ? '偏高' : '偏低';
-  return `${name}第 ${value} 个点${dir}，偏离均值 ${Math.abs(z).toFixed(2)} 个标准差（z=${z.toFixed(2)}），属离群信号。`;
+  return `${name}第 ${index + 1} 个观测值（值 ${value}）${dir}，偏离均值 ${Math.abs(z).toFixed(2)} 个标准差（z=${z.toFixed(2)}），属离群信号。`;
 }
 
-function iqrDesc(value: number, dir: Direction, q1: number, q3: number, iqr: number, name: string): string {
+function iqrDesc(index: number, value: number, dir: Direction, q1: number, q3: number, iqr: number, name: string): string {
   const beyond = dir === 'high' ? `高于 Q3（${q3.toFixed(2)}）${(value - q3).toFixed(2)}` : `低于 Q1（${q1.toFixed(2)}）${(q1 - value).toFixed(2)}`;
-  return `${name}第 ${value} 个点${beyond}，IQR=${iqr.toFixed(2)}，落在正常区间之外，属离群信号。`;
+  return `${name}第 ${index + 1} 个观测值（值 ${value}）${beyond}，IQR=${iqr.toFixed(2)}，落在正常区间之外，属离群信号。`;
 }
 
 function baselineDesc(value: number, baseline: number, devRatio: number, name: string): string {
@@ -212,7 +212,7 @@ export function detectAnomalies(values: number[], opts: AnomalyDetectOptions = {
           q1,
           q3,
           iqr: iqrVal,
-          description: iqrDesc(x, dir, q1, q3, iqrVal, name),
+          description: iqrDesc(i, x, dir, q1, q3, iqrVal, name),
           suggestion: SUGGESTION,
         });
       }
