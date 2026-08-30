@@ -25,6 +25,17 @@ interface InterviewFeedback {
     weaknesses?: string[];
     suggestions?: { area: string; advice: string; priority: string }[];
     star_analysis?: { good_examples: string[]; improvement_examples: string[] };
+    dimension_analysis?: {
+      dimension?: string;
+      name?: string;
+      score?: number;
+      level?: string;
+      level_number?: number;
+      matched_anchors?: string[];
+      reasoning?: string;
+      path?: string;
+      suggestion?: string;
+    }[];
   };
   created_at: string;
 }
@@ -224,6 +235,53 @@ export default function InterviewResultsPage() {
                           {/* 展开后的详情 */}
                           {selectedFeedback?.id === fb.id && (
                             <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+                              {rd.dimension_analysis && rd.dimension_analysis.length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-[#165DFF] mb-3">🎯 判断力维度分析</h4>
+                                  <div className="space-y-3">
+                                    {rd.dimension_analysis.map((da, i) => (
+                                      <div key={i} className="text-sm bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                          <span className="font-medium text-gray-900">{da.name || da.dimension}</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getScoreColor(da.score || 0)}`}>{da.score}</span>
+                                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">L{da.level_number} · {da.level}</span>
+                                        </div>
+                                        {da.matched_anchors && da.matched_anchors.length > 0 && (
+                                          <div className="mb-2">
+                                            <div className="text-xs text-gray-400 mb-1">可观察行为</div>
+                                            <ul className="text-gray-600 space-y-1">
+                                              {da.matched_anchors.map((a, j) => (
+                                                <li key={j} className="flex items-start gap-2">
+                                                  <span className="text-[#165DFF] mt-0.5">•</span>
+                                                  {a}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {da.reasoning && (
+                                          <div className="mb-2">
+                                            <div className="text-xs text-gray-400 mb-1">为什么是这个级</div>
+                                            <p className="text-gray-600">{da.reasoning}</p>
+                                          </div>
+                                        )}
+                                        {da.path && (
+                                          <div className="mb-2">
+                                            <div className="text-xs text-gray-400 mb-1">提升路径</div>
+                                            <p className="text-gray-700 bg-white rounded-lg p-2">{da.path}</p>
+                                          </div>
+                                        )}
+                                        {da.suggestion && (
+                                          <div>
+                                            <div className="text-xs text-gray-400 mb-1">改进建议</div>
+                                            <p className="text-gray-700 bg-white rounded-lg p-2">{da.suggestion}</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                               {rd.strengths && rd.strengths.length > 0 && (
                                 <div>
                                   <h4 className="text-sm font-medium text-green-700 mb-2">✅ 亮点</h4>
