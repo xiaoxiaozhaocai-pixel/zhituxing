@@ -58,7 +58,7 @@ export default function AgentChainStatus({ currentBot }: { currentBot?: string }
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <TrendingUp className="w-4 h-4 text-[#165DFF] shrink-0" />
             <span className="text-sm font-semibold text-[#1a1a1a]">
-              你的能力链路进度
+              你的能力成长进度
             </span>
             <span className="text-xs text-[#888]">
               {status.completedCount}/{status.totalCount} 已完成 ·{' '}

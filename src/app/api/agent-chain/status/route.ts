@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
         desc: '基础信息',
         url: '/profile',
         completed: false,
-        reason: '先填基础信息，所有智能体才能"懂你"',
+        reason: '先填基础信息，所有功能才能更懂你',
       };
     } else {
       for (const id of RECOMMEND_CHAIN) {
@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
         if (a && !a.completed) {
           recommendedNext = {
             ...a,
-            reason: REASON_MAP[id] || '继续完善你的能力链路',
+            reason: REASON_MAP[id] || '继续完善你的能力',
           };
           break;
         }
