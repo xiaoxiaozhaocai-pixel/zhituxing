@@ -89,4 +89,17 @@ describe('异常检测与风险提示（判断力 · 块3）', () => {
     expect(r.count).toBe(1);
     expect(r.items[0].riskLevel).toBe('warning');
   });
+
+  it('opts 含 undefined 字段时回退默认（不覆盖内置默认）', () => {
+    const r = detectAnomalies([10, 10, 10, 10, 10, 10, 10, 10, 10, 80], {
+      label: '评分',
+      methods: undefined,
+      baseline: undefined,
+      zWarnThreshold: undefined,
+      zAlertThreshold: undefined,
+    });
+    expect(r.count).toBe(1);
+    expect(r.items[0].method).toBe('zscore');
+    expect(r.items[0].riskLevel).toBe('warning');
+  });
 });

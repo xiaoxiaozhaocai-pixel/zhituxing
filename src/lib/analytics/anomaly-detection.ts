@@ -125,7 +125,18 @@ const SUGGESTION = '建议：此为风险前置提示，仅触发「需要去看
  * @param opts   阈值与方法配置
  */
 export function detectAnomalies(values: number[], opts: AnomalyDetectOptions = {}): AnomalyDetectionResult {
-  const cfg = { ...DEFAULT_OPTS, ...opts };
+  // 只合并用户明确传入的自定义项，忽略 undefined（避免 opts.methods 为 undefined 时覆盖内置默认）
+  const cfg = {
+    methods: opts.methods ?? DEFAULT_OPTS.methods,
+    zWarnThreshold: opts.zWarnThreshold ?? DEFAULT_OPTS.zWarnThreshold,
+    zAlertThreshold: opts.zAlertThreshold ?? DEFAULT_OPTS.zAlertThreshold,
+    iqrWarnFactor: opts.iqrWarnFactor ?? DEFAULT_OPTS.iqrWarnFactor,
+    iqrAlertFactor: opts.iqrAlertFactor ?? DEFAULT_OPTS.iqrAlertFactor,
+    baselineWarnRatio: opts.baselineWarnRatio ?? DEFAULT_OPTS.baselineWarnRatio,
+    baselineAlertRatio: opts.baselineAlertRatio ?? DEFAULT_OPTS.baselineAlertRatio,
+    baseline: opts.baseline,
+    label: opts.label,
+  };
   const name = NAME(cfg.label);
   const normalized = values.map((v) => (typeof v === 'number' && Number.isFinite(v) ? v : Number.NaN));
   const clean = normalized.filter((v) => Number.isFinite(v));
