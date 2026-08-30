@@ -38,10 +38,55 @@ function _sanitizeContent(content: string): string {
   });
 }
 
+interface DispatchCardData {
+  intent?: string;
+  title: string;
+  description?: string;
+  actionLabel?: string;
+  tabId?: string;
+  url?: string;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  /** 后端路由下发的引导卡片（dispatch 事件），渲染为可点击的功能入口 */
+  dispatch?: DispatchCardData;
+}
+
+/** dispatch 卡片 tabId → 目标路由（无专用 url 时兜底跳转） */
+function dispatchTabRoute(tabId?: string): string {
+  if (!tabId) return '/chat';
+  const assistantBots = ['jobs', 'interview', 'career', 'decision', 'assessment', 'competency', 'xiaozhi'];
+  if (assistantBots.includes(tabId)) return `/assistant?bot=${tabId}`;
+  const pageRoutes: Record<string, string> = {
+    'career-paths': '/career-paths',
+    'career-planning': '/career-planning',
+  };
+  return pageRoutes[tabId] || `/assistant?bot=${tabId}`;
+}
+
+/** 引导卡片：小职对话里的 dispatch 事件渲染，点击跳转对应功能入口 */
+function DispatchCard({ card }: { card: DispatchCardData }) {
+  const target = card.url || dispatchTabRoute(card.tabId);
+  return (
+    <div className="mt-3 rounded-xl border border-blue-100 bg-gradient-to-br from-[#f8fafd] via-white to-[#f0f5ff]/40 p-4">
+      <div className="text-sm font-semibold text-gray-900">{card.title}</div>
+      {card.description && (
+        <div className="mt-1 text-xs text-gray-600 leading-relaxed">{card.description}</div>
+      )}
+      {card.actionLabel && (
+        <Link
+          href={target}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] px-4 py-2 text-xs font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md"
+        >
+          {card.actionLabel}
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      )}
+    </div>
+  );
 }
 
 /** 过滤文本中残留的 <<DATA:type=xxx>>...<<END>> 标记（安全网） */
@@ -695,6 +740,28 @@ function ChatContent() {
                 if (parsed.conversation_id) {
                   localStorage.setItem(`conversationId_${activeBot}`, parsed.conversation_id);
                   console.log('[chat] Saved conversationId:', parsed.conversation_id, 'for bot:', activeBot);
+                }
+              } catch {
+                // 忽略解析错误
+              }
+              continue;
+            }
+
+            // dispatch 事件 — 渲染引导卡片（A1认知校正/A3能力翻译/面试/职业规划等）
+            // 卡片数据：{intent,title,description,actionLabel,tabId,url?}
+            if (eventType === 'dispatch') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                if (parsed && (parsed.title || parsed.actionLabel || parsed.tabId)) {
+                  setMessages(prev => {
+                    const newMsgs = [...prev];
+                    const last = newMsgs[newMsgs.length - 1];
+                    if (last && last.role === 'assistant') {
+                      // 将引导卡片挂在当前 assistant 回复上，AIResponseRenderer 下方渲染
+                      newMsgs[newMsgs.length - 1] = { ...last, dispatch: parsed as DispatchCardData };
+                    }
+                    return newMsgs;
+                  });
                 }
               } catch {
                 // 忽略解析错误
@@ -1447,11 +1514,14 @@ function ChatContent() {
                       {msg.content}
                     </div>
                   ) : (
-                    <AIResponseRenderer
-                      rawText={msg.content}
-                      streaming={index === messages.length - 1 && isLoading}
-                      role="assistant"
-                    />
+                    <>
+                      <AIResponseRenderer
+                        rawText={msg.content}
+                        streaming={index === messages.length - 1 && isLoading}
+                        role="assistant"
+                      />
+                      {msg.dispatch && <DispatchCard card={msg.dispatch} />}
+                    </>
                   )}
                   {/* 加载动画 */}
                   {index === messages.length - 1 && isLoading && !msg.content && msg.role !== 'user' && (
