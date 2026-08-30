@@ -223,7 +223,7 @@ function SearchContent() {
               </div>
               <button
                 type="submit"
-                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-xl hover:opacity-90 transition-colors"
               >
                 搜索
               </button>

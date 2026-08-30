@@ -123,7 +123,7 @@ export default function NotificationsPage() {
           <p className="text-gray-600 mb-4">请先登录查看通知</p>
           <a
             href="/login"
-            className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-block px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90"
           >
             登录
           </a>

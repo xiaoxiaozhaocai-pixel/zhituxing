@@ -199,7 +199,7 @@ export default function ExportPage() {
             <Button 
               onClick={handleExport}
               disabled={exporting}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
             >
               {exporting ? (
                 <>

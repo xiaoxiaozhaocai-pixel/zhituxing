@@ -199,7 +199,7 @@ export default function FaqPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <HelpCircle className="w-16 h-16 mx-auto mb-4 opacity-80" />
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
@@ -218,7 +218,7 @@ export default function FaqPage() {
             onClick={() => setActiveCategory(null)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
               activeCategory === null
-                ? 'bg-blue-600 text-white shadow-md'
+                ? 'bg-[#165DFF] text-white shadow-md'
                 : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
           >
@@ -230,7 +230,7 @@ export default function FaqPage() {
               onClick={() => setActiveCategory(cat.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeCategory === cat.id
-                  ? 'bg-blue-600 text-white shadow-md'
+                  ? 'bg-[#165DFF] text-white shadow-md'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
               }`}
             >
@@ -278,7 +278,7 @@ export default function FaqPage() {
             <div className="flex flex-wrap justify-center gap-4">
               <Button 
                 onClick={copyWechat}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
               >
                 {copied ? (
                   <>

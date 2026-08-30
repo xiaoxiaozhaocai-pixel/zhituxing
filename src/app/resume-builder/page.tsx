@@ -414,7 +414,7 @@ export default function ResumeBuilderPage() {
             </DialogTrigger>
           </Dialog>
           <Link href="/assistant?botType=interview">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90">
               模拟面试 <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </Link>
@@ -438,7 +438,7 @@ export default function ResumeBuilderPage() {
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                   msg.role === 'user' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-[#165DFF] text-white' 
                     : 'bg-gray-100 text-gray-800'
                 }`}>
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
@@ -471,7 +471,7 @@ export default function ResumeBuilderPage() {
                 onClick={handleSend} 
                 disabled={!input.trim() || isStreaming}
                 size="icon"
-                className="shrink-0 bg-blue-600 hover:bg-blue-700"
+                className="shrink-0 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
               >
                 <Send className="h-4 w-4" />
               </Button>

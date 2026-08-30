@@ -889,7 +889,7 @@ export default function SkillPortraitPage() {
         <div className="max-w-2xl mx-auto px-4">
           {/* 页面标题 */}
           <div className="text-center mb-10">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30 mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30 mb-4">
               <Target className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">AI技能画像</h1>
@@ -906,7 +906,7 @@ export default function SkillPortraitPage() {
               <p className="text-gray-500 mb-6">登录后可保存技能画像，追踪学习进度，获取个性化推荐</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
-                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg">
                     <LogIn className="w-5 h-5 mr-2" />
                     立即登录
                   </Button>
@@ -994,7 +994,7 @@ export default function SkillPortraitPage() {
         {currentStep === 1 && (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center mx-auto shadow-lg shadow-[#165DFF]/30">
                 <Target className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 mt-4">AI技能画像分析</h2>
@@ -1079,7 +1079,7 @@ export default function SkillPortraitPage() {
                 <Card className="border-0 shadow-md bg-gradient-to-br from-[#165DFF]/5 to-blue-500/5">
                   <CardContent className="py-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
                         <Sparkles className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">

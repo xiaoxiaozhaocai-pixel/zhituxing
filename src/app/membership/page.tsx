@@ -285,8 +285,8 @@ export default function MembershipPage() {
                 <Button 
                   className={`w-full ${
                     plan.popular 
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600' 
-                      : 'bg-gray-800 hover:bg-gray-900'
+                      ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90' 
+                      : 'bg-white text-[#165DFF] border border-[#165DFF]/30 hover:bg-[#165DFF]/5'
                   }`}
                   onClick={() => handleOpenPlan(plan)}
                 >
@@ -578,7 +578,7 @@ export default function MembershipPage() {
 
             {/* 提交按钮 */}
             <Button
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600"
+              className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
               disabled={!screenshotFile || orderStatus === 'uploading' || orderStatus === 'submitting'}
               onClick={handleSubmitOrder}
             >

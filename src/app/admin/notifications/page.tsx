@@ -134,7 +134,7 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">站内信管理</h1>
-        <Button onClick={() => setModal(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setModal(true)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90">
           <Send className="w-4 h-4 mr-2" />
           发送站内信
         </Button>

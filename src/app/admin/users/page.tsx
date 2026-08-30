@@ -251,7 +251,7 @@ export default function AdminUsersPage() {
               onChange={e => setMajorFilter(e.target.value)}
               className="w-[140px]"
             />
-            <Button onClick={() => fetchUsers(1)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={() => fetchUsers(1)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">
               搜索
             </Button>
             {(keyword || membershipFilter || majorFilter) && (

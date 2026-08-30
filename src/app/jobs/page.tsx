@@ -474,7 +474,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                 问职搭子
               </Button>
               <Link href="/jobs/submit">
-                <Button className="bg-[#FF7D00] hover:bg-[#FF7D00]/90 text-white h-11 px-6 shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white h-11 px-6 shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                   <Upload className="w-4 h-4 mr-2" />
                   上传JD
                 </Button>
@@ -1148,7 +1148,7 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
                     关闭
                   </Button>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90"
+                    className="flex-1 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF]/90 hover:to-[#3D7FFF]/90"
                     onClick={() => {
                       setSelectedJob(null);
                       handleJobClick(selectedJob);

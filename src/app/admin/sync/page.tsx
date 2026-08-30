@@ -178,7 +178,7 @@ export default function SyncPage() {
             <Button 
               onClick={() => handleSync('all')}
               disabled={syncing}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
             >
               {syncing && syncingPlatform === 'all' ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

@@ -102,7 +102,7 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
             <div className="flex items-center gap-3">
               <Link
                 href="/assistant"
-                className="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-blue-600 text-white text-sm font-medium rounded-full hover:from-blue-700 hover:to-blue-700 transition-all shadow-sm"
+                className="px-4 py-1.5 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white text-sm font-medium rounded-full hover:opacity-90 transition-all shadow-sm"
               >
                 去和小职聊聊
               </Link>

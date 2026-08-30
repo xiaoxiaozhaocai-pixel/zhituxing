@@ -1143,7 +1143,7 @@ function AssistantContent() {
                   {msg.content.includes('请求超时') && (
                     <button
                       onClick={() => sendMessage(msg.content.replace('[超时] ', '').replace('请求超时，请重试', '').trim())}
-                      className="mt-2 px-4 py-1.5 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"
+                      className="mt-2 px-4 py-1.5 bg-[#165DFF] text-white text-xs rounded-lg hover:bg-[#165DFF]/90 transition-colors"
                     >
                       重新生成
                     </button>

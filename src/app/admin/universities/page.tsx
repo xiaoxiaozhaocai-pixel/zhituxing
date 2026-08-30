@@ -186,7 +186,7 @@ export default function AdminUniversitiesPage() {
                   <SelectItem value="inactive">已停用</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => fetchList(1)} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button onClick={() => fetchList(1)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">
                 搜索
               </Button>
               {(keyword || statusFilter !== 'all') && (
@@ -199,7 +199,7 @@ export default function AdminUniversitiesPage() {
                 </Button>
               )}
             </div>
-            <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={openCreate} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">
               <Plus className="h-4 w-4 mr-1" />创建高校
             </Button>
           </div>
@@ -403,7 +403,7 @@ export default function AdminUniversitiesPage() {
             <Button
               onClick={handleSave}
               disabled={saving || !form.name.trim() || !form.domain.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white"
             >
               {saving ? '保存中...' : '保存'}
             </Button>

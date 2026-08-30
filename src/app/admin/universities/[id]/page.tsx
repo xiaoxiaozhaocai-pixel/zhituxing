@@ -244,7 +244,7 @@ export default function UniversityDetailPage() {
                 共 {admins.length} 人
               </span>
             </CardTitle>
-            <Button onClick={() => setAddDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+            <Button onClick={() => setAddDialogOpen(true)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white" size="sm">
               <Plus className="h-4 w-4 mr-1" />添加管理员
             </Button>
           </div>
@@ -343,7 +343,7 @@ export default function UniversityDetailPage() {
             <Button
               onClick={handleAddAdmin}
               disabled={adding || !newAdminUserId.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white"
             >
               {adding ? '添加中...' : '确认添加'}
             </Button>

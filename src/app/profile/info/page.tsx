@@ -1013,7 +1013,7 @@ function ProfileInfoContent() {
                 <Card className="border-0 shadow-md bg-gradient-to-br from-[#165DFF]/5 to-blue-500/5">
                   <CardContent className="py-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center shrink-0 shadow-lg shadow-[#165DFF]/30">
                         <Sparkles className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">

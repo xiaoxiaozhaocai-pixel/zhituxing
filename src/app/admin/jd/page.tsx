@@ -262,7 +262,7 @@ export default function AdminJdPage() {
               <option value="expired">过期</option>
             </select>
           </div>
-          <Button onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={handleSearch} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">
             搜索
           </Button>
           <Button
@@ -300,7 +300,7 @@ export default function AdminJdPage() {
             size="sm"
             onClick={handleBulkAction}
             disabled={!bulkAction}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white"
           >
             执行
           </Button>

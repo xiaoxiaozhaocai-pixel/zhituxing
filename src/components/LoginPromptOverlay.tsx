@@ -72,7 +72,7 @@ export default function LoginPromptOverlay({
             {/* 按钮 */}
             <div className="space-y-3 mt-6">
               <Link href="/auth">
-                <Button className="w-full py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg">
+                <Button className="w-full py-6 text-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg">
                   <LogIn className="w-5 h-5 mr-2" />
                   立即登录
                 </Button>

@@ -375,7 +375,7 @@ export default function AdminSkillsPage() {
                 <Input placeholder="搜索技能..." value={taxonomyKeyword}
                   onChange={e => { setTaxonomyKeyword(e.target.value); setTaxonomyPage(1); }}
                   className="w-40 h-8 text-xs" />
-                <Button size="sm" onClick={() => setShowAddTaxonomy(true)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
+                <Button size="sm" onClick={() => setShowAddTaxonomy(true)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white text-xs">
                   + 新增
                 </Button>
               </div>
@@ -461,7 +461,7 @@ export default function AdminSkillsPage() {
                   <option value="similar">相似</option>
                   <option value="career_path">职业路径</option>
                 </select>
-                <Button size="sm" onClick={() => setShowAddRelation(true)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">+ 新增</Button>
+                <Button size="sm" onClick={() => setShowAddRelation(true)} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white text-xs">+ 新增</Button>
                 <Button size="sm" variant="outline" onClick={() => setShowImport(true)}
                   className="text-xs">批量导入</Button>
               </div>
@@ -562,7 +562,7 @@ export default function AdminSkillsPage() {
               </div>
               <div className="flex gap-2 mt-4 justify-end">
                 <Button variant="outline" onClick={() => setShowAddTaxonomy(false)}>取消</Button>
-                <Button onClick={handleAddTaxonomy} className="bg-blue-600 hover:bg-blue-700 text-white">确认</Button>
+                <Button onClick={handleAddTaxonomy} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">确认</Button>
               </div>
             </div>
           </div>
@@ -590,7 +590,7 @@ export default function AdminSkillsPage() {
               </div>
               <div className="flex gap-2 mt-4 justify-end">
                 <Button variant="outline" onClick={() => setShowAddRelation(false)}>取消</Button>
-                <Button onClick={handleAddRelation} className="bg-blue-600 hover:bg-blue-700 text-white">确认</Button>
+                <Button onClick={handleAddRelation} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">确认</Button>
               </div>
             </div>
           </div>
@@ -616,7 +616,7 @@ export default function AdminSkillsPage() {
               )}
               <div className="flex gap-2 mt-4 justify-end">
                 <Button variant="outline" onClick={() => { setShowImport(false); setImportResult(null); }}>关闭</Button>
-                <Button onClick={handleBulkImport} className="bg-blue-600 hover:bg-blue-700 text-white">导入</Button>
+                <Button onClick={handleBulkImport} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white">导入</Button>
               </div>
             </div>
           </div>
@@ -634,7 +634,7 @@ export default function AdminSkillsPage() {
               <Input placeholder="输入技能名称..." value={graphSkill} onChange={e => setGraphSkill(e.target.value)}
                 className="flex-1 h-8 text-xs"
                 onKeyDown={e => { if (e.key === 'Enter') fetchGraph(); }} />
-              <Button size="sm" onClick={fetchGraph} className="bg-blue-600 hover:bg-blue-700 text-white text-xs">查看</Button>
+              <Button size="sm" onClick={fetchGraph} className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white text-xs">查看</Button>
             </div>
 
             {/* 图例 */}

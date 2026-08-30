@@ -100,7 +100,7 @@ export default function FeedbackPage() {
           </p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90 transition-colors"
           >
             立即返回
           </button>
@@ -113,7 +113,7 @@ export default function FeedbackPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-600 px-6 py-8">
+          <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] px-6 py-8">
             <h1 className="text-2xl font-bold text-white mb-2">提交反馈</h1>
             <p className="text-blue-100">帮助我们改进产品，让职途星更好用</p>
           </div>
@@ -199,7 +199,7 @@ export default function FeedbackPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white font-medium rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <span className="flex items-center justify-center">

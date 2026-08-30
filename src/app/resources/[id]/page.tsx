@@ -280,7 +280,7 @@ export default function ArticleDetailPage() {
           <p className="text-gray-500 mb-4">{error}</p>
           <Link
             href="/resources"
-            className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-block px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90"
           >
             返回列表
           </Link>
@@ -379,7 +379,7 @@ export default function ArticleDetailPage() {
                 variant={isLiked ? 'default' : 'outline'}
                 onClick={handleLike}
                 disabled={liking}
-                className={isLiked ? 'bg-blue-600' : ''}
+                className={isLiked ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]' : ''}
               >
                 <ThumbsUp className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
                 {likeCount} 赞
@@ -419,7 +419,7 @@ export default function ArticleDetailPage() {
               <Button
                 onClick={handleSubmitComment}
                 disabled={submitting}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
               >
                 <Send className="w-4 h-4 mr-2" />
                 {submitting ? '发布中...' : '发表评论'}
@@ -477,7 +477,7 @@ export default function ArticleDetailPage() {
                               size="sm"
                               onClick={() => handleSubmitReply(comment.id)}
                               disabled={submitting}
-                              className="bg-blue-600 hover:bg-blue-700"
+                              className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
                             >
                               回复
                             </Button>
@@ -530,7 +530,7 @@ export default function ArticleDetailPage() {
         <div className="mt-8 flex justify-center">
           <Link
             href="/resources"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white rounded-lg hover:opacity-90 transition-colors"
           >
             查看更多干货
           </Link>

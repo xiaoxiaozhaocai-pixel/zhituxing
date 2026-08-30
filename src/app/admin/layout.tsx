@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <p className="text-[#64748B] mb-6">管理后台仅限管理员访问</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+            className="px-6 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white rounded-lg transition"
           >
             返回首页
           </button>

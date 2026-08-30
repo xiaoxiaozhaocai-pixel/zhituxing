@@ -153,7 +153,7 @@ export default function DiagnosticsPage() {
             <Button
               onClick={fetchDiagnostics}
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

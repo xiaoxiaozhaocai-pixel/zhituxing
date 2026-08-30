@@ -325,7 +325,7 @@ export default function MatchPage() {
               <p className="text-gray-500 mb-6">登录后可保存匹配结果，查看详细技能分析，获取专属学习建议</p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
                 <Link href="/auth">
-                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 shadow-lg">
+                  <Button className="w-full sm:w-auto px-8 py-6 text-lg bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg">
                     <LogIn className="w-5 h-5 mr-2" />
                     立即登录
                   </Button>
@@ -731,7 +731,7 @@ export default function MatchPage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-2">解锁反向匹配</h3>
                 <p className="text-gray-500 text-sm mb-4">完成技能画像后，发现你被低估的好机会</p>
                 <Link href="/growth">
-                  <Button className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700">
+                  <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90">
                     去完善技能画像
                   </Button>
                 </Link>

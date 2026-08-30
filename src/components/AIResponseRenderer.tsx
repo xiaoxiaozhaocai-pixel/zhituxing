@@ -720,7 +720,7 @@ function PromotionRenderer({ data }: { data: PromotionData }) {
           </li>
         ))}
       </ul>
-      <button className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+      <button className="mt-3 px-4 py-1.5 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white text-sm rounded-lg hover:opacity-90 transition-colors">
         立即开通
       </button>
     </div>

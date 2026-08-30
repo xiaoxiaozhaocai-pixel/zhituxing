@@ -167,7 +167,7 @@ export default function CostDashboardPage() {
               onClick={() => setDays(opt.value)}
               className={`px-3 py-1.5 rounded-lg text-sm transition border ${
                 days === opt.value
-                  ? 'bg-blue-600 text-white border-blue-600'
+                  ? 'bg-[#165DFF] text-white border-[#165DFF]'
                   : 'bg-white text-[#64748B] border-[#E2E8F0] hover:bg-[#F8FAFC]'
               }`}
             >

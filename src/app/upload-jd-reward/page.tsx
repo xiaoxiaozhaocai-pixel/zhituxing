@@ -217,7 +217,7 @@ export default function UploadJdRewardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* 顶部Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-600 py-12 px-4">
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full text-sm mb-4">
             <Gift className="w-4 h-4" />
@@ -273,7 +273,7 @@ export default function UploadJdRewardPage() {
             onClick={() => setActiveTab('upload')}
             className={`flex-1 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'upload'
-                ? 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white shadow-lg'
                 : 'bg-white text-gray-600 hover:bg-gray-50 border'
             }`}
           >
@@ -284,7 +284,7 @@ export default function UploadJdRewardPage() {
             onClick={() => setActiveTab('history')}
             className={`flex-1 py-3 rounded-lg font-medium transition-all ${
               activeTab === 'history'
-                ? 'bg-gradient-to-r from-blue-600 to-blue-600 text-white shadow-lg'
+                ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white shadow-lg'
                 : 'bg-white text-gray-600 hover:bg-gray-50 border'
             }`}
           >
@@ -474,7 +474,7 @@ export default function UploadJdRewardPage() {
                   <p className="text-gray-500">暂无上传记录</p>
                   <Button
                     onClick={() => setActiveTab('upload')}
-                    className="mt-4 bg-blue-600 hover:bg-blue-700"
+                    className="mt-4 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90"
                   >
                     去上传JD
                   </Button>

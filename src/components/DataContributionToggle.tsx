@@ -132,7 +132,7 @@ const DataContributionToggle = () => {
             onClick={() => toggleContribution(true)}
             disabled={actionLoading}
             type="button"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-lg hover:opacity-90 transition-colors disabled:opacity-50"
           >
             {actionLoading ? '处理中...' : '开启数据贡献'}
           </button>

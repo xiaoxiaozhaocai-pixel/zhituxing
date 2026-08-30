@@ -118,7 +118,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white py-16">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-90" />
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
@@ -251,7 +251,7 @@ export default function ContactPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-blue-600 hover:bg-blue-700 h-12"
+                    className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 h-12"
                   >
                     {submitting ? (
                       <>提交中...</>

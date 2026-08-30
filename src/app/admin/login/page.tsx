@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-600 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo区域 */}
         <div className="text-center mb-8">
@@ -87,7 +87,7 @@ export default function AdminLoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-base font-medium"
+              className="w-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white py-3 text-base font-medium"
             >
               {loading ? (
                 <>

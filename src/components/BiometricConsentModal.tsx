@@ -119,7 +119,7 @@ const BiometricConsentModal = ({
       >
         <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
           {/* 头部 */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-2xl">
+          <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white p-6 rounded-t-2xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Fingerprint className="w-7 h-7" />
@@ -209,7 +209,7 @@ const BiometricConsentModal = ({
                   onChange={(e) => setChecked(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-5 h-5 rounded border-2 border-gray-300 peer-checked:border-blue-600 peer-checked:bg-blue-600 transition-colors flex items-center justify-center">
+                <div className="w-5 h-5 rounded border-2 border-gray-300 peer-checked:border-[#165DFF] peer-checked:bg-[#165DFF] transition-colors flex items-center justify-center">
                   {checked && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -248,7 +248,7 @@ const BiometricConsentModal = ({
               type="button"
               className={`flex-1 px-6 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                 checked && !loading
-                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                  ? 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white hover:opacity-90 shadow-sm'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >

@@ -41,7 +41,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-20">
+      <div className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1.5 text-sm text-blue-100 mb-6">
             <MapPin className="w-4 h-4" />
@@ -124,7 +124,7 @@ export default function AboutPage() {
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/contact">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90">
                 联系我们
               </Button>
             </Link>

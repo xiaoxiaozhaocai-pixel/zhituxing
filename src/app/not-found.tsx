@@ -10,7 +10,7 @@ export default function NotFound() {
           404
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-blue-600 to-blue-600 flex items-center justify-center shadow-2xl animate-bounce">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] flex items-center justify-center shadow-2xl animate-bounce">
             <svg className="w-16 h-16 md:w-20 md:h-20 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -29,7 +29,7 @@ export default function NotFound() {
       {/* 操作按钮 */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Link href="/">
-          <Button className="bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 4 4M5 10l7 7m4-4l2 2m-2-2l7-7" />
             </svg>

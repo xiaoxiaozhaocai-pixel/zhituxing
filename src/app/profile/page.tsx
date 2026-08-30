@@ -485,7 +485,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
               <p className="text-gray-500 text-sm mb-1">完善你的技能画像</p>
               <p className="text-gray-400 text-xs mb-4">获取精准职业规划和岗位匹配</p>
               <Link href="/profile/info?from=/profile">
-                <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-blue-600 hover:from-[#165DFF]/90 hover:to-blue-600/90 text-white shadow-md shadow-blue-500/20">
+                <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF]/90 hover:to-[#3D7FFF]/90 text-white shadow-md shadow-blue-500/20">
                   AI智能推荐技能
                   <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
