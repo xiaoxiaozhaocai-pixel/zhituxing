@@ -10,7 +10,7 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://zhituxing.t
 export const SITE_NAME = "职途星";
 
 // 网站描述
-export const SITE_DESCRIPTION = "AI职业规划与模拟面试平台，大学生一站式求职服务";
+export const SITE_DESCRIPTION = "懂桂电学生的AI朋友——小职，陪你走好求职每一步";
 
 // ----- 价格配置（统一管理，避免硬编码散落） -----
 

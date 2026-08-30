@@ -98,8 +98,6 @@ function meanOf(values: number[]): number | null {
   return values.reduce((s, v) => s + v, 0) / values.length;
 }
 
-const HIGH_PREFIX = '数值偏高（高于均值/中位区间/基线）';
-const LOW_PREFIX = '数值偏低（低于均值/中位区间/基线）';
 
 function zDesc(index: number, value: number, z: number, name: string): string {
   const dir = z > 0 ? '偏高' : '偏低';
@@ -112,7 +110,6 @@ function iqrDesc(index: number, value: number, dir: Direction, q1: number, q3: n
 }
 
 function baselineDesc(value: number, baseline: number, devRatio: number, name: string): string {
-  const dir = value > baseline ? '偏高' : '偏低';
   return `${name}值 ${value} 相对基线 ${baseline} 偏离 ${(Math.abs(devRatio) * 100).toFixed(1)}%，明显越出基线区间。`;
 }
 
