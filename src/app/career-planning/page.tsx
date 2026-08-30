@@ -1111,6 +1111,27 @@ export default function CareerPlanningPage() {
                       </div>
                     </div>
 
+                    {/* 专业·行业切入（B1 行业雷达深度判断联动，做深判断力） */}
+                    {pathResult.industryImplication && (
+                      <div className="mb-5 rounded-xl bg-[#165DFF]/5 border border-[#165DFF]/15 p-4">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Radar className="w-4 h-4 text-[#165DFF]" />
+                          <p className="text-xs font-medium text-[#165DFF] uppercase tracking-wide">你的专业 · 最佳切入</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {pathResult.industryImplication.best.map((ind, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-[#165DFF]/5 text-[#165DFF] text-xs rounded-md border border-[#165DFF]/15">{ind}</span>
+                          ))}
+                        </div>
+                        <p className="text-sm text-[#475569] leading-relaxed">
+                          <span className="font-medium text-[#1E293B]">🎯 切入点：</span>{pathResult.industryImplication.entry}
+                        </p>
+                        <p className="text-sm text-[#64748B] leading-relaxed mt-1.5">
+                          <span className="font-medium text-[#B45309]">⚠️ 避雷：</span>{pathResult.industryImplication.avoid}
+                        </p>
+                      </div>
+                    )}
+
                     {/* 当前阶段 */}
                     <div className="mb-5 rounded-xl bg-[#10B981]/5 border border-[#10B981]/15 p-4">
                       <p className="text-xs font-medium text-[#10B981] uppercase tracking-wide mb-1">当前阶段</p>

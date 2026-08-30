@@ -1052,7 +1052,7 @@ const MAJOR_INDUSTRY_HINTS: Record<string, string[]> = {
  * 比 MAJOR_INDUSTRY_HINTS 更细：给出「最佳切入行业 + 切入点 + 避雷」，
  * 面向桂电主业核心专业，供行业雷达做个性化判断参考。守四真，不夸大。
  */
-interface MajorDeepInsight {
+export interface MajorDeepInsight {
   /** 最佳切入行业（展示名） */
   best: string[];
   /** 切入点：具体方向 + 真实信号 */
@@ -1060,6 +1060,7 @@ interface MajorDeepInsight {
   /** 避雷/注意点 */
   avoid: string;
 }
+
 const MAJOR_DEEP_INSIGHTS: Record<string, MajorDeepInsight> = {
   '计算机': {
     best: ['互联网/软件开发', '汽车·智驾/智能座舱软件', '机器人·具身大脑算法'],
@@ -1143,19 +1144,31 @@ const MAJOR_DEEP_INSIGHTS: Record<string, MajorDeepInsight> = {
   },
 };
 
+/**
+ * 根据专业返回结构化深度切入建议（B1 行业雷达深度判断，供多引擎复用）。
+ * 命中 MAJOR_DEEP_INSIGHTS 时返回原始 best/entry/avoid（不拼文案），未命中返回 undefined。
+ * 匹配逻辑：专业名包含广度映射 key（如「计算机」命中「计算机科学与技术」）。
+ */
+export function getMajorDeepInsight(major: string): MajorDeepInsight | undefined {
+  if (!major) return undefined;
+  for (const m of Object.keys(MAJOR_DEEP_INSIGHTS)) {
+    if (major.includes(m)) return MAJOR_DEEP_INSIGHTS[m];
+  }
+  return undefined;
+}
+
 /** 根据专业生成深度切入建议（优先 MAJOR_DEEP_INSIGHTS，未命中回退 MAJOR_INDUSTRY_HINTS） */
 function buildMajorImplication(major: string): { industryKeys: string[]; text: string } | undefined {
   if (!major) return undefined;
   // 优先：深度切入判断（最佳切入 + 切入点 + 避雷）
-  for (const m of Object.keys(MAJOR_DEEP_INSIGHTS)) {
-    if (major.includes(m)) {
-      const d = MAJOR_DEEP_INSIGHTS[m];
-      const keys = (MAJOR_INDUSTRY_HINTS[m] || []).slice();
-      return {
-        industryKeys: keys.length > 0 ? keys : d.best.map((b) => b),
-        text: `你的专业「${major}」最对口 ${d.best.join('、')}。\n🎯 切入点：${d.entry}\n⚠️ 避雷:${d.avoid}`,
-      };
-    }
+  const d = getMajorDeepInsight(major);
+  if (d) {
+    const matchedKey = Object.keys(MAJOR_DEEP_INSIGHTS).find((m) => major.includes(m));
+    const keys = (matchedKey && MAJOR_INDUSTRY_HINTS[matchedKey]) || [];
+    return {
+      industryKeys: keys.length > 0 ? keys : d.best.map((b) => b),
+      text: `你的专业「${major}」最对口 ${d.best.join('、')}。\n🎯 切入点：${d.entry}\n⚠️ 避雷:${d.avoid}`,
+    };
   }
   // 回退：仅列举对口行业
   for (const m of Object.keys(MAJOR_INDUSTRY_HINTS)) {

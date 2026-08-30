@@ -6,6 +6,7 @@
 // =====================================================================
 
 import { encodeMajor } from '@/lib/career-paths/engine/major_mapping';
+import { getMajorDeepInsight } from '@/lib/career-paths/engine/interview_radar';
 
 export type CareerPlanStage = 'foundation' | 'explore' | 'develop' | 'push' | 'hunt' | 'onboard';
 export type CareerTrackKey = 'dev' | 'data' | 'hardware' | 'manufacture' | 'business' | 'hrfin';
@@ -30,6 +31,8 @@ export interface PathPlanReport {
   roadmap: StageStep[];      // 从当前阶段起的路线
   summary: string;
   needsMoreInfo?: boolean;
+  /** 专业 → 最佳切入行业/切入点/避雷（B1 行业雷达深度判断联动，未命中不返回） */
+  industryImplication?: { best: string[]; entry: string; avoid: string };
 }
 
 export interface PathPlanInput {
@@ -299,6 +302,9 @@ export function planCareerPath(input: PathPlanInput): PathPlanReport {
   const track = resolveTrack(input, subCat, cleanedMajor);
   const stageInfo = gradeToStage(cleanedGrade);
 
+  // 行业切入联动：命中专业深度映射时给「最佳切入行业 + 切入点 + 避雷」（做深判断力，不只给泛方向）
+  const deepInsight = getMajorDeepInsight(cleanedMajor);
+
   // 从当前阶段起构建路线（无年级则给完整 6 阶段）
   const startIdx = cleanedGrade ? STAGE_ORDER.indexOf(stageInfo.stage) : 0;
   const full = STAGE_ROADMAP[track.key];
@@ -341,6 +347,9 @@ export function planCareerPath(input: PathPlanInput): PathPlanReport {
     roadmap,
     summary,
     needsMoreInfo,
+    industryImplication: deepInsight
+      ? { best: deepInsight.best, entry: deepInsight.entry, avoid: deepInsight.avoid }
+      : undefined,
   };
 }
 

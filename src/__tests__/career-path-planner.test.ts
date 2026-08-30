@@ -71,3 +71,17 @@ describe('listTracks 方向列表', () => {
     }
   });
 });
+
+describe('planCareerPath 行业切入联动（B1 深度判断）', () => {
+  it('命中深度映射的专业 → 返回最佳切入行业/切入点/避雷', () => {
+    const r = planCareerPath({ major: '计算机科学与技术', grade: '大三' });
+    expect(r.industryImplication).toBeDefined();
+    expect(r.industryImplication?.best.length).toBeGreaterThan(0);
+    expect(r.industryImplication?.entry.length).toBeGreaterThan(0);
+    expect(r.industryImplication?.avoid.length).toBeGreaterThan(0);
+  });
+  it('未命中深度映射的专业 → 不返回行业切入（可选字段）', () => {
+    const r = planCareerPath({ major: '会计学', grade: '大二' });
+    expect(r.industryImplication).toBeUndefined();
+  });
+});
