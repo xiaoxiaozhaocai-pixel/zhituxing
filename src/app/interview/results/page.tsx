@@ -328,6 +328,26 @@ export default function InterviewResultsPage() {
                                   </div>
                                 </div>
                               )}
+                              {/* P1 面后闭环：根据短板引导去补差距 */}
+                              <div className="rounded-lg bg-gradient-to-r from-[#165DFF]/8 to-[#3D7FFF]/10 border border-[#165DFF]/20 p-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Target className="w-4 h-4 text-[#165DFF]" />
+                                  <span className="text-sm font-medium text-[#165DFF]">下一步 · 把短板补上</span>
+                                </div>
+                                <p className="text-xs text-gray-600 mb-2">结合这次面试的薄弱项，去学习路径 / 职业规划里补齐对应能力，下次更有把握。</p>
+                                <div className="flex gap-2 flex-wrap">
+                                  <Link href="/learning-path">
+                                    <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
+                                      去学习路径补差距
+                                    </Button>
+                                  </Link>
+                                  <Link href="/career-planning">
+                                    <Button size="sm" variant="outline" className="border-[#165DFF]/30 text-[#165DFF]">
+                                      去职业规划
+                                    </Button>
+                                  </Link>
+                                </div>
+                              </div>
                               <Link href="/assistant?bot=interview">
                                 <Button size="sm" className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
                                   再来一次
