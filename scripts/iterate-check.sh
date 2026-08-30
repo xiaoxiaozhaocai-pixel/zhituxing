@@ -58,7 +58,9 @@ check_l1() {
     fail "暗色主题残留"; ok=false; else pass "已清除"; fi
 
   echo -n "  1.5 内容红线... "
-  if grep -rn "答辩" src/ --include="*.tsx" --include="*.ts" -q 2>/dev/null; then
+  # 排除 src/__tests__ 与 *.test.ts（黑名单检测词会作为正则字面量出现在测试里，属误报）；
+  # 真实交付内容的红线由 content-quality.test.ts 在 Test 阶段运行时校验兜底。
+  if grep -rn "答辩" src/ --include="*.tsx" --include="*.ts" 2>/dev/null | grep -vE "src/__tests__/|[^/]*\.test\.(ts|tsx)$" | grep -q "答辩"; then
     fail "含'答辩'"; ok=false; else pass "合规"; fi
 
   $ok && return 0 || return 1
