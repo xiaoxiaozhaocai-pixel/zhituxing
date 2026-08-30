@@ -115,6 +115,16 @@ export default function ResumeOptimizePage() {
 
 
 
+  const demoOriginalContent = '做过产品相关工作，负责公司APP的运营和推广，参与过几个项目，平时和开发沟通需求、跟进进度。';
+  const handleUseDemo = () => {
+    setResumeContent(demoOriginalContent);
+    setTargetPosition('产品经理');
+    // 滚动到输入区，引导用户直接点击「开始智能优化」体验真实改写
+    requestAnimationFrame(() => {
+      document.getElementById('resume-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
   const handleOptimize = async () => {
     if (!user) return;
     
@@ -223,11 +233,79 @@ export default function ResumeOptimizePage() {
           </div>
         </div>
 
+        {/* 示范改写 —— 导流引导 */}
+        <Card className="mb-8 border-2 border-[#165DFF]/20 bg-gradient-to-br from-[#165DFF]/5 via-white to-[#FF7D00]/5 overflow-hidden">
+          <div className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#165DFF]" />
+                  先看看「示范改写」的力量
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  把「流水账式经历」改写成「让HR眼前一亮的专业表述」，只需一步
+                </p>
+              </div>
+              <Badge className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white px-4 py-2 whitespace-nowrap">
+                免费体验
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 改写前 */}
+              <div className="rounded-xl border border-gray-200 bg-white p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium text-gray-500">改写前 · 常见流水账</span>
+                  <Badge variant="secondary" className="text-xs">空洞</Badge>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  做过产品相关工作，负责公司APP的运营和推广，参与过几个项目，平时和开发沟通需求、跟进进度。
+                </p>
+              </div>
+              {/* 改写后 */}
+              <div className="rounded-xl border border-[#165DFF]/40 bg-[#165DFF]/5 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-medium text-[#165DFF]">改写后 · STAR + 量化</span>
+                  <Badge className="bg-green-500 text-white text-xs">专业</Badge>
+                </div>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  主导移动端App产品迭代与用户增长：通过用户调研锁定3大核心痛点，联动开发/设计/市场完成方案落地，14天推动新功能上线；上线后次日留存提升25%，日活增长18%，获业务方高度认可。
+                </p>
+              </div>
+            </div>
+
+            {/* 改写要点 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+              {[
+                { icon: '①', text: '用「STAR法则」把经历写成结构化的成果叙事' },
+                { icon: '②', text: '用「量化数据」替代「负责/参与」等空洞表述' },
+                { icon: '③', text: '对标目标岗位，突出最相关的核心能力与成绩' },
+              ].map((tip) => (
+                <div key={tip.icon} className="flex items-center gap-2 text-sm text-gray-700 bg-white/70 backdrop-blur rounded-lg border border-gray-100 px-3 py-2">
+                  <span className="text-[#165DFF] font-bold">{tip.icon}</span>
+                  <span>{tip.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="mt-5 flex flex-col sm:flex-row gap-3">
+              <Button onClick={handleUseDemo} className="bg-[#165DFF] hover:bg-[#165DFF]/90">
+                用这份示例体验优化
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+            <p className="text-xs text-gray-400 mt-3">
+              填入后点击「开始智能优化」，即可看到针对示例简历的真实AI改写建议
+            </p>
+          </div>
+        </Card>
+
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Upload Form */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-2 border-gray-100">
+            <Card id="resume-form" className="border-2 border-gray-100">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#165DFF]" />
