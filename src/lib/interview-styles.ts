@@ -2,6 +2,8 @@
 // 多风格面试官 — 小职换风格陪你练 + 本尊点评
 // 核心差异化：不是不同角色，是小职换了不同风格
 
+import { buildModeKitBlock } from '@/lib/interview-mode-kits';
+
 export type InterviewStyle = 'warm' | 'strict' | 'pressure';
 export type InterviewMode = 'interview' | 'debrief';
 export type InterviewType = 'standard' | 'pressure' | 'group' | 'english';
@@ -147,6 +149,11 @@ export function buildInterviewSystemPrompt(
     ? `\n--- 面试参考资料 ---\n${ragContext}\n--- 请基于参考资料设计面试问题 ---`
     : '';
 
+  const kitBlock =
+    interviewType === 'group' || interviewType === 'english' || interviewType === 'pressure'
+      ? buildModeKitBlock(interviewType)
+      : '';
+
   return `你是「小职」，职途星平台的AI朋友。现在你在帮用户做模拟面试。
 
 【身份说明】
@@ -158,6 +165,7 @@ ${typeRules}
 
 面试类型：${typeConfig.name}
 ${styleRules[style]}
+${kitBlock}
 ${ragBlock}
 
 【STAR反馈规则】
