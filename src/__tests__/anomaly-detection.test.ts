@@ -36,6 +36,8 @@ describe('异常检测与风险提示（判断力 · 块3）', () => {
     expect(r.items[0].direction).toBe('high');
     expect(r.items[0].riskLevel).toBe('warning');
     expect(r.items[0].zScore).not.toBeNull();
+    expect(r.items[0].description).toContain('第 10 个观测值');
+    expect(r.items[0].description).toContain('80');
     expect(r.overall).toBe('attention');
   });
 

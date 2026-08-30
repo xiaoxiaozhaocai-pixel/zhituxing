@@ -176,7 +176,7 @@ export function detectAnomalies(values: number[], opts: AnomalyDetectOptions = {
           q1: null,
           q3: null,
           iqr: null,
-          description: zDesc(x, z, name),
+          description: zDesc(i, x, z, name),
           suggestion: SUGGESTION,
         });
       }
