@@ -72,6 +72,12 @@ export const DISPATCH_CARDS: Record<string, { title: string; description: string
     tabId: 'career',
     url: '/career-planning',
   },
+  cognitive_check: {
+    title: '🧭 你的专业能往这些方向走',
+    description: '从你专业反推可投岗位方向 + 分年级行动建议，看看出路在哪。',
+    actionLabel: '查看专业方向',
+    tabId: 'career-planning',
+  },
   skill: {
     title: '🔧 检测到你想提升技能',
     description: '要不要做个技能画像分析？找到你的优势和短板。',

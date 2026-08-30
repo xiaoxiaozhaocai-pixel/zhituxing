@@ -7,6 +7,7 @@ import { getMatchReport } from '@/lib/career-paths/engine/rule_engine';
 import { interviewRadar, type InterviewRadarReport } from '@/lib/career-paths/engine/interview_radar';
 import { decodeSubtext, type SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
 import { analyzeCapabilityGap, findJobInText, type CapabilityReport } from '@/lib/career-paths/engine/capability_dictionary';
+import { cognitiveCorrection, type CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognitive_correction';
 
 /** 从自然语言文本提取画像字段 */
 export function extractProfileFromText(text: string): Partial<RawProfile> {
@@ -340,7 +341,7 @@ const MAJOR_HINTS = [
   '数据', '统计', '信管',
 ];
 
-function extractMajorFromText(text: string): string | undefined {
+function extractMajorHint(text: string): string | undefined {
   for (const m of MAJOR_HINTS) {
     if (text.includes(m)) return m;
   }
@@ -385,7 +386,7 @@ export function handleInterviewRadarChatQuery(text: string): {
   if (!cleaned) {
     return { needsMoreInfo: true, reply: '告诉我你想投的行业或你的专业，我帮你拆这个行业面试会重点考察什么～' };
   }
-  const major = extractMajorFromText(cleaned);
+  const major = extractMajorHint(cleaned);
   const report = interviewRadar(cleaned, major);
   if (report.needsMoreInfo) {
     return { needsMoreInfo: true, reply: report.summary, industry: undefined, major, report };
@@ -556,4 +557,84 @@ export function handleCapabilityChatQuery(text: string): {
   const experience = extractCapExperienceFromText(cleaned, targetJob);
   const report = analyzeCapabilityGap({ targetJob, experience });
   return { needsMoreInfo: false, reply: formatCapabilityForChat(report), targetJob, experience, report };
+}
+
+// ============================================================
+// 认知校正 · chat 接入（A1 专业→岗位认知校正）
+// 复用 cognitive_correction.ts 引擎：从自然语言抽专业+年级 → cognitiveCorrection → 格式化回复。
+// 判断力 ≠ 打分：输出「为什么 + 岗位方向 + 分年级行动建议」，零模型成本，守四真。
+// ============================================================
+
+/** 从自然语言抽取「专业名」：优先「我学/我是/专业是/读的是」后的专业短语 */
+function extractMajorFromText(text: string): string | undefined {
+  const cleaned = (text || '').trim();
+  if (!cleaned) return undefined;
+  // ① 引导词 + 专业（最长优先，截止到常见边界词或结尾，避免把「能/干/的」等误吞进专业名）
+  const m = cleaned.match(/(?:我学的是|我学的|我主修|我读的是|我读|我学|我是学|我是|我们专业|专业是|读的是|本科学|研究生学)\s*([\u4e00-\u9fa5A-Za-z]{2,20}?)(?=$|[专业方向的,，。？！?！、能干做投找去对适合往和还与想学是])/);
+  if (m && m[1]) {
+    const v = m[1].replace(/专业$/, '').trim();
+    if (v) return v;
+  }
+  // ② 「XX专业」式
+  const m2 = cleaned.match(/([\u4e00-\u9fa5A-Za-z]{2,15}?)(?:专业)(?:，|,|的|能|适|可|可投|方向|毕业|对口|前景|出路)?/);
+  if (m2 && m2[1]) return m2[1].trim();
+  // ③ 「学XX的」式
+  const m3 = cleaned.match(/学([\u4e00-\u9fa5]{2,6})的/);
+  if (m3 && m3[1]) return m3[1].trim();
+  return undefined;
+}
+
+/** 从自然语言抽取「年级」（用于分年级行动建议），选填 */
+function extractGradeFromText(text: string): string | undefined {
+  const m = (text || '').match(/(大一|大二|大三|大四|研一|研二|研三|硕士|博士|毕业|应届|本科|专科)/);
+  return m ? m[1] : undefined;
+}
+
+/** 把认知校正报告格式化成 chat 可读文本 */
+function formatCognitiveForChat(result: CognitiveCorrectionResult): string {
+  const lines: string[] = [];
+  lines.push(`🎓 ${result.summary}`);
+  lines.push('');
+  if (result.coreCourses.length > 0) {
+    lines.push('【核心课程】');
+    lines.push(result.coreCourses.join('、'));
+  }
+  if (result.derivedSkills.length > 0) {
+    lines.push('');
+    lines.push('【派生能力】');
+    lines.push(result.derivedSkills.join('、'));
+  }
+  if (result.jobDirections.length > 0) {
+    lines.push('');
+    lines.push('【可投岗位方向】');
+    result.jobDirections.forEach((d) => {
+      lines.push(`• ${d.job}（${d.matchLevel}）：${d.jobs.join(' / ')}`);
+      if (d.why) lines.push(`  💡 ${d.why}`);
+    });
+  }
+  lines.push('');
+  lines.push('【分年级建议】');
+  result.actions.forEach((a) => lines.push(`• ${a}`));
+  if (result.fallback) {
+    lines.push('');
+    lines.push('⚠️ 想更准，把完整专业名 + 核心课程发我，小职帮你校准可投方向。');
+  }
+  return lines.join('\n');
+}
+
+/** 认知校正 chat 查询（抽专业+年级 → cognitiveCorrection） */
+export function handleCognitiveChatQuery(text: string): {
+  needsMoreInfo: boolean;
+  reply: string;
+  major?: string;
+  grade?: string;
+  report?: CognitiveCorrectionResult;
+} {
+  const major = extractMajorFromText(text);
+  if (!major) {
+    return { needsMoreInfo: true, reply: '把你学的专业发我（比如「我学计算机」「我是产品设计」，可以说说年级），我帮你反推能投哪些岗位方向、还差什么～' };
+  }
+  const grade = extractGradeFromText(text);
+  const report = cognitiveCorrection(major, grade);
+  return { needsMoreInfo: false, reply: formatCognitiveForChat(report), major, grade, report };
 }
