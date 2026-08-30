@@ -1,0 +1,5 @@
+-- P1-a: 报告/路径加「行动目标+跟踪」
+-- 决定：复用 user_profiles.skill_progress（jsonb，已存在且全空置）存目标，
+-- 通过 type 字段区分 skill / goal 元素，避免新增列，因此本文件无需 DDL。
+-- 目标元素结构：{ type:'goal', key, label, action, done, done_at }
+-- 技能元素结构：{ type:'skill', skillName, status, completionPct }

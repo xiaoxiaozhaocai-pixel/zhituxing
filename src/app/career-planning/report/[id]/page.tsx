@@ -20,7 +20,10 @@ import { Sparkles,
   ArrowLeft,
   Target,
   BookOpen,
-  MessageSquare } from 'lucide-react';
+  MessageSquare,
+  CheckCircle2,
+  Circle,
+  ListChecks } from 'lucide-react';
 
 // 报告数据接口
 interface ReportData {
@@ -71,6 +74,12 @@ export default function ReportPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [_isDownloading, _setIsDownloading] = useState(false);
+
+  // P1-a：报告末尾「我要怎么做」3条可勾选阶段目标+跟踪
+  // fullSkillProgress：完整 skill_progress（含类型 skill 与 goal），写回时基于它合并，避免互相覆盖
+  const [fullSkillProgress, setFullSkillProgress] = useState<Array<Record<string, unknown>>>([]);
+  const [goalProgress, setGoalProgress] = useState<Record<string, boolean>>({});
+  const [goalSaving, setGoalSaving] = useState(false);
   
   // 折叠面板状态
   const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
@@ -111,6 +120,28 @@ export default function ReportPage() {
       
       if (data.code === 200) {
         setReport(data.data);
+
+        // P1-a：并行读取目标跟踪进度（skill_progress 中 type=goal 的元素）
+        try {
+          const profileRes = await fetch('/api/user/profile', {
+            credentials: 'include',
+            headers: { 'x-user-id': user.id.toString() },
+          });
+          const profileData = await profileRes.json();
+          if (profileData.success) {
+            const sp = Array.isArray(profileData.data?.skill_progress)
+              ? profileData.data.skill_progress
+              : (Array.isArray(profileData.data?.skillProgress) ? profileData.data?.skillProgress : []);
+            setFullSkillProgress(sp);
+            const goalMap: Record<string, boolean> = {};
+            sp.forEach((g: Record<string, unknown>) => {
+              if (g && g.type === 'goal' && g.key) goalMap[g.key as string] = !!g.done;
+            });
+            setGoalProgress(goalMap);
+          }
+        } catch (e) {
+          console.warn('读取目标跟踪失败:', e);
+        }
       } else {
         setError(data.message || '获取报告失败');
       }
@@ -119,6 +150,45 @@ export default function ReportPage() {
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // P1-a：切换阶段目标勾选状态并写回（合并保留非 goal 元素）
+  const toggleGoal = async (key: string) => {
+    const next = { ...goalProgress, [key]: !goalProgress[key] };
+    setGoalProgress(next);
+    setGoalSaving(true);
+    try {
+      const currentGoals: Record<string, Record<string, unknown>> = {};
+      (fullSkillProgress || []).forEach((g) => {
+        if (g.type === 'goal' && g.key) currentGoals[g.key as string] = g;
+      });
+      const goals = (report?.career_path || []).map((item, idx) => {
+        const k = `cp_${idx}`;
+        const existing = currentGoals[k] || {};
+        const nowDone = !!next[k];
+        return {
+          type: 'goal',
+          key: k,
+          label: item.stage,
+          action: item.action,
+          done: nowDone,
+          done_at: nowDone ? (existing.done_at || new Date().toISOString()) : undefined,
+        };
+      });
+      const nonGoal = (fullSkillProgress || []).filter((g) => g.type !== 'goal');
+      const newArr = [...nonGoal, ...goals];
+      setFullSkillProgress(newArr);
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': user!.id.toString() },
+        body: JSON.stringify({ skill_progress: newArr }),
+      });
+    } catch (e) {
+      console.warn('保存目标失败:', e);
+    } finally {
+      setGoalSaving(false);
     }
   };
 
@@ -415,6 +485,51 @@ export default function ReportPage() {
             )}
           </Card>
         </div>
+
+        {/* P1-a：我要怎么做 - 3条可勾选阶段目标+跟踪 */}
+        {report.career_path && report.career_path.length > 0 && (
+          <Card className="mb-6 overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-[#165DFF]">
+                <ListChecks className="w-5 h-5" />
+                我要怎么做
+              </CardTitle>
+              <p className="text-sm text-gray-400 -mt-2">勾选你已完成的阶段目标，进度会自动同步到「我的求职档案」</p>
+            </CardHeader>
+            <CardContent className="pb-6">
+              <div className="space-y-3">
+                {report.career_path.map((item, idx) => {
+                  const k = `cp_${idx}`;
+                  const done = !!goalProgress[k];
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => toggleGoal(k)}
+                      disabled={goalSaving}
+                      className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
+                        done ? 'border-blue-200 bg-blue-50/60' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {done ? (
+                        <CheckCircle2 className="w-5 h-5 text-[#165DFF] mt-0.5 shrink-0" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-gray-300 mt-0.5 shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-[#165DFF]/10 text-[#165DFF] text-xs rounded font-medium">{item.stage}</span>
+                          {done && <span className="text-xs text-green-600">已完成</span>}
+                        </div>
+                        <p className="mt-1 text-sm text-gray-700">{item.action}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 会员转化引导 - 仅非会员可见 */}
         <Card className="mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 border-0 shadow-xl">

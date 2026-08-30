@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Award, TrendingUp, Briefcase, Clock, FileText, Star } from 'lucide-react';
+import { User, Award, TrendingUp, Briefcase, Clock, FileText, Star, Target, CheckCircle2, Circle } from 'lucide-react';
 
 interface DashboardUser {
   name: string; school: string; major: string;
@@ -205,10 +205,68 @@ function InterviewCard({ interview }: { interview: InterviewItem }) {
   );
 }
 
+// P1-a：行动目标跟踪卡片（读 profile.skill_progress 中 type=goal 的元素）
+function GoalProgressCard({ goals }: { goals: Array<Record<string, unknown>> }) {
+  const total = goals.length;
+  const done = goals.filter((g) => g && g.done).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  return (
+    <Card className="bg-white border-[#E2E8F0] shadow-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base text-[#1E293B] flex items-center gap-2">
+            <Target className="w-4 h-4 text-[#165DFF]" />
+            行动目标
+          </CardTitle>
+          {total > 0 && (
+            <span className="text-sm font-semibold text-[#165DFF]">{done}/{total}</span>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {total === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-sm text-[#94A3B8] mb-3">还没有阶段目标</p>
+            <Link href="/career-planning">
+              <Button variant="outline" className="rounded-xl text-xs">去生成职业规划报告</Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="h-2 bg-[#E2E8F0] rounded-full overflow-hidden mb-4">
+              <div className="h-full bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] rounded-full transition-all" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="space-y-3">
+              {goals.map((g, i) => {
+                const doneG = !!g.done;
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    {doneG ? (
+                      <CheckCircle2 className="w-4 h-4 text-[#165DFF] shrink-0" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-[#CBD5E1] shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm truncate ${doneG ? 'text-gray-400 line-through' : 'text-[#1E293B]'}`}>
+                        {g.label || g.action || ''}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DashboardContent() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [goalList, setGoalList] = useState<Array<Record<string, unknown>>>([]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -217,6 +275,20 @@ export default function DashboardContent() {
       const json = await res.json();
       if (json.success) setData(json.data);
       else setError(json.error || '加载失败');
+
+      // P1-a：读取行动目标（skill_progress 中 type=goal 的元素）
+      try {
+        const profRes = await fetch('/api/user/profile', { credentials: 'include' });
+        const profJson = await profRes.json();
+        if (profJson.success) {
+          const sp = Array.isArray(profJson.data?.skill_progress)
+            ? profJson.data.skill_progress
+            : (Array.isArray(profJson.data?.skillProgress) ? profJson.data?.skillProgress : []);
+          setGoalList(sp.filter((g: Record<string, unknown>) => g && g.type === 'goal'));
+        }
+      } catch (e) {
+        console.warn('读取行动目标失败:', e);
+      }
     } catch {
       setError('网络请求失败');
     } finally {
@@ -256,6 +328,9 @@ export default function DashboardContent() {
   return (
     <div className="space-y-6">
       <UserCard user={user} />
+
+      {/* P1-a：行动目标跟踪 */}
+      <GoalProgressCard goals={goalList} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {resume_score.latest ? (

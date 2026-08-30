@@ -118,8 +118,11 @@ export async function PUT(request: NextRequest) {
 
     // 新增字段：graduation_year (varchar)
     if (body.graduation_year !== undefined) updateData.graduation_year = body.graduation_year;
+
+    // P1-a：行动目标+跟踪持久化（复用 skill_progress jsonb 列）
+    // 支持前端同时传驼峰/下划线两种命名，统一落到 skill_progress 列
     if (body.skill_progress !== undefined) updateData.skill_progress = body.skill_progress;
-    if (body.latest_career_plan !== undefined) updateData.latest_career_plan = body.latest_career_plan;
+    if (body.skillProgress !== undefined) updateData.skill_progress = body.skillProgress;
 
     // 字段映射：internship_experience → has_internship (boolean)
     if (body.internship_experience !== undefined) {
