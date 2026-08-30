@@ -38,10 +38,10 @@ describe('interview_bars BARS 行为锚定量表', () => {
   });
 
   it('scoreToBarsLevel 按分数反查锚点级', () => {
-    expect(scoreToBarsLevel('communication', 95)?.level_number).toBe(5);
-    expect(scoreToBarsLevel('communication', 20)?.level_number).toBe(1);
-    expect(scoreToBarsLevel('logic', 85)?.level_number).toBe(4);
-    expect(scoreToBarsLevel('professionalism', 65)?.level_number).toBe(3);
+    expect(scoreToBarsLevel('communication', 95)?.level).toBe(5);
+    expect(scoreToBarsLevel('communication', 20)?.level).toBe(1);
+    expect(scoreToBarsLevel('logic', 85)?.level).toBe(4);
+    expect(scoreToBarsLevel('professionalism', 65)?.level).toBe(3);
   });
 
   it('scoreToBarsLevel 兜底未知维度', () => {
