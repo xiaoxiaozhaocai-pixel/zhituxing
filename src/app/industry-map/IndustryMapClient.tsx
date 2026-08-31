@@ -161,8 +161,7 @@ export default function IndustryMapClient({ initialData }: { initialData?: Indus
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  const companies = data?.companies ?? [];
-  const positions = data?.positions ?? [];
+  const companies = useMemo(() => data?.companies ?? [], [data]);
   const meta = data?.meta;
 
   const allIndustries = useMemo(() => {

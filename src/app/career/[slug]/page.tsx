@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   Briefcase, MapPin, TrendingUp, GraduationCap, Clock, Sparkles,
-  ArrowRight, CheckCircle2, Wrench, Heart, DollarSign, Building2,
+  ArrowRight, CheckCircle2, Wrench, Heart, DollarSign,
 } from 'lucide-react';
 import { getCareerDetail, getCareerList, type CareerDetail } from '@/lib/seo/careers';
 import { SITE_URL } from '@/lib/config';
