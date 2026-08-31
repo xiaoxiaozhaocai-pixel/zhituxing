@@ -195,8 +195,8 @@ export default function IndustryMapClient({ initialData }: { initialData?: Indus
 
   const selectedPositionAgg = useMemo<PositionAggregate[]>(() => {
     if (!selectedCompanyId) return [];
-    return positions.filter((p) => p.companyId === selectedCompanyId);
-  }, [positions, selectedCompanyId]);
+    return (data?.positions ?? []).filter((p) => p.companyId === selectedCompanyId);
+  }, [data, selectedCompanyId]);
 
   const activeFilterCount = filters.industries.length + filters.cities.length;
 

@@ -217,7 +217,7 @@ export default function ChinaMap({
               strokeWidth={0.6}
               className="transition-all duration-300 cursor-pointer hover:opacity-80"
               style={{ filter: isProv ? 'drop-shadow(0 1px 2px rgba(22,93,255,0.18))' : 'none' }}
-              onClick={(e) => {
+              onClick={() => {
                 // 拖拽时不触发点选
                 if (drag.current.moved) return;
                 const list = companies.filter((c) => c.province === p.feature.properties.name);
@@ -232,7 +232,7 @@ export default function ChinaMap({
             <g
               key={c.id}
               className="cursor-pointer"
-              onClick={(e) => {
+              onClick={() => {
                 if (drag.current.moved) return;
                 onSelectCompany(c);
               }}
