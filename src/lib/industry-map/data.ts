@@ -8,7 +8,7 @@
  *         不足以支撑的视图（如通过趋势、Top10 高频问题）以 note 声明「待数据积累」，
  *         绝不编造。样本目前为 5 场（1 家 1 场），地图气泡为点数级，属 MVP 初始原型。
  */
-import type { CompanyCard, PositionAggregate, ProvinceCluster, PassStatus, PassTrend } from './types';
+import type { CompanyCard, PositionAggregate, ProvinceCluster, PassStatus, PassTrend, IndustryMapPayload } from './types';
 
 /* ============================================================
  * ① 公司卡片（5 家真实面经）
