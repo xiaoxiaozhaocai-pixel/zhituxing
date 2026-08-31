@@ -10,10 +10,12 @@ import type { CompanyCard, AnalysisLevel } from '@/lib/industry-map/types';
  */
 
 interface GeoFeature {
-  name: string;
-  adcode: number;
-  centroid: number[] | null;
-  center: number[] | null;
+  properties: {
+    name: string;
+    adcode: number;
+    centroid?: number[] | null;
+    center?: number[] | null;
+  };
   geometry: { type: string; coordinates: unknown };
 }
 
@@ -30,11 +32,6 @@ interface Projected {
   feature: GeoFeature;
   pathD: string;
   centroid: [number, number] | null;
-}
-
-/** 将 lon/lat 投影到 SVG 坐标（等距圆柱 + 统一比例，保形） */
-function projectFeature(c: { x: number; y: number }): string {
-  return `M ${c.x.toFixed(2)} ${c.y.toFixed(2)}`;
 }
 
 function featureToPath(feature: GeoFeature, toXY: (lon: number, lat: number) => [number, number]): string {
@@ -134,7 +131,9 @@ export default function ChinaMap({
       .map((f) => ({
         feature: f,
         pathD: featureToPath(f, toXY),
-        centroid: (f.centroid || f.center) ? toXY((f.centroid || f.center)![0], (f.centroid || f.center)![1]) : null,
+        centroid: (f.properties.centroid || f.properties.center)
+          ? toXY((f.properties.centroid || f.properties.center)![0], (f.properties.centroid || f.properties.center)![1])
+          : null,
       }))
       .filter((p) => p.pathD);
     return { projected, toXYFn: toXY as ((lon: number, lat: number) => [number, number]) | null };
@@ -207,11 +206,11 @@ export default function ChinaMap({
       <rect x="0" y="0" width={W} height={H} fill="transparent" />
       <g transform={`translate(${tx},${ty}) scale(${scale})`}>
         {projected.map((p) => {
-          const count = provinceCountMap.get(p.feature.name) || 0;
+          const count = provinceCountMap.get(p.feature.properties.name) || 0;
           const isProv = count > 0;
           return (
             <path
-              key={p.feature.adcode}
+              key={p.feature.properties.adcode}
               d={p.pathD}
               fill={isProv ? heatColorForCount(count) : '#EFF3FA'}
               stroke="#FFFFFF"
@@ -221,7 +220,7 @@ export default function ChinaMap({
               onClick={(e) => {
                 // 拖拽时不触发点选
                 if (drag.current.moved) return;
-                const list = companies.filter((c) => c.province === p.feature.name);
+                const list = companies.filter((c) => c.province === p.feature.properties.name);
                 if (list.length) onSelectCompany(list[0]);
               }}
             />
