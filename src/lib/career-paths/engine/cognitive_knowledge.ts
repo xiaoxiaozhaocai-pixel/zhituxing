@@ -56,7 +56,7 @@ export const COGNITIVE_KNOWLEDGE: CognitiveKnowledgeEntry[] = [
     jobDirections: [
       { route_id: 'IT-DA-A1', job: '数据分析师', jobs: ['数据分析师', 'AI算法工程师', '商业分析师', '数据运营'], matchLevel: '高度对口', skills: ['Python编程', '数据分析', '机器学习'], why: '你掌握的《Python编程》《数据分析》和统计学基础，是数据分析与 AI 算法岗的硬门槛。' },
       { route_id: 'IT-DEV-A1', job: 'AI算法工程师', jobs: ['算法工程师', '机器学习工程师', '深度学习工程师'], matchLevel: '高度对口', skills: ['机器学习', '深度学习', 'Python编程', '数据结构'], why: '《机器学习》《深度学习》+ 代码功底，正是 AI 算法岗的完整能力链。' },
-      { route_id: 'IT-人工智能', job: '数据/算法产品经理', jobs: ['AI产品经理', '数据产品经理', '算法产品经理'], matchLevel: '中等对口', skills: ['数学建模', '机器学习', '数据分析'], why: '懂算法原理让你在 AI 产品经理岗特别稀缺——你能听懂技术、写清需求，这是交叉优势。' },
+      { route_id: 'IT-PM-A1', job: '数据/算法产品经理', jobs: ['AI产品经理', '数据产品经理', '算法产品经理'], matchLevel: '中等对口', skills: ['数学建模', '机器学习', '数据分析'], why: '懂算法原理让你在 AI 产品经理岗特别稀缺——你能听懂技术、写清需求，这是交叉优势。' },
     ],
   },
   {
@@ -67,7 +67,7 @@ export const COGNITIVE_KNOWLEDGE: CognitiveKnowledgeEntry[] = [
     derivedSkills: ['网络协议', '网络配置', '网络运维', 'Linux', '安全基础'],
     jobDirections: [
       { route_id: 'IT-DEV-A2', job: '网络/运维工程师', jobs: ['网络工程师', '运维工程师', '技术支持', '系统管理员'], matchLevel: '高度对口', skills: ['网络协议', '网络配置', 'Linux'], why: '《计算机网络》《路由交换》直接对口网络工程与系统运维岗，课程与岗位几乎一一对应。' },
-      { route_id: 'IT-信安', job: '网络安全工程师', jobs: ['安全工程师', '渗透测试', '网络安全'], matchLevel: '中等对口', skills: ['网络安全', '网络协议', 'Linux'], why: '你学的《网络安全》《网络协议》是安全岗的入门地基，补攻防实践即可切入。' },
+      { route_id: 'IT-DEV-A2', job: '网络安全工程师', jobs: ['安全工程师', '渗透测试', '网络安全'], matchLevel: '中等对口', skills: ['网络安全', '网络协议', 'Linux'], why: '你学的《网络安全》《网络协议》是安全岗的入门地基，补攻防实践即可切入。' },
       { route_id: 'IT-DEV-A2', job: '技术支持工程师', jobs: ['技术支持', '实施工程师', '售后工程师'], matchLevel: '中等对口', skills: ['网络配置', '网络协议'], why: '网络技术应用广，IT 公司对网络背景的技术支持需求稳定且对新人友好。' },
     ],
   },
@@ -78,7 +78,7 @@ export const COGNITIVE_KNOWLEDGE: CognitiveKnowledgeEntry[] = [
     coreCourses: ['密码学', '网络攻防', '系统安全', '漏洞分析', '计算机网络', 'Linux'],
     derivedSkills: ['安全加固', '漏洞分析', '密码学', '网络攻防', 'Linux'],
     jobDirections: [
-      { route_id: 'IT-信安', job: '网络安全工程师', jobs: ['安全工程师', '渗透测试', '安全运维', '红蓝对抗'], matchLevel: '高度对口', skills: ['安全加固', '漏洞分析', '网络攻防'], why: '《网络攻防》《漏洞分析》就是安全岗的核心工作，你的专业背景在该赛道有天然壁垒。' },
+      { route_id: 'IT-DEV-A2', job: '网络安全工程师', jobs: ['安全工程师', '渗透测试', '安全运维', '红蓝对抗'], matchLevel: '高度对口', skills: ['安全加固', '漏洞分析', '网络攻防'], why: '《网络攻防》《漏洞分析》就是安全岗的核心工作，你的专业背景在该赛道有天然壁垒。' },
       { route_id: 'IT-DEV-A2', job: '安全运维工程师', jobs: ['安全运维', '运维工程师', '系统管理员'], matchLevel: '高度对口', skills: ['Linux', '安全加固', '网络攻防'], why: '安全运维是安全落地的前线岗，你的安全+网络背景比纯运维更有竞争力。' },
       { route_id: 'IT-DEV-A1', job: '安全研发工程师', jobs: ['安全研发', '后端开发', '安全测试'], matchLevel: '中等对口', skills: ['网络攻防', 'Linux', '编程'], why: '懂安全头部的开发工程师非常稀缺，补编程后可走安全研发/代码审计路线。' },
     ],
@@ -131,7 +131,7 @@ export const COGNITIVE_KNOWLEDGE_ME: CognitiveKnowledgeEntry[] = [
     derivedSkills: ['机械设计', 'CAD绘图', 'SolidWorks', '制图', '工艺理解'],
     jobDirections: [
       { route_id: 'MFG-EE-A2', job: '工艺/设备工程师', jobs: ['工艺工程师', '设备工程师', 'NPI工程师', '生产工程师'], matchLevel: '高度对口', skills: ['机械设计', 'CAD绘图', '工艺理解'], why: '《机械设计》《CAD/SolidWorks》正是制造业工艺/设备岗的核心要求，机械是制造业最硬的专业出身。' },
-      { route_id: 'MFG-PM-A1', job: '机械结构工程师', jobs: ['结构工程师', '机械工程师', '研发工程师'], matchLevel: '高度对口', skills: ['机械设计', 'SolidWorks', '工程制图'], why: '机械设计+三维建模能力，是结构/研发类技术岗的直接敲门砖。' },
+      { route_id: 'MFG-EE-A2', job: '机械结构工程师', jobs: ['结构工程师', '机械工程师', '研发工程师'], matchLevel: '高度对口', skills: ['机械设计', 'SolidWorks', '工程制图'], why: '机械设计+三维建模能力，是结构/研发类技术岗的直接敲门砖。' },
       { route_id: 'MFG-EE-A3', job: '质量/品质工程师', jobs: ['品质工程师', '质量工程师', 'QC', 'SQE'], matchLevel: '中等对口', skills: ['制图', '工艺理解', '公差配合'], why: '机械专业懂图纸懂工艺，做品质/质量岗位容易上手，很多车企和电子厂质量岗优先机械背景。' },
     ],
   },
@@ -143,7 +143,7 @@ export const COGNITIVE_KNOWLEDGE_ME: CognitiveKnowledgeEntry[] = [
     derivedSkills: ['PLC', '机电一体化', '机械设计', '传感器', '电路基础'],
     jobDirections: [
       { route_id: 'MFG-EE-A2', job: '设备/工艺工程师', jobs: ['设备工程师', '工艺工程师', '产线工程师'], matchLevel: '高度对口', skills: ['PLC', '传感器', '机电一体化'], why: '机电一体化+PLC 是制造业设备/自动化岗的刚需，机械与电气双修让你在工厂里非常吃香。' },
-      { route_id: 'ME-自动化', job: '自动化/电气工程师', jobs: ['自动化工程师', '电气工程师', 'PLC工程师'], matchLevel: '高度对口', skills: ['PLC', '自动化控制', '电路基础'], why: '机电的《PLC》《自动化控制》对口工厂自动化与电气工程师岗位。' },
+      { route_id: 'MFG-EE-A2', job: '自动化/电气工程师', jobs: ['自动化工程师', '电气工程师', 'PLC工程师'], matchLevel: '高度对口', skills: ['PLC', '自动化控制', '电路基础'], why: '机电的《PLC》《自动化控制》对口工厂自动化与电气工程师岗位。' },
       { route_id: 'MFG-EE-A3', job: '质量/生产工程师', jobs: ['品质工程师', '生产工程师', 'NPI工程师'], matchLevel: '中等对口', skills: ['传感器', '工艺理解', '机电一体化'], why: '懂设备懂产线，机电背景在质量与生产管理岗很有优势，转管理线更顺。' },
     ],
   },
@@ -154,7 +154,7 @@ export const COGNITIVE_KNOWLEDGE_ME: CognitiveKnowledgeEntry[] = [
     coreCourses: ['电路理论', '电机与拖动', 'PLC', '电力电子', '供配电', '继电保护'],
     derivedSkills: ['PLC', '电机控制', '电路分析', '配电', '继保'],
     jobDirections: [
-      { route_id: 'ME-自动化', job: '电气/自动化工程师', jobs: ['电气工程师', 'PLC工程师', '自动化工程师'], matchLevel: '高度对口', skills: ['PLC', '电机控制', '电路分析'], why: '《PLC》《电机与拖动》是电气自动化岗的核心，电气专业是工厂自动化方向的主力军。' },
+      { route_id: 'MFG-EE-A2', job: '电气/自动化工程师', jobs: ['电气工程师', 'PLC工程师', '自动化工程师'], matchLevel: '高度对口', skills: ['PLC', '电机控制', '电路分析'], why: '《PLC》《电机与拖动》是电气自动化岗的核心，电气专业是工厂自动化方向的主力军。' },
       { route_id: 'MFG-EE-A2', job: '设备工程师', jobs: ['设备工程师', '工艺工程师', '产线工程师'], matchLevel: '高度对口', skills: ['PLC', '电机控制', '配电'], why: '电气背景在制造业设备维护与产线自动化岗非常抢手，桂电面向制造企业的电气类就业通道畅通。' },
       { route_id: 'MFG-EE-A3', job: '质量/安全工程师', jobs: ['品质工程师', '安全工程师', 'EHS', '质量工程师'], matchLevel: '中等对口', skills: ['配电', '继保', '电路分析'], why: '懂电懂安全，电气背景在做 EHS 与质量岗位时是稀缺的复合型人才。' },
     ],
@@ -166,7 +166,7 @@ export const COGNITIVE_KNOWLEDGE_ME: CognitiveKnowledgeEntry[] = [
     coreCourses: ['自动控制原理', 'PLC', '传感检测', '嵌入式', '电机控制', '过程控制'],
     derivedSkills: ['PLC', '自动控制', '传感检测', '嵌入式', '系统调试'],
     jobDirections: [
-      { route_id: 'ME-自动化', job: '自动化/控制工程师', jobs: ['自动化工程师', 'PLC工程师', '控制工程师'], matchLevel: '高度对口', skills: ['PLC', '自动控制', '系统调试'], why: '《自动控制原理》《PLC》是自动化工程师的看家本领，专业与岗位完全对口。' },
+      { route_id: 'MFG-EE-A2', job: '自动化/控制工程师', jobs: ['自动化工程师', 'PLC工程师', '控制工程师'], matchLevel: '高度对口', skills: ['PLC', '自动控制', '系统调试'], why: '《自动控制原理》《PLC》是自动化工程师的看家本领，专业与岗位完全对口。' },
       { route_id: 'MFG-EMB-A1', job: '嵌入式/硬件工程师', jobs: ['嵌入式工程师', '硬件工程师', '单片机工程师'], matchLevel: '中等对口', skills: ['嵌入式', '传感检测', '自动控制'], why: '自动化专业学了《嵌入式》《传感检测》，转嵌入式/硬件开发只需再补 C 语言功底。' },
       { route_id: 'MFG-EE-A2', job: '设备/工艺工程师', jobs: ['设备工程师', '工艺工程师', '产线工程师'], matchLevel: '中等对口', skills: ['PLC', '系统调试', '传感检测'], why: '自动化背景在制造业设备产线岗是黄金配置，懂系统的自动化学在工厂里升级路径清晰。' },
     ],
@@ -218,9 +218,9 @@ export const COGNITIVE_KNOWLEDGE_MGMT: CognitiveKnowledgeEntry[] = [
     coreCourses: ['基础会计', '财务管理', '审计学', '税法', '成本会计', '财务分析', 'Excel'],
     derivedSkills: ['财务核算', '报税', '财务分析', '审计', 'Excel', '成本分析'],
     jobDirections: [
-      { route_id: 'MGMT-会计', job: '财务/会计岗', jobs: ['会计', '成本会计', '审计', '财务专员'], matchLevel: '高度对口', skills: ['财务核算', '审计', '报税'], why: '《基础会计》《审计》《报税》是财务岗的看家技能，专业与证书挂钩，就业通道稳定。' },
+      { route_id: 'IT-DA-A1', job: '财务/会计岗', jobs: ['会计', '成本会计', '审计', '财务专员'], matchLevel: '高度对口', skills: ['财务核算', '审计', '报税'], why: '《基础会计》《审计》《报税》是财务岗的看家技能，专业与证书挂钩，就业通道稳定。' },
       { route_id: 'IT-DA-A1', job: '财务分析师/经营分析', jobs: ['财务分析师', '经营分析', 'BI工程师', '财务BP'], matchLevel: '中等对口', skills: ['财务分析', 'Excel', '成本分析'], why: '财务+Excel 数据能力，是财务分析/经营分析岗的黄金组合，制造业和互联网都抢这类人才。' },
-      { route_id: 'MGMT-会计', job: '审计/风控', jobs: ['审计专员', '风控专员', '内控', '税务顾问'], matchLevel: '中等对口', skills: ['审计', '财务分析', '报税'], why: '会计专业的审计与税法功底，让你在审计、风控、税务岗有专业背书，进所/进企皆可。' },
+      { route_id: 'IT-DA-A1', job: '审计/风控', jobs: ['审计专员', '风控专员', '内控', '税务顾问'], matchLevel: '中等对口', skills: ['审计', '财务分析', '报税'], why: '会计专业的审计与税法功底，让你在审计、风控、税务岗有专业背书，进所/进企皆可。' },
     ],
   },
   {
@@ -473,7 +473,7 @@ export const COGNITIVE_KNOWLEDGE_SPECIAL: CognitiveKnowledgeEntry[] = [
     coreCourses: ['传感器技术', '检测技术', '自动控制原理', '单片机', '嵌入式系统', '信号处理'],
     derivedSkills: ['传感器应用', '测量技术', '嵌入式开发', '控制系统', '信号处理'],
     jobDirections: [
-      { route_id: 'ME-自动化', job: '测控/仪器工程师', jobs: ['测控工程师', '仪器工程师', '计量工程师', '传感器工程师'], matchLevel: '高度对口', skills: ['传感器应用', '测量技术', '控制系统'], why: '《传感器技术》《检测技术》《自动控制》正是测控/仪器岗的核心，汽车、制造、医疗器械都大量需要测控人才。' },
+      { route_id: 'MFG-EE-A2', job: '测控/仪器工程师', jobs: ['测控工程师', '仪器工程师', '计量工程师', '传感器工程师'], matchLevel: '高度对口', skills: ['传感器应用', '测量技术', '控制系统'], why: '《传感器技术》《检测技术》《自动控制》正是测控/仪器岗的核心，汽车、制造、医疗器械都大量需要测控人才。' },
       { route_id: 'MFG-EMB-A1', job: '嵌入式/硬件工程师', jobs: ['嵌入式工程师', '硬件工程师', '固件工程师', '仪器开发'], matchLevel: '高度对口', skills: ['嵌入式开发', '单片机', '传感器应用'], why: '测控专业软硬件都强，《单片机》《嵌入式》让转嵌入式/仪器开发岗几乎无缝，就业面非常宽。' },
       { route_id: 'MFG-EE-A2', job: '自动化/设备工程师', jobs: ['自动化工程师', '设备工程师', '工艺工程师'], matchLevel: '中等对口', skills: ['控制系统', '传感器应用', '信号处理'], why: '懂控制懂检测，是工厂自动化/设备岗的黄金配置，测控背景在制造业升级里越来越吃香。' },
     ],
@@ -486,7 +486,7 @@ export const COGNITIVE_KNOWLEDGE_SPECIAL: CognitiveKnowledgeEntry[] = [
     coreCourses: ['机器人学', '控制理论', '嵌入式系统', '传感器技术', '电机控制', '编程'],
     derivedSkills: ['机器人控制', '嵌入式开发', '传感器应用', '系统集成', '编程'],
     jobDirections: [
-      { route_id: 'ME-自动化', job: '机器人/自动化工程师', jobs: ['机器人工程师', '自动化工程师', 'PLC工程师', '控制工程师'], matchLevel: '高度对口', skills: ['机器人控制', '控制系统', '编程'], why: '《机器人学》《控制理论》《电机控制》正是机器人/自动化岗的核心，智能制造与机器人行业正大量扩招。' },
+      { route_id: 'MFG-EE-A2', job: '机器人/自动化工程师', jobs: ['机器人工程师', '自动化工程师', 'PLC工程师', '控制工程师'], matchLevel: '高度对口', skills: ['机器人控制', '控制系统', '编程'], why: '《机器人学》《控制理论》《电机控制》正是机器人/自动化岗的核心，智能制造与机器人行业正大量扩招。' },
       { route_id: 'MFG-EMB-A1', job: '嵌入式/硬件工程师', jobs: ['嵌入式工程师', '硬件工程师', '智能硬件', '固件工程师'], matchLevel: '高度对口', skills: ['嵌入式开发', '传感器应用', '编程'], why: '机器人工程的《嵌入式》《传感器》让转智能硬件/嵌入式岗非常有优势，是软硬件一体的复合人才。' },
       { route_id: 'MFG-EE-A2', job: '设备/工艺工程师', jobs: ['设备工程师', '工艺工程师', '产线自动化', 'NPI'], matchLevel: '中等对口', skills: ['系统集成', '控制系统', '传感器应用'], why: '懂自动化产线，机器人背景在制造业设备/工艺岗升级路径清晰，智能制造转型需求旺盛。' },
     ],
