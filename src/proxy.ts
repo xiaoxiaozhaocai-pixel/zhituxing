@@ -159,7 +159,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // --------------------------------------------------------
   // 2.5 /assistant 和 /profile 路由保护：需要登录
   // --------------------------------------------------------
-  if (pathname.startsWith('/assistant') || pathname.startsWith('/profile')) {
+  if (pathname.startsWith('/assistant') || pathname.startsWith('/profile') || pathname.startsWith('/resume-optimize')) {
     const accessToken = parseAccessTokenFromCookie(request.headers);
     if (!accessToken) {
       // 重定向到登录页，并带上回调 URL
