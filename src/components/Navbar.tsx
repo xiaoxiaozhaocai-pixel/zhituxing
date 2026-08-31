@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap, BarChart3, Route} from 'lucide-react';
+import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap, BarChart3, Route, Map} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -55,6 +55,7 @@ const agentNavItems = [
 const agentNavItems2 = [
   { name: 'AI模拟面试', href: '/assistant?bot=interview', icon: <MessageSquare className="w-4 h-4" /> },
   { name: '考研就业决策', href: '/assistant?bot=decision', icon: <Sparkles className="w-4 h-4" /> },
+  { name: '行业地图', href: '/industry-map', icon: <Map className="w-4 h-4" /> },
 ];
 
 const exploreNavItems = [
