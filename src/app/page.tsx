@@ -1,4 +1,5 @@
 import HomeClient from './HomeClient';
+import { listIndustryRadars } from '@/lib/career-paths/engine/interview_radar';
 
 /**
  * Server Component wrapper for the home page.
@@ -28,5 +29,7 @@ export const metadata = {
 export const dynamic = 'force-static';
 
 export default function Page() {
-  return <HomeClient />;
+  // 行业雷达数量在 Server 侧计算（纯本地数据），避免 77KB 打进 client bundle
+  const industryCount = listIndustryRadars().length;
+  return <HomeClient industryCount={industryCount} />;
 }

@@ -199,17 +199,7 @@ export default function ResumeOptimizePage() {
     }
   };
 
-  if (loading || dataLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#165DFF]" />
-      </div>
-    );
-  }
 
-  if (!user) {
-    return null;
-  }
 
   const isMember = quota?.is_member;
 
@@ -508,7 +498,12 @@ export default function ResumeOptimizePage() {
                 <CardTitle className="text-lg">最近优化记录</CardTitle>
               </CardHeader>
               <CardContent>
-                {recentRecords.length === 0 ? (
+                {dataLoading ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin text-[#165DFF]" />
+                    <p className="text-sm">正在加载...</p>
+                  </div>
+                ) : recentRecords.length === 0 ? (
                   <div className="text-center py-8 text-slate-500">
                     <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p className="text-sm">暂无优化记录</p>

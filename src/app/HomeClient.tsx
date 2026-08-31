@@ -9,7 +9,6 @@ import {
   Sparkles, Building2, Mic, Search, Shield, Zap, FileText,
   MessageSquare, Target, Layers,
 } from 'lucide-react';
-import { listIndustryRadars } from '@/lib/career-paths/engine/interview_radar';
 
 // ============================================================
 // 数据：痛点共鸣 + 5核心链路 + 数据信任
@@ -82,22 +81,16 @@ const corePaths = [
 // 首页组件 — 主界面：小职对话 = 唯一主入口；5核心链路；岗位信息
 // ============================================================
 
-export default function HomeClient() {
+export default function HomeClient({ industryCount }: { industryCount: number }) {
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
   // 数据信任区 · 真实JD动态化（守四真，避免写死失真数字）
-  const [jdStats, setJdStats] = useState({ total: '8,930+', industries: 16 });
+  const [jdStats, setJdStats] = useState({ total: '8,930+', industries: industryCount });
 
   useEffect(() => {
     let active = true;
-    // 行业覆盖数：读引擎真实行业雷达（纯本地知识库，条目均可背调）
-    try {
-      setJdStats((prev) => ({ ...prev, industries: listIndustryRadars().length }));
-    } catch {
-      /* 保持兜底 */
-    }
     // JD真实总数：拉取岗位库统计接口
     fetch('/api/jobs/stats')
       .then((r) => r.json())
@@ -170,7 +163,7 @@ export default function HomeClient() {
           {/* ============================================================
               小职对话 — 唯一主入口（人格化对话框）
               ============================================================ */}
-          <Link href="/chat" className={`block max-w-2xl mx-auto mb-14 ${mounted ? 'anim-up-d2' : 'opacity-0'}`}>
+          <Link href="/chat" className={`block max-w-2xl mx-auto mb-14 anim-up-d2`}>
             <div className="group relative rounded-3xl bg-white/70 backdrop-blur-sm border border-[#E2E8F0] shadow-xl shadow-[#165DFF]/5 hover:shadow-2xl hover:shadow-[#165DFF]/10 hover:-translate-y-1 transition-all duration-300 p-7 sm:p-9 text-left overflow-hidden">
               <div className="absolute top-0 right-0 w-40 h-40 blob-primary opacity-20 pointer-events-none" />
 
