@@ -702,6 +702,20 @@ export async function POST(request: NextRequest) {
         useVoiceWrapper = true;
         console.log(`[xiaozhi] Confusion fallback -> ${resolvedBotType} (dir=${dirHit},emo=${emoHit})`);
       }
+
+      // 职业意向兜底：学生说「我想做/适合当 + 岗位」（如「我适合做产品经理吗」）时，
+      // 这类口语不以「迷茫/没方向」为特征，不落入上方方向迷失判断，会滑到普通聊天。
+      // 这里在完全落空（topIntent===0）时，用「意向动词 + 岗位/行业」规则兜到求职方向引擎。
+      // 仅当同时命中意向动词与岗位词、且非闲聊口语时介入；「我适不适合做X」命中 competency、
+      // 「适合做什么」命中 career_paths 等已有强意图时不在此兜底，避免误伤。
+      const CAREER_INTENT_VERB = /想做|想当|想从事|想做一名|想当一名|适合做|适合当|适合干|适合从事|能当|能做|可以做|可以当|打算做|考虑做|准备做|去当|去做|转行做|跨行做|想进|想进入|想干|从事|以后做|毕业后做|当一名|做一名|合适吗/;
+      const CAREER_INTENT_ROLE = /产品经理|产品|项目经理|运营|程序员|开发|前端|后端|工程师|数据分析|数据|hr|人力资源|人事|人力|hrbp|会计|财务|设计|ui|ux|视觉|销售|市场|营销|行政|客服|老师|教师|助教|律师|医生|护士|公务员|策划|编辑|翻译|主播|导游|厨师|司机|摄影|剪辑|编剧|投资|风控|审计|采购|供应链|物流|外贸|电商|培训|咨询|顾问|技术|测试|运维|架构|算法|研究员|教授|法务|经纪人|经理|主管|专员|岗位|职业|行业|方向|创业|开公司|老板|这行|干这行|互联网|建筑|金融|教育|医疗|传媒|游戏/;
+      const CASUAL_HINT = /吃饭|睡觉|玩游戏|打游戏|看电影|听歌|出去玩|休息|洗澡|吃啥|饿|困|天气|感冒|叫什么|几点|吃了|上厕所|冲浪|看剧|刷视频|聊天吧|今天吃什么|旅游|看海|逛街/;
+      if (topIntent[1] === 0 && CAREER_INTENT_VERB.test(lowerMsg) && CAREER_INTENT_ROLE.test(lowerMsg) && !CASUAL_HINT.test(lowerMsg)) {
+        resolvedBotType = 'career_paths';
+        useVoiceWrapper = true;
+        console.log(`[xiaozhi] Career-intent fallback -> career_paths`);
+      }
     }
 
     // ============================================================
