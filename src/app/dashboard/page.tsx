@@ -9,6 +9,7 @@ import { OverviewSidebar } from './_components/overview-sidebar';
 import { JobRecommendations } from './_components/job-recommendations';
 import { AssessmentHistory, type AssessmentRecord } from './_components/assessment-history';
 import { MyReports, type DashboardReport } from './_components/my-reports';
+import { ResumeScoreCard, type ResumeScoreRecord } from './_components/resume-score-card';
 
 interface MatchGetData {
   matches: MatchGetItem[];
@@ -35,15 +36,18 @@ export default function DashboardPage() {
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [matches, setMatches] = useState<MatchGetItem[]>([]);
   const [reports, setReports] = useState<DashboardReport[]>([]);
+  const [resumeScore, setResumeScore] = useState<ResumeScoreRecord | null>(null);
 
   const [favLoading, setFavLoading] = useState(true);
   const [assessLoading, setAssessLoading] = useState(true);
   const [matchLoading, setMatchLoading] = useState(true);
   const [reportLoading, setReportLoading] = useState(true);
+  const [resumeScoreLoading, setResumeScoreLoading] = useState(true);
 
   const [assessError, setAssessError] = useState<string | null>(null);
   const [matchError, setMatchError] = useState<string | null>(null);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [resumeScoreError, setResumeScoreError] = useState<string | null>(null);
 
   const redirectedRef = useRef(false);
 
@@ -93,6 +97,14 @@ export default function DashboardPage() {
       setReports(data?.list ?? []);
       setReportError(error);
       setReportLoading(false);
+    });
+
+    fetchJson<{ records: ResumeScoreRecord[] }>('/api/resume/score/history?limit=1').then(({ data, error }) => {
+      if (cancelled) return;
+      if (error === '未登录') return redirectToLogin();
+      setResumeScore(data?.records?.[0] ?? null);
+      setResumeScoreError(error);
+      setResumeScoreLoading(false);
     });
 
     return () => {
@@ -167,6 +179,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="lg:col-span-3 space-y-4">
+            <ResumeScoreCard
+              record={resumeScore}
+              loading={resumeScoreLoading}
+              error={resumeScoreError}
+            />
             <AssessmentHistory
               assessments={assessments}
               loading={assessLoading}
