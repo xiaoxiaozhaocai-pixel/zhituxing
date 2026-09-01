@@ -640,7 +640,7 @@ export async function POST(request: NextRequest) {
       // 语境加权：B1 面试雷达（岗+面试 / 面试+考察 → 问会怎么面、考什么），B3 能力词典（岗+能力/差距/适不适合 → 对标岗位）
       const hasRole = /岗位|职位|岗|JD|校招|社招|春招|秋招/.test(lowerMsg);
       const hasInterview = lowerMsg.includes('面试');
-      const hasRadarAsk = /会问什么|会考什么|怎么考|怎么面|怎么考察|考察|会重点考|面试重点|面试方向|会考察|考察内容|面试考察|考什么|会重点面|会怎么考|会重点考什么|考察重点/.test(lowerMsg);
+      const hasRadarAsk = /会问什么|会考什么|怎么考|怎么面|怎么考察|怎么准备|考察|会重点考|面试重点|面试方向|会考察|考察内容|面试考察|考什么|会重点面|会怎么考|会重点考什么|考察重点/.test(lowerMsg);
       const hasAbilityAsk = /能力要求|能力|要求|补什么|需要补什么|差距|匹配度|对标|适不适合|够不够|够格|还差|值多少|岗位要求|岗位技能|技能|岗位需要/.test(lowerMsg);
       const radarCond = (hasInterview ? 1 : 0) + (hasRole ? 1 : 0) + (hasRadarAsk ? 1 : 0);
       if (radarCond >= 2) {
@@ -674,6 +674,33 @@ export async function POST(request: NextRequest) {
         // 没命中 → 小职聊天模式
         resolvedBotType = 'xiaozhi_chat';
         console.log(`[xiaozhi] No dispatch needed, using chat mode`);
+      }
+
+      // ============================================================
+      // 口语化/隐晦表达兜底识别（2026-09-01 意图识别升级）
+      // 目标：听懂学生口语的"迷茫/方向不明"表达（"我不知道干嘛""没方向""怕找不到工作"
+      // "好焦虑""不知道该投什么"），避免落空到普通聊天，路由到方向/决策引擎。
+      // 仅在无强意图命中（topIntent 分数 === 0，即完全落空到聊天）时介入，不抢"面试/测评/岗位查询"等明确意图。
+      // ============================================================
+      const DIRECTION_WORDS = ['不知道干嘛','不知道该干嘛','不知道怎么办','没方向','没头绪','没有方向','能做什么','做什么好','能做啥','干啥好','啥都不会','什么都不会','不知道做什么','不知道能做什么','不知道该做什么','该做什么','出路在哪','不知道投什么','不知道该投','投什么好','找什么工作','找不到工作','找不到方向','不知道找什么','该干什么','不知道学什么','不知道选什么','选择困难','摇摆不定','不知道往哪','不知道下一步','瞎投','乱投','没啥目标','没有目标','不知道目标'];
+      const EMOTION_WORDS = ['慌','心慌','焦虑','迷茫','害怕','怕','担心','没底','压力','emo','崩溃','好乱','心乱','很乱','烦躁','烦死','没信心','不行了','好难','无措'];
+      const dirHit = DIRECTION_WORDS.filter(w => lowerMsg.includes(w)).length;
+      const emoHit = EMOTION_WORDS.filter(w => lowerMsg.includes(w)).length;
+      const hasJobCtx = /工作|岗位|投|就业|求职|offer|简历|招聘|面试/.test(lowerMsg);
+      const hasPlanningWord = /规划|前途|未来|路径|发展|怎么走|往哪走|方向/.test(lowerMsg);
+      const DECISION_TRIGGER = /考研|考公|考编|读研|要不要读|要不要考|继续读|深造|选哪条|升学|复读|二战|读书还是|上班还是/;
+      // 有方向迷失问句（direction>0），或情绪词+求职语境（emo>0 且带工作/岗位）时介入
+      const confusionTrigger = dirHit >= 1 || (emoHit >= 1 && hasJobCtx);
+      if (confusionTrigger && topIntent[1] === 0) {
+        if (DECISION_TRIGGER.test(lowerMsg)) {
+          resolvedBotType = 'decision';
+        } else if (hasPlanningWord) {
+          resolvedBotType = 'career';
+        } else {
+          resolvedBotType = 'career_paths';
+        }
+        useVoiceWrapper = true;
+        console.log(`[xiaozhi] Confusion fallback -> ${resolvedBotType} (dir=${dirHit},emo=${emoHit})`);
       }
     }
 
