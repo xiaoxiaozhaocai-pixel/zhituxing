@@ -289,10 +289,10 @@ export default function FloatingAICTA() {
         <div
           className="fixed z-50 flex flex-col overflow-hidden glass-strong rounded-2xl shadow-2xl"
           style={{
-            left: Math.max(16, (position.x + FAB_SIZE / 2) - CHAT_PANEL_W / 2),
-            top: Math.max(16, position.y - CHAT_PANEL_H - GAP),
-            width: CHAT_PANEL_W,
-            height: CHAT_PANEL_H,
+            left: Math.max(16, Math.min((position.x + FAB_SIZE / 2) - CHAT_PANEL_W / 2, window.innerWidth - Math.min(CHAT_PANEL_W, window.innerWidth - 32) - 16)),
+            top: Math.max(16, Math.min(position.y - CHAT_PANEL_H - GAP, window.innerHeight - Math.min(CHAT_PANEL_H, window.innerHeight - 32) - 16)),
+            width: Math.min(CHAT_PANEL_W, window.innerWidth - 32),
+            height: Math.min(CHAT_PANEL_H, window.innerHeight - 32),
           }}
         >
           {/* 标题栏 — 可拖拽 */}
