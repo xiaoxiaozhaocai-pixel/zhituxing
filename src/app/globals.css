@@ -91,6 +91,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* 防根级横向滚动：移动端页尾 blob 装饰会撑开 html 宽度（documentElement.scrollWidth>视口）
+       用 clip 不创建滚动容器，不影响 sticky 定位；hidden 作兼容兜底 */
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
   body {
     @apply bg-background text-foreground;
   }
