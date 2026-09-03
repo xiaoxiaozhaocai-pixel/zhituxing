@@ -398,7 +398,7 @@ function AssistantContent() {
         const json = await res.json();
         const list = json?.data || [];
         if (list.length === 0) return;   // 无历史，保留欢迎语
-        setMessages(list.map(m => ({
+        setMessages(list.map((m: { role: string; content: string; created_at?: string }) => ({
           role: m.role as 'user' | 'assistant',
           content: m.content,
           timestamp: m.created_at ? new Date(m.created_at) : new Date(),
