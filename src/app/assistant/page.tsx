@@ -386,6 +386,28 @@ function AssistantContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBot, currentBot.welcomeMessage]);
 
+  // 打开页面时回显该会话历史（关掉重开/刷新后能恢复）
+  useEffect(() => {
+    if (messages.length !== 0) return;
+    const cid = localStorage.getItem(`conversationId_${activeBot}`);
+    if (!cid) return;   // 无会话id = 新会话，保留欢迎语
+    (async () => {
+      try {
+        const res = await fetch(`/api/chat/history?conversation_id=${cid}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const list = json?.data || [];
+        if (list.length === 0) return;   // 无历史，保留欢迎语
+        setMessages(list.map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+          timestamp: m.created_at ? new Date(m.created_at) : new Date(),
+        })));
+      } catch { /* 静默，保持欢迎语 */ }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBot]);
+
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
     const bot = searchParams.get('bot');
