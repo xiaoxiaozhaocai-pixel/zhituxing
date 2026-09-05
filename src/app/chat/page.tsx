@@ -309,6 +309,8 @@ function ChatContent() {
 
   // 切换 bot 时：先保存当前 bot 的对话，再恢复目标 bot 的对话（无则插入欢迎消息）
   useEffect(() => {
+    let cancelled = false;
+
     const oldBot = prevBotRef.current;
 
     // 保存上一个 bot 的对话（仅当真的切换且内容不为空）
@@ -345,14 +347,36 @@ function ChatContent() {
       setMessages(restored);
     } else {
       const newBot = bots.find(b => b.id === activeBot) || bots[0];
-      setMessages([{
+      const welcomeMsg: Message[] = [{
         role: 'assistant',
         content: newBot.welcomeMessage,
         timestamp: new Date(),
-      }]);
+      }];
+      // 本地无恢复时，按 conversation_id 从后端回显历史（与其他智能体对话框一致）
+      const cid = localStorage.getItem(`conversationId_${activeBot}`);
+      if (cid) {
+        fetch(`/api/chat/history?conversation_id=${cid}`)
+          .then(res => (res.ok ? res.json() : null))
+          .then(json => {
+            if (cancelled) return;
+            const list = json?.data || [];
+            if (list.length > 0) {
+              const restoredMsg = list.map((m: { role: string; content: string; created_at?: string }) => ({
+                role: m.role as 'user' | 'assistant',
+                content: m.content,
+                timestamp: m.created_at ? new Date(m.created_at) : new Date(),
+              }));
+              historyRef.current[activeBot] = restoredMsg;
+              setMessages(restoredMsg);
+            }
+          })
+          .catch(() => { /* 保持欢迎语 */ });
+      }
+      setMessages(welcomeMsg);
     }
 
     prevBotRef.current = activeBot;
+    return () => { cancelled = true; };
   }, [activeBot]);
 
   // 持续同步当前 bot 的对话到 sessionStorage（防止页面刷新丢失）
