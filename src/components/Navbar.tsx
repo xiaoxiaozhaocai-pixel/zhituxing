@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import {Menu, X, User, Bell, Home, Briefcase, MessageSquare, Crown, Compass, HelpCircle, Phone, Sparkles, LogOut, FileText, ChevronDown, Building2, Bot, GraduationCap, BarChart3, Route, Map} from 'lucide-react';
+import {Menu, X, User, Bell, Home, MessageSquare, Crown, Compass, HelpCircle, Phone, LogOut, FileText, ChevronDown, Building2, Bot, BarChart3, Wrench} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -54,16 +54,10 @@ const agentNavItems = [
 
 const agentNavItems2 = [
   { name: 'AI模拟面试', href: '/assistant?bot=interview', icon: <MessageSquare className="w-4 h-4" /> },
-  { name: '考研就业决策', href: '/assistant?bot=decision', icon: <Sparkles className="w-4 h-4" /> },
-  { name: '行业地图', href: '/industry-map', icon: <Map className="w-4 h-4" /> },
 ];
 
-const exploreNavItems = [
-  { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-4 h-4" /> },
-  { name: '判断力内容库', href: '/insights', icon: <BarChart3 className="w-4 h-4" /> },
-  { name: '干货库', href: '/resources', icon: <GraduationCap className="w-4 h-4" /> },
-  { name: '学习路径', href: '/learning-path', icon: <Route className="w-4 h-4" /> },
-];
+// 工具/内容型入口统一收敛到「工具栏」板块（/tools），导航栏只保留一个入口，不再逐个平铺。
+const toolsNavItem = { name: '工具栏', href: '/tools', icon: <Wrench className="w-4 h-4" />, isTools: true };
 
 
 
@@ -184,7 +178,7 @@ function NavbarInner() {
                     );
                   })}
                 </div>
-                {/* 第二行：AI模拟面试 | 考研就业决策 */}
+                {/* 第二行：AI模拟面试 */}
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-transparent px-1">功能</span>
                   {agentNavItems2.map((item) => {
@@ -210,25 +204,18 @@ function NavbarInner() {
               {/* 分隔线 */}
               <div className="w-px h-6 bg-[#E2E8F0] mx-1" />
 
-              {/* 探索区 */}
-              <span className="text-[10px] text-[#94A3B8] font-medium mr-1">探索</span>
-              {exploreNavItems.map((item) => {
-                const isActive = isNavItemActive(item.href, pathname, currentBot);
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'bg-[#165DFF]/8 text-[#165DFF]'
-                        : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
-                    }`}
-                  >
-                    {item.icon}
-                    {item.name}
-                  </Link>
-                );
-              })}
+              {/* 工具栏入口 */}
+              <Link
+                href={toolsNavItem.href}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  pathname === '/tools'
+                    ? 'bg-[#165DFF]/8 text-[#165DFF]'
+                    : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
+                }`}
+              >
+                {toolsNavItem.icon}
+                {toolsNavItem.name}
+              </Link>
 
               {/* 更多下拉 */}
               <div ref={moreRef} className="relative">
@@ -351,8 +338,10 @@ function NavbarInner() {
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-[#E2E8F0] bg-white/95 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-5 py-4 space-y-1.5">
-              {[...mainNavItems, ...agentNavItems, ...agentNavItems2, ...exploreNavItems, ...moreNavItems].map((item) => {
-                const isActive = isNavItemActive(item.href, pathname, currentBot);
+              {[...mainNavItems, ...agentNavItems, ...agentNavItems2, toolsNavItem, ...moreNavItems].map((item) => {
+                const isActive = item.isTools
+                  ? pathname === '/tools'
+                  : isNavItemActive(item.href, pathname, currentBot);
                 return (
                   <Link
                     key={item.name}
