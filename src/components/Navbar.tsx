@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef, Suspense } from 'react';
-import {Menu, X, User, Bell, Home, MessageSquare, Crown, Compass, HelpCircle, Phone, LogOut, FileText, ChevronDown, Building2, Bot, BarChart3, Wrench} from 'lucide-react';
+import {Menu, X, User, Bell, Home, MessageSquare, Crown, Compass, HelpCircle, Phone, LogOut, FileText, ChevronDown, Bot, BarChart3, Wrench} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useMembership } from '@/contexts/MembershipContext';
@@ -41,8 +41,6 @@ const moreNavItems = [
   { name: '会员中心', href: '/membership', icon: <Crown className="w-4 h-4" /> },
   { name: '常见问题', href: '/faq', icon: <HelpCircle className="w-4 h-4" /> },
   { name: '联系我们', href: '/contact', icon: <Phone className="w-4 h-4" /> },
-  { name: '高校合作', href: '/university', icon: <Building2 className="w-4 h-4" /> },
-  { name: '企业服务', href: '/enterprise', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 
@@ -50,9 +48,6 @@ const agentNavItems = [
   { name: '职搭子', href: '/assistant', icon: <Bot className="w-4 h-4" /> },
   { name: '职业规划', href: '/career-planning', icon: <Compass className="w-4 h-4" /> },
   { name: '简历助手', href: '/resume-optimize', icon: <FileText className="w-4 h-4" /> },
-];
-
-const agentNavItems2 = [
   { name: 'AI模拟面试', href: '/assistant?bot=interview', icon: <MessageSquare className="w-4 h-4" /> },
 ];
 
@@ -155,50 +150,25 @@ function NavbarInner() {
               {/* 分隔线 */}
               <div className="w-px h-6 bg-[#E2E8F0] mx-1" />
 
-              {/* 智能体区 - 两行 */}
-              <div className="flex flex-col gap-0.5">
-                {/* 第一行：职搭子 | 职业规划 | 简历助手 */}
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-[#94A3B8] px-1 font-medium">功能</span>
-                  {agentNavItems.map((item) => {
-                    const isActive = isNavItemActive(item.href, pathname, currentBot);
-                    return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border border-[#165DFF]/20'
-                            : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F1F5F9] border border-transparent'
-                        }`}
-                      >
-                        {item.icon}
-                        {item.name}
-                      </Link>
-                    );
-                  })}
-                </div>
-                {/* 第二行：AI模拟面试 */}
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-transparent px-1">功能</span>
-                  {agentNavItems2.map((item) => {
-                    const isActive = isNavItemActive(item.href, pathname, currentBot);
-                    return (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
-                          isActive
-                            ? 'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border border-[#165DFF]/20'
-                            : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F1F5F9] border border-transparent'
-                        }`}
-                      >
-                        {item.icon}
-                        {item.name}
-                      </Link>
-                    );
-                  })}
-                </div>
+              {/* 智能体区 - 一行四个功能 */}
+              <div className="flex items-center gap-1">
+                {agentNavItems.map((item) => {
+                  const isActive = isNavItemActive(item.href, pathname, currentBot);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#165DFF]/10 to-[#3D7FFF]/10 text-[#165DFF] border border-[#165DFF]/20'
+                          : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F1F5F9] border border-transparent'
+                      }`}
+                    >
+                      {item.icon}
+                      {item.name}
+                    </Link>
+                  );
+                })}
               </div>
 
               {/* 分隔线 */}
@@ -338,7 +308,7 @@ function NavbarInner() {
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-[#E2E8F0] bg-white/95 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-5 py-4 space-y-1.5">
-              {[...mainNavItems, ...agentNavItems, ...agentNavItems2, toolsNavItem, ...moreNavItems].map((item) => {
+              {[...mainNavItems, ...agentNavItems, toolsNavItem, ...moreNavItems].map((item) => {
                 const isActive = 'isTools' in item
                   ? pathname === '/tools'
                   : isNavItemActive(item.href, pathname, currentBot);
