@@ -64,9 +64,37 @@ interface Portrait {
   gap_skills: string[] | null;
   portrait_completeness_score: number;
   ability_portrait: {
-    cognitive?: Record<string, unknown> | null;
-    skill_portrait?: Record<string, unknown> | null;
-    matched_skills?: Record<string, unknown> | null;
+    cognitive?: {
+      major?: string | null;
+      summary?: string | null;
+      category?: string | null;
+      categoryLabel?: string | null;
+      subCategory?: string | null;
+      isKnown?: boolean | null;
+      coreCourses?: string[] | null;
+      derivedSkills?: string[] | null;
+      jobDirections?: {
+        job?: string | null;
+        why?: string | null;
+        jobs?: string[] | null;
+        skills?: string[] | null;
+        route_id?: string | null;
+        matchLevel?: string | null;
+      }[] | null;
+      actions?: string[] | null;
+    } | null;
+    skill_portrait?: {
+      major?: string | null;
+      target_industry?: string | null;
+      target_city?: string | null;
+      job_intention?: string | null;
+    } | null;
+    matched_skills?: {
+      skills?: string[] | null;
+      target_position?: string | null;
+      industry?: string | null;
+      city?: string | null;
+    } | null;
   } | null;
 }
 
@@ -122,7 +150,7 @@ function ScoreBar({ label, score }: { label: string; score: number | null }) {
   );
 }
 
-function TagList({ items, color = 'blue' }: { items: string[] | null; color?: 'blue' | 'amber' | 'emerald' | 'rose' | 'slate' }) {
+function TagList({ items, color = 'blue' }: { items: string[] | null | undefined; color?: 'blue' | 'amber' | 'emerald' | 'rose' | 'slate' }) {
   if (!items || items.length === 0) return <span className="text-sm text-slate-300">—</span>;
   const cls = {
     blue: 'bg-[#165DFF]/8 text-[#165DFF] border-[#165DFF]/20',
@@ -348,6 +376,87 @@ export default function CandidateDetailPage() {
 
         {/* 右列（主区） */}
         <div className="lg:col-span-2 space-y-6">
+          {/* 能力档案（C→B 飞轮兑现） */}
+          {portrait.ability_portrait && (
+            <Section icon={Sparkles} title="能力档案" action={
+              <span className="text-xs text-slate-400">来自小职画像</span>
+            }>
+              <div className="space-y-4">
+                {/* 岗位匹配 matched_skills */}
+                {portrait.ability_portrait.matched_skills && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/70 to-white border border-[#165DFF]/10">
+                    <div className="flex items-center gap-1.5 text-xs text-[#165DFF] font-medium mb-3">
+                      <Target className="w-3.5 h-3.5" />
+                      岗位匹配
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <Field label="目标岗位" value={portrait.ability_portrait.matched_skills.target_position} />
+                      <Field label="目标行业" value={portrait.ability_portrait.matched_skills.industry} />
+                    </div>
+                    <div className="text-xs text-slate-500 mb-1.5">匹配技能</div>
+                    <TagList items={portrait.ability_portrait.matched_skills.skills} color="blue" />
+                  </div>
+                )}
+
+                {/* 技能画像 skill_portrait */}
+                {portrait.ability_portrait.skill_portrait && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/70 to-white border border-[#165DFF]/10">
+                    <div className="flex items-center gap-1.5 text-xs text-[#165DFF] font-medium mb-3">
+                      <Star className="w-3.5 h-3.5" />
+                      技能画像
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="专业" value={portrait.ability_portrait.skill_portrait.major} />
+                      <Field label="意向城市" value={portrait.ability_portrait.skill_portrait.target_city} />
+                      <Field label="意向行业" value={portrait.ability_portrait.skill_portrait.target_industry} />
+                      <Field label="意向岗位" value={portrait.ability_portrait.skill_portrait.job_intention} />
+                    </div>
+                  </div>
+                )}
+
+                {/* 认知校正 cognitive */}
+                {portrait.ability_portrait.cognitive && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/70 to-white border border-[#165DFF]/10">
+                    <div className="flex items-center gap-1.5 text-xs text-[#165DFF] font-medium mb-3">
+                      <GraduationCap className="w-3.5 h-3.5" />
+                      认知校正
+                    </div>
+                    {portrait.ability_portrait.cognitive.summary && (
+                      <p className="text-sm text-slate-700 leading-relaxed mb-3">{portrait.ability_portrait.cognitive.summary}</p>
+                    )}
+                    {portrait.ability_portrait.cognitive.jobDirections?.map((d, idx) => (
+                      <div key={idx} className="mb-3 last:mb-0">
+                        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+                          <span className="font-medium text-slate-900">{d.job}</span>
+                          {d.matchLevel && (
+                            <span className={"text-xs px-2 py-0.5 rounded-full border " + (d.matchLevel === '高度对口' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : d.matchLevel === '中等对口' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-600 border-slate-200')}>
+                              {d.matchLevel}
+                            </span>
+                          )}
+                        </div>
+                        {d.why && <p className="text-xs text-slate-500 mb-1.5 leading-relaxed">{d.why}</p>}
+                        {d.jobs && d.jobs.length > 0 && <div className="text-xs text-slate-500 mb-1.5">可投岗位</div>}
+                        <TagList items={d.jobs} color="slate" />
+                      </div>
+                    ))}
+                    {portrait.ability_portrait.cognitive.coreCourses && portrait.ability_portrait.cognitive.coreCourses.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-xs text-slate-500 mb-1.5">核心课程</div>
+                        <TagList items={portrait.ability_portrait.cognitive.coreCourses} color="blue" />
+                      </div>
+                    )}
+                    {portrait.ability_portrait.cognitive.derivedSkills && portrait.ability_portrait.cognitive.derivedSkills.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-xs text-slate-500 mb-1.5">衍生能力</div>
+                        <TagList items={portrait.ability_portrait.cognitive.derivedSkills} color="emerald" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Section>
+          )}
+
           {/* 优势 */}
           {(portrait.top_strengths || portrait.key_strengths) && (
             <Section icon={Sparkles} title="核心优势">

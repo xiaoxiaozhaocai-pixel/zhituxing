@@ -207,6 +207,11 @@ export const EmployerCandidatePortraitSchema = z.object({
   key_weaknesses: z.array(z.string()).nullable(),
   gap_skills: z.array(z.string()).nullable(),
   portrait_completeness_score: z.number(),
+  ability_portrait: z.object({
+    cognitive: z.record(z.string(), z.unknown()).nullable().optional(),
+    skill_portrait: z.record(z.string(), z.unknown()).nullable().optional(),
+    matched_skills: z.record(z.string(), z.unknown()).nullable().optional(),
+  }).nullable(),
 });
 
 export const EmployerCandidateDetailDataSchema = z.object({
