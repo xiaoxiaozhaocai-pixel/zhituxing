@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { cognitiveCorrection } from '@/lib/career-paths/engine/cognitive_correction';
+import { mergeAbilityPortrait } from '@/lib/ability-portrait';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,22 @@ export async function POST(request: NextRequest) {
     }
 
     const result = cognitiveCorrection(String(major).trim(), grade || undefined);
+
+    // 认知校正结果沉淀到用户能力档案（C→B 飞轮）：不阻塞主流程，失败仅记日志
+    mergeAbilityPortrait(user.id, 'cognitive', {
+      major: result.major,
+      subCategory: result.subCategory,
+      categoryLabel: result.categoryLabel,
+      category: result.category,
+      isKnown: result.isKnown,
+      coreCourses: result.coreCourses,
+      derivedSkills: result.derivedSkills,
+      jobDirections: result.jobDirections,
+      summary: result.summary,
+      actions: result.actions,
+      fallback: result.fallback,
+      at: new Date().toISOString(),
+    }).catch((e) => console.error('认知校正画像落库失败:', e));
 
     return NextResponse.json({
       code: 200,

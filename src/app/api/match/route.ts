@@ -14,6 +14,7 @@ import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
 import { matchJobs } from '@/lib/matching-service';
+import { mergeAbilityPortrait } from '@/lib/ability-portrait';
 import {
   MatchPostRequestSchema,
   MatchPostDataSchema,
@@ -89,6 +90,14 @@ export async function GET(request: NextRequest) {
       weighting: r.weighting,
     }));
 
+    // 沉淀岗位匹配画像到用户能力档案（C→B 飞轮）：不阻塞主流程，失败仅记日志
+    mergeAbilityPortrait(user.id, 'matched_skills', {
+      skills: userSkillsArray,
+      industry: industry || null,
+      city: city || null,
+      at: new Date().toISOString(),
+    }).catch((e) => console.error('岗位匹配画像落库失败(GET):', e));
+
     return jsonOk(MatchGetDataSchema, {
       matches,
       user_skills: userSkillsArray,
@@ -153,6 +162,14 @@ export async function POST(request: NextRequest) {
       role: r.weighting.role.label,
       overall_advice: r.weighting.advice,
     }));
+
+    // 沉淀岗位匹配画像到用户能力档案（C→B 飞轮）：不阻塞主流程，失败仅记日志
+    mergeAbilityPortrait(user.id, 'matched_skills', {
+      skills: userSkillsArray,
+      target_position: targetPosition || null,
+      industry: industry || null,
+      at: new Date().toISOString(),
+    }).catch((e) => console.error('岗位匹配画像落库失败(POST):', e));
 
     return jsonOk(MatchPostDataSchema, {
       matches,

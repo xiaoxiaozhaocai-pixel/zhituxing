@@ -11,6 +11,7 @@ import {
   createCozeSSEStream,
   createTextStream,
 } from '@/lib/coze-stream';
+import { mergeAbilityPortrait } from '@/lib/ability-portrait';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -66,6 +67,17 @@ export async function POST(request: NextRequest) {
     const userInfo = await getUserInfoFromRequest(request);
     const userId = userInfo?.userId || null;
     const userType = userInfo?.userType || 'free';
+
+    // 沉淀技能画像输入到用户能力档案（C→B 飞轮）：登录用户且入库不阻塞主流程
+    if (userId) {
+      mergeAbilityPortrait(userId, 'skill_portrait', {
+        major: major || null,
+        target_industry: target_industry || null,
+        target_city: target_city || null,
+        job_intention: job_intention || null,
+        at: new Date().toISOString(),
+      }).catch((e) => console.error('技能画像落库失败:', e));
+    }
 
     // 2. 构建用户上下文
     let userContext = '';
