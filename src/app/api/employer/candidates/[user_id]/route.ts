@@ -75,7 +75,7 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
   const { data: portraitRow, error: portraitErr } = await supabase
     .from('user_portrait_v')
     .select(`
-      user_id,nickname,phone,major,grade,graduation_year,gpa,english_level,
+      user_id,ability_portrait,nickname,phone,major,grade,graduation_year,gpa,english_level,
       target_cities,target_industry,target_job,career_tendency,personality_type,
       hard_skills,soft_skills,has_internship,has_project,
       awards,internship_experience,project_experience,
@@ -166,6 +166,7 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
       key_weaknesses: cleanArr<string>(portraitRow.key_weaknesses),
       gap_skills: cleanArr<string>(portraitRow.gap_skills),
       portrait_completeness_score: Number(portraitRow.portrait_completeness_score) || 0,
+      ability_portrait: portraitRow.ability_portrait ?? null,
     },
   });
 }

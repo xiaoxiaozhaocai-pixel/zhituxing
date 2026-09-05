@@ -63,6 +63,11 @@ interface Portrait {
   key_weaknesses: string[] | null;
   gap_skills: string[] | null;
   portrait_completeness_score: number;
+  ability_portrait: {
+    cognitive?: Record<string, unknown> | null;
+    skill_portrait?: Record<string, unknown> | null;
+    matched_skills?: Record<string, unknown> | null;
+  } | null;
 }
 
 interface DetailResp {
