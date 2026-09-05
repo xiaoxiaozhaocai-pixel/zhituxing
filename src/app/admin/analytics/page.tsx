@@ -347,7 +347,7 @@ export default function AdminAnalyticsPage() {
               value={metrics?.chatCount ?? 0}
               subtitle={`${days}天内总对话`}
               icon="💬"
-              color="text-purple-600"
+              color="text-blue-600"
             />
             <MetricCard
               title="测评完成率"

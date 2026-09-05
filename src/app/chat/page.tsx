@@ -1445,7 +1445,7 @@ function ChatContent() {
 
         {/* 聊天区域 */}
         <Card className={`border-2 overflow-hidden flex flex-col mb-6 transition-all duration-300 ${tabsCollapsed ? "h-[calc(100vh-14rem)] max-h-[calc(100vh-8rem)]" : "h-[calc(100vh-18rem)] max-h-[calc(100vh-12rem)]"} min-h-[500px]`} style={{
-          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#00B42A' : '#165DFF'
+          borderColor: activeBot === 'jobs' ? '#165DFF' : activeBot === 'interview' ? '#165DFF' : '#165DFF'
         }}>
           {/* 快捷问题 */}
           {messages.length <= 1 && (

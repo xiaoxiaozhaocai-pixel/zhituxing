@@ -228,7 +228,7 @@ export default function ReportPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#722ED1] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function ReportPage() {
             <h2 className="text-xl font-semibold text-slate-900 mb-2">获取报告失败</h2>
             <p className="text-slate-500 mb-6">{error || '报告不存在'}</p>
             <Link href="/career-planning">
-              <Button className="bg-[#722ED1] hover:bg-[#722ED1]/90">
+              <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 返回生成页
               </Button>
@@ -627,13 +627,13 @@ export default function ReportPage() {
               </Button>
             </Link>
             <Link href="/assistant?bot=interview">
-              <Button className="bg-[#00B42A] hover:bg-[#00B42A]/90">
+              <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 开始模拟面试
               </Button>
             </Link>
             <Link href="/resources">
-              <Button className="bg-[#722ED1] hover:bg-[#722ED1]/90">
+              <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90">
                 <BookOpen className="w-4 h-4 mr-2" />
                 学习技能
               </Button>

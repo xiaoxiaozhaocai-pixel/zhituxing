@@ -20,7 +20,7 @@ export interface OverviewLoading {
 const statConfig = [
   { key: 'fav' as const, label: '收藏岗位', icon: Star, href: '/profile/favorites', color: 'text-[#FF7D00]' },
   { key: 'assess' as const, label: '测评记录', icon: ClipboardCheck, href: '/assessment', color: 'text-[#165DFF]' },
-  { key: 'report' as const, label: '规划报告', icon: FileText, href: '/career-planning', color: 'text-[#00B42A]' },
+  { key: 'report' as const, label: '规划报告', icon: FileText, href: '/career-planning', color: 'text-[#165DFF]' },
 ];
 
 const quickEntries = [

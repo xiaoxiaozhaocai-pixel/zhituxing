@@ -217,7 +217,7 @@ export default function InterviewResultsPage() {
                               {fb.target_job || '未指定岗位'}
                             </span>
                             {itype && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium truncate">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium truncate">
                                 {itype.emoji} {itype.name}
                               </span>
                             )}

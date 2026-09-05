@@ -195,7 +195,7 @@ export default function CostDashboardPage() {
               value={formatTokens(summary?.total_tokens ?? 0)}
               subtitle={`输入 ${formatTokens(summary?.total_prompt_tokens ?? 0)} / 输出 ${formatTokens(summary?.total_completion_tokens ?? 0)}`}
               icon="📝"
-              color="text-purple-600"
+              color="text-blue-600"
             />
             <MetricCard
               title="调用次数"

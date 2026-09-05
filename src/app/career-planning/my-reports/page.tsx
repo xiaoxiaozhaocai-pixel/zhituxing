@@ -99,7 +99,7 @@ export default function MyReportsPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#722ED1] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function MyReportsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <FileText className="w-7 h-7 text-[#722ED1]" />
+              <FileText className="w-7 h-7 text-[#165DFF]" />
               我的职业规划报告
             </h1>
             <p className="text-slate-500 mt-2">
@@ -119,7 +119,7 @@ export default function MyReportsPage() {
             </p>
           </div>
           <Link href="/career-planning">
-            <Button className="bg-[#722ED1] hover:bg-[#722ED1]/90">
+            <Button className="bg-[#165DFF] hover:bg-[#165DFF]/90">
               <Plus className="w-4 h-4 mr-2" />
               生成新规划
             </Button>
@@ -129,7 +129,7 @@ export default function MyReportsPage() {
         {/* 加载状态 */}
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#722ED1] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#165DFF] animate-spin" />
           </div>
         )}
 
@@ -146,17 +146,17 @@ export default function MyReportsPage() {
           <>
             <div className="space-y-4">
               {reports.length === 0 ? (
-                <Card className="border-2 border-dashed border-purple-200 hover:border-purple-300 transition-colors">
+                <Card className="border-2 border-dashed border-blue-200 hover:border-blue-300 transition-colors">
                   <CardContent className="p-16 text-center">
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Sparkles className="w-12 h-12 text-purple-500" />
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Sparkles className="w-12 h-12 text-blue-600" />
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2">还没有职业规划报告</h3>
                     <p className="text-slate-500 mb-8 max-w-md mx-auto">
                       生成你的专属职业规划，基于专业、年级和兴趣，精准匹配最适合你的岗位
                     </p>
                     <Link href="/career-planning">
-                      <Button className="bg-gradient-to-r from-[#722ED1] to-[#9254DE] hover:from-[#722ED1]/90 hover:to-[#9254DE]/90 text-white px-8 py-6 text-lg font-bold shadow-lg shadow-purple-500/30">
+                      <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:from-[#165DFF]/90 hover:to-[#3D7FFF]/90 text-white px-8 py-6 text-lg font-bold shadow-lg shadow-blue-500/30">
                         <Sparkles className="w-5 h-5 mr-2" />
                         立即生成我的规划
                       </Button>
@@ -217,7 +217,7 @@ export default function MyReportsPage() {
                             </td>
                             <td className="py-3 px-4">
                               <Link href={`/career-planning/report/${report.id}`}>
-                                <Button variant="outline" size="sm" className="text-[#722ED1] border-purple-200 hover:bg-purple-50">
+                                <Button variant="outline" size="sm" className="text-[#165DFF] border-blue-200 hover:bg-blue-50">
                                   <Eye className="w-4 h-4 mr-1" />
                                   查看
                                 </Button>

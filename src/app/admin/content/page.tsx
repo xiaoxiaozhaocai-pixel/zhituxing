@@ -34,7 +34,7 @@ interface ContentItem {
 }
 
 const typeConfig = {
-  article: { label: '求职干货', icon: FileText, color: 'purple' },
+  article: { label: '求职干货', icon: FileText, color: 'blue' },
   announcement: { label: '网站公告', icon: Megaphone, color: 'blue' },
   faq: { label: '常见问题', icon: HelpCircle, color: 'orange' }
 };

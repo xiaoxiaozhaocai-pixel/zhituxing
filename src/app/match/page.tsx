@@ -123,8 +123,8 @@ function CohortGaps({ cohort }: { cohort: CohortResult }) {
     na: '·',
   };
   return (
-    <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
-      <h4 className="text-sm font-medium text-indigo-700 mb-3 flex items-center gap-1">
+    <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+      <h4 className="text-sm font-medium text-blue-700 mb-3 flex items-center gap-1">
         组态诊断 · 差多少
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -150,14 +150,14 @@ function WeightingSummary({ weighting }: { weighting: WeightingResult }) {
   const total = weighting.totalScore;
   const totalClass = total >= 70 ? 'text-green-600' : total >= 50 ? 'text-orange-600' : 'text-red-500';
   return (
-    <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
-      <h4 className="text-sm font-medium text-violet-700 mb-3 flex items-center gap-1">
+    <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+      <h4 className="text-sm font-medium text-blue-700 mb-3 flex items-center gap-1">
         岗位加权解读
       </h4>
 
       {/* 岗位角色 + 综合分 */}
       <div className="flex items-center gap-2 flex-wrap mb-2">
-        <Badge className="bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100">
+        <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
           {weighting.role.label}
         </Badge>
         <span className={`text-sm font-bold ${totalClass}`}>综合 {total} 分</span>
@@ -173,9 +173,9 @@ function WeightingSummary({ weighting }: { weighting: WeightingResult }) {
         {weighting.breakdown.map((d) => (
           <div key={d.dimension} className="flex items-center gap-2">
             <span className="w-16 text-xs text-slate-500 shrink-0">{d.label}</span>
-            <div className="flex-1 h-2 rounded-full bg-violet-100 overflow-hidden">
+            <div className="flex-1 h-2 rounded-full bg-blue-100 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-400 to-violet-600"
+                className="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600"
                 style={{ width: `${(d.contribution / maxContribution) * 100}%` }}
               />
             </div>
@@ -525,10 +525,10 @@ export default function MatchPage() {
 
                         {/* 适配解读：把「为什么匹配+怎么补」提到主位（P1，弱化%独大） */}
                         {item.weighting && (
-                          <div className="mt-2 rounded-lg bg-violet-50/60 border border-violet-100 px-3 py-2">
+                          <div className="mt-2 rounded-lg bg-blue-50/60 border border-blue-100 px-3 py-2">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[11px] font-semibold text-violet-700">适配解读</span>
-                              <Badge className="text-[10px] bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100">
+                              <span className="text-[11px] font-semibold text-blue-700">适配解读</span>
+                              <Badge className="text-[10px] bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
                                 {item.weighting.role.label}
                               </Badge>
                             </div>

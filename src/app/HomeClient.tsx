@@ -19,19 +19,19 @@ const painPoints = [
     icon: <Compass className="w-5 h-5" />,
     title: '我到底适合做什么？',
     desc: '专业不对口、兴趣不清晰？小职陪你一步步理清方向。',
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
   {
     icon: <Search className="w-5 h-5" />,
     title: '投了很多简历没回音',
     desc: '不用盲投，小职做认知校正+精准匹配，帮你少走弯路。',
-    color: 'from-orange-500 to-red-500',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
   {
     icon: <TrendingUp className="w-5 h-5" />,
     title: '考研还是直接就业？',
     desc: '用你的真实画像做推演，不靠拍脑袋做决定。',
-    color: 'from-violet-500 to-purple-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
 ];
 
@@ -41,35 +41,35 @@ const corePaths = [
     title: '认知校正',
     desc: '先搞清楚你到底适合什么方向，不盲目开跑',
     href: '/career-planning',
-    color: 'from-blue-500 to-indigo-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
   {
     icon: <FileText className="w-5 h-5" />,
     title: '简历评估',
     desc: '诊断简历，让你投出去更有针对性',
     href: '/resume-optimize',
-    color: 'from-sky-500 to-blue-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
   {
     icon: <Shield className="w-5 h-5" />,
     title: '能力翻译',
     desc: '把专业与经历，翻译成岗位听得懂的语言',
     href: '/skill-portrait',
-    color: 'from-cyan-500 to-teal-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
   {
     icon: <Mic className="w-5 h-5" />,
     title: '模拟面试',
     desc: '实战演练，从容应对面试官',
     href: '/assistant?bot=interview',
-    color: 'from-rose-500 to-pink-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
   {
     icon: <Target className="w-5 h-5" />,
     title: '岗位匹配',
     desc: '基于你的画像，精准推荐，告别海投',
     href: '/match',
-    color: 'from-emerald-500 to-teal-600',
+    color: 'from-[#165DFF] to-[#3D7FFF]',
   },
 ];
 

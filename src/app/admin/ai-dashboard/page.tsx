@@ -183,7 +183,7 @@ export default function AIDashboardPage() {
         </Card>
 
         {/* Card 4: 老师待办建议 */}
-        <Card className="border-l-4 border-l-purple-500">
+        <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Lightbulb className="w-5 h-5 text-blue-600" />
