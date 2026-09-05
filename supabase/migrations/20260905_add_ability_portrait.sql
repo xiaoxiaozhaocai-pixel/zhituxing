@@ -16,6 +16,8 @@ COMMENT ON COLUMN public.user_profiles.ability_portrait IS
   '用户能力档案（C→B 飞轮）：{ cognitive, skill_portrait, matched_skills } 三子块合并存储，供 B 端筛选 + RAG 上下文一次加载';
 
 -- 2. 重建 user_portrait_v 视图，纳入 ability_portrait 与完整度加权
+-- 注：新增列后列数/列序变化，CREATE OR REPLACE 不幂等（会撞 42P16 列重命名），先 DROP 旧视图再重建
+DROP VIEW IF EXISTS public.user_portrait_v;
 CREATE OR REPLACE VIEW user_portrait_v
 WITH (security_invoker = true) AS
 SELECT
