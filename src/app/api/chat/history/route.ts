@@ -38,3 +38,35 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: '获取失败' }, { status: 500 });
   }
 }
+
+/**
+ * 清空指定会话的全部对话历史（仅限本人）
+ * 供前端"清空消息"真正删除后端历史，避免刷新后历史回显。
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getAuthenticatedUserId(request);
+    if (!userId) {
+      return NextResponse.json({ error: '未登录' }, { status: 401 });
+    }
+
+    const cid = request.nextUrl.searchParams.get('conversation_id');
+    if (!cid) {
+      return NextResponse.json({ error: '缺少 conversation_id' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('chat_history')
+      .delete()
+      .eq('user_id', userId)
+      .eq('conversation_id', cid)
+      .select();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, deleted: data?.length || 0, conversation_id: cid });
+  } catch (error) {
+    console.error('清空历史失败:', error);
+    return NextResponse.json({ error: '清空失败' }, { status: 500 });
+  }
+}

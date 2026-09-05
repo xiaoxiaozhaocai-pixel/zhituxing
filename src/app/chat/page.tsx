@@ -953,13 +953,26 @@ function ChatContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuery, isLoading, messages.length]);
 
-  // 清空当前 bot 对话
-  const handleClearMessages = () => {
+  // 清空当前 bot 对话（本地 + 后端历史一并清除，避免刷新后历史回显）
+  const handleClearMessages = async () => {
     const bot = activeBot;
     // 清空 sessionStorage
     try { sessionStorage.removeItem(`chat_${bot}`); } catch {}
     // 清空内存缓存
     delete historyRef.current[bot];
+    // 删除后端该会话的全部历史（真正清理服务器端，防止再次回显）
+    const cid = localStorage.getItem(`conversationId_${bot}`);
+    if (cid) {
+      try {
+        const res = await fetch(`/api/chat/history?conversation_id=${encodeURIComponent(cid)}`, { method: 'DELETE' });
+        if (res.ok) {
+          localStorage.removeItem(`conversationId_${bot}`);
+        }
+      } catch {
+        // 后端删除失败仅记录，不阻塞本地清空
+        console.warn('[chat] 后端历史删除失败:', bot, cid);
+      }
+    }
     // 重置为欢迎消息
     const currentBot = bots.find(b => b.id === bot) || bots[0];
     setMessages([{
@@ -1798,7 +1811,7 @@ function ChatContent() {
               清空对话
             </DialogTitle>
             <DialogDescription>
-              清空后无法恢复，确定要清空当前对话历史吗？
+              将同时清除本地与服务器端的对话记录，且无法恢复。确定要清空当前对话历史吗？
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
