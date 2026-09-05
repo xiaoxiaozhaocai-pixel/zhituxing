@@ -269,7 +269,7 @@ export default function HomeClient({ industryCount }: { industryCount: number })
 
           {/* 求职工具库引导（收纳其余能力，入口统一收敛） */}
           <div className="mt-8 flex justify-center">
-            <Link href="/growth" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] transition-all duration-300">
+            <Link href="/tools" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] transition-all duration-300">
               <Layers className="w-4 h-4" />
               更多求职工具库
               <ArrowRight className="w-3.5 h-3.5" />
