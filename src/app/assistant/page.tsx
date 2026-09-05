@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, BarChart3 } from 'lucide-react';
+import { Send, User as UserIcon, Loader2, Briefcase, GraduationCap, Sparkles, AlertCircle, Crown, CheckCircle, ArrowRight, Link as LinkIcon, XCircle, Paperclip, X, FileText, Video, Tv, BarChart3, Trash2 } from 'lucide-react';
 import { AnalyticsTracker, AnalyticsEvent, usePageView } from '@/lib/analytics/tracker';
 import { useAuth } from '@/hooks/useAuth';
 import { useSSEStream } from '@/hooks/useSSEStream';
@@ -274,6 +274,7 @@ function AssistantContent() {
   
   // 登录弹窗状态
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   // 面试模式状态
   const [interviewMode, setInterviewMode] = useState<'text' | 'video' | null>(null);
@@ -995,6 +996,30 @@ function AssistantContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingQuery, isLoading, messages.length]);
 
+  // 清空当前 bot 对话（本地 + 后端历史一并清除，避免刷新后历史回显）
+  const handleClearMessages = async () => {
+    const bot = activeBot;
+    const cid = localStorage.getItem(`conversationId_${bot}`);
+    if (cid) {
+      try {
+        const res = await fetch(`/api/chat/history?conversation_id=${encodeURIComponent(cid)}`, { method: 'DELETE' });
+        if (res.ok) {
+          localStorage.removeItem(`conversationId_${bot}`);
+        }
+      } catch {
+        // 后端删除失败仅记录，不阻塞本地清空
+        console.warn('[assistant] 后端历史删除失败:', bot, cid);
+      }
+    }
+    // 重置为欢迎消息
+    setMessages([{
+      role: 'assistant',
+      content: currentBot.welcomeMessage,
+      timestamp: new Date(),
+    }]);
+    setShowClearConfirm(false);
+  };
+
   const handleTabChange = (botId: string) => {
     // 先清除当前 activeBot 的 conversationId，再切换到新的 botId
     localStorage.removeItem(`conversationId_${activeBot}`);
@@ -1034,13 +1059,23 @@ function AssistantContent() {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* 页面标题 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">
-            AI职业助手
-          </h1>
-          <p className="text-slate-600 text-sm">
-            小职的七大能力协同服务，助你求职无忧
-          </p>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-1">
+              AI职业助手
+            </h1>
+            <p className="text-slate-600 text-sm">
+              小职的七大能力协同服务，助你求职无忧
+            </p>
+          </div>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            disabled={messages.length <= 1}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-500 bg-white border border-slate-200 rounded-lg hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-4 h-4" />
+            清空消息
+          </button>
         </div>
 
         {/* 功能/能力Tab选择器 */}
@@ -1552,6 +1587,32 @@ function AssistantContent() {
               </p>
             </DialogDescription>
           </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
+      {/* 清空消息确认弹窗 */}
+      <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-red-500" />
+              清空对话
+            </DialogTitle>
+            <DialogDescription>
+              将同时清除本地与服务器端的对话记录，且无法恢复。确定要清空当前对话历史吗？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleClearMessages}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              确认清空
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
