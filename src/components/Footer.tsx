@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, Bot, Compass, FileText, MessageSquare, Sparkles, Briefcase, GraduationCap, Crown, HelpCircle, Phone, Building2 } from 'lucide-react';
+import { Heart, Bot, Compass, FileText, MessageSquare, Wrench, Crown, HelpCircle, Phone, Building2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 /**
  * 与 Navbar 对齐的页脚（蓝白主题，禁用暗色）
  *
- * 链接来源严格对齐 Navbar 的 mainNavItems / agentNavItems / agentNavItems2 / exploreNavItems / moreNavItems，
+ * 链接来源严格对齐 Navbar 的 mainNavItems / agentNavItems / toolsNavItem / moreNavItems，
  * 不再出现 Navbar 没有的 /growth、/match、/skills-graph、/learning-path、/guide 等孤儿入口。
  */
 export default function Footer() {
@@ -25,12 +25,10 @@ export default function Footer() {
     { name: '职业规划', href: '/career-planning', icon: <Compass className="w-3.5 h-3.5" /> },
     { name: '简历助手', href: '/resume-optimize', icon: <FileText className="w-3.5 h-3.5" /> },
     { name: 'AI模拟面试', href: '/assistant?bot=interview', icon: <MessageSquare className="w-3.5 h-3.5" /> },
-    { name: '考研就业决策', href: '/assistant?bot=decision', icon: <Sparkles className="w-3.5 h-3.5" /> },
   ];
 
   const exploreLinks = [
-    { name: '岗位百科', href: '/jobs', icon: <Briefcase className="w-3.5 h-3.5" /> },
-    { name: '干货库', href: '/resources', icon: <GraduationCap className="w-3.5 h-3.5" /> },
+    { name: '工具栏', href: '/tools', icon: <Wrench className="w-3.5 h-3.5" /> },
   ];
 
   const aboutLinks = [
@@ -88,9 +86,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 探索 */}
+          {/* 工具栏 */}
           <div>
-            <h4 className="text-xs font-semibold text-[#1E293B] uppercase tracking-widest mb-5">探索</h4>
+            <h4 className="text-xs font-semibold text-[#1E293B] uppercase tracking-widest mb-5">工具栏</h4>
             <ul className="space-y-3">
               {exploreLinks.map((l) => (
                 <li key={l.name}>
