@@ -339,7 +339,7 @@ function NavbarInner() {
           <div className="lg:hidden border-t border-[#E2E8F0] bg-white/95 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto px-5 py-4 space-y-1.5">
               {[...mainNavItems, ...agentNavItems, ...agentNavItems2, toolsNavItem, ...moreNavItems].map((item) => {
-                const isActive = item.isTools
+                const isActive = 'isTools' in item
                   ? pathname === '/tools'
                   : isNavItemActive(item.href, pathname, currentBot);
                 return (
