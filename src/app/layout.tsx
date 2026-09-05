@@ -4,7 +4,7 @@ import { FontPreload } from '@/components/FontPreload';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FreeQuotaBadge from '@/components/FreeQuotaBadge';
-import FloatingAICTA from '@/components/FloatingAICTA';
+import FloatingAICTAWrapper from '@/components/FloatingAICTAWrapper';
 import ProfileGuideProvider from '@/components/ProfileGuideProvider';
 import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/hooks/useToast';
@@ -133,7 +133,7 @@ export default function RootLayout({
               <ProfileGuideProvider>
                 <Navbar />
                 <FreeQuotaBadge />
-                <FloatingAICTA />
+                <FloatingAICTAWrapper />
                 {children}
                 <Footer />
                 <CookieConsent />
