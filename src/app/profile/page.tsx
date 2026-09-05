@@ -641,8 +641,8 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
   ];
 
   const getMemberStatus = () => {
-    if (quota?.is_lifetime_member) return { label: '终身会员', color: 'bg-gradient-to-r from-blue-500 to-pink-500' };
-    if (isMember) return { label: '月度会员', color: 'bg-gradient-to-r from-orange-500 to-yellow-500' };
+    if (quota?.is_lifetime_member) return { label: '终身会员', color: 'bg-gradient-to-r from-[#FF7D00] to-[#FF9F3D]' };
+    if (isMember) return { label: '月度会员', color: 'bg-gradient-to-r from-[#FF7D00] to-[#FF9F3D]' };
     return { label: '普通用户', color: 'bg-gray-400' };
   };
 
@@ -654,7 +654,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
         <h2 className="text-xl font-bold text-slate-900">我的会员</h2>
       </div>
 
-      <Card className="bg-gradient-to-r from-[#165DFF] to-[#9B5AE7] text-white">
+      <Card className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -686,7 +686,7 @@ function MembershipPanel({ quota }: { quota: QuotaInfo | null }) {
                 <p className="text-sm text-slate-600">仅需{MEMBERSHIP_MONTHLY_PRICE_TEXT}，享受无限次AI服务</p>
               </div>
               <Link href="/membership">
-                <Button className="bg-[#FF7D00] hover:bg-[#e67000]">立即开通</Button>
+                <Button className="bg-[#FF7D00] hover:bg-[#FF7D00]/90">立即开通</Button>
               </Link>
             </div>
           </CardContent>
@@ -766,7 +766,7 @@ function ReportsPanel({ userId }: { userId: string }) {
             <FileText className="w-12 h-12 mx-auto mb-4 text-slate-300" />
             <p className="text-slate-500 mb-4">还没有生成过职业规划报告</p>
             <Link href="/growth">
-              <Button className="bg-[#165DFF] hover:bg-[#6019c4]">去生成报告</Button>
+              <Button className="bg-[#165DFF] hover:bg-[#0D4BE0]">去生成报告</Button>
             </Link>
           </CardContent>
         </Card>
@@ -959,7 +959,7 @@ function InvitePanel({ userId }: { userId: string }) {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-slate-900">我的邀请</h2>
 
-      <Card className="bg-gradient-to-r from-[#165DFF] to-[#34D399] text-white">
+      <Card className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

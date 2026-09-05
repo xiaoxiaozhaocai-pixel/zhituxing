@@ -236,7 +236,7 @@ export default function ResourcesPage() {
             <p className="text-slate-500 mb-2">暂无相关资源</p>
             <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">换个分类看看，或生成职业规划获取个性化推荐</p>
             <Link href="/growth">
-              <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg px-6 py-5">
+              <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg px-6 py-5">
                 <Sparkles className="w-4 h-4 mr-2" />
                 去生成职业规划
               </Button>

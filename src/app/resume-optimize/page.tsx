@@ -217,7 +217,7 @@ export default function ResumeOptimizePage() {
                 AI智能分析，量身定制简历优化建议
               </p>
             </div>
-            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2">
+            <Badge className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white px-4 py-2">
               基础功能免费使用
             </Badge>
           </div>

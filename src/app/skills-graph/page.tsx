@@ -326,7 +326,7 @@ export default function SkillsGraphPage() {
             </div>
             <h1 className="text-2xl font-bold text-slate-900">技能关系图</h1>
           </div>
-          <p className="text-slate-500 ml-13">可视化展示技能之间的关联关系，发现学习路径</p>
+          <p className="text-slate-500 ">可视化展示技能之间的关联关系，发现学习路径</p>
           {!isMember && !memberLoading && (
             <button
               onClick={() => setPaywallOpen(true)}

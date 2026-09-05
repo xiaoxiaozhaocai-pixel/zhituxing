@@ -307,12 +307,12 @@ export default function MatchPage() {
           {/* 页面标题 */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] rounded-lg flex items-center justify-center">
                 <Target className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-slate-900">岗位匹配</h1>
             </div>
-            <p className="text-slate-500 ml-13">基于你的技能画像，智能匹配最适合的岗位</p>
+            <p className="text-slate-500">基于你的技能画像，智能匹配最适合的岗位</p>
           </div>
 
           {/* 登录提示卡片 */}
@@ -349,12 +349,12 @@ export default function MatchPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] rounded-lg flex items-center justify-center">
               <Target className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900">岗位匹配</h1>
           </div>
-          <p className="text-slate-500 ml-13">基于你的技能画像，智能匹配最适合的岗位</p>
+          <p className="text-slate-500">基于你的技能画像，智能匹配最适合的岗位</p>
         </div>
 
         {/* 搜索和筛选栏 */}
@@ -416,9 +416,9 @@ export default function MatchPage() {
         )}
 
         {!loading && fetched && filtered.length === 0 && (
-          <Card className="border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50">
+          <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-blue-50">
             <CardContent className="py-16 text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] rounded-2xl flex items-center justify-center shadow-lg">
                 <Briefcase className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3">还没有找到匹配的岗位</h3>
@@ -427,12 +427,12 @@ export default function MatchPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href="/profile/info">
-                  <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-lg px-6 py-5">
+                  <Button className="bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] hover:opacity-90 shadow-lg px-6 py-5">
                     去完善个人信息
                   </Button>
                 </Link>
                 <Link href="/jobs">
-                  <Button variant="outline" className="px-6 py-5 border-amber-200 text-amber-700 hover:bg-amber-50">
+                  <Button variant="outline" className="px-6 py-5 border-blue-200 text-blue-700 hover:bg-blue-50">
                     浏览岗位百科
                   </Button>
                 </Link>
@@ -451,7 +451,7 @@ export default function MatchPage() {
               return (
                 <Card
                   key={item.job.id}
-                  className="border-orange-100 overflow-hidden hover:shadow-lg hover:border-orange-300 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                  className="border-blue-100 overflow-hidden hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
                   role="button"
                   tabIndex={0}
                   aria-expanded={isExpanded}
@@ -464,7 +464,7 @@ export default function MatchPage() {
                     }
                   }}
                 >
-                  <div className="h-1 bg-gradient-to-r from-orange-400 to-amber-500" />
+                  <div className="h-1 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]" />
                   <CardContent className="py-5">
                     {/* 头部：匹配度 + 岗位信息 */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">

@@ -183,12 +183,12 @@ export default function LearningPathPage() {
         {/* 页面标题 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] rounded-lg flex items-center justify-center">
               <Route className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900">学习路径</h1>
           </div>
-          <p className="text-slate-500 ml-13">根据技能缺口分析，为你规划最高效的学习路线</p>
+          <p className="text-slate-500">根据技能缺口分析，为你规划最高效的学习路线</p>
         </div>
 
         {loading ? (
@@ -243,7 +243,7 @@ export default function LearningPathPage() {
             <div className="lg:col-span-3 space-y-6">
               {/* 目标岗位概览 */}
               <Card className="border-blue-100 overflow-hidden">
-                <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+                <div className="h-1 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]" />
                 <CardContent className="py-5">
                   <div className="flex items-center justify-between">
                     <div>
@@ -327,7 +327,7 @@ export default function LearningPathPage() {
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-white/95 z-10 rounded-xl flex items-end justify-center pb-6">
                     <button
                       onClick={() => setPaywallOpen(true)}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-medium shadow-lg hover:from-amber-600 hover:to-yellow-600 transition-all"
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#FF7D00] to-[#FFB65C] text-white font-medium shadow-lg hover:opacity-90 transition-all"
                     >
                       <Crown className="w-5 h-5" /> 升级会员查看完整学习路径
                     </button>
@@ -388,25 +388,25 @@ export default function LearningPathPage() {
 
               {/* 职业规划学习计划 */}
               {careerSteps.length > 0 && (
-                <Card className="border-green-100">
+                <Card className="border-blue-100">
                   <CardHeader>
-                    <CardTitle className="text-green-700 flex items-center gap-1">
+                    <CardTitle className="text-blue-700 flex items-center gap-1">
                       <BookOpen className="w-4 h-4" /> 职业规划学习计划
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       {careerSteps.map((step, i) => (
-                        <div key={i} className="bg-green-50 rounded-lg p-4">
+                        <div key={i} className="bg-blue-50 rounded-lg p-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold">
+                            <div className="w-6 h-6 rounded-full bg-[#3D7FFF] text-white text-xs flex items-center justify-center font-bold">
                               {i + 1}
                             </div>
-                            <span className="font-medium text-green-800">
+                            <span className="font-medium text-blue-800">
                               {step.stage || step.title || `阶段${i + 1}`}
                             </span>
                             {step.duration && (
-                              <Badge variant="outline" className="text-xs border-green-300 text-green-600">
+                              <Badge variant="outline" className="text-xs border-blue-300 text-blue-600">
                                 {step.duration}
                               </Badge>
                             )}
@@ -414,7 +414,7 @@ export default function LearningPathPage() {
                           {step.skills && Array.isArray(step.skills) && step.skills.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mt-2 ml-8">
                               {step.skills.map((s: string, j: number) => (
-                                <Badge key={j} className="text-xs bg-white text-green-700 border-green-200">
+                                <Badge key={j} className="text-xs bg-white text-blue-700 border-blue-200">
                                   {s}
                                 </Badge>
                               ))}
