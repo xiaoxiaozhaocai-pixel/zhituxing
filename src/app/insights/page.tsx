@@ -146,6 +146,22 @@ export default function InsightsPage() {
         </div>
       </section>
 
+      {/* 能力边界互链 CTA */}
+      <div className="border-b border-[#E2E8F0] bg-white/60">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-4 sm:flex-row">
+          <p className="text-sm text-[#475569]">
+            想看职途星内容底座全景（行业/词条/认知/能力/判断依据真实规模）？
+            <span className="font-medium text-[#1E293B]">来这里一页看清。</span>
+          </p>
+          <Link
+            href="/capability"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[#165DFF]/25 bg-white px-4 py-2 text-sm font-semibold text-[#165DFF] shadow-sm transition hover:bg-[#165DFF]/5"
+          >
+            查看内容能力边界 <span aria-hidden>→</span>
+          </Link>
+        </div>
+      </div>
+
       {/* 锚点导航 */}
       <nav className="sticky top-14 z-20 border-y border-[#E2E8F0] bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-2 px-6 py-3 text-sm">

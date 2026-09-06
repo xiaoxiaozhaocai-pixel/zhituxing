@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  Map, Briefcase, BarChart3, GraduationCap, Route, Compass, ArrowRight,
+  Map, Briefcase, BarChart3, GraduationCap, Route, Compass, ArrowRight, Radar,
 } from 'lucide-react';
 
 /**
@@ -101,6 +101,30 @@ export default function ToolsPage() {
               </Link>
             ))}
           </div>
+
+          {/* 内容能力边界入口：让用户/搜索引擎一眼看到职途星内容底座真实规模 */}
+          <Link
+            href="/capability"
+            className="group mt-10 flex flex-col items-start justify-between gap-4 rounded-2xl border border-[#165DFF]/15 bg-gradient-to-br from-[#165DFF]/5 to-[#3D7FFF]/5 px-6 py-5 transition hover:border-[#165DFF]/30 hover:shadow-md sm:flex-row sm:items-center"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] text-white shadow-lg shadow-[#165DFF]/20 group-hover:scale-110 transition-transform duration-300">
+                <Radar className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-bold text-[#1E293B]">内容能力边界</span>
+                  <span className="rounded-full bg-[#165DFF]/10 px-2 py-0.5 text-xs font-medium text-[#165DFF]">全景看板</span>
+                </div>
+                <p className="mt-1 text-sm text-[#64748B]">
+                  行业雷达 / 词条库 / 认知库 / 能力词典 / 判断力因果层，一眼看清职途星能帮你什么。
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#165DFF]">
+              查看内容底座 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </span>
+          </Link>
 
           <div className="mt-12 text-center">
             <p className="text-[#94A3B8] text-sm">
