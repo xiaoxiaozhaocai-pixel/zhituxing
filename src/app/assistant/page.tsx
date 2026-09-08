@@ -281,6 +281,18 @@ function AssistantContent() {
   // 面试类型状态（P6.2新增）
   const [interviewType, setInterviewType] = useState<'standard' | 'pressure' | 'group' | 'english' | null>(null);
   
+  // 小职人格选择（默认热情学弟，匹配"桂电学长"定位）
+  const PERSONA_PRESETS = [
+    { id: 'cool_senior', name: '冷酷学长', emoji: '🧊', desc: '理性直接，一针见血' },
+    { id: 'warm_junior', name: '热情学弟', emoji: '🔥', desc: '自来熟，会鼓励，像兄弟' },
+    { id: 'gentle_senior_sis', name: '纯情学姐', emoji: '🌸', desc: '耐心温柔，慢慢帮你理清' },
+    { id: 'strict_teacher', name: '严肃老师', emoji: '📘', desc: '严谨规划，有条理' },
+  ];
+  const [selectedPersona, setSelectedPersona] = useState<string>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('xiaozhi_persona') : null;
+    return saved && PERSONA_PRESETS.find(p => p.id === saved) ? saved : PERSONA_PRESETS[1].id;
+  });
+  
   // 文件上传状态
   const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
   const [showScoreButton, setShowScoreButton] = useState(false);
@@ -408,6 +420,12 @@ function AssistantContent() {
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBot]);
+  
+  // 保存小职人格选择到localStorage
+  useEffect(() => {
+    localStorage.setItem('xiaozhi_persona', selectedPersona);
+  }, [selectedPersona]);
+  
 
   // 解析 URL 参数：bot + query（只执行一次）
   useEffect(() => {
@@ -625,7 +643,8 @@ function AssistantContent() {
       let requestBody: object = {
         message: messageText,
         botType: activeBot,
-        conversationId: storedConvId || null
+        conversationId: storedConvId || null,
+        persona: activeBot === 'xiaozhi' ? { presetId: selectedPersona } : undefined,
       };
       
       if (isInterview) {
@@ -1120,6 +1139,30 @@ function AssistantContent() {
             ))}
           </div>
         </div>
+        
+        {/* 小职人格选择器 — 仅xiaozhi模式显示 */}
+        {activeBot === 'xiaozhi' && (
+          <div className="mb-4 flex items-center gap-2 overflow-x-auto py-1">
+            <span className="text-xs text-slate-400 font-medium whitespace-nowrap">小职人格</span>
+            <div className="flex gap-1.5">
+              {PERSONA_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPersona(p.id)}
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs transition-all whitespace-nowrap ${
+                    selectedPersona === p.id
+                      ? 'bg-[#165DFF] text-white shadow-sm'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600'
+                  }`}
+                >
+                  <span>{p.emoji}</span>
+                  <span>{p.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
 
         {/* 聊天区域 */}
         <Card className="border-2 overflow-hidden flex flex-col" style={{

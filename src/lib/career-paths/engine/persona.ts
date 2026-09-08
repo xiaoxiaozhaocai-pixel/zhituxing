@@ -112,13 +112,13 @@ function dimLabel(value: number, low: string, high: string): string {
 
 /**
  * 归一化人格配置：
- *  - 无输入 → 默认冷酷学长（小职的理性底座）
+ *  - 无输入 → 默认热情学弟（小职的温暖基底，匹配"懂桂电学生的AI朋友"定位）
  *  - 有 presetId → 取预设基线，可被 dims/description 覆写
  *  - 有 dims → 覆写对应维度
  *  - 有 description → 作为一句话人设附加
  */
 export function resolvePersona(input: PersonaInput = {}): PersonaProfile {
-  const preset = getPersonaPreset(input.presetId);
+  const preset = getPersonaPreset(input.presetId || 'warm_junior');
 
   const dims: PersonaDims = {
     warmth: clamp(input.dims?.warmth ?? preset.dims.warmth),
