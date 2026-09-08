@@ -45,7 +45,7 @@ import { saveChatHistory } from './chat-history';
 import { runGuetFlywheel } from './guet-flywheel';
 import { runProfileFlywheel } from './profile-flywheel';
 import { matchJobs, type MatchResult } from '@/lib/matching-service';
-import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery, handleInterviewRadarChatQuery, handleSubtextChatQuery, handleCapabilityChatQuery, handleCognitiveChatQuery } from '@/lib/career-paths/chat-adapter';
+import { handleCareerPathsQuery, handleNarrativeChatQuery, handleTruthChatQuery, handleInterviewRadarChatQuery, handleSubtextChatQuery, handleCapabilityChatQuery, handleCognitiveChatQuery, sniffRelevantKnowledge } from '@/lib/career-paths/chat-adapter';
 import { analyzeNarrative } from '@/lib/career-paths/engine/narrative';
 import { walkTruthfulness } from '@/lib/career-paths/engine/truthfulness';
 import { resolvePersona, personaFallbackReply, personaPromptFragment, type PersonaProfile } from '@/lib/career-paths/engine/persona';
@@ -1136,6 +1136,14 @@ export async function POST(request: NextRequest) {
         
         const ragContext = buildRAGContext(ragSources) + tierMatchContext;
 
+        // D域 · 表达链接入：嗅探用户消息中的岗位/面试/行业关键词
+        const expressLinkContext = (actualBotType === 'xiaozhi_chat' || actualBotType === 'xiaozhi')
+          ? sniffRelevantKnowledge(message)
+          : '';
+        const enrichedRagContext = expressLinkContext
+          ? ragContext + '\n\n【表达链接入 — 小职从潜台词库+能力词典自动检索到以下相关数据，供参考引用】\n' + expressLinkContext
+          : ragContext;
+
         // RAG 失败降级：无数据时告知 LLM 坦诚说明
         const ragDegradationNote = ragSources.length === 0
           ? '\n\n【RAG状态】本次未检索到相关数据。请坦诚告知用户你掌握的信息有限，基于通用知识回答，不要编造具体数据。'
@@ -1179,7 +1187,7 @@ export async function POST(request: NextRequest) {
           isCacheable,
         } = await prepareChatContext({
           basePrompt,
-          ragContext,
+          enrichedRagContext,
           ragDegradationNote,
           roleReinforcement,
           conversationId,

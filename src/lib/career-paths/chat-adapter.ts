@@ -638,3 +638,55 @@ export function handleCognitiveChatQuery(text: string): {
   const report = cognitiveCorrection(major, grade);
   return { needsMoreInfo: false, reply: formatCognitiveForChat(report), major, grade, report };
 }
+
+// ============================================================
+// 表达链接入 · 嗅探层（D域）
+// 在 xiaozhi_chat 通用对话中自动检测用户消息中的岗位/行业/面试关键词，
+// 从 A3 潜台词库 + A4 能力词典拉取相关数据，注入 RAG 上下文。
+// ============================================================
+
+/** 岗位/行业关键词检测 */
+const JOB_KEYWORDS = [
+  '面试', '岗位', '简历', '求职', '招聘', 'offer', '工作',
+  'HR', 'hr', '人力', '实习', '校招', '社招', '春招', '秋招',
+  '工艺', '工程师', '产品', '运营', '销售', '市场', '研发', '测试',
+  '锂电', '新能源', '互联网', '金融', '快消', '咨询',
+];
+
+/** 从用户消息嗅探相关表达知识，返回注入用的上下文文本 */
+export function sniffRelevantKnowledge(userMessage: string): string {
+  const lower = userMessage.toLowerCase();
+  const blocks: string[] = [];
+
+  // 1. 检测是否命中岗位/面试关键词
+  const hasJobKeywords = JOB_KEYWORDS.some(kw => lower.includes(kw));
+  if (!hasJobKeywords) return '';
+
+  // 2. 嗅探潜台词（A3）
+  const subtextReport = decodeSubtext(userMessage);
+  if (subtextReport.items.length > 0) {
+    blocks.push('【A3潜台词库 — 相关条目】');
+    subtextReport.items.slice(0, 5).forEach(item => {
+      blocks.push(`• ${item.phrase}：${item.surface} → ${item.meaning}（风险: ${item.risk}）建议：${item.advice}`);
+    });
+    blocks.push('');
+  }
+
+  // 3. 嗅探能力词典（A4）
+  const jobMatch = findJobInText(userMessage);
+  if (jobMatch) {
+    const report = analyzeCapabilityGap({ targetJob: jobMatch });
+    if (report.known) {
+      blocks.push('【A4能力词典 — 相关岗位框架】');
+      report.layers.forEach(layer => {
+        blocks.push(`• ${layer.label}（权重${layer.weight}%）：${layer.items.join('、')}`);
+      });
+      if (report.recommendations.length > 0) {
+        blocks.push(`• 推荐企业：${report.recommendations.join('、')}`);
+      }
+      blocks.push('');
+    }
+  }
+
+  return blocks.join('\n');
+}
