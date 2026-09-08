@@ -8,6 +8,7 @@ import { interviewRadar, type InterviewRadarReport } from '@/lib/career-paths/en
 import { decodeSubtext, type SubtextReport } from '@/lib/career-paths/engine/subtext_dictionary';
 import { analyzeCapabilityGap, findJobInText, type CapabilityReport } from '@/lib/career-paths/engine/capability_dictionary';
 import { cognitiveCorrection, type CognitiveCorrectionResult } from '@/lib/career-paths/engine/cognitive_correction';
+import { buildOneJdStrategy } from '@/lib/career-paths/engine/one_jd_strategy';
 
 /** 从自然语言文本提取画像字段 */
 export function extractProfileFromText(text: string): Partial<RawProfile> {
@@ -658,6 +659,31 @@ export function sniffRelevantKnowledge(userMessage: string): string {
   const lower = userMessage.toLowerCase();
   const blocks: string[] = [];
 
+  // 0. 长JD检测（C8一岗一策）：用户贴了完整JD → 直接注入策略报告
+  const looksLikeJd = userMessage.length >= 80 && /岗位职责|任职要求|工作职责|工作内容|responsibilities/i.test(userMessage);
+  if (looksLikeJd) {
+    try {
+      const strategy = buildOneJdStrategy({ jdText: userMessage });
+      blocks.push('【C8一岗一策 — 用户贴了完整JD，以下为策略报告，直接据此回答】');
+      blocks.push('• 目标岗位：' + strategy.jdTitle);
+      blocks.push('• JD解码：' + strategy.decoded.summary);
+      strategy.decoded.subtextItems.slice(0, 4).forEach(it => {
+        blocks.push('  - 「' + it.phrase + '」(' + it.risk + ')：' + it.meaning);
+      });
+      strategy.decoded.hiddenRequirements.slice(0, 3).forEach(h => {
+        blocks.push('  - ' + h);
+      });
+      blocks.push('• 投递判断：' + strategy.applyStrategy.verdict);
+      strategy.applyStrategy.differentiators.slice(0, 3).forEach((d, i) => {
+        blocks.push('  - ' + (i + 1) + ') ' + d);
+      });
+      blocks.push('');
+      return blocks.join('\n');
+    } catch {
+      // JD解析失败则继续走常规嗅探
+    }
+  }
+
   // 1. 检测是否命中岗位/面试关键词
   const hasJobKeywords = JOB_KEYWORDS.some(kw => lower.includes(kw));
   if (!hasJobKeywords) return '';
@@ -667,7 +693,7 @@ export function sniffRelevantKnowledge(userMessage: string): string {
   if (subtextReport.items.length > 0) {
     blocks.push('【A3潜台词库 — 相关条目】');
     subtextReport.items.slice(0, 5).forEach(item => {
-      blocks.push(`• ${item.phrase}：${item.surface} → ${item.meaning}（风险: ${item.risk}）建议：${item.advice}`);
+      blocks.push('• ' + item.phrase + '：' + item.surface + ' → ' + item.meaning + '（风险: ' + item.risk + '）建议：' + item.advice);
     });
     blocks.push('');
   }
@@ -679,10 +705,10 @@ export function sniffRelevantKnowledge(userMessage: string): string {
     if (report.known) {
       blocks.push('【A4能力词典 — 相关岗位框架】');
       report.layers.forEach(layer => {
-        blocks.push(`• ${layer.label}（权重${layer.weight}%）：${layer.items.join('、')}`);
+        blocks.push('• ' + layer.label + '（权重' + layer.weight + '%）：' + layer.items.join('、'));
       });
       if (report.recommendations.length > 0) {
-        blocks.push(`• 推荐企业：${report.recommendations.join('、')}`);
+        blocks.push('• 推荐企业：' + report.recommendations.join('、'));
       }
       blocks.push('');
     }

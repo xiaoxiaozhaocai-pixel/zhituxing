@@ -1187,7 +1187,7 @@ export async function POST(request: NextRequest) {
           isCacheable,
         } = await prepareChatContext({
           basePrompt,
-          enrichedRagContext,
+          ragContext: enrichedRagContext,
           ragDegradationNote,
           roleReinforcement,
           conversationId,
