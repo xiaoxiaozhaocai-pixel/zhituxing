@@ -4,7 +4,7 @@
  * C8 一岗一策 · 客户端交互组件
  *
  * 流程：贴JD（+可选贴简历）→ POST /api/career/one-jd-strategy → 三段式策略报告
- * 视觉：蓝白Token（#165DFF 主色），禁暗色；用户可见文案零"智能体"
+ * 视觉：蓝白Token（#165DFF 主色），禁暗色；用户可见文案零agent措辞
  */
 
 import { useState } from 'react';
