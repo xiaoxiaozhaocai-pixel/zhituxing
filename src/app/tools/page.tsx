@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  Map, Briefcase, BarChart3, GraduationCap, Route, Compass, ArrowRight, Radar,
+  Map, Briefcase, BarChart3, GraduationCap, Route, Compass, ArrowRight, Radar, Target,
 } from 'lucide-react';
 
 /**
@@ -11,10 +11,17 @@ import {
 export const metadata = {
   title: '工具栏 — 职途星',
   description:
-    '职途星工具栏：行业地图、岗位百科、判断力内容库、干货库、学习路径、考研就业决策，一站式选择使用。',
+    '职途星工具栏：一岗一策、行业地图、岗位百科、判断力内容库、干货库、学习路径、考研就业决策，一站式选择使用。',
 };
 
 const tools = [
+  {
+    name: '一岗一策',
+    desc: '贴上目标JD，解码潜台词+定制简历改写点+投递策略',
+    href: '/one-jd',
+    icon: <Target className="w-5 h-5" />,
+    color: 'from-[#165DFF] to-[#3D7FFF]',
+  },
   {
     name: '行业地图',
     desc: '全国公司与岗位面试情报，聚合脱敏',
