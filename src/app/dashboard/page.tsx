@@ -10,6 +10,7 @@ import { JobRecommendations } from './_components/job-recommendations';
 import { AssessmentHistory, type AssessmentRecord } from './_components/assessment-history';
 import { MyReports, type DashboardReport } from './_components/my-reports';
 import { ResumeScoreCard, type ResumeScoreRecord } from './_components/resume-score-card';
+import { JobProgress, type JobProgressData } from './_components/job-progress';
 
 interface MatchGetData {
   matches: MatchGetItem[];
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [matches, setMatches] = useState<MatchGetItem[]>([]);
   const [reports, setReports] = useState<DashboardReport[]>([]);
   const [resumeScore, setResumeScore] = useState<ResumeScoreRecord | null>(null);
+  const [interviewCount, setInterviewCount] = useState<number | null>(null);
 
   const [favLoading, setFavLoading] = useState(true);
   const [assessLoading, setAssessLoading] = useState(true);
@@ -107,6 +109,12 @@ export default function DashboardPage() {
       setResumeScoreLoading(false);
     });
 
+    fetchJson<{ feedbacks: unknown[] }>('/api/interview/feedback').then(({ data, error }) => {
+      if (cancelled) return;
+      if (error === '未登录') return redirectToLogin();
+      setInterviewCount(data?.feedbacks?.length ?? 0);
+    });
+
     return () => {
       cancelled = true;
     };
@@ -152,6 +160,18 @@ export default function DashboardPage() {
           <p className="text-sm text-gray-500 mt-1">
             你好，{displayName}！这里是你的求职全貌
           </p>
+        </div>
+
+        <div className="mb-4 lg:mb-6">
+          <JobProgress
+            data={{
+              assessDone: assessments.length > 0,
+              scoreDone: Boolean(resumeScore),
+              interviewDone: (interviewCount ?? 0) > 0,
+              reportDone: reports.length > 0,
+              loading: assessLoading || resumeScoreLoading || reportLoading || interviewCount === null,
+            }}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
