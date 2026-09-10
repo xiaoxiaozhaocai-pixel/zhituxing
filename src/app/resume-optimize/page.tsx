@@ -81,6 +81,59 @@ export default function ResumeOptimizePage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [isScoring, setIsScoring] = useState(false);
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
+
+  // 评分→编辑→重评闭环：从简历创作助手带 resume_id 跳入时，自动载入最新保存的简历
+  useEffect(() => {
+    if (!user || typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const resumeIdParam = params.get('resume_id');
+    if (!resumeIdParam) return;
+    const targetParam = params.get('target');
+    if (targetParam) {
+      const matched = positions.find((p) => p === targetParam);
+      if (matched) setTargetPosition(matched);
+    }
+    fetch(`/api/user/resume?userId=${user.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const r = data?.resume?.data;
+        if (!r) return;
+        const lines: string[] = [];
+        if (r.basic) {
+          const b = [r.basic.name, r.basic.phone, r.basic.email, r.basic.school, r.basic.major, r.basic.graduation].filter(Boolean);
+          if (b.length) lines.push(b.join(' | '));
+        }
+        if (Array.isArray(r.education) && r.education.length) {
+          lines.push('', '教育经历');
+          r.education.forEach((e: { school?: string; degree?: string; major?: string; time?: string; gpa?: string }) => {
+            lines.push([e.school, e.degree, e.major, e.time, e.gpa ? `GPA ${e.gpa}` : ''].filter(Boolean).join(' | '));
+          });
+        }
+        if (Array.isArray(r.experience) && r.experience.length) {
+          lines.push('', '实习/工作经历');
+          r.experience.forEach((e: { company?: string; role?: string; time?: string; description?: string[] }) => {
+            lines.push([e.company, e.role, e.time].filter(Boolean).join(' | '));
+            (e.description || []).forEach((d: string) => lines.push(`- ${d}`));
+          });
+        }
+        if (Array.isArray(r.projects) && r.projects.length) {
+          lines.push('', '项目经历');
+          r.projects.forEach((p: { name?: string; role?: string; time?: string; description?: string[] }) => {
+            lines.push([p.name, p.role, p.time].filter(Boolean).join(' | '));
+            (p.description || []).forEach((d: string) => lines.push(`- ${d}`));
+          });
+        }
+        if (Array.isArray(r.skills) && r.skills.length) {
+          lines.push('', `技能: ${r.skills.join('、')}`);
+        }
+        if (lines.join('\n').trim()) {
+          setResumeContent(lines.join('\n'));
+          toast.success('已载入最新保存的简历，选好目标岗位即可重新评分');
+        }
+      })
+      .catch(() => {});
+  }, [user]);
+
   const fetchRecentRecords = async () => {
     if (!user) return;
     setDataLoading(true);

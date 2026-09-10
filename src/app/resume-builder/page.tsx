@@ -45,6 +45,8 @@ export default function ResumeBuilderPage() {
   const searchParams = useSearchParams();
   const [scoreSuggestions, setScoreSuggestions] = useState<string[]>([]);
 
+  const [showRescoreCta, setShowRescoreCta] = useState(false);
+
   // ===== P2.3 技能匹配状态 =====
   const [showSkillMatch, setShowSkillMatch] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
@@ -136,6 +138,11 @@ export default function ResumeBuilderPage() {
         const data = await res.json();
         if (data.id) setResumeId(data.id);
         setSaveStatus('saved');
+        // 评分→编辑→重评闭环：有历史评分时，保存成功后引导重新评分
+        if (scoreSuggestions.length > 0) {
+          setShowRescoreCta(true);
+          setTimeout(() => setShowRescoreCta(false), 20000);
+        }
         setTimeout(() => setSaveStatus('idle'), 2000);
       } else {
         setSaveStatus('error');
@@ -420,6 +427,19 @@ export default function ResumeBuilderPage() {
           </Link>
         </div>
       </header>
+
+      {/* 重评闭环引导：评分→编辑→重评 */}
+      {showRescoreCta && (
+        <div className="shrink-0 flex items-center justify-between gap-3 px-4 py-2 bg-[#f0f5ff] border-b border-[#e0eaff]">
+          <span className="text-sm text-[#1D2129]">已按评分建议更新简历？重新评分看看提升</span>
+          <Link
+            href={`/resume-optimize?resume_id=${_resumeId ?? ''}${jobTitle ? `&target=${encodeURIComponent(jobTitle)}` : ''}`}
+            className="text-sm font-medium text-[#165DFF] hover:text-[#3D7FFF] shrink-0"
+          >
+            重新评分看提升 →
+          </Link>
+        </div>
+      )}
 
       {/* 主内容区：双栏 */}
       <div className="flex-1 flex overflow-hidden">
