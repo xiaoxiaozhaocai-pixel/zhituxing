@@ -50,6 +50,7 @@ export interface OneJdStrategyReport {
   } | null;
   applyStrategy: {
     verdict: string;
+    matchScore: number;
     matchAssessment: string;
     differentiators: string[];
     timing: string;
@@ -157,7 +158,24 @@ function extractSignals(jd: string): JdSignals {
 
 // ---------- 报告合成 ----------
 
-function computeMatchScore(cap: CapabilityReport, highRiskCount: number): number {
+function computeMatchScore(
+  cap: CapabilityReport,
+  highRiskCount: number,
+  hasResume: boolean,
+  jdCtx?: { explicitRequirements: number; jdSubtextCount: number },
+): number {
+  if (!hasResume && jdCtx) {
+    // 无简历口径（修复P2-7窄带）：不评「个人匹配度」（无简历无从评起），
+    // 改评「JD解读置信度」——词典支撑 + 显式门槛 + 潜台词丰富度决定报告可信可行动程度。
+    // 参数经50条真实校招JD回归标定：A档(≥75)占比~30%，unknown封顶B档不冒充高置信。
+    let s = 46;
+    if (cap.known) s += 10;
+    s += Math.min(jdCtx.explicitRequirements, 3) * 5;
+    s += Math.min(jdCtx.jdSubtextCount, 4) * 3;
+    if (highRiskCount >= 2) s -= 12; // 高风险潜台词扎堆的报告不进主攻档
+    if (!cap.known) s = Math.min(s, 74); // 词典未命中：报告用通用框架，最高B档，不冒充高置信
+    return Math.max(30, Math.min(92, Math.round(s)));
+  }
   let score = 55;
   score += Math.min(cap.advantages.length, 3) * 8;
   score -= Math.min(cap.gaps.length, 4) * 7;
@@ -170,7 +188,7 @@ function buildVerdict(score: number, opts: { hasResume: boolean; knownDict: bool
   if (score >= 75) {
     return opts.hasResume
       ? '值得投，建议主攻——你的背景与这份JD重合度高，把简历按第②段改写点对齐后尽早投。'
-      : '值得投，建议主攻——这份JD的大方向与常见优质背景重合度高，对照第①段隐性门槛自查后尽早投。';
+      : '值得投，建议主攻——这份JD信息完整、方向清晰，解读置信度高，对照第①段隐性门槛自查后尽早投。';
   }
   if (score >= 60) {
     return opts.hasResume
@@ -249,7 +267,7 @@ export function buildOneJdStrategy(input: { jdText: string; resumeText?: string 
       });
     });
     rewrite = {
-      matchScore: computeMatchScore(cap, highRiskCount),
+      matchScore: computeMatchScore(cap, highRiskCount, true),
       matchedJob: cap.matchedJob,
       knownDictionary: cap.known,
       advantages: cap.advantages.slice(0, 4),
@@ -266,7 +284,9 @@ export function buildOneJdStrategy(input: { jdText: string; resumeText?: string 
   }
   differentiators.push('投递前用小职过一遍这份JD的高风险潜台词（本报告第①段），面试反问环节直接用上，展现判断力');
 
-  const score = rewrite ? rewrite.matchScore : computeMatchScore(cap, highRiskCount);
+  const score = rewrite
+    ? rewrite.matchScore
+    : computeMatchScore(cap, highRiskCount, false, { explicitRequirements: hiddenRequirements.length, jdSubtextCount: topSubtexts.length });
   const riskWarnings = topSubtexts.filter((it) => it.risk === 'high').slice(0, 3).map((it) => '「' + it.phrase + '」：' + it.meaning);
 
   return {
@@ -279,6 +299,7 @@ export function buildOneJdStrategy(input: { jdText: string; resumeText?: string 
     rewrite,
     applyStrategy: {
       verdict: buildVerdict(score, { hasResume: Boolean(resumeText), knownDict: cap.known }),
+      matchScore: score,
       matchAssessment: cap.known
         ? '已按「' + cap.matchedJob + '」能力词典逐层比对' + (resumeText ? '你的简历' : '（未提供简历，按通用框架评估）') + '。'
         : '「' + cap.matchedJob + '」还没进行业词典，用的是通用四层框架（行业认知/硬技能/软实力/信号项），建议补充行业+岗位名获得更准的拆解。',

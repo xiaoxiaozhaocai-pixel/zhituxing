@@ -111,10 +111,36 @@ async function fetchGxrcViaApi(page: number, pageSize: number): Promise<any[]> {
   }
 }
 
+/**
+ * gxrc 描述头部导航残留剥离（C8真实JD试跑P0根因·源侧修复）：
+ * 详情文本头部被压入「注册/登录」「职位」「{标题}」「急」「7-11K」「{省市}|{学历}」等导航行，
+ * 会导致下游标题提取/正文起始污染。只剥头部连续的导航行与空行，正文不动。
+ */
+function stripGxrcResidue(text: string): string {
+  // 省市/区|学历|经验|招聘N人 多段行
+  const NAV_LINE = /^(?:注\s*册\s*[/／|｜]\s*登\s*录|职位|急聘?|热招|顶|收藏职位|立即投递|微信扫一扫|分享|举报|面议|[\d.]+\s*[Kk千万Ww]?\s*[-~到至]\s*[\d.]+\s*[Kk千万Ww]?(?:元)?(?:·\s*\d{1,2}薪)?|(?=.*学历)[^|]{1,40}(?:\|[^|]*){1,6}$)/;
+  const lines = text.split('\n');
+  let i = 0;
+  while (i < lines.length && (lines[i].trim() === '' || NAV_LINE.test(lines[i].trim()))) i++;
+  if (i >= lines.length) return '';
+  // gxrc 残留模式：导航行之间夹着岗位标题行（"职位\n{标题}\n急\n7-11K\n省市|学历"）。
+  // 标题行无法与正文首行机械区分，但已入库 job_title 字段——若其后紧跟导航行，说明它也是残留块，
+  // 剥掉标题行之后的连续导航段，标题行保留在正文开头。
+  if (i > 0) {
+    let j = i + 1;
+    while (j < lines.length && (lines[j].trim() === '' || NAV_LINE.test(lines[j].trim()))) j++;
+    if (j > i + 1) {
+      const rest = lines.slice(j).join('\n').trim();
+      return rest ? lines[i].trim() + '\n' + rest : lines[i].trim();
+    }
+  }
+  return lines.slice(i).join('\n').trim();
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapGxrcApiItem(item: any): Record<string, unknown> {
   const salaryRange = item.payPackage || '';
-  const desc = (item.description || '').substring(0, 2000);
+  const desc = stripGxrcResidue(item.description || '').substring(0, 2000);
 
   const bodyText = (item.description || '') + ' ' + (item.positionName || '') + ' ' + (item.enterpriseIndustryName || '') + ' ' + (item.positionWelfareNames || []).join(' ');
   const skillKeywords = [
