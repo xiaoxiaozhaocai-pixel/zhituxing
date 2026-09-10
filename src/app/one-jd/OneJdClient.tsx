@@ -11,7 +11,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Target, FileText, ShieldAlert, Lightbulb, Send, Loader2,
-  AlertTriangle, CheckCircle2, ArrowRight, ChevronDown, ChevronUp,
+  AlertTriangle, CheckCircle2, ArrowRight, ChevronDown, ChevronUp, Copy, Check,
 } from 'lucide-react';
 
 interface SubtextItem {
@@ -63,6 +63,17 @@ export default function OneJdClient() {
   const [jdText, setJdText] = useState('');
   const [resumeText, setResumeText] = useState('');
   const [showResume, setShowResume] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  const copyRewritePoint = async (idx: number, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx((cur) => (cur === idx ? null : cur)), 2000);
+    } catch {
+      // 剪贴板不可用（非HTTPS/权限）时静默
+    }
+  };
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<Report | null>(null);
@@ -245,6 +256,18 @@ export default function OneJdClient() {
                               {PRIORITY_LABEL[p.priority]}
                             </span>
                             <span className="text-sm font-semibold text-[#1E293B]">{p.jdRequirement}</span>
+                            <button
+                              type="button"
+                              onClick={() => copyRewritePoint(i, p.rewriteAdvice)}
+                              className="ml-auto inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[#165DFF] hover:bg-[#165DFF]/10 transition-colors shrink-0"
+                              aria-label="复制改写段落"
+                            >
+                              {copiedIdx === i ? (
+                                <><Check className="w-3.5 h-3.5 text-[#00B42A]" /><span className="text-[#00B42A]">已复制</span></>
+                              ) : (
+                                <><Copy className="w-3.5 h-3.5" />复制</>
+                              )}
+                            </button>
                           </div>
                           <p className="text-sm text-[#64748B] leading-relaxed">{p.rewriteAdvice}</p>
                         </div>

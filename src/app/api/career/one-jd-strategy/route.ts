@@ -14,6 +14,7 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { jsonOk, jsonError, zodErrorToResponse } from '@/lib/api-contracts/_shared';
 import { buildOneJdStrategy } from '@/lib/career-paths/engine/one_jd_strategy';
+import { getSupabaseAdmin } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,7 @@ const ResponseSchema = z.object({
   rewrite: RewriteSectionSchema.nullable(),
   applyStrategy: z.object({
     verdict: z.string(),
+    matchScore: z.number().optional(),
     matchAssessment: z.string(),
     differentiators: z.array(z.string()),
     timing: z.string(),
@@ -75,6 +77,23 @@ export async function POST(request: NextRequest) {
     }
 
     const report = buildOneJdStrategy(parsed.data);
+
+    // 使用观测埋点（fire-and-forget）：记录真实使用形态，为引擎迭代提供数据。失败静默不阻塞响应。
+    try {
+      getSupabaseAdmin()
+        .from('one_jd_usage')
+        .insert({
+          has_resume: Boolean(parsed.data.resumeText),
+          job_title: report.jdTitle || null,
+          verdict: report.applyStrategy.verdict || null,
+          match_score: report.applyStrategy.matchScore ?? null,
+          jd_length: parsed.data.jdText.length,
+        })
+        .then(undefined, () => undefined);
+    } catch {
+      // 埋点失败不影响主流程
+    }
+
     return jsonOk(ResponseSchema, report);
   } catch (err) {
     const message = err instanceof Error ? err.message : '生成一岗一策报告失败';
