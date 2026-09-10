@@ -20,11 +20,11 @@ describe('getPersonaPreset 人格卡查找', () => {
 });
 
 describe('resolvePersona 归一化', () => {
-  it('无输入 → 默认冷酷学长', () => {
+  it('无输入 → 默认热情学弟（cb02c25 产品决策：默认人格切换）', () => {
     const p = resolvePersona();
-    expect(p.presetId).toBe('cool_senior');
-    expect(p.name).toBe('冷酷学长');
-    expect(p.dims).toEqual({ warmth: 25, directness: 85, encouragement: 30, humor: 25 });
+    expect(p.presetId).toBe('warm_junior');
+    expect(p.name).toBe('热情学弟');
+    expect(p.dims).toEqual({ warmth: 90, directness: 55, encouragement: 85, humor: 70 });
   });
   it('指定 presetId 取基线维度', () => {
     const p = resolvePersona({ presetId: 'warm_junior' });
