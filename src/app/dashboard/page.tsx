@@ -10,7 +10,7 @@ import { JobRecommendations } from './_components/job-recommendations';
 import { AssessmentHistory, type AssessmentRecord } from './_components/assessment-history';
 import { MyReports, type DashboardReport } from './_components/my-reports';
 import { ResumeScoreCard, type ResumeScoreRecord } from './_components/resume-score-card';
-import { JobProgress, type JobProgressData } from './_components/job-progress';
+import { JobProgress } from './_components/job-progress';
 
 interface MatchGetData {
   matches: MatchGetItem[];
