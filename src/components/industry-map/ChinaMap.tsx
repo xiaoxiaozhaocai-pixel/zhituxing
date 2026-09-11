@@ -88,6 +88,16 @@ export default function ChinaMap({
     baseTy: 0,
     moved: false,
   });
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const scaleRef = useRef(scale);
+  const txRef = useRef(tx);
+  const tyRef = useRef(ty);
+
+  useEffect(() => {
+    scaleRef.current = scale;
+    txRef.current = tx;
+    tyRef.current = ty;
+  }, [scale, tx, ty]);
 
   useEffect(() => {
     fetch('/data/china-provinces.json')
@@ -156,12 +166,31 @@ export default function ChinaMap({
     return m;
   }, [companies]);
 
-  // 缩放 / 平移
-  function onWheel(e: React.WheelEvent) {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.92 : 1.08;
-    setScale((s) => Math.min(8, Math.max(0.6, s * delta)));
-  }
+  // 缩放：原生非 passive wheel 监听（React onWheel 为 passive，preventDefault 无效，会同时滚动页面）。
+  // 以鼠标位置为缩放锚点：缩放前后鼠标下的地图内容点不动（zoom to cursor）。
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const factor = e.deltaY > 0 ? 0.9 : 1.1;
+      const prev = scaleRef.current;
+      const next = Math.min(8, Math.max(0.6, prev * factor));
+      if (next === prev) return;
+      const ctm = el.getScreenCTM();
+      if (!ctm) {
+        setScale(next);
+        return;
+      }
+      const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+      const k = next / prev;
+      setScale(next);
+      setTx(pt.x - (pt.x - txRef.current) * k);
+      setTy(pt.y - (pt.y - tyRef.current) * k);
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, []);
 
   function onPointerDown(e: React.PointerEvent) {
     drag.current = { startX: e.clientX, startY: e.clientY, baseTx: tx, baseTy: ty, moved: false };
@@ -187,7 +216,7 @@ export default function ChinaMap({
       className="w-full h-full select-none"
       role="img"
       aria-label="中国行业面试情报地图"
-      onWheel={onWheel}
+      ref={svgRef}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
