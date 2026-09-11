@@ -434,12 +434,6 @@ async function executeTool(
 // SSE 输出
 // ============================================================
 
-const SSE_HEADERS = {
-  'Content-Type': 'text/event-stream; charset=utf-8',
-  'Cache-Control': 'no-cache, no-transform',
-  Connection: 'keep-alive',
-} as const;
-
 function splitSentences(text: string): string[] {
   return text.match(/[^。！？\n]+[。！？\n]?/g) || [text];
 }
