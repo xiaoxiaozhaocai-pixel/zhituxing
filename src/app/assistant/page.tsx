@@ -290,7 +290,14 @@ function AssistantContent() {
   ];
   const [selectedPersona, setSelectedPersona] = useState<string>(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('xiaozhi_persona') : null;
-    return saved && PERSONA_PRESETS.find(p => p.id === saved) ? saved : PERSONA_PRESETS[1].id;
+    let savedId = '';
+    if (saved) {
+      try {
+        const parsed: unknown = JSON.parse(saved);
+        savedId = typeof parsed === 'string' ? parsed : ((parsed as { presetId?: string })?.presetId || '');
+      } catch { savedId = saved; }
+    }
+    return savedId && PERSONA_PRESETS.find(p => p.id === savedId) ? savedId : PERSONA_PRESETS[1].id;
   });
   
   // 文件上传状态
@@ -423,7 +430,7 @@ function AssistantContent() {
   
   // 保存小职人格选择到localStorage
   useEffect(() => {
-    localStorage.setItem('xiaozhi_persona', selectedPersona);
+    localStorage.setItem('xiaozhi_persona', JSON.stringify({ presetId: selectedPersona }));
   }, [selectedPersona]);
   
 

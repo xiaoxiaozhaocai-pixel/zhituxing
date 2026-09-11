@@ -183,12 +183,14 @@ function ChatContent() {
   const [personaPreset, setPersonaPreset] = useState('cool_senior');
   const [personaDesc, setPersonaDesc] = useState('');
   const [showPersonaDialog, setShowPersonaDialog] = useState(false);
+  // 2.3 人格化：四维滑杆（温度/直接度/鼓励度/幽默感），null=未自定义（跟随预设基线）
+  const [personaDims, setPersonaDims] = useState<{ warmth: number; directness: number; encouragement: number; humor: number } | null>(null);
   // 预设人格卡（本地定义，与后端 persona.ts 对齐）
   const personaCards = [
-    { id: 'cool_senior', name: '冷酷学长', emoji: '🧊', tagline: '理性直接，一针见血，不废话' },
-    { id: 'warm_junior', name: '热情学弟', emoji: '🔥', tagline: '自来熟，会鼓励，像兄弟一样靠谱' },
-    { id: 'gentle_senior_sis', name: '纯情学姐', emoji: '🌸', tagline: '耐心温柔，听你说完，慢慢帮你理清' },
-    { id: 'strict_teacher', name: '严肃老师', emoji: '📘', tagline: '严谨规划，有章法，帮你把路铺清楚' },
+    { id: 'cool_senior', name: '冷酷学长', emoji: '🧊', tagline: '理性直接，一针见血，不废话', dims: { warmth: 25, directness: 85, encouragement: 30, humor: 25 } },
+    { id: 'warm_junior', name: '热情学弟', emoji: '🔥', tagline: '自来熟，会鼓励，像兄弟一样靠谱', dims: { warmth: 90, directness: 55, encouragement: 85, humor: 70 } },
+    { id: 'gentle_senior_sis', name: '纯情学姐', emoji: '🌸', tagline: '耐心温柔，听你说完，慢慢帮你理清', dims: { warmth: 88, directness: 35, encouragement: 80, humor: 30 } },
+    { id: 'strict_teacher', name: '严肃老师', emoji: '📘', tagline: '严谨规划，有章法，帮你把路铺清楚', dims: { warmth: 55, directness: 75, encouragement: 45, humor: 15 } },
   ];
   
   // 登录弹窗状态
@@ -214,12 +216,27 @@ function ChatContent() {
   const applyPersona = useCallback(() => {
     const payload = {
       presetId: personaPreset,
+      ...(personaDims ? { dims: personaDims } : {}),
       ...(personaDesc.trim() ? { description: personaDesc.trim() } : {}),
     };
     localStorage.setItem('xiaozhi_persona', JSON.stringify(payload));
     setShowPersonaDialog(false);
     toast.success('小职的人设已更新');
-  }, [personaPreset, personaDesc]);
+  }, [personaPreset, personaDims, personaDesc]);
+
+  // 恢复已保存的人格设置（兼容旧版纯字符串格式），保证 UI 与实际发送一致
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('xiaozhi_persona');
+      if (!saved) return;
+      const parsed: unknown = JSON.parse(saved);
+      if (typeof parsed === 'string') { setPersonaPreset(parsed); return; }
+      const obj = parsed as { presetId?: string; description?: string; dims?: { warmth: number; directness: number; encouragement: number; humor: number } };
+      if (obj.presetId) setPersonaPreset(obj.presetId);
+      if (obj.description) setPersonaDesc(obj.description);
+      if (obj.dims) setPersonaDims(obj.dims);
+    } catch { /* 旧格式或损坏数据，保持默认 */ }
+  }, []);
 
   // SSE流式解析hook
   const [_streamState, streamActions] = useSSEStream();
@@ -1860,6 +1877,40 @@ function ChatContent() {
                 <div className="text-xs text-slate-500 mt-1">{p.tagline}</div>
               </button>
             ))}
+          </div>
+
+          {/* 可调维度（2.3 人格化）：在人设卡基线上微调 */}
+          <div className="mt-4 space-y-2">
+            <div className="text-sm font-medium text-slate-700">风格微调（可选）</div>
+            {([
+              { key: 'warmth' as const, label: '温度', left: '冷静', right: '暖心' },
+              { key: 'directness' as const, label: '直接度', left: '委婉', right: '犀利' },
+              { key: 'encouragement' as const, label: '鼓励度', left: '少夸', right: '多夸' },
+              { key: 'humor' as const, label: '幽默感', left: '正经', right: '爱闹' },
+            ]).map((d) => {
+              const base = personaCards.find((c) => c.id === personaPreset)?.dims;
+              const val = personaDims ? personaDims[d.key] : base ? base[d.key] : 50;
+              return (
+                <div key={d.key} className="flex items-center gap-2">
+                  <span className="text-xs text-slate-500 w-12 flex-shrink-0">{d.label}</span>
+                  <span className="text-[11px] text-slate-400 w-8 text-right flex-shrink-0">{d.left}</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={val}
+                    onChange={(e) => {
+                      const cur = personaDims ?? base ?? { warmth: 50, directness: 50, encouragement: 50, humor: 50 };
+                      setPersonaDims({ ...cur, [d.key]: Number(e.target.value) });
+                    }}
+                    className="flex-1 accent-[#165DFF]"
+                  />
+                  <span className="text-[11px] text-slate-400 w-8 flex-shrink-0">{d.right}</span>
+                  <span className="text-xs text-slate-700 w-8 text-right flex-shrink-0 tabular-nums">{val}</span>
+                </div>
+              );
+            })}
           </div>
 
           {/* 一句话人设 */}
