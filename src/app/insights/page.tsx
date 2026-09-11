@@ -5,6 +5,7 @@ import { listSubtextGlossary } from '@/lib/career-paths/engine/subtext_dictionar
 import { ALL_COGNITIVE_KNOWLEDGE } from '@/lib/career-paths/engine/cognitive_knowledge';
 import { JOBS } from '@/lib/career-paths/engine/capability_dictionary';
 import { JUDGMENT_CAUSAL_LAYER } from '@/lib/career-paths/engine/judgment_layer';
+import IndustryRadarSection from '@/components/insights/IndustryRadarSection';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -179,43 +180,7 @@ export default function InsightsPage() {
           <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">面试行业雷达</h2>
           <p className="mt-2 text-[#64748B]">提前知道这个行业面试会问什么，怎么准备、有哪些雷区。</p>
         </div>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {ALL_INDUSTRY_RADAR.map((ind) => (
-            <Card key={ind.key} className="border-[#E2E8F0] shadow-sm transition hover:shadow-md">
-              <CardContent className="p-5">
-                <h3 className="text-lg font-semibold text-[#1E293B]">{ind.label}</h3>
-                <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-[#64748B]">{ind.blurb}</p>
-                {ind.focus && ind.focus.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {ind.focus.map((f, i) => (
-                      <div key={i} className="rounded-lg bg-[#F8FAFC] p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-[#1E293B]">{f.module}</span>
-                          <span className="text-xs font-semibold text-[#165DFF]">{f.weight}%</span>
-                        </div>
-                        {f.questions && f.questions.length > 0 && (
-                          <ul className="mt-1.5 space-y-1 text-xs text-[#64748B]">
-                            {f.questions.map((q, j) => (
-                              <li key={j}>· {q}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {ind.redFlags && ind.redFlags.length > 0 && (
-                  <div className="mt-4">
-                    <span className="text-xs font-semibold text-red-600">雷区</span>
-                    <ul className="mt-1 space-y-0.5 text-xs text-[#64748B]">
-                      {ind.redFlags.map((r, i) => <li key={i}>· {r}</li>)}
-                    </ul>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <IndustryRadarSection />
         <SectionCTA
           href="/career-planning"
           action="对照你的专业，看看能去哪些行业面试"
