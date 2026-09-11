@@ -11,6 +11,7 @@
 
 import { NextRequest } from 'next/server';
 import { checkFeatureAccess } from '@/lib/quota';
+import { tryToolExecution } from '@/lib/tools/executor';
 import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
 import { detectInjection, createBlockedSSE } from '@/lib/injection-detect';
 import { jsonError, parseRequestBody, ErrorCode } from '@/lib/api-contracts/_shared';
@@ -617,6 +618,9 @@ export async function POST(request: NextRequest) {
         ['subtext_detect', ['潜台词', '黑话', '话里有话', '言外之意', '话外音', '背后意思', '翻译成人话', '真实意思', '意思是什么', '什么意思', '啥意思', '抗压能力强', '弹性工作', '薪资面议', '词条库']],
         ['capability_dictionary', ['对标岗位', '岗位对标', '对标的岗位', '值多少', '还差什么', '差什么', '能力差距', '岗位差距', '能力对标', '能力词典', '岗位能力', '补课', '经历值多少', '岗位要求', '符不符合这个岗位', '适不适合这个岗位', '够不够这个岗位', '够格']],
         ['cognitive_check', ['学什么专业', '学这专业', '什么专业能', '专业能干什么', '专业能干嘛', '专业能做什么', '专业学出来', '这个专业能', '我的专业能', '学这个专业', '学计算机能', '学电子能', '学会计能', '学人力能', '学什么能', '专业往哪走', '专业方向', '专业出路', '专业对什么岗位', '专业对口', '专业前景', '专业能投', '读这专业', '我这个专业', '我学的专业', '专业能往', '能干嘛', '能干啥', '毕业后', '毕业能', '以后能', '以后干啥', '以后干什么']],
+        // 方向四 · 工具编排意图：命中后由工具执行器决策（执行/追问/交还原分支）
+        ['resume_optimize', ['优化简历', '改简历', '改一下简历', '简历优化', '帮我改改简历', '简历有什么问题', '帮我看看简历', '优化一下简历', '改改我的简历', '帮我改简历', '检查简历', '简历诊断']],
+        ['career_report', ['生成规划报告', '做一份规划', '给我做一份规划', '出一份规划', '职业规划报告', '生成职业规划', '做一份职业规划', '出个规划报告']],
       ];
       
       // 统计每个意图的命中关键词数
@@ -652,7 +656,7 @@ export async function POST(request: NextRequest) {
       
       // 按分数排序，同分时按优先级：career_paths > (job_match/narrative_check/truth_check) > assessment > interview > decision > career > competency > jobs
       const INTENT_PRIORITY: Record<string, number> = {
-        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7, 'interview_radar': 7, 'subtext_detect': 7, 'capability_dictionary': 7, 'cognitive_check': 7,
+        'career_paths': 8, 'job_match': 7, 'narrative_check': 7, 'truth_check': 7, 'interview_radar': 7, 'subtext_detect': 7, 'capability_dictionary': 7, 'cognitive_check': 7, 'resume_optimize': 8, 'career_report': 8,
         'assessment': 6,
         'interview': 5, 'decision': 4, 'career': 3,
         'competency': 2, 'jobs': 1,
@@ -665,6 +669,24 @@ export async function POST(request: NextRequest) {
       
       const topIntent = intentScores[0];
       
+      // ============================================================
+      // 方向四 · 工具调用编排：小职直接动手
+      // 意图命中 → 决策模型确认+抽参 → 执行并输出 tool_result 卡片；
+      // 决策 skip/失败时原样交还下方分支，现有行为零变更
+      // ============================================================
+      if (userId && topIntent && topIntent[1] >= 1) {
+        const toolStream = await tryToolExecution({
+          request,
+          message,
+          intent: topIntent[0],
+          userId,
+          persona,
+        });
+        if (toolStream) {
+          return new Response(toolStream, { headers: SSE_HEADERS });
+        }
+      }
+
       if (topIntent && topIntent[1] >= 1) {
         // 命中专业意图 → dispatch
         resolvedBotType = topIntent[0];

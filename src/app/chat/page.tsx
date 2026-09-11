@@ -810,6 +810,27 @@ function ChatContent() {
               continue;
             }
 
+            // tool_result 事件 — 小职直接执行工具的结果卡片（方向四）
+            // 数据：{tool,title,view,data,pageUrl,pageLabel}
+            if (eventType === 'tool_result') {
+              try {
+                const parsed = JSON.parse(dataLine);
+                if (parsed && parsed.view) {
+                  setMessages(prev => {
+                    const newMsgs = [...prev];
+                    const last = newMsgs[newMsgs.length - 1];
+                    if (last && last.role === 'assistant') {
+                      newMsgs[newMsgs.length - 1] = { ...last, toolResult: parsed as ToolResultData };
+                    }
+                    return newMsgs;
+                  });
+                }
+              } catch {
+                // 忽略解析错误
+              }
+              continue;
+            }
+
             // 检查 [DONE] 标记
             if (dataLine === '[DONE]') {
               clearTimeout(firstTokenTimer);
@@ -1575,6 +1596,7 @@ function ChatContent() {
                         role="assistant"
                       />
                       {msg.dispatch && <DispatchCard card={msg.dispatch} />}
+                      {msg.toolResult && <ToolResultCard result={msg.toolResult} />}
                     </>
                   )}
                   {/* 加载动画 */}
