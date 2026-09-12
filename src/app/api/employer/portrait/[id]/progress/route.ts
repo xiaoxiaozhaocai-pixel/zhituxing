@@ -49,11 +49,20 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
 
   if (!portrait) return jsonError('NOT_FOUND', '画像项目不存在');
 
-  // 各维度分布（仅本项目：必须按 portrait_id 过滤，否则跨项目/跨雇主数据串染）
-  const { data: evals } = await supabase
-    .from('portrait_evaluations')
-    .select('skill_level, exp_level, soft_level')
+  // 各维度分布（仅本项目：portrait_evaluations 无 portrait_id 列，评估经 portrait_candidates
+  // 归属项目——先取本项目候选人 id，再 in 过滤。9/12 修复：直查全表会跨项目/跨雇主串染）
+  const { data: projCands } = await supabase
+    .from('portrait_candidates')
+    .select('id')
     .eq('portrait_id', id);
+  const projCandIds = (projCands || []).map((c: { id: string }) => c.id);
+  const { data: evals, error: evalsErr } = projCandIds.length
+    ? await supabase
+        .from('portrait_evaluations')
+        .select('skill_level, exp_level, soft_level')
+        .in('candidate_id', projCandIds)
+    : { data: [], error: null };
+  if (evalsErr) return jsonError('UPSTREAM_ERROR', '分布查询失败');
 
   const dist = (arr: number[] | undefined): Record<string, number> => {
     if (!arr || arr.length === 0) return { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
