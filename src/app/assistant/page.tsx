@@ -401,7 +401,7 @@ function AssistantContent() {
       content: currentBot.welcomeMessage,
       timestamp: new Date()
     }]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [activeBot, currentBot.welcomeMessage]);
 
   // 打开页面/切换 bot 时回显该会话历史（关掉重开/刷新后能恢复）
@@ -426,7 +426,7 @@ function AssistantContent() {
       } catch { /* 静默，保持欢迎语 */ }
     })();
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [activeBot]);
   
   // 保存小职人格选择到localStorage
