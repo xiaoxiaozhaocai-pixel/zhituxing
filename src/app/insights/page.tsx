@@ -311,6 +311,12 @@ export default function InsightsPage() {
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#64748B] sm:text-lg">
             面试会问什么、JD 黑话怎么翻、你的专业能做什么——选一个板块，一次讲清。
           </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#64748B]">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#165DFF]" />{ALL_INDUSTRY_RADAR.length} 个行业雷达</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#3D7FFF]" />{glossary.length} 条潜台词词条</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#FF7D00]" />{ALL_COGNITIVE_KNOWLEDGE.length} 个专业认知</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#10B981]" />{JOBS.length} 个岗位能力</span>
+          </div>
         </div>
       </section>
 
