@@ -34,6 +34,20 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabaseAdmin();
 
+  // 仅允许向已解锁候选人推送（防任意用户骚扰向量，9/12 B端安全走查）
+  const { data: unlocked } = await supabase
+    .from('candidate_unlocks')
+    .select('candidate_user_id')
+    .eq('employer_id', session.employerId);
+  const unlockedSet = new Set((unlocked || []).map((r: { candidate_user_id: string }) => r.candidate_user_id));
+  const blocked = candidate_user_ids.filter((uid) => !unlockedSet.has(uid));
+  if (blocked.length > 0) {
+    return NextResponse.json(
+      { error: `存在未解锁候选人，无法推送（${blocked.length} 人）` },
+      { status: 403 }
+    );
+  }
+
   // 构造通知记录
   const now = new Date().toISOString();
   const notifications = candidate_user_ids.map((userId) => ({

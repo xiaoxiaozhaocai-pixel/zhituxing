@@ -27,12 +27,31 @@ function encodeEduLevel(edu: string | null): number | null {
   return null;
 }
 
+
+/** 归属校验：portrait 必须属于当前雇主公司（防 IDOR，9/12 B端安全走查） */
+async function assertPortraitOwned(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  portraitId: string,
+  companyId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('employer_portraits')
+    .select('id')
+    .eq('id', portraitId)
+    .eq('company_id', companyId)
+    .maybeSingle();
+  return !!data;
+}
+
 export async function POST(request: NextRequest, ctx: RouteContext) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
   const supabase = getSupabaseAdmin();
 
   const { id } = await ctx.params;
+  if (!(await assertPortraitOwned(supabase, id, session.companyId))) {
+    return jsonError('NOT_FOUND', '画像项目不存在');
+  }
   const body = await request.json();
   const { candidates } = body;
 
@@ -74,6 +93,9 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
   const supabase = getSupabaseAdmin();
 
   const { id } = await ctx.params;
+  if (!(await assertPortraitOwned(supabase, id, session.companyId))) {
+    return jsonError('NOT_FOUND', '画像项目不存在');
+  }
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
 

@@ -22,10 +22,12 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
 
   const { id } = await ctx.params;
 
+  // 归属校验：仅本公司项目可见（防 IDOR 越权，9/12 B端安全走查）
   const { data, error } = await supabase
     .from('employer_portraits')
     .select('*')
     .eq('id', id)
+    .eq('company_id', session.companyId)
     .single();
 
   if (error || !data) return jsonError('NOT_FOUND', '画像项目不存在');
@@ -54,6 +56,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext) {
     .from('employer_portraits')
     .update(updates)
     .eq('id', id)
+    .eq('company_id', session.companyId)
     .select()
     .single();
 
@@ -71,7 +74,8 @@ export async function DELETE(request: NextRequest, ctx: RouteContext) {
   const { error } = await supabase
     .from('employer_portraits')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .eq('company_id', session.companyId);
 
   if (error) return jsonError('UPSTREAM_ERROR', '删除失败');
   return jsonOk(z.object({ deleted: z.boolean() }), { deleted: true });

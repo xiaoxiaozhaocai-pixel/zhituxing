@@ -13,12 +13,31 @@ export const runtime = 'nodejs';
 
 interface RouteContext { params: Promise<{ id: string }> }
 
+
+/** 归属校验：portrait 必须属于当前雇主公司（防 IDOR，9/12 B端安全走查） */
+async function assertPortraitOwned(
+  portraitId: string,
+  companyId: string
+): Promise<boolean> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from('employer_portraits')
+    .select('id')
+    .eq('id', portraitId)
+    .eq('company_id', companyId)
+    .maybeSingle();
+  return !!data;
+}
+
 export async function GET(request: NextRequest, ctx: RouteContext) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
   const supabase = getSupabaseAdmin();
 
   const { id } = await ctx.params;
+  if (!(await assertPortraitOwned(id, session.companyId))) {
+    return jsonError('NOT_FOUND', '画像项目不存在');
+  }
 
   // 基本信息
   const { data: portrait } = await supabase
@@ -29,10 +48,11 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
 
   if (!portrait) return jsonError('NOT_FOUND', '画像项目不存在');
 
-  // 各维度分布
+  // 各维度分布（仅本项目：必须按 portrait_id 过滤，否则跨项目/跨雇主数据串染）
   const { data: evals } = await supabase
     .from('portrait_evaluations')
-    .select('skill_level, exp_level, soft_level');
+    .select('skill_level, exp_level, soft_level')
+    .eq('portrait_id', id);
 
   const dist = (arr: number[] | undefined): Record<string, number> => {
     if (!arr || arr.length === 0) return { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };

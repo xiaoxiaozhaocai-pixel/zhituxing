@@ -13,12 +13,31 @@ export const runtime = 'nodejs';
 
 interface RouteContext { params: Promise<{ id: string; cid: string }> }
 
+
+/** 归属校验：portrait 必须属于当前雇主公司（防 IDOR，9/12 B端安全走查） */
+async function assertPortraitOwned(
+  portraitId: string,
+  companyId: string
+): Promise<boolean> {
+  const supabase = getSupabaseAdmin();
+  const { data } = await supabase
+    .from('employer_portraits')
+    .select('id')
+    .eq('id', portraitId)
+    .eq('company_id', companyId)
+    .maybeSingle();
+  return !!data;
+}
+
 export async function POST(request: NextRequest, ctx: RouteContext) {
   const session = await getEmployerSession(request);
   if (!session) return jsonError('UNAUTHORIZED', '请先登录雇主账号');
   const supabase = getSupabaseAdmin();
 
   const { id, cid } = await ctx.params;
+  if (!(await assertPortraitOwned(id, session.companyId))) {
+    return jsonError('NOT_FOUND', '画像项目不存在');
+  }
   const body = await request.json();
   const { skill_level, exp_level, soft_level, notes } = body;
 
