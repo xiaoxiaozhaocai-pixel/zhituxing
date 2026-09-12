@@ -523,7 +523,7 @@ function onSearchKeyDown(
                   <span>点击标记查看</span>
                 </div>
               </div>
-              <div className="h-[480px] overflow-hidden rounded-xl bg-[#F6F9FF] sm:h-[560px]">
+              <div className="h-[320px] overflow-hidden rounded-xl bg-[#F6F9FF] sm:h-[560px]">
                 <ChinaMap
                   companies={filteredCompanies}
                   onSelectCompany={(c) => openCompany(c.id)}
