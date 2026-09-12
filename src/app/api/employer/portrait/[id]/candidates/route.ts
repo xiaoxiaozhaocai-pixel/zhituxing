@@ -32,8 +32,9 @@ function encodeEduLevel(edu: string | null): number | null {
 async function assertPortraitOwned(
   supabase: ReturnType<typeof getSupabaseAdmin>,
   portraitId: string,
-  companyId: string
+  companyId: string | null
 ): Promise<boolean> {
+  if (!companyId || !portraitId) return false;
   const { data } = await supabase
     .from('employer_portraits')
     .select('id')

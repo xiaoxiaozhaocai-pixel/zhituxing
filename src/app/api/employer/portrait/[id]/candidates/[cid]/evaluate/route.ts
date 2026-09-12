@@ -17,8 +17,9 @@ interface RouteContext { params: Promise<{ id: string; cid: string }> }
 /** 归属校验：portrait 必须属于当前雇主公司（防 IDOR，9/12 B端安全走查） */
 async function assertPortraitOwned(
   portraitId: string,
-  companyId: string
+  companyId: string | null
 ): Promise<boolean> {
+  if (!companyId || !portraitId) return false;
   const supabase = getSupabaseAdmin();
   const { data } = await supabase
     .from('employer_portraits')
