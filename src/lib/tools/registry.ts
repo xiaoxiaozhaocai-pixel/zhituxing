@@ -104,6 +104,10 @@ export const TOOL_REGISTRY: Record<ToolName, ToolDefinition> = {
 /** chat 意图 → 工具映射（命中意图后仍需决策模型确认） */
 export const TOOL_TRIGGER_INTENTS: Partial<Record<string, ToolName>> = {
   job_match: 'match_jobs',
+  // 泛意图同映射（9/12 行为层实测：用户自然语言"查岗位/做职业规划"命中 jobs/career，
+  // 白名单缺映射导致决策门被跳过、ToolResultCard 永不出现；决策门 LLM 仍可 skip 兜底）
+  jobs: 'match_jobs',
+  career: 'plan_career',
   resume_optimize: 'score_resume',
   career_report: 'plan_career',
   capability_dictionary: 'analyze_one_jd',
