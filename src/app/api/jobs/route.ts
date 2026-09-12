@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 
 import type {CacheEntry, JobRecord} from '@/lib/types';
 import { PUBLIC_JD_FIELDS } from '@/lib/rag-utils';
+import { EDUCATION_TIER_PATTERNS, type EducationTier } from '@/lib/education-map';
 import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { JobsListDataSchema, type JobsListData } from '@/lib/api-contracts/jobs';
 export const runtime = 'nodejs';
@@ -226,7 +227,15 @@ export async function GET(request: NextRequest) {
       if (industry && industry !== '全部') query = query.eq('industry', industry);
       if (city && city !== '全国') query = query.eq('city', city);
       if (freshOnly) query = query.eq('fresh_graduate_friendly', true);
-      if (education && education !== '不限') query = query.eq('education', education);
+      if (education && education !== '不限') {
+        // 学历档位归一化：档位关键词 ilike 匹配全部相关原文（如「大专」命中「大专及以上/专科及以上/统招大专」）
+        const eduPatterns = EDUCATION_TIER_PATTERNS[education as EducationTier];
+        if (eduPatterns) {
+          query = query.or(eduPatterns.map((p: string) => 'education.ilike.' + p).join(','));
+        } else {
+          query = query.eq('education', education);
+        }
+      }
       if (companyType && companyType !== '全部') query = query.eq('company_type', companyType);
       if (experience && experience !== '不限') {
         const expMap: Record<string, string[]> = {
@@ -308,7 +317,15 @@ export async function GET(request: NextRequest) {
     if (industry && industry !== '全部') query = query.eq('industry', industry);
     if (city && city !== '全国') query = query.eq('city', city);
     if (freshOnly) query = query.eq('fresh_graduate_friendly', true);
-    if (education && education !== '不限') query = query.eq('education', education);
+    if (education && education !== '不限') {
+      // 学历档位归一化：档位关键词 ilike 匹配全部相关原文（如「大专」命中「大专及以上/专科及以上/统招大专」）
+      const eduPatterns = EDUCATION_TIER_PATTERNS[education as EducationTier];
+      if (eduPatterns) {
+        query = query.or(eduPatterns.map((p: string) => 'education.ilike.' + p).join(','));
+      } else {
+        query = query.eq('education', education);
+      }
+    }
     if (companyType && companyType !== '全部') query = query.eq('company_type', companyType);
     if (experience && experience !== '不限') {
       const expMap: Record<string, string[]> = {

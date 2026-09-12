@@ -10,7 +10,6 @@ const categories = [
   { id: 'all', name: '全部', icon: <BookOpen className="w-4 h-4" /> },
   { id: 'resume', name: '简历指南', icon: <FileText className="w-4 h-4" /> },
   { id: 'interview', name: '面试技巧', icon: <GraduationCap className="w-4 h-4" /> },
-  { id: 'career', name: '职业规划', icon: <Briefcase className="w-4 h-4" /> },
   { id: 'industry', name: '行业洞察', icon: <Briefcase className="w-4 h-4" /> },
   { id: 'tips', name: '求职干货', icon: <BookOpen className="w-4 h-4" /> },
 ];
@@ -66,68 +65,11 @@ export default function ResourcesPage() {
     });
   };
 
-  // 默认展示数据（当API无数据时）
-  const defaultResources = [
-    {
-      id: 'default-1',
-      title: '互联网行业简历模板合集',
-      summary: '包含前端、后端、产品、运营等各岗位简历模板',
-      category: 'resume',
-      createdAt: '2026-01-15',
-      views: 1256,
-      isFeatured: false
-    },
-    {
-      id: 'default-2',
-      title: 'HR面试100问及参考答案',
-      summary: '常见HR面试问题及专业回答技巧',
-      category: 'interview',
-      createdAt: '2026-01-12',
-      views: 2341,
-      isFeatured: true
-    },
-    {
-      id: 'default-3',
-      title: '2026年互联网行业薪资报告',
-      summary: '全行业薪资水平及岗位需求分析',
-      category: 'industry',
-      createdAt: '2026-01-10',
-      views: 1876,
-      isFeatured: true
-    },
-    {
-      id: 'default-4',
-      title: '无经验如何写好第一份简历',
-      summary: '应届生和实习生简历撰写技巧',
-      category: 'resume',
-      createdAt: '2026-01-08',
-      views: 987,
-      isFeatured: false
-    },
-    {
-      id: 'default-5',
-      title: '技术岗面试真题合集',
-      summary: 'Java、Python、前端等技术岗位面试题',
-      category: 'interview',
-      createdAt: '2026-01-03',
-      views: 1543,
-      isFeatured: false
-    },
-    {
-      id: 'default-6',
-      title: '大学生职业规划指南',
-      summary: '从大一到大四，如何规划你的职业生涯',
-      category: 'career',
-      createdAt: '2026-01-01',
-      views: 2134,
-      isFeatured: true
-    },
-  ];
 
-  const displayResources = articles.length > 0 ? articles : defaultResources;
+  // API 空数据时不再兜底假卡片（历史假卡链接 /resources/default-x 全部 404）
   const filteredResources = activeCategory === 'all'
-    ? displayResources
-    : displayResources.filter((r: Article | typeof defaultResources[0]) => r.category === activeCategory);
+    ? articles
+    : articles.filter((r: Article) => r.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

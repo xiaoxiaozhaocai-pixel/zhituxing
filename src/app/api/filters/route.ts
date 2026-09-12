@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { EDUCATION_TIER_ORDER, normalizeEducationTier } from '@/lib/education-map'
 
 export const runtime = 'nodejs';
 
@@ -81,13 +82,27 @@ export async function GET() {
 
     const rawIndustries = countAndSort(indData, 'industry')
     const rawCities = countAndSort(cityData, 'city')
-    const rawEducation = countAndSort(eduData, 'education')
+    // 学历 facet 归一化：自由文本原文 → 5 档（+不限），脏数据（解析残渣）不计入任何档位
+    let eduUnlimited = 0
+    const eduTierCounts: Record<string, number> = {}
+    for (const item of eduData) {
+      const val = item['education']
+      if (!val || !val.trim()) continue
+      if (val.includes('不限')) { eduUnlimited += 1; continue }
+      const tier = normalizeEducationTier(val)
+      if (tier) eduTierCounts[tier] = (eduTierCounts[tier] || 0) + 1
+    }
     const rawExperience = groupExperience(rawExpCounts)
     const rawCompanyTypes = countAndSort(compData, 'company_type')
 
     const industries = dedupeAndPrependDefault(rawIndustries, "全部", "全部")
     const cities = dedupeAndPrependDefault(rawCities, "全国", "全国")
-    const education = dedupeAndPrependDefault(rawEducation, "不限", "不限")
+    const education = [
+      { label: "不限", value: "不限", count: eduUnlimited },
+      ...EDUCATION_TIER_ORDER
+        .filter((t) => (eduTierCounts[t] || 0) > 0)
+        .map((t) => ({ label: t, value: t, count: eduTierCounts[t] || 0 })),
+    ]
     const experience = dedupeAndPrependDefault(rawExperience, "不限", "不限")
     const companyTypes = dedupeAndPrependDefault(rawCompanyTypes, "全部", "全部")
 
