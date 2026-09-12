@@ -394,30 +394,30 @@ function AssistantContent() {
     return () => { AnalyticsTracker.destroy(); };
   }, [user]);
 
-  // 初始化欢迎消息
+  // 初始化欢迎消息（切换 bot 时无条件重置为新 bot 的欢迎语）
   useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([{
-        role: 'assistant',
-        content: currentBot.welcomeMessage,
-        timestamp: new Date()
-      }]);
-    }
+    setMessages([{
+      role: 'assistant',
+      content: currentBot.welcomeMessage,
+      timestamp: new Date()
+    }]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBot, currentBot.welcomeMessage]);
 
-  // 打开页面时回显该会话历史（关掉重开/刷新后能恢复）
+  // 打开页面/切换 bot 时回显该会话历史（关掉重开/刷新后能恢复）
+  // cancelled 防竞态：连续切换 bot 时，旧请求返回不得覆盖新 bot 的欢迎语
   useEffect(() => {
-    if (messages.length !== 0) return;
+    let cancelled = false;
     const cid = localStorage.getItem(`conversationId_${activeBot}`);
     if (!cid) return;   // 无会话id = 新会话，保留欢迎语
     (async () => {
       try {
         const res = await fetch(`/api/chat/history?conversation_id=${cid}`);
-        if (!res.ok) return;
+        if (!res.ok || cancelled) return;
         const json = await res.json();
         const list = json?.data || [];
         if (list.length === 0) return;   // 无历史，保留欢迎语
+        if (cancelled) return;
         setMessages(list.map((m: { role: string; content: string; created_at?: string }) => ({
           role: m.role as 'user' | 'assistant',
           content: m.content,
@@ -425,6 +425,7 @@ function AssistantContent() {
         })));
       } catch { /* 静默，保持欢迎语 */ }
     })();
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBot]);
   

@@ -92,17 +92,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/me', { credentials: 'include' });
+      // 明确 401（cookie 确认无效）才清除登录态；
+      // 网络抖动 / 5xx 等临时故障保留现有登录态，避免导航栏间歇性"闪退"未登录
+      if (response.status === 401) {
+        setUser(null);
+        setQuota(null);
+        return;
+      }
       const data = await response.json();
       if (data.ok && data.data?.user) {
         setUser(data.data.user);
         setQuota(buildQuotaFromMembership(data.data.user.membership));
-      } else {
-        setUser(null);
-        setQuota(null);
       }
     } catch {
-      setUser(null);
-      setQuota(null);
+      // 网络错误：保留现有登录态
     } finally {
       setLoading(false);
     }
