@@ -253,24 +253,6 @@ export default function ChinaMap({
                 if (list.length) onSelectCompany(list[0]);
               }}
             />
-            {/* 省份名称标注：质心定位、白描边深字任何底色可读、字号随缩放保持屏幕恒定、不拦截点击 */}
-            {p.centroid && (
-              <text
-                x={p.centroid[0]}
-                y={p.centroid[1]}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={11 / scale}
-                fill="#334155"
-                stroke="#FFFFFF"
-                strokeWidth={2.5 / scale}
-                paintOrder="stroke"
-                fontWeight={600}
-                style={{ pointerEvents: 'none' }}
-              >
-                {shortProvinceName(p.feature.properties.name)}
-              </text>
-            )}
             </g>
           );
         })}
@@ -325,6 +307,28 @@ export default function ChinaMap({
             </g>
           );
         })}
+        {/* 省名标注层（最顶层）：质心定位、白描边深字任何底色可读、字号随缩放保持屏幕恒定、
+            不拦截点击。放在气泡之上，避免珠三角等气泡密集区盖住省名（9/12 视觉走查修复）。 */}
+        {projected.map((p) =>
+          p.centroid ? (
+            <text
+              key={`label-${p.feature.properties.adcode}`}
+              x={p.centroid[0]}
+              y={p.centroid[1]}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={11 / scale}
+              fill="#334155"
+              stroke="#FFFFFF"
+              strokeWidth={2.5 / scale}
+              paintOrder="stroke"
+              fontWeight={600}
+              style={{ pointerEvents: 'none' }}
+            >
+              {shortProvinceName(p.feature.properties.name)}
+            </text>
+          ) : null
+        )}
       </g>
     </svg>
   );
