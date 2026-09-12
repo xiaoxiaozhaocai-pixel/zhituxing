@@ -116,13 +116,13 @@ function NavbarInner() {
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5 group" aria-label="职途星 - 返回首页">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center shadow-md shadow-[#165DFF]/20 group-hover:shadow-lg group-hover:shadow-[#165DFF]/30 group-hover:scale-105 transition-all duration-300">
-                <span className="text-white font-bold text-base">职</span>
+            <Link href="/" className="flex items-center gap-3 group" aria-label="职途星 - 返回首页">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center shadow-md shadow-[#165DFF]/20 group-hover:shadow-lg group-hover:shadow-[#165DFF]/30 group-hover:scale-105 transition-all duration-300">
+                <span className="text-white font-bold text-xl">职</span>
               </div>
               <div className="hidden sm:block">
-                <div className="text-base font-bold text-[#1E293B] tracking-tight">职途星</div>
-                <div className="text-[10px] text-[#94A3B8] -mt-0.5">懂桂电学生的AI朋友</div>
+                <div className="text-xl font-bold text-[#1E293B] tracking-tight">职途星</div>
+                <div className="text-xs text-[#94A3B8] -mt-0.5">懂桂电学生的AI朋友</div>
               </div>
             </Link>
 
@@ -135,7 +135,7 @@ function NavbarInner() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[15px] font-medium transition-all duration-200 ${
                       isActive
                         ? 'bg-[#165DFF]/8 text-[#165DFF]'
                         : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
@@ -177,7 +177,7 @@ function NavbarInner() {
               {/* 工具栏入口 */}
               <Link
                 href={toolsNavItem.href}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[15px] font-medium transition-all duration-200 ${
                   pathname === '/tools'
                     ? 'bg-[#165DFF]/8 text-[#165DFF]'
                     : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
@@ -193,7 +193,7 @@ function NavbarInner() {
                   onClick={() => setIsMoreOpen(!isMoreOpen)}
                   aria-expanded={isMoreOpen}
                   aria-haspopup="menu"
-                  className={`flex items-center gap-1 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center gap-1 px-3.5 py-2 rounded-xl text-[15px] font-medium transition-all duration-200 ${
                     isMoreOpen
                       ? 'bg-[#165DFF]/8 text-[#165DFF]'
                       : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9]'
@@ -252,14 +252,14 @@ function NavbarInner() {
 
               {authLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-20 h-9 bg-[#F1F5F9] rounded-xl animate-pulse" />
-                  <div className="w-9 h-9 bg-[#F1F5F9] rounded-full animate-pulse" />
+                  <div className="w-24 h-11 bg-[#F1F5F9] rounded-xl animate-pulse" />
+                  <div className="w-11 h-11 bg-[#F1F5F9] rounded-full animate-pulse" />
                 </div>
               ) : user ? (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
-                    className="text-sm font-medium text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9] rounded-xl"
+                    className="text-[15px] font-medium text-[#475569] hover:text-[#1E293B] hover:bg-[#F1F5F9] rounded-xl"
                     onClick={() => router.push('/profile')}
                   >
                     {user.nickname || '个人中心'}
@@ -284,7 +284,7 @@ function NavbarInner() {
                     </Button>
                   </Link>
                   <Link href="/auth">
-                    <Button className="btn-gradient rounded-xl font-semibold text-sm px-5 py-2">
+                    <Button className="btn-gradient rounded-xl font-semibold text-[15px] px-5 py-2">
                       免费注册
                     </Button>
                   </Link>
@@ -316,7 +316,7 @@ function NavbarInner() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-[15px] font-medium transition-colors ${
                       isActive
                         ? 'bg-[#165DFF]/8 text-[#165DFF]'
                         : 'text-[#475569] hover:bg-[#F8FAFC]'
@@ -335,7 +335,7 @@ function NavbarInner() {
                   <>
                     <button
                       onClick={() => { router.push('/profile'); setIsMobileMenuOpen(false); }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium bg-[#F1F5F9] text-[#1E293B] hover:bg-[#E2E8F0] transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[15px] font-medium bg-[#F1F5F9] text-[#1E293B] hover:bg-[#E2E8F0] transition-colors"
                     >
                       <User className="w-4 h-4" /> {user.nickname || '个人中心'}
                     </button>
@@ -362,7 +362,7 @@ function NavbarInner() {
           </div>
         )}
       </nav>
-      <div className="h-16" />
+      <div className="h-[72px]" />
     </>
   );
 }
