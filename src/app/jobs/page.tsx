@@ -678,10 +678,14 @@ ${job.jdContent ? `\n岗位描述：\n${job.jdContent.slice(0, 500)}${job.jdCont
         {/* Stats */}
         <div className="bg-blue-50 rounded-lg p-4 mb-6 flex items-center justify-between">
           <div className="text-blue-800">
-            共找到 <span className="font-bold text-xl">{pagination.total.toLocaleString()}</span> 个岗位
+            {loading ? (
+              <span>正在加载岗位…</span>
+            ) : (
+              <span>共找到 <span className="font-bold text-xl">{pagination.total.toLocaleString()}</span> 个岗位</span>
+            )}
           </div>
           <div className="text-blue-600 text-sm">
-            第 {pagination.page} / {pagination.totalPages} 页
+            {loading ? '—' : `第 ${pagination.page} / ${pagination.totalPages} 页`}
           </div>
         </div>
 

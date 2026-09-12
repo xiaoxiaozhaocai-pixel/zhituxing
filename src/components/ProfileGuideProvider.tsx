@@ -73,6 +73,12 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
     setShowGuideBar(true);
   }, [checkDone, hasProfile, pathname]);
 
+  // 横幅占位：显示时文档流下推 48px（navbar fixed 64px + 横幅 h-12），避免 fixed 横幅遮挡页面 H1
+  useEffect(() => {
+    document.body.style.paddingTop = showGuideBar ? '48px' : '';
+    return () => { document.body.style.paddingTop = ''; };
+  }, [showGuideBar]);
+
 
   // Skip on admin/guide/auth pages
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/guide') || pathname?.startsWith('/auth')) {
@@ -97,12 +103,13 @@ export default function ProfileGuideProvider({ children }: ProfileGuideProviderP
           <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
             <div className="flex items-center gap-2 text-blue-800 text-sm">
               <span>💡</span>
-              <span className="font-medium">跟小职聊聊你自己，我会记住你的专业和目标，让每次建议都更精准</span>
+              <span className="font-medium hidden sm:inline">跟小职聊聊你自己，我会记住你的专业和目标，让每次建议都更精准</span>
+              <span className="font-medium sm:hidden">跟小职聊聊，建议更精准</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 whitespace-nowrap">
               <Link
                 href="/assistant"
-                className="px-4 py-1.5 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white text-sm font-medium rounded-full hover:opacity-90 transition-all shadow-sm"
+                className="px-3 sm:px-4 py-1.5 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white text-xs sm:text-sm font-medium rounded-full hover:opacity-90 transition-all shadow-sm flex-shrink-0"
               >
                 去和小职聊聊
               </Link>

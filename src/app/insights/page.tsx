@@ -175,7 +175,7 @@ export default function InsightsPage() {
       </nav>
 
       {/* 行业雷达 */}
-      <section id="industries" className="mx-auto max-w-7xl px-6 py-16">
+      <section id="industries" className="scroll-mt-28 mx-auto max-w-7xl px-6 py-16">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">面试行业雷达</h2>
           <p className="mt-2 text-[#64748B]">提前知道这个行业面试会问什么，怎么准备、有哪些雷区。</p>
@@ -189,7 +189,7 @@ export default function InsightsPage() {
       </section>
 
       {/* 潜台词词条库 */}
-      <section id="glossary" className="bg-white py-16">
+      <section id="glossary" className="scroll-mt-28 bg-white py-16">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">潜台词词条库</h2>
@@ -226,7 +226,7 @@ export default function InsightsPage() {
       </section>
 
       {/* 专业认知库 */}
-      <section id="cognitive" className="mx-auto max-w-7xl px-6 py-16">
+      <section id="cognitive" className="scroll-mt-28 mx-auto max-w-7xl px-6 py-16">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">专业认知库</h2>
           <p className="mt-2 text-[#64748B]">你学的这个专业，到底能去哪些方向，中间需要什么能力。</p>
@@ -269,7 +269,7 @@ export default function InsightsPage() {
       </section>
 
       {/* 判断力因果层 */}
-      <section id="judgment" className="bg-white py-16">
+      <section id="judgment" className="scroll-mt-28 bg-white py-16">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">判断力因果层</h2>
@@ -318,7 +318,7 @@ export default function InsightsPage() {
       </section>
 
       {/* 岗位能力词典 */}
-      <section id="capability" className="bg-white py-16">
+      <section id="capability" className="scroll-mt-28 bg-white py-16">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-[#1E293B] sm:text-3xl">岗位能力词典</h2>

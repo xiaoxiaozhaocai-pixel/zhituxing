@@ -9,7 +9,7 @@ import {
  */
 
 export const metadata = {
-  title: '工具栏 — 职途星',
+  title: '工具栏',
   description:
     '职途星工具栏：一岗一策、行业地图、岗位百科、判断力内容库、干货库、学习路径、考研就业决策，一站式选择使用。',
 };
