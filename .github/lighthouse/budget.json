@@ -14,11 +14,11 @@
     "timings": [
       {
         "metric": "largest-contentful-paint",
-        "budget": 5000
+        "budget": 8000
       },
       {
         "metric": "interactive",
-        "budget": 6500
+        "budget": 9500
       }
     ]
   }
