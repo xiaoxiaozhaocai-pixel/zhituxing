@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { parseAccessTokenFromCookie } from '@/lib/auth-cookies';
+import { parseAccessTokenFromCookie, parseRefreshTokenFromCookie, setAuthCookies } from '@/lib/auth-cookies';
 
 // ============================================================
 // 限流常量
@@ -72,6 +72,18 @@ function getRateLimitKey(req: NextRequest): string {
     } catch {}
   }
   return `ip:${getClientIP(req)}`;
+}
+
+// ============================================================
+// JWT 临期判断（不验签，仅读 exp；<60s 余量视为临期）
+// ============================================================
+function isTokenExpiring(jwt: string): boolean {
+  try {
+    const payload = JSON.parse(atob((jwt.split('.')[1] ?? '').replace(/-/g, '+').replace(/_/g, '/')));
+    return !(typeof payload?.exp === 'number' && payload.exp > Date.now() / 1000 + 60);
+  } catch {
+    return true;
+  }
 }
 
 // ============================================================
@@ -239,6 +251,38 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
       }
     }
   }
+  // --------------------------------------------------------
+  // 5.9 API 会话续期：根治"导航显示已登录但数据 API 间歇性 401 踢回登录页"
+  // /api/auth/me 有 refresh 兜底，但数据 API 只验证 access token——
+  // token 过期瞬间数据 API 全部 401 踢人，导航栏却续期成功，表现不一致。
+  // 这里在放行前对临期/过期 token 做透明续期：新 access token 注入 Bearer
+  // header（getAuthenticatedUser 原生支持）+ 写回 cookie。仅 API 路由；
+  // 续期失败静默放行，401 判定仍由具体 API 决策，不改变安全语义。
+  // --------------------------------------------------------
+  if (pathname.startsWith('/api/')) {
+    const accessToken = parseAccessTokenFromCookie(request.headers);
+    const refreshToken = parseRefreshTokenFromCookie(request.headers);
+    if (refreshToken && (!accessToken || isTokenExpiring(accessToken))) {
+      try {
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+        );
+        const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+        if (!error && data.session) {
+          const { access_token, refresh_token, expires_at } = data.session;
+          const requestHeaders = new Headers(request.headers);
+          requestHeaders.set('authorization', `Bearer ${access_token}`);
+          const renewedResponse = NextResponse.next({ request: { headers: requestHeaders } });
+          setAuthCookies(renewedResponse, access_token, refresh_token, expires_at ?? Math.floor(Date.now() / 1000) + 3600);
+          return addSecurityHeaders(renewedResponse);
+        }
+      } catch { /* 续期失败静默放行 */ }
+    }
+  }
+
   // --------------------------------------------------------
   // 6. 继续请求并添加安全头
   // --------------------------------------------------------
