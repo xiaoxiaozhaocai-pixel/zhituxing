@@ -238,8 +238,8 @@ export default function ChinaMap({
           const count = provinceCountMap.get(p.feature.properties.name) || 0;
           const isProv = count > 0;
           return (
+            <g key={p.feature.properties.adcode}>
             <path
-              key={p.feature.properties.adcode}
               d={p.pathD}
               fill={isProv ? heatColorForCount(count) : '#EFF3FA'}
               stroke="#FFFFFF"
@@ -253,6 +253,25 @@ export default function ChinaMap({
                 if (list.length) onSelectCompany(list[0]);
               }}
             />
+            {/* 省份名称标注：质心定位、白描边深字任何底色可读、字号随缩放保持屏幕恒定、不拦截点击 */}
+            {p.centroid && (
+              <text
+                x={p.centroid[0]}
+                y={p.centroid[1]}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={11 / scale}
+                fill="#334155"
+                stroke="#FFFFFF"
+                strokeWidth={2.5 / scale}
+                paintOrder="stroke"
+                fontWeight={600}
+                style={{ pointerEvents: 'none' }}
+              >
+                {shortProvinceName(p.feature.properties.name)}
+              </text>
+            )}
+            </g>
           );
         })}
         {companyMarkers.map((c) => {
@@ -309,6 +328,17 @@ export default function ChinaMap({
       </g>
     </svg>
   );
+}
+
+function shortProvinceName(name: string): string {
+  return name
+    .replace('维吾尔自治区', '')
+    .replace('壮族自治区', '')
+    .replace('回族自治区', '')
+    .replace('特别行政区', '')
+    .replace('自治区', '')
+    .replace('省', '')
+    .replace('市', '');
 }
 
 function heatColorForCount(count: number): string {
