@@ -13,6 +13,27 @@ interface Message {
 
 const STORAGE_KEY = 'xiaozhi_fab_messages';
 
+// 小职表情包：根据回复内容关键词切换（joy喜/sad哀/angry怒/happy乐），8s 后回落待机
+const EMOTION_IMGS: Record<string, string> = {
+  idle: '/avatars/emotions/idle.webp',
+  happy: '/avatars/emotions/happy.webp',
+  joy: '/avatars/emotions/joy.webp',
+  angry: '/avatars/emotions/angry.webp',
+  sad: '/avatars/emotions/sad.webp',
+};
+const EMOTION_RULES: Array<[RegExp, string]> = [
+  [/哈哈|😂|🤣|🎉|恭喜|太好了|太棒|厉害|庆祝|有趣|乐/, 'joy'],
+  [/抱歉|没找到|暂时无法|遗憾|别急|别慌|压力|焦虑|不容易|辛苦|难过|担心/, 'sad'],
+  [/怒|严厉|警告|违规|红牌/, 'angry'],
+  [/好的?|没问题|当然|可以|收到|明白|没错|一起|加油|😊|😄|👌/, 'happy'],
+];
+function detectEmotion(text: string): string {
+  for (const [re, emo] of EMOTION_RULES) {
+    if (re.test(text)) return emo;
+  }
+  return 'idle';
+}
+
 const QUICK_ACTIONS_ALL = [
   { icon: '📊', label: '做个能力诊断', text: '我想做个能力诊断，看看我的技能水平', priority: 'new' },
   { icon: '🔍', label: '帮我找岗位', text: '帮我看看有哪些适合我的岗位', priority: 'returning' },
@@ -65,6 +86,8 @@ export default function FloatingXiaoZhi() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [sseState, sseActions] = useSSEStream();
+  const [emotion, setEmotion] = useState('idle');
+  const emotionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 初始化：检测登录状态 + 检测新注册 + 加载历史
   useEffect(() => {
@@ -118,6 +141,13 @@ export default function FloatingXiaoZhi() {
   // 新回复到达时更新消息列表
   useEffect(() => {
     if (sseState.content && !sseState.isStreaming) {
+      // 按回复情绪切换表情，8 秒后回落待机
+      const emo = detectEmotion(sseState.content);
+      if (emo !== 'idle') {
+        setEmotion(emo);
+        if (emotionTimerRef.current) clearTimeout(emotionTimerRef.current);
+        emotionTimerRef.current = setTimeout(() => setEmotion('idle'), 8000);
+      }
       setMessages(prev => {
         const updated = [...prev];
         if (updated.length > 0 && updated[updated.length - 1].role === 'assistant' && updated[updated.length - 1].content === '...') {
@@ -241,7 +271,7 @@ export default function FloatingXiaoZhi() {
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/avatars/emotions/idle.webp" alt="小职" className="w-8 h-8 object-contain" draggable={false} />
+                <img src={EMOTION_IMGS[emotion] || EMOTION_IMGS.idle} alt="小职" className="w-8 h-8 object-contain" draggable={false} />
               </div>
               <div>
                 <p className="font-semibold text-sm leading-tight">小职</p>
@@ -273,7 +303,7 @@ export default function FloatingXiaoZhi() {
                   {msg.role === 'assistant' && (
                     <div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/avatars/emotions/idle.webp" alt="小职" className="w-6 h-6 object-contain" draggable={false} />
+                      <img src={EMOTION_IMGS[emotion] || EMOTION_IMGS.idle} alt="小职" className="w-6 h-6 object-contain" draggable={false} />
                     </div>
                   )}
                   <div
@@ -327,7 +357,7 @@ export default function FloatingXiaoZhi() {
                 <div className="flex items-start gap-2 max-w-[85%]">
                   <div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/avatars/emotions/idle.webp" alt="小职" className="w-6 h-6 object-contain" draggable={false} />
+                    <img src={EMOTION_IMGS[emotion] || EMOTION_IMGS.idle} alt="小职" className="w-6 h-6 object-contain" draggable={false} />
                   </div>
                   <div className="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap bg-white text-slate-800 border border-slate-100 rounded-bl-sm shadow-sm">
                     {streamingContent}
@@ -398,7 +428,7 @@ export default function FloatingXiaoZhi() {
           ) : (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src="/avatars/emotions/idle.webp"
+              src={EMOTION_IMGS[emotion] || EMOTION_IMGS.idle}
               alt="小职"
               className="w-14 h-14 object-contain xiaozhi-breathe select-none"
               draggable={false}
