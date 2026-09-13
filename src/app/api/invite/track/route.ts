@@ -25,11 +25,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '邀请码无效' });
     }
 
-    const { data: invite } = await supabase
+    const { data: invite, error: inviteErr } = await supabase
       .from('invites')
       .select('inviter_id, status')
       .eq('code', code.toUpperCase())
       .maybeSingle();
+    if (inviteErr) {
+      console.error('[invite/track] invites 查询失败:', inviteErr.message, inviteErr.details, inviteErr.hint);
+      return NextResponse.json({ success: false, error: '查询失败' }, { status: 500 });
+    }
 
     if (!invite || invite.status !== 'active') {
       return NextResponse.json({ success: false, error: '邀请码不存在或已失效' });
@@ -44,7 +48,10 @@ export async function POST(request: NextRequest) {
         { inviter_id: invite.inviter_id, invitee_id: userId, invite_code: code.toUpperCase() },
         { onConflict: 'invitee_id' }
       );
-    if (error) throw error;
+    if (error) {
+      console.error('[invite/track] relations 写入失败:', error.message, error.details, error.hint);
+      throw error;
+    }
 
     return NextResponse.json({ success: true });
   } catch (e) {
