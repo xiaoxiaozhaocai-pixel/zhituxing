@@ -394,6 +394,14 @@ export default function ChatPage() {
 function ChatContent() {
   const searchParams = useSearchParams();
   const [activeBot, setActiveBot] = useState('xiaozhi');
+
+  // 预加载情绪贴图：避免首次触发表情时闪空白
+  useEffect(() => {
+    Object.values(EMOTION_IMAGES).forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);

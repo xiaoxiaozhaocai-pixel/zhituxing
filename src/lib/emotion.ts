@@ -56,6 +56,14 @@ const EMOTION_RULES: Array<{ emotion: Emotion; words: string[] }> = [
   },
 ];
 
+/** 否定词：触发词前 3 字窗口内出现则视为否定，跳过该词（漏报好于误报） */
+const NEGATION_WORDS = ['不', '没', '别', '无', '未', '莫', '勿', '非'];
+
+function isNegated(text: string, hitIndex: number): boolean {
+  const window = text.slice(Math.max(0, hitIndex - 3), hitIndex);
+  return NEGATION_WORDS.some((n) => window.includes(n));
+}
+
 /**
  * 从用户消息识别情绪（共情式：小职的情绪跟随用户）
  * 未命中返回 null（保持默认头像）
@@ -65,7 +73,10 @@ export function detectEmotion(text: string): Emotion | null {
   const lower = text.toLowerCase();
   for (const rule of EMOTION_RULES) {
     for (const word of rule.words) {
-      if (lower.includes(word.toLowerCase())) return rule.emotion;
+      const lw = word.toLowerCase();
+      // 英文触发词在 lower 上找；中文在原文找（保留原大小写位置语义）
+      const idx = (/[a-zA-Z]/.test(word) ? lower : text).indexOf(lw);
+      if (idx >= 0 && !isNegated(text, idx)) return rule.emotion;
     }
   }
   return null;
