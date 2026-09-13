@@ -15,6 +15,7 @@ import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 import AgentChainStatus from '@/components/AgentChainStatus';
+import { detectEmotion, EMOTION_IMAGES, type Emotion } from '@/lib/emotion';
 
 // 初始化 DOMPurify（组件挂载时调用）
 function _initDOMPurify() {
@@ -55,6 +56,8 @@ interface Message {
   dispatch?: DispatchCardData;
   /** 工具执行结果卡片（tool_result 事件，方向四）：小职对话内直接动手的结果 */
   toolResult?: ToolResultData;
+  /** 共情式表情：由用户消息触发的情绪（小职头像渲染对应贴图） */
+  emotion?: Emotion;
 }
 
 /** dispatch 卡片 tabId → 目标路由（无专用 url 时兜底跳转） */
@@ -900,11 +903,12 @@ function ChatContent() {
         throw new Error(`请求失败 (${response.status})`);
       }
 
-      // 创建空的助手消息占位
+      // 创建空的助手消息占位（共情式表情：情绪跟随用户消息识别）
       const assistantMessage: Message = {
         role: 'assistant',
         content: '',
-        timestamp: new Date()
+        timestamp: new Date(),
+        emotion: detectEmotion(messageText) ?? undefined,
       };
       setMessages(prev => [...prev, assistantMessage]);
 
@@ -1801,16 +1805,28 @@ function ChatContent() {
                   </button>
                 )}
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' 
-                      ? `bg-gradient-to-br ${currentBot.gradient}` 
-                      : 'bg-white border-2 border-slate-200'
+                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                    msg.role === 'user'
+                      ? `bg-gradient-to-br ${currentBot.gradient}`
+                      : msg.emotion && EMOTION_IMAGES[msg.emotion]
+                        ? 'bg-transparent'
+                        : 'bg-white border-2 border-slate-200'
                   }`}
+                  title={msg.role === 'assistant' && msg.emotion ? '小职与你同频' : undefined}
                 >
-                  {msg.role === 'user' 
-                    ? <UserIcon className="w-5 h-5 text-white" /> 
-                    : <span className={`${currentBot.color}`}>{currentBot.icon}</span>
-                  }
+                  {msg.role === 'user' ? (
+                    <UserIcon className="w-5 h-5 text-white" />
+                  ) : msg.emotion && EMOTION_IMAGES[msg.emotion] ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- 40px 静态贴图已手动压缩为 WebP，无需 next/image 开销
+                    <img
+                      src={EMOTION_IMAGES[msg.emotion]}
+                      alt={`小职${msg.emotion}`}
+                      className="w-10 h-10 object-contain emotion-pop"
+                      draggable={false}
+                    />
+                  ) : (
+                    <span className={`${currentBot.color}`}>{currentBot.icon}</span>
+                  )}
                 </div>
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 ${
