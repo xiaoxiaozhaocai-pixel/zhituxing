@@ -36,7 +36,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (!invite || invite.status !== 'active') {
-      return NextResponse.json({ success: false, error: '邀请码不存在或已失效' });
+      // TEMP DEBUG: 部署验证后移除
+      let dbgRole = 'NA', dbgHost = 'NA';
+      try {
+        const raw = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+        const payload = JSON.parse(Buffer.from(raw.split('.')[1], 'base64').toString());
+        dbgRole = payload.role || 'no-role';
+      } catch {}
+      try { dbgHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || '').host; } catch {}
+      return NextResponse.json({ success: false, error: '邀请码不存在或已失效', dbg: { host: dbgHost, keyRole: dbgRole, codeQueried: code.toUpperCase() } });
     }
     if (invite.inviter_id === userId) {
       return NextResponse.json({ success: false, error: '不能邀请自己' });
