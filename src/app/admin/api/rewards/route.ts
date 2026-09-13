@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
 
     // 获取用户信息
     const { data: user } = await supabase
-      .from('users')
-      .select('id, nickname')
-      .eq('id', userId)
+      .from('user_profiles')
+      .select('user_id, nickname')
+      .eq('user_id', userId)
       .single();
 
     if (!user) {
@@ -60,14 +60,14 @@ export async function POST(request: NextRequest) {
     if (rewardType === 'member_days') {
       const days = parseInt(rewardValue) || 7;
       const { data: currentUser } = await supabase
-        .from('users')
-        .select('member_expire_time')
-        .eq('id', userId)
+        .from('user_profiles')
+        .select('membership_expires_at')
+        .eq('user_id', userId)
         .single();
 
       let newExpireTime: Date;
-      if (currentUser?.member_expire_time) {
-        newExpireTime = new Date(currentUser.member_expire_time);
+      if (currentUser?.membership_expires_at) {
+        newExpireTime = new Date(currentUser.membership_expires_at);
         newExpireTime.setDate(newExpireTime.getDate() + days);
       } else {
         newExpireTime = new Date();
@@ -75,12 +75,12 @@ export async function POST(request: NextRequest) {
       }
 
       await supabase
-        .from('users')
+        .from('user_profiles')
         .update({ 
-          member_type: 'rewarded',
-          member_expire_time: newExpireTime.toISOString() 
+          membership_type: 'rewarded',
+          membership_expires_at: newExpireTime.toISOString() 
         })
-        .eq('id', userId);
+        .eq('user_id', userId);
     }
 
     // 记录奖励发放

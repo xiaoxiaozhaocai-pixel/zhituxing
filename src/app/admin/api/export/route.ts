@@ -21,8 +21,8 @@ async function verifyAdmin(_request: NextRequest) {
 // 导出用户数据
 async function exportUsers(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
-    .from('users')
-    .select('id, username, phone, created_at, is_member, is_lifetime_member, member_expire_time, profile_completed')
+    .from('user_profiles')
+    .select('user_id, nickname, phone, created_at, membership_tier, membership_expires_at, major')
     .order('created_at', { ascending: false });
 
   if (dateRange?.start) {
@@ -37,22 +37,22 @@ async function exportUsers(supabase: SupabaseClient, dateRange?: { start: string
   if (error) throw error;
   
   return (data || []).map((user: Record<string, unknown>) => ({
-    '用户ID': user.id,
-    '用户名': user.username || '-',
+    '用户ID': user.user_id,
+    '用户名': user.nickname || '-',
     '手机号': user.phone || '-',
     '注册时间': user.created_at,
-    '会员状态': user.is_lifetime_member ? '终身会员' : user.is_member ? '月度会员' : '普通用户',
-    '会员到期时间': user.member_expire_time || '-',
-    '是否完善信息': user.profile_completed ? '是' : '否'
+    '会员状态': user.membership_tier === 'lifetime' ? '终身会员' : (user.membership_tier && user.membership_tier !== 'free') ? '月度会员' : '普通用户',
+    '会员到期时间': user.membership_expires_at || '-',
+    '是否完善信息': user.major ? '是' : '否'
   }));
 }
 
 // 导出会员数据
 async function exportMembers(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
-    .from('users')
-    .select('id, username, phone, is_member, is_lifetime_member, member_expire_time, created_at')
-    .or('is_member.eq.true,is_lifetime_member.eq.true')
+    .from('user_profiles')
+    .select('user_id, nickname, phone, membership_tier, membership_expires_at, created_at')
+    .not('membership_tier', 'is', null).neq('membership_tier', 'free')
     .order('created_at', { ascending: false });
 
   if (dateRange?.start) {
@@ -67,12 +67,12 @@ async function exportMembers(supabase: SupabaseClient, dateRange?: { start: stri
   if (error) throw error;
   
   return (data || []).map((user: Record<string, unknown>) => ({
-    '用户ID': user.id,
-    '用户名': user.username || '-',
+    '用户ID': user.user_id,
+    '用户名': user.nickname || '-',
     '手机号': user.phone || '-',
-    '会员类型': user.is_lifetime_member ? '终身会员' : '月度会员',
+    '会员类型': user.membership_tier === 'lifetime' ? '终身会员' : '月度会员',
     '开始时间': user.created_at,
-    '到期时间': user.member_expire_time || '永久',
+    '到期时间': user.membership_expires_at || '永久',
     '注册时间': user.created_at
   }));
 }
@@ -137,8 +137,8 @@ async function exportArticles(supabase: SupabaseClient, dateRange?: { start: str
 // 导出订单数据
 async function exportOrders(supabase: SupabaseClient, dateRange?: { start: string; end: string }) {
   let query = supabase
-    .from('orders')
-    .select('id, user_id, product_type, amount, status, created_at')
+    .from('membership_orders')
+    .select('id, user_id, plan, amount, created_at')
     .order('created_at', { ascending: false });
 
   if (dateRange?.start) {
@@ -155,9 +155,9 @@ async function exportOrders(supabase: SupabaseClient, dateRange?: { start: strin
   return (data || []).map((order: Record<string, unknown>) => ({
     '订单号': order.id,
     '用户ID': order.user_id,
-    '商品类型': order.product_type === 'monthly' ? '月度会员' : order.product_type === 'lifetime' ? '终身会员' : order.product_type,
+    '商品类型': order.plan === 'monthly' ? '月度会员' : order.plan === 'lifetime' ? '终身会员' : order.plan,
     '金额': `¥${order.amount}`,
-    '支付状态': order.status === 'paid' ? '已支付' : order.status === 'pending' ? '待支付' : '已退款',
+    '支付状态': '已支付', // membership_orders 仅记录已生效订单
     '创建时间': order.created_at
   }));
 }

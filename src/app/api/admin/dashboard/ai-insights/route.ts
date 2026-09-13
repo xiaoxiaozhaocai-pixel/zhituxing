@@ -55,22 +55,22 @@ export async function GET(request: NextRequest) {
     
     // 2. JD 市场数据
     const { count: totalJds } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .select('*', { count: 'exact', head: true });
     
     const { count: monthNewJds } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', monthAgo.toISOString());
     
     const { count: pendingJds } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'pending');
     
     // 3. 公司活跃度（本月新增JD最多的公司）
     const { data: topCompanies } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .select('company, created_at')
       .gte('created_at', monthAgo.toISOString())
       .not('company', 'is', null);

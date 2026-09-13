@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     // 构建查询
     let query = supabase
       .from('user_profiles')
-      .select('user_id, user_type, membership_type, membership_tier, membership_plan, major, grade, job_intention, city, personality_type, is_admin, created_at', { count: 'exact' });
+      .select('user_id, user_type, membership_type, membership_tier, major, grade, job_intention:target_job, city:target_cities, personality_type, created_at', { count: 'exact' });
 
     // 关键词搜索
     if (keyword) {
@@ -70,13 +70,13 @@ export async function GET(request: NextRequest) {
           user_id: user.user_id,
           user_type: user.user_type || 'normal',
           membership_type: user.membership_type,
-          membership_plan: user.membership_plan,
+          membership_plan: null,
           major: user.major,
           grade: user.grade,
           job_intention: user.job_intention,
           city: user.city,
           personality_type: user.personality_type,
-          is_admin: user.is_admin || false,
+          is_admin: false, // user_profiles 无 is_admin 列，恒 false
           created_at: user.created_at,
           skill_count: 0,
           assessment_count: 0,

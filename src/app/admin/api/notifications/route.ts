@@ -57,6 +57,15 @@ export async function POST(request: NextRequest) {
 
     if (notifications.length > 0) {
       await supabase.from('notifications').insert(notifications);
+
+    // 双写发送记录（admin 通知记录页数据源）
+    await supabase.from('admin_notifications').insert({
+      title,
+      content,
+      type: type || 'system',
+      target_count: notifications.length,
+      created_by: adminUsername || 'unknown'
+    });
     }
 
     // 记录操作日志

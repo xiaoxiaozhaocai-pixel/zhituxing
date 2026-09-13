@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * pageSize;
 
     const { data: list, count: total } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .select('*', { count: 'exact' })
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
@@ -50,14 +50,14 @@ export async function POST(request: NextRequest) {
 
     // 获取提交信息
     const { data: submission } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .select('user_id')
       .eq('id', id)
       .single();
 
     // 更新状态
     const { error } = await supabase
-      .from('jd_submissions')
+      .from('jd_library')
       .update({ 
         status, 
         review_note: reason || '',
