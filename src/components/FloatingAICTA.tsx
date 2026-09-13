@@ -276,11 +276,17 @@ export default function FloatingAICTA() {
         <button
           type="button"
           onClick={handleFabClick}
-          className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl select-none btn-gradient hover:shadow-[#165DFF]/40 ${
+          className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl select-none bg-white border-2 border-[#165DFF]/20 hover:shadow-[#165DFF]/40 ${
             dragging ? 'cursor-grabbing scale-110' : 'cursor-grab'
           } animate-pulse-ring`}
         >
-          <MessageSquare className="w-6 h-6 text-white pointer-events-none" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/avatars/emotions/idle.webp"
+            alt="小职"
+            className="w-12 h-12 object-contain xiaozhi-breathe pointer-events-none"
+            draggable={false}
+          />
         </button>
       </div>
 
@@ -317,7 +323,8 @@ export default function FloatingAICTA() {
             }}
           >
             <div className="flex items-center gap-2 pointer-events-none">
-              <MessageSquare className="w-5 h-5" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/avatars/emotions/idle.webp" alt="" className="w-6 h-6 object-contain" draggable={false} />
               <span className="font-semibold">小职</span>
               <span className="text-xs opacity-75">AI求职搭子</span>
             </div>
@@ -356,8 +363,9 @@ export default function FloatingAICTA() {
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-[#F8FAFC]">
             {messages.length === 0 && (
               <div className="text-center text-[#94A3B8] mt-12">
-                <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center shadow-lg shadow-[#165DFF]/20">
-                  <MessageSquare className="w-7 h-7 text-white" />
+                <div className="mx-auto mb-3 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/avatars/emotions/happy.webp" alt="小职" className="w-16 h-16 object-contain" draggable={false} />
                 </div>
                 <p className="text-sm font-medium text-[#1E293B]">你好！我是小职</p>
                 <p className="text-xs mt-1">你的AI求职搭子，有什么问题尽管问我～</p>
