@@ -31,11 +31,13 @@ interface XiaozhiAvatarProps {
   /** 默认图标（无贴图时显示） */
   iconNode: ReactNode;
   iconColorClass?: string;
+  /** 气泡朝下弹（消息位于列表顶部时，避免气泡被滚动容器上缘裁切） */
+  bubbleBelow?: boolean;
 }
 
 const DRAG_LIMIT = 80;
 
-export default function XiaozhiAvatar({ emotion, isThinking, iconNode, iconColorClass }: XiaozhiAvatarProps) {
+export default function XiaozhiAvatar({ emotion, isThinking, iconNode, iconColorClass, bubbleBelow }: XiaozhiAvatarProps) {
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [bubble, setBubble] = useState<string | null>(null);
@@ -104,7 +106,7 @@ export default function XiaozhiAvatar({ emotion, isThinking, iconNode, iconColor
     <div className="relative flex-shrink-0">
       {/* 台词气泡 */}
       {bubble && (
-        <div className="xiaozhi-bubble absolute bottom-full left-1/2 mb-2 z-30 whitespace-nowrap px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-md pointer-events-none">
+        <div className={`xiaozhi-bubble absolute left-1/2 z-30 whitespace-nowrap px-3 py-1.5 text-xs text-slate-700 bg-white border border-slate-200 rounded-xl shadow-md pointer-events-none ${bubbleBelow ? 'top-full mt-2' : 'bottom-full mb-2'}`}>
           {bubble}
         </div>
       )}

@@ -1821,6 +1821,7 @@ function ChatContent() {
                   </div>
                 ) : (
                   <XiaozhiAvatar
+                    bubbleBelow={index === 0}
                     emotion={msg.emotion ?? null}
                     isThinking={index === messages.length - 1 && isLoading && !msg.content}
                     iconNode={currentBot.icon}
