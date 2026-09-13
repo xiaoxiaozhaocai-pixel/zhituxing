@@ -7,7 +7,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 // 获取Supabase客户端
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || '';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
   return createClient(supabaseUrl, supabaseKey);
 }
 
