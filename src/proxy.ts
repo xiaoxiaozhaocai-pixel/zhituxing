@@ -151,7 +151,11 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
     }
     
     const accessToken = parseAccessTokenFromCookie(request.headers);
-    if (!accessToken) {
+    // 持有有效 admin_token（/admin/login 管理后台登录态）直接放行——
+    // sb token 任何注册用户都有，不构成防线；真正防线是 requireAdmin 的 admin_token
+    const adminCookie = request.cookies.get('admin_token')?.value;
+    const hasAdminToken = !!(adminCookie && process.env.ADMIN_TOKEN && adminCookie === process.env.ADMIN_TOKEN);
+    if (!accessToken && !hasAdminToken) {
       // API 路由返回 401 JSON（而非 307 重定向到登录页）
       if (pathname.startsWith('/admin/api/')) {
         const response = NextResponse.json(
