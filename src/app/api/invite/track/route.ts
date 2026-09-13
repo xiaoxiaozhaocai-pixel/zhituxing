@@ -44,7 +44,23 @@ export async function POST(request: NextRequest) {
         dbgRole = payload.role || 'no-role';
       } catch {}
       try { dbgHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || '').host; } catch {}
-      return NextResponse.json({ success: false, error: '邀请码不存在或已失效', dbg: { host: dbgHost, keyRole: dbgRole, codeQueried: code.toUpperCase() } });
+      // TEMP DEBUG: 对比单例 client vs 现场新建 client
+      let dbgExtra: Record<string, unknown> = {};
+      try {
+        const { count } = await supabase.from('invites').select('*', { count: 'exact' });
+        dbgExtra.singletonCount = count;
+        const { createClient } = await import('@supabase/supabase-js');
+        const fresh = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+        const { count: fc, error: fe } = await fresh.from('invites').select('*', { count: 'exact' });
+        dbgExtra.freshCount = fc;
+        if (fe) dbgExtra.freshErr = fe.message;
+        const { data: rows, error: re } = await fresh.from('invites').select('code').eq('code', code.toUpperCase()).maybeSingle();
+        dbgExtra.freshRow = rows;
+        if (re) dbgExtra.freshRowErr = re.message;
+      } catch (dbgE) {
+        dbgExtra.dbgErr = String(dbgE);
+      }
+      return NextResponse.json({ success: false, error: '邀请码不存在或已失效', dbg: { host: dbgHost, keyRole: dbgRole, codeQueried: code.toUpperCase(), ...dbgExtra } });
     }
     if (invite.inviter_id === userId) {
       return NextResponse.json({ success: false, error: '不能邀请自己' });
