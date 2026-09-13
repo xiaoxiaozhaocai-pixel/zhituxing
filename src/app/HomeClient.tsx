@@ -141,7 +141,7 @@ export default function HomeClient({ industryCount }: { industryCount: number })
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 text-amber-500" />
-                  注册即享 <strong>3次免费</strong> AI职业诊断
+                  注册即享 <strong>免费</strong> AI职业诊断
                   <Link href="/login" className="font-semibold text-amber-600 hover:underline ml-1">立即注册 →</Link>
                 </>
               )}
