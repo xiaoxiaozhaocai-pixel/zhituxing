@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { X, Send, Loader2, Sparkles, User, ChevronDown } from 'lucide-react';
+import { X, Send, Loader2, User, ChevronDown } from 'lucide-react';
 import { useSSEStream } from '@/hooks/useSSEStream';
 
 interface Message {
@@ -239,8 +239,9 @@ export default function FloatingXiaoZhi() {
           {/* 头部 */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white flex-shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/avatars/emotions/idle.webp" alt="小职" className="w-8 h-8 object-contain" draggable={false} />
               </div>
               <div>
                 <p className="font-semibold text-sm leading-tight">小职</p>
@@ -270,8 +271,9 @@ export default function FloatingXiaoZhi() {
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className="flex items-start gap-2 max-w-[85%]">
                   {msg.role === 'assistant' && (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center flex-shrink-0 mt-1">
-                      <Sparkles className="w-3.5 h-3.5 text-white" />
+                    <div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/avatars/emotions/idle.webp" alt="小职" className="w-6 h-6 object-contain" draggable={false} />
                     </div>
                   )}
                   <div
@@ -323,8 +325,9 @@ export default function FloatingXiaoZhi() {
             {streamingContent && (
               <div className="flex justify-start">
                 <div className="flex items-start gap-2 max-w-[85%]">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center flex-shrink-0 mt-1">
-                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                  <div className="w-7 h-7 rounded-full bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/avatars/emotions/idle.webp" alt="小职" className="w-6 h-6 object-contain" draggable={false} />
                   </div>
                   <div className="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap bg-white text-slate-800 border border-slate-100 rounded-bl-sm shadow-sm">
                     {streamingContent}
@@ -385,16 +388,21 @@ export default function FloatingXiaoZhi() {
         <div className="absolute inset-0 rounded-full fab-glow" />
         <button
           onClick={() => setIsOpen(!isOpen)}
+          title={isOpen ? '收起小职' : '和小职聊聊'}
           className={`relative flex items-center justify-center w-16 h-16 rounded-full shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-blue-500/40 ${
-            isOpen
-              ? 'bg-gray-600 rotate-45'
-              : 'bg-gradient-to-r from-[#165DFF] to-[#3D7FFF]'
+            isOpen ? 'bg-gray-600 rotate-45' : 'bg-white border-2 border-[#165DFF]/20'
           }`}
         >
           {isOpen ? (
             <X className="w-7 h-7 text-white" />
           ) : (
-            <Sparkles className="w-7 h-7 text-white" />
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src="/avatars/emotions/idle.webp"
+              alt="小职"
+              className="w-14 h-14 object-contain xiaozhi-breathe select-none"
+              draggable={false}
+            />
           )}
         </button>
       </div>
