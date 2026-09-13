@@ -29,7 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/one-jd`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
     { url: `${baseUrl}/search`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.5 },
     { url: `${baseUrl}/university`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.8 },
-    { url: `${baseUrl}/referrals`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.5 },
     { url: `${baseUrl}/resume-optimize`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.7 },
     { url: `${baseUrl}/resume-builder`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.5 },
     { url: `${baseUrl}/membership`, lastModified: now, changeFrequency: 'monthly' as const, priority: 0.6 },

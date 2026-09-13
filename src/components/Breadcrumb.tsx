@@ -21,7 +21,6 @@ const routeLabels: Record<string, string> = {
   '/profile/invite': '邀请好友',
   '/skill-portrait': '技能画像',
   '/learning-path': '学习路径',
-  '/referrals': '内推机会',
   '/assistant': 'AI助手',
   '/membership': '会员中心',
   '/notifications': '消息通知',
