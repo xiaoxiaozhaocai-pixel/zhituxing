@@ -606,6 +606,8 @@ function ChatContent() {
         role: 'assistant',
         content: newBot.welcomeMessage,
         timestamp: new Date(),
+        // 打开页面时小职用开心表情迎接
+        emotion: 'happy',
       }];
       // 本地无恢复时，按 conversation_id 从后端回显历史（与其他对话功能一致）
       const cid = localStorage.getItem(`conversationId_${activeBot}`);
