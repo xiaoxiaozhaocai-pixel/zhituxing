@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { X, Send, Loader2, User, ChevronDown } from 'lucide-react';
 import { useSSEStream } from '@/hooks/useSSEStream';
+import XiaozhiModel3D from './XiaozhiModel3D';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -262,10 +263,25 @@ export default function FloatingXiaoZhi() {
           50% { box-shadow: 0 0 30px rgba(22,93,255,0.45), 0 0 60px rgba(22,93,255,0.15); }
         }
         .fab-glow { animation: fab-pulse 3s ease-in-out infinite; }
+        @keyframes xz-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-7px); }
+        }
+        .xz-float { animation: xz-float 3.2s ease-in-out infinite; }
+        .xz-shadow {
+          background: radial-gradient(ellipse at center, rgba(30,41,59,0.18) 0%, rgba(30,41,59,0.05) 55%, transparent 75%);
+        }
       `}</style>
 
       {isOpen && (
-        <div className="w-[360px] sm:w-[400px] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+        <div className="relative">
+          {/* 3D 小职趴在聊天框左上角（桌面端） */}
+          <div className="hidden md:block absolute -top-[86px] left-5 w-[76px] h-[88px] pointer-events-none select-none">
+            <div className="w-full h-full xz-float">
+              <XiaozhiModel3D />
+            </div>
+          </div>
+          <div className="w-[360px] sm:w-[400px] h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           {/* 头部 */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white flex-shrink-0">
             <div className="flex items-center gap-2.5">
@@ -410,6 +426,7 @@ export default function FloatingXiaoZhi() {
             <p className="text-[10px] text-slate-400 mt-1.5 text-center">AI辅助建议，仅供参考</p>
           </div>
         </div>
+        </div>
       )}
 
       {/* FAB按钮 - 加大尺寸 + 脉冲光晕 */}
@@ -417,23 +434,27 @@ export default function FloatingXiaoZhi() {
         {/* 光晕层 */}
         <div className="absolute inset-0 rounded-full fab-glow" />
         <button
-          onClick={() => setIsOpen(!isOpen)}
-          title={isOpen ? '收起小职' : '和小职聊聊'}
-          className={`relative flex items-center justify-center w-16 h-16 rounded-full shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-blue-500/40 ${
-            isOpen ? 'bg-gray-600 rotate-45' : 'bg-white border-2 border-[#165DFF]/20'
-          }`}
+          onClick={() => setIsOpen(true)}
+          title="和小职聊聊"
+          className="group relative block w-[92px] transition-transform duration-300 hover:scale-110 active:scale-95"
         >
-          {isOpen ? (
-            <X className="w-7 h-7 text-white" />
-          ) : (
-            /* eslint-disable-next-line @next/next/no-img-element */
+          {/* 桌面端：3D 小职悬浮本体（点击展开，3D 会移到聊天框左上角） */}
+          <div className="hidden md:block">
+            <div className="w-[92px] h-[104px] xz-float">
+              <XiaozhiModel3D poster={EMOTION_IMGS[emotion] || EMOTION_IMGS.idle} />
+            </div>
+            <div className="xz-shadow mx-auto -mt-2 h-3 w-14 rounded-[50%]" />
+          </div>
+          {/* 移动端：表情包圆钮（省流量） */}
+          <div className="md:hidden relative flex items-center justify-center w-16 h-16 rounded-full shadow-xl bg-white border-2 border-[#165DFF]/20 transition-all duration-300">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={EMOTION_IMGS[emotion] || EMOTION_IMGS.idle}
               alt="小职"
               className="w-14 h-14 object-contain xiaozhi-breathe select-none"
               draggable={false}
             />
-          )}
+          </div>
         </button>
       </div>
     </div>
