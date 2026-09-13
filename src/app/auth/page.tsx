@@ -52,6 +52,39 @@ function AuthContent() {
 
   const redirectTo = params.get('redirect') || '/';
 
+  // 捕获邀请码：URL 带 invite_code 时持久化到 localStorage（30天有效），登录/注册成功后上报
+  useEffect(() => {
+    const ic = params.get('invite_code');
+    if (ic && /^[A-Za-z0-9_-]{4,32}$/.test(ic)) {
+      try { localStorage.setItem('xz_invite', JSON.stringify({ code: ic.toUpperCase(), ts: Date.now() })); } catch { /* ignore */ }
+    }
+  }, [params]);
+
+  // 邀请归因上报（幂等）：登录/注册成功后上报一次，后端按 invitee 唯一约束去重
+  useEffect(() => {
+    if (!loginSuccess) return;
+    let raw: string | null = null;
+    try { raw = localStorage.getItem('xz_invite'); } catch { /* ignore */ }
+    if (!raw) return;
+    try {
+      const { code, ts } = JSON.parse(raw);
+      if (!code || Date.now() - ts > 30 * 24 * 3600 * 1000) {
+        localStorage.removeItem('xz_invite');
+        return;
+      }
+      fetch('/api/invite/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+        credentials: 'include',
+      }).catch(() => {}).finally(() => {
+        try { localStorage.removeItem('xz_invite'); } catch { /* ignore */ }
+      });
+    } catch {
+      try { localStorage.removeItem('xz_invite'); } catch { /* ignore */ }
+    }
+  }, [loginSuccess]);
+
   // 已登录跳走
   useEffect(() => {
     if (loginSuccess) {
