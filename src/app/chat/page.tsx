@@ -2272,11 +2272,6 @@ function ChatContent() {
                       开通会员 解锁全部功能
                     </Button>
                   </Link>
-                  <Link href="/profile/invite" onClick={() => setShowQuotaDialog(false)}>
-                    <Button variant="outline" className="w-full">
-                      邀请好友 - 每次获得3次免费次数+7天会员
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </DialogDescription>
