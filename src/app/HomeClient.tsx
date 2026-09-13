@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// 3D 小职：Web Component 仅客户端加载（ssr:false），chunk 独立不阻塞首屏
+const XiaozhiModel3D = dynamic(() => import('@/components/XiaozhiModel3D'), { ssr: false });
 import {
   Compass, TrendingUp, Briefcase, CheckCircle2, ArrowRight,
   Sparkles, Building2, Mic, Search, Shield, Zap, FileText,
@@ -155,10 +159,15 @@ export default function HomeClient({ industryCount }: { industryCount: number })
             </span>
           </h1>
 
-          <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-10 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
+          <p className={`text-lg sm:text-xl text-[#64748B] max-w-xl mx-auto mb-6 leading-relaxed ${mounted ? 'anim-up-d1' : 'opacity-0'}`}>
             我是小职，懂桂电的AI朋友 👋<br />
             想清楚方向，一步步陪你走。
           </p>
+
+          {/* 3D 小职形象 — 可拖拽旋转互动 */}
+          <div className={`mx-auto mb-8 w-[220px] h-[220px] sm:w-[260px] sm:h-[260px] ${mounted ? 'anim-up-d2' : 'opacity-0'}`}>
+            <XiaozhiModel3D />
+          </div>
 
           {/* ============================================================
               小职对话 — 唯一主入口（人格化对话框）
