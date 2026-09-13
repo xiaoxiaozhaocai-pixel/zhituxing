@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { getAuthenticatedUserId } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,11 @@ export const dynamic = 'force-dynamic';
  * 奖励结算由后续邀请方案基于本表实现，本接口不做任何奖励发放。
  */
 export async function POST(request: NextRequest) {
-  const supabase = getSupabaseAdmin(); // 运行时初始化，避免构建期 dummy client 缓存
+  // 直接现场创建 admin client（service_role，bypass RLS），不经过共享缓存层
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  );
   try {
     const userId = await getAuthenticatedUserId(request);
     if (!userId) {
