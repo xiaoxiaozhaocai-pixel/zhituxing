@@ -3,7 +3,6 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
-const supabase = getSupabaseAdmin();
 
 /**
  * 邀请归因（基建）— 2026-09-13
@@ -13,6 +12,7 @@ const supabase = getSupabaseAdmin();
  * 奖励结算由后续邀请方案基于本表实现，本接口不做任何奖励发放。
  */
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseAdmin(); // 运行时初始化，避免构建期 dummy client 缓存
   try {
     const userId = await getAuthenticatedUserId(request);
     if (!userId) {
@@ -36,31 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!invite || invite.status !== 'active') {
-      // TEMP DEBUG: 部署验证后移除
-      let dbgRole = 'NA', dbgHost = 'NA';
-      try {
-        const raw = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-        const payload = JSON.parse(Buffer.from(raw.split('.')[1], 'base64').toString());
-        dbgRole = payload.role || 'no-role';
-      } catch {}
-      try { dbgHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || '').host; } catch {}
-      // TEMP DEBUG: 对比单例 client vs 现场新建 client
-      let dbgExtra: Record<string, unknown> = {};
-      try {
-        const { count } = await supabase.from('invites').select('*', { count: 'exact' });
-        dbgExtra.singletonCount = count;
-        const { createClient } = await import('@supabase/supabase-js');
-        const fresh = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || '', process.env.SUPABASE_SERVICE_ROLE_KEY || '');
-        const { count: fc, error: fe } = await fresh.from('invites').select('*', { count: 'exact' });
-        dbgExtra.freshCount = fc;
-        if (fe) dbgExtra.freshErr = fe.message;
-        const { data: rows, error: re } = await fresh.from('invites').select('code').eq('code', code.toUpperCase()).maybeSingle();
-        dbgExtra.freshRow = rows;
-        if (re) dbgExtra.freshRowErr = re.message;
-      } catch (dbgE) {
-        dbgExtra.dbgErr = String(dbgE);
-      }
-      return NextResponse.json({ success: false, error: '邀请码不存在或已失效', dbg: { host: dbgHost, keyRole: dbgRole, codeQueried: code.toUpperCase(), ...dbgExtra } });
+      return NextResponse.json({ success: false, error: '邀请码不存在或已失效' });
     }
     if (invite.inviter_id === userId) {
       return NextResponse.json({ success: false, error: '不能邀请自己' });
