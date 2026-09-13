@@ -15,7 +15,8 @@ import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 import AgentChainStatus from '@/components/AgentChainStatus';
-import { detectEmotion, EMOTION_IMAGES, type Emotion } from '@/lib/emotion';
+import { detectEmotion, ALL_AVATAR_IMAGES, type Emotion } from '@/lib/emotion';
+import XiaozhiAvatar from '@/components/XiaozhiAvatar';
 
 // 初始化 DOMPurify（组件挂载时调用）
 function _initDOMPurify() {
@@ -397,7 +398,7 @@ function ChatContent() {
 
   // 预加载情绪贴图：避免首次触发表情时闪空白
   useEffect(() => {
-    Object.values(EMOTION_IMAGES).forEach((src) => {
+    ALL_AVATAR_IMAGES.forEach((src) => {
       const img = new Image();
       img.src = src;
     });
@@ -1814,30 +1815,18 @@ function ChatContent() {
                     )}
                   </button>
                 )}
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
-                    msg.role === 'user'
-                      ? `bg-gradient-to-br ${currentBot.gradient}`
-                      : msg.emotion && EMOTION_IMAGES[msg.emotion]
-                        ? 'bg-transparent'
-                        : 'bg-white border-2 border-slate-200'
-                  }`}
-                  title={msg.role === 'assistant' && msg.emotion ? '小职与你同频' : undefined}
-                >
-                  {msg.role === 'user' ? (
+                {msg.role === 'user' ? (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${currentBot.gradient}`}>
                     <UserIcon className="w-5 h-5 text-white" />
-                  ) : msg.emotion && EMOTION_IMAGES[msg.emotion] ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- 40px 静态贴图已手动压缩为 WebP，无需 next/image 开销
-                    <img
-                      src={EMOTION_IMAGES[msg.emotion]}
-                      alt={`小职${msg.emotion}`}
-                      className="w-10 h-10 object-contain emotion-pop"
-                      draggable={false}
-                    />
-                  ) : (
-                    <span className={`${currentBot.color}`}>{currentBot.icon}</span>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <XiaozhiAvatar
+                    emotion={msg.emotion ?? null}
+                    isThinking={index === messages.length - 1 && isLoading && !msg.content}
+                    iconNode={currentBot.icon}
+                    iconColorClass={currentBot.color}
+                  />
+                )}
                 <div
                   className={`max-w-[85%] rounded-2xl p-4 ${
                     msg.role === 'user'

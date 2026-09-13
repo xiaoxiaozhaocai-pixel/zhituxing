@@ -20,6 +20,12 @@ export const EMOTION_IMAGES: Record<Emotion, string> = {
   sad: '/avatars/emotions/sad.webp',
 };
 
+/** 待机贴图（非情绪，用于思考中呼吸态） */
+export const IDLE_IMAGE = '/avatars/emotions/idle.webp';
+
+/** 全部贴图（页面 mount 预加载用） */
+export const ALL_AVATAR_IMAGES: string[] = [...Object.values(EMOTION_IMAGES), IDLE_IMAGE];
+
 /** 触发词按优先级排列：大喜事 > 愤怒 > 委屈 > 开心笑 */
 const EMOTION_RULES: Array<{ emotion: Emotion; words: string[] }> = [
   {
