@@ -12,14 +12,14 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('skill_taxonomy')
       .select('*')
-      .order('name', { ascending: true });
+      .order('skill_name', { ascending: true });
 
     if (category) {
-      query = query.eq('category', category);
+      query = query.eq('skill_category', category);
     }
 
     if (search) {
-      query = query.ilike('name', `%${search}%`);
+      query = query.ilike('skill_name', `%${search}%`);
     }
 
     const { data: skills, error } = await query;
