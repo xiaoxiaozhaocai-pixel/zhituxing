@@ -52,6 +52,11 @@ const CookieConsent = () => {
     return () => window.removeEventListener('open-cookie-preferences', handleOpenPreferences);
   }, []);
 
+  // 横幅显隐广播：悬浮小职 FAB 监听后上移避让，避免与底部横幅互相遮挡（P1 修复 2026-09-14）
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('ztx:cookie-banner', { detail: { visible: showBanner } }));
+  }, [showBanner]);
+
   const checkExistingConsent = (): boolean => {
     try {
       // Check localStorage

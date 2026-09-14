@@ -45,7 +45,7 @@ export default function InsightsTabs({ panels }: { panels: InsightsPanel[] }) {
     <div>
       <div
         ref={barRef}
-        className="sticky top-14 z-20 border-b border-[#E2E8F0] bg-white/80 backdrop-blur"
+        className="sticky top-[68px] z-20 border-b border-[#E2E8F0] bg-white/80 backdrop-blur"
       >
         <div
           className="mx-auto flex max-w-7xl items-center justify-start gap-1 overflow-x-auto px-4 py-2.5 text-sm sm:justify-center"

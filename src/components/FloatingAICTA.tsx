@@ -73,6 +73,30 @@ export default function FloatingAICTA() {
     // 6/12 P5-D4：删除首次访问自动展开，悬浮按钮仅在主动 hover 时展开（主人偏好）
   }, []);
 
+  // ── Cookie 横幅避让（P1 修复 2026-09-14）：底部横幅显示时 FAB 上移，不与其互相遮挡 ──
+  const [bannerOffset, setBannerOffset] = useState(0);
+  useEffect(() => {
+    const measure = () => {
+      const banner = document.querySelector('[aria-label="Cookie 同意横幅"]');
+      if (!banner) return 0;
+      const rect = banner.getBoundingClientRect();
+      // 滑入动画中高度已占位（translateY 不影响 rect.height），height>0 即显示中
+      return rect.height > 0 ? rect.height + 12 : 0;
+    };
+    const handler = (e: Event) => {
+      const visible = (e as CustomEvent).detail?.visible;
+      setBannerOffset(visible ? measure() : 0);
+    };
+    window.addEventListener('ztx:cookie-banner', handler as EventListener);
+    // FAB 为 ssr:false 懒加载，晚于横幅首次广播，挂载后补量一次
+    const t1 = setTimeout(() => setBannerOffset(measure()), 600);
+    const t2 = setTimeout(() => setBannerOffset(measure()), 1500);
+    return () => {
+      window.removeEventListener('ztx:cookie-banner', handler as EventListener);
+      clearTimeout(t1); clearTimeout(t2);
+    };
+  }, []);
+
   // ── 拖拽 ──
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!containerRef.current) return;
@@ -251,7 +275,7 @@ export default function FloatingAICTA() {
       <div
         ref={containerRef}
         className="fixed z-40 select-none group"
-        style={{ left: position.x, top: position.y, touchAction: 'none' }}
+        style={{ left: position.x, top: position.y, touchAction: 'none', transform: `translateY(-${bannerOffset}px)`, transition: 'transform 0.3s ease-in-out' }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

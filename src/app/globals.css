@@ -107,7 +107,13 @@ body {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden; /* 移动端防横滑 */
+  /* 防横滑用 clip 而非 hidden——hidden 会使 body 成为滚动容器，导致全站 position:sticky 失效 */
+  overflow-x: clip;
+}
+
+/* 锚点跳转/scrollIntoView 统一留出固定 Navbar 空间，防止目标标题被压 */
+html {
+  scroll-padding-top: 84px;
 }
 
 /* ----- 移动端安全区适配（iOS 刘海屏 / 底部横条） ----- */
