@@ -161,11 +161,12 @@ ${toolLines}
 {"action":"skip"}
 
 规则：
-1. args 的 key 必须严格使用工具定义中的参数名；抽取文本参数（简历原文/JD原文/经历原文）时保留用户原文，不要改写、不要截断、不要总结。
-2. 用户消息里没有的参数不要编造；缺必填参数时输出 ask，askText 里明确要用户提供什么。
-3. 用户只是在咨询、闲聊、问方法论（而非要求直接执行）→ skip。
-4. 消息诉求与候选工具明显不符（如"内推"、纯查岗位列表）→ skip。
-5. 用户画像中已有的信息可以作为 args 的来源（如 major/grade/city）。`;
+1. args 的 key 必须严格使用工具定义中的参数名；抽取短文本参数（技能/岗位/城市等）时忠实用户原意，不要编造。
+2. 原文类参数（resume_text/jd_text/experience）：若用户消息中已包含原文，该参数值固定填 "@message"，严禁把原文抄写进 args（系统会自动从消息中取回）。
+3. 用户消息里没有的参数不要编造；缺必填参数且消息中无原文可取时输出 ask，askText 里明确要用户提供什么。
+4. 用户只是在咨询、闲聊、问方法论（而非要求直接执行）→ skip。
+5. 消息诉求与候选工具明显不符（如"内推"、纯查岗位列表）→ skip。
+6. 用户画像中已有的信息可以作为 args 的来源（如 major/grade/city）。`;
 }
 
 async function decideToolAction(
@@ -202,9 +203,21 @@ async function decideToolAction(
     };
 
     if (parsed.action === 'execute') {
-      // 校验必填参数是否齐备（模型漏抽时降级为 ask）
+      // 占位符还原：原文类参数 '@message' → 用户消息全文（决策层不回抄原文，省输出 token）
       const args = parsed.args || {};
-      const missing = tool.requiredArgs.filter((k) => !args[k] || !String(args[k]).trim());
+      const ORIGINAL_KEYS = new Set(['resume_text', 'jd_text', 'experience']);
+      for (const k of Object.keys(args)) {
+        if (args[k] === '@message' && ORIGINAL_KEYS.has(k)) {
+          args[k] = ctx.message;
+        }
+      }
+      // 校验必填参数是否齐备；原文类参数还原后仍过短（消息里其实没贴原文）→ 降级 ask
+      const missing = tool.requiredArgs.filter((k) => {
+        const v = String(args[k] || '').trim();
+        if (!v) return true;
+        if (ORIGINAL_KEYS.has(k) && v === ctx.message && v.length < 100) return true;
+        return false;
+      });
       if (missing.length > 0) {
         return { action: 'ask', askText: parsed.askText || DEFAULT_ASK[tool.name] };
       }
