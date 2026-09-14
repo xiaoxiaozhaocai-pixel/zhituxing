@@ -75,10 +75,11 @@ function getRedis(): Redis | null {
       retryStrategy: (times) => (times > 3 ? null : Math.min(times * 500, 2000)),
       lazyConnect: false,
     });
-    redisClient.on('error', () => {
+    redisClient.on('error', (err) => {
       if (!redisBroken) {
         redisBroken = true;
         lastRedisFail = Date.now();
+        console.error('[rate-limit] redis error:', err?.message || err);
       }
     });
     redisClient.on('ready', () => {
@@ -170,6 +171,15 @@ export function getClientIP(request: Request): string {
     request.headers.get('x-real-ip') ||
     '127.0.0.1'
   );
+}
+
+/** 诊断用：Redis 限流层当前状态 */
+export function getRedisStatus() {
+  return {
+    configured: Boolean(process.env.REDIS_URL),
+    clientActive: Boolean(redisClient && !redisBroken),
+    broken: redisBroken,
+  };
 }
 
 export { PRESETS };
