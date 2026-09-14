@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 频控：同用户 5 单/10 分钟（防垃圾单刷屏审核后台；全局 400/min 之外的业务级防线）
-    const orderCheck = checkRateLimit(`orders:${user.id}`, { maxRequests: 5, windowMs: 600_000 });
+    const orderCheck = await checkRateLimit(`orders:${user.id}`, { maxRequests: 5, windowMs: 600_000 });
     if (!orderCheck.success) {
       return NextResponse.json({
         code: 429,

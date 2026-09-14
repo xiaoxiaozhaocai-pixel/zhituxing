@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-forwarded-for') ||
       request.headers.get('x-real-ip') ||
       'unknown';
-    const rl = checkRateLimit(`employer-signup:${ip}`, {
+    const rl = await checkRateLimit(`employer-signup:${ip}`, {
       maxRequests: 5,
       windowMs: 60_000,
     });

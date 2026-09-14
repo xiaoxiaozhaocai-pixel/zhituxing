@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
               password: password || 'Test1234',
             });
             if (signInError) {
-              return NextResponse.json({ error: '用户已存在但密码错误，请使用登录功能' }, { status: 400 });
+              return NextResponse.json({ error: '邮箱或密码错误' }, { status: 400 }); // 防账号枚举：不暴露存在性
             }
             authData = signInData;
           } else {

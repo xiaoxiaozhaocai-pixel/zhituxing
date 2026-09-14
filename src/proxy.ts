@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimitMem } from '@/lib/rate-limit';
 import { parseAccessTokenFromCookie, parseRefreshTokenFromCookie, setAuthCookies } from '@/lib/auth-cookies';
 
 // ============================================================
@@ -135,7 +135,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   const rateLimitKey = getRateLimitKey(request);
   const e2eDisableRateLimit = process.env.E2E_DISABLE_RATE_LIMIT === 'true';
   if (!e2eDisableRateLimit) {
-    const globalCheck = checkRateLimit(`global:${rateLimitKey}`, { maxRequests: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
+    const globalCheck = checkRateLimitMem(`global:${rateLimitKey}`, { maxRequests: RATE_LIMIT, windowMs: RATE_WINDOW_MS });
     if (!globalCheck.success) {
       return createRateLimitResponse();
     }
@@ -204,7 +204,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
       return addSecurityHeaders(response);
     }
     
-    const chatCheck = checkRateLimit(`chat:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
+    const chatCheck = checkRateLimitMem(`chat:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
     if (!chatCheck.success) {
       return createRateLimitResponse();
     }
@@ -214,7 +214,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // 4. /api/auth/login 和 /api/auth/register 路由：5次/分钟限流
   // --------------------------------------------------------
   if (pathname === '/api/auth/login' || pathname === '/api/auth/register') {
-    const authCheck = checkRateLimit(`auth:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
+    const authCheck = checkRateLimitMem(`auth:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
     if (!authCheck.success) {
       return createRateLimitResponse();
     }
@@ -224,7 +224,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
   // 5. /api/jobs 路由：30次/分钟限流
   // --------------------------------------------------------
   if (pathname.startsWith('/api/jobs')) {
-    const jobsCheck = checkRateLimit(`jobs:${rateLimitKey}`, { maxRequests: 30, windowMs: 60000 });
+    const jobsCheck = checkRateLimitMem(`jobs:${rateLimitKey}`, { maxRequests: 30, windowMs: 60000 });
     if (!jobsCheck.success) {
       return createRateLimitResponse();
     }

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     // P1-4: 速率限制 5次/60秒
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    const rl = checkRateLimit(`login:${ip}`, { maxRequests: 5, windowMs: 60000 });
+    const rl = await checkRateLimit(`login:${ip}`, { maxRequests: 5, windowMs: 60000 });
     if (!rl.success) {
       return NextResponse.json({ error: '请求过于频繁，请稍后重试' }, { status: 429 });
     }

@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Rate limiting
-    const rateLimitResult = checkRateLimit(`resume_score:${userId}`, { maxRequests: 10, windowMs: 60000 });
+    const rateLimitResult = await checkRateLimit(`resume_score:${userId}`, { maxRequests: 10, windowMs: 60000 });
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: '请求过于频繁，请稍后再试' },

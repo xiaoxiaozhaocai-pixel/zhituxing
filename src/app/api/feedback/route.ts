@@ -23,7 +23,7 @@ function getClientIp(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimitResult = checkRateLimit(`feedback:${clientIp}`, { maxRequests: 10, windowMs: 3600000 });
+    const rateLimitResult = await checkRateLimit(`feedback:${clientIp}`, { maxRequests: 10, windowMs: 3600000 });
     
     if (!rateLimitResult.success) {
       return NextResponse.json(

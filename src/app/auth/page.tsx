@@ -18,7 +18,7 @@ const ERROR_MAP: Record<string, string> = {
   'Invalid verification code': '验证码错误',
   'Code expired': '验证码已过期，请重新获取',
   'Too many requests': '操作过于频繁，请稍后再试',
-  'User not found': '该账号未注册，请先注册',
+  'User not found': '邮箱或验证码错误', // 防账号枚举
   'Email not confirmed': '请先验证邮箱',
 };
 

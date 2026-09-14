@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 限流：每雇主 30 次/分钟（防误点连刷）
-  const rl = checkRateLimit(`employer-unlock:${session.employerId}`, { maxRequests: 30, windowMs: 60_000 });
+  const rl = await checkRateLimit(`employer-unlock:${session.employerId}`, { maxRequests: 30, windowMs: 60_000 });
   if (!rl.success) {
     return jsonError('RATE_LIMITED', '请求过于频繁，请稍后再试');
   }

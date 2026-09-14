@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
       || request.headers.get('x-real-ip') 
       || 'unknown';
     
-    const byEmail = checkRateLimit(`send-code:email:${email}`, { maxRequests: 3, windowMs: 60_000 });
-    const byIp = checkRateLimit(`send-code:ip:${clientIp}`, { maxRequests: 10, windowMs: 3_600_000 });
+    const byEmail = await checkRateLimit(`send-code:email:${email}`, { maxRequests: 3, windowMs: 60_000 });
+    const byIp = await checkRateLimit(`send-code:ip:${clientIp}`, { maxRequests: 10, windowMs: 3_600_000 });
     if (!byEmail.success || !byIp.success) {
       return NextResponse.json({ 
         error: '发送过于频繁，请稍后再试',
@@ -84,8 +84,12 @@ export async function POST(request: NextRequest) {
         userMessage = '发送过于频繁，请60秒后再试';
         hint = 'Supabase SMTP 有发送频率限制';
       } else if (error.message?.includes('not found') || error.status === 404) {
-        userMessage = '邮箱未注册';
-        hint = '请先注册账号';
+        // 防账号枚举：不暴露邮箱是否存在，与成功响应同文案
+        return NextResponse.json({
+          success: true,
+          message: '验证码已发送到您的邮箱',
+          hint: '若该邮箱已注册，请查收邮件（含垃圾箱）；未注册请先完成注册'
+        });
       } else if (error.message?.includes('invalid email')) {
         userMessage = '邮箱格式无效';
       } else if (error.message?.includes('SMTP') || error.message?.includes('mail')) {
