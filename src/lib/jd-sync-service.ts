@@ -546,13 +546,9 @@ async function fetchFromMockData(source: string): Promise<SyncResult> {
 export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncResult[]> {
   const results: SyncResult[] = [];
 
-  console.log('='.repeat(50));
-  console.log('开始JD同步任务...');
-  console.log('='.repeat(50));
 
   if (useMock) {
     // 使用模拟数据
-    console.log('使用模拟数据演示...');
     const mockResult = await fetchFromMockData('模拟数据源');
     results.push(mockResult);
     await saveSyncLog(mockResult);
@@ -597,9 +593,7 @@ export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncRe
   const totalSuccess = results.reduce((sum, r) => sum + r.success_count, 0);
   const totalFail = results.reduce((sum, r) => sum + r.fail_count, 0);
 
-  console.log('='.repeat(50));
   console.log(`JD同步任务完成！总计: ${totalFetched}条, 成功: ${totalSuccess}条, 失败: ${totalFail}条`);
-  console.log('='.repeat(50));
 
   return results;
 }

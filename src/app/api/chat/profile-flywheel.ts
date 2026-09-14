@@ -75,7 +75,6 @@ const EXTRACTION_PROMPT = `你是一个用户画像提取器。从用户与AI助
 async function extractWithDeepSeek(userMessage: string, assistantResponse: string): Promise<ProfileUpdate> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-    console.log('[profile-flywheel] DeepSeek API key not configured, skipping');
     return {};
   }
 
@@ -252,7 +251,6 @@ export async function runProfileFlywheel(params: FlywheelParams): Promise<void> 
   // 快速判断：对话是否有个人信息
   if (!hasProfileInfo(userMessage)) return;
 
-  console.log('[profile-flywheel] 🔍 Potential profile info detected, extracting...');
 
   // Step 1: 用 DeepSeek 提取个人信息
   const profile = await extractWithDeepSeek(userMessage, assistantResponse);
@@ -266,6 +264,5 @@ export async function runProfileFlywheel(params: FlywheelParams): Promise<void> 
   if (saved) {
     console.log(`[profile-flywheel] ✅ Profile updated: ${fields}`);
   } else {
-    console.log('[profile-flywheel] No new info to save');
   }
 }

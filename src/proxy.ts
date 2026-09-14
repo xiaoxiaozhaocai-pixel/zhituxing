@@ -197,7 +197,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
     // 漏洞修复：之前允许 x-user-id 绕过登录检查是严重安全漏洞
     // 现在只验证 JWT token，不再信任 x-user-id header
     if (!accessToken) {
-      console.log('[proxy] /api/chat returning 401 - no auth token');
       const response = NextResponse.json(
         { error: '请先登录' },
         { status: 401 }
@@ -205,7 +204,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse | undefi
       return addSecurityHeaders(response);
     }
     
-    console.log('[proxy] /api/chat auth passed, checking rate limit');
     const chatCheck = checkRateLimit(`chat:${rateLimitKey}`, { maxRequests: 5, windowMs: 60000 });
     if (!chatCheck.success) {
       return createRateLimitResponse();

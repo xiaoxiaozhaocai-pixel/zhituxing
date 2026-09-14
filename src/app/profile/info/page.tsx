@@ -423,7 +423,6 @@ function ProfileInfoContent() {
           }
         }
       } catch {
-        console.log('获取岗位列表失败，使用默认选项');
       }
     };
     fetchJobOptions();
@@ -516,7 +515,6 @@ function ProfileInfoContent() {
         credentials: 'include',
       });
       const data = await response.json();
-      console.log('[profile/info] 加载数据:', data);
 
         if (data.code === 200 && data.data?.profile) {
           const profile = data.data.profile;
@@ -557,7 +555,6 @@ function ProfileInfoContent() {
           }
         } else if (data.code === 404) {
           // 新用户，无画像记录，保持默认空表单
-          console.log('[profile/info] 新用户，无已有画像');
         }
     } catch (error) {
       console.error('获取个人信息失败:', error);
@@ -789,7 +786,6 @@ function ProfileInfoContent() {
       });
 
       const data = await response.json();
-      console.log('[profile/info] 保存响应:', data);
 
       if (data.code === 200) {
         showToast('✅ 信息保存成功', 'success', 3000);

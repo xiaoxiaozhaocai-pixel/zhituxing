@@ -813,7 +813,6 @@ function AssistantContent() {
                 const parsed = JSON.parse(dataLine);
                 if (parsed.conversation_id) {
                   localStorage.setItem(`conversationId_${activeBot}`, parsed.conversation_id);
-                  console.log('[chat] Saved conversationId:', parsed.conversation_id, 'for bot:', activeBot);
                 }
               } catch {
                 // 忽略解析错误

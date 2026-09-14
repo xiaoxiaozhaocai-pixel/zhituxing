@@ -43,11 +43,9 @@ export async function tryRefreshSession(
     });
 
     if (error || !data.session || !data.user) {
-      console.log('[auth-refresh] refresh failed:', error?.message || 'no session');
       return null;
     }
 
-    console.log('[auth-refresh] session refreshed for user:', data.user.id);
 
     return {
       accessToken: data.session.access_token,

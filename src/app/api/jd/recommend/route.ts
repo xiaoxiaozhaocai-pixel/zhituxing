@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
           targetPosition = profile.target_position || '';
         }
       } catch {
-        console.log('user_profiles 查询失败，使用默认值');
       }
 
       // 读取最新测评结果，补充技能差距信息
@@ -111,7 +110,6 @@ export async function GET(request: NextRequest) {
         }
       } catch {
         // job_descriptions 表查询失败，继续尝试其他查询
-        console.log('job_descriptions 按标题查询失败');
       }
     }
 
@@ -121,7 +119,6 @@ export async function GET(request: NextRequest) {
       const { data: jds, error } = await (query as any).order('created_at', { ascending: false });
 
       if (error) {
-        console.log('job_descriptions 按时间排序失败:', error);
         return NextResponse.json({ 
           success: true, 
           data: [],

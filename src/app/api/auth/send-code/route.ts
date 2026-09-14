@@ -57,7 +57,6 @@ export async function POST(request: NextRequest) {
 
     // 🧪 测试模式：DEV_OTP_BYPASS 开启时跳过真实邮件发送
     if (process.env.DEV_OTP_BYPASS === 'true') {
-      console.log('[send-code] 🧪 测试模式：跳过邮件发送', { email, type });
       return NextResponse.json({
         success: true,
         message: '验证码已发送（测试模式）',
@@ -89,7 +88,6 @@ export async function POST(request: NextRequest) {
     // 统一使用 signInWithOtp 方法，更可靠
     // - 对于已注册用户：发送 Magic Link / OTP
     // - 对于新用户：如果 shouldCreateUser=false，会返回错误
-    console.log('[send-code] 使用 signInWithOtp 方法，type:', type);
     const result = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -137,7 +135,6 @@ export async function POST(request: NextRequest) {
       }, { status: error.status || 500 });
     }
 
-    console.log('[send-code] 验证码发送成功:', { email, type });
     
     return NextResponse.json({
       success: true,

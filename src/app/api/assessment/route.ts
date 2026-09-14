@@ -519,7 +519,6 @@ ${ragContext ? `--- 题库参考 ---\n${ragContext}\n---` : ""}
     const config = getWorkflowConfig('assessment');
 
     if (!config) {
-      console.log('Assessment Workflow API not configured, using fallback');
       const fallback = getAssessmentFallback(major, grade);
       return new Response(createTextStream(fallback), {
         headers: {

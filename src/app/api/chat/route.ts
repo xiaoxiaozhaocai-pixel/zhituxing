@@ -518,7 +518,6 @@ export async function POST(request: NextRequest) {
     // ============================================================
     const injectionCheck = detectInjection(message, botType);
     if (injectionCheck.blocked) {
-      console.log('[chat] Injection detected, blocking message:', injectionCheck.reason);
       return new Response(createBlockedSSE(injectionCheck.reason || '消息被安全拦截'), {
         headers: {
           'Content-Type': 'text/event-stream',
@@ -537,7 +536,6 @@ export async function POST(request: NextRequest) {
     const userType = userInfo?.userType || 'free';
     
     if (!userInfo && accessToken) {
-      console.log('[chat] User info not found but token exists, treating as free user');
     }
 
     // ============================================================
@@ -561,7 +559,6 @@ export async function POST(request: NextRequest) {
       }
     } else if (userId && conversationId) {
       // 后续消息：不重复注入用户画像和上游产物，减少 token 消耗和干扰
-      console.log('[chat] 已有 conversationId，跳过上下文注入');
     }
 
     // 检查配额（仅当 userId 存在时）—— 会员v2：不足时展示付费引导，不直接拒绝
@@ -1242,13 +1239,11 @@ export async function POST(request: NextRequest) {
         // 创建带超时保护的 DeepSeek RAG 流（45s 超时 + 客户端断开检测）
         const timeoutController = new AbortController();
         const timeoutId = setTimeout(() => {
-          console.log('[chat] DeepSeek RAG stream timeout (45s)');
           timeoutController.abort();
         }, 45000);
         // 客户端断开时取消请求
         if (request.signal) {
           request.signal.addEventListener('abort', () => {
-            console.log('[chat] Client disconnected, aborting DeepSeek stream');
             timeoutController.abort();
           }, { once: true });
         }
@@ -1442,7 +1437,6 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.COZE_API_TOKEN;
 
     if (!apiKey || !botId) {
-      console.log('[chat] No standard Bot API configured, using fallback');
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
@@ -1456,7 +1450,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!cozeResponse.ok) {
-      console.log('[chat] Coze Bot API HTTP error:', cozeResponse.status);
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
@@ -1466,7 +1459,6 @@ export async function POST(request: NextRequest) {
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.code && errorData.code !== 0) {
-          console.log('[chat] Coze Bot API error:', errorData.code, errorData.msg);
           return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
         }
       } catch {

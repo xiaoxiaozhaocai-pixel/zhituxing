@@ -86,7 +86,6 @@ const EXTRACTION_PROMPT = `你是一个校园知识提取器。你的任务是�
 async function extractWithDeepSeek(userMessage: string, assistantResponse: string): Promise<GuetKnowledgeItem[]> {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) {
-    console.log('[guet-flywheel] DeepSeek API key not configured, skipping');
     return [];
   }
 
@@ -214,7 +213,6 @@ export async function runGuetFlywheel(params: FlywheelParams): Promise<void> {
     return;
   }
 
-  console.log('[guet-flywheel] 🎯 Guet-related chat detected, extracting...');
 
   // Step 1: 用 DeepSeek 提取知识点
   const items = await extractWithDeepSeek(userMessage, assistantResponse);

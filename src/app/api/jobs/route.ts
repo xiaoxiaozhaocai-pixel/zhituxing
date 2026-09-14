@@ -196,7 +196,6 @@ export async function GET(request: NextRequest) {
     const cacheKey = `jobs:${keyword}:${industry}:${city}:${freshOnly}:${education}:${experience}:${companyType}:${page}:${pageSize}`;
     const cached = getCachedResult(cacheKey) as JobsListData | null;
     if (cached) {
-      console.log('[jobs] 缓存命中:', cacheKey);
       return jsonOk(JobsListDataSchema, cached, {
         headers: { 'Cache-Control': 'public, max-age=120, stale-while-revalidate=300' },
       });

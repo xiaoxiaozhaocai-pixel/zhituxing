@@ -133,27 +133,20 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
   const fetchProfile = async () => {
     try {
-      console.log('[profile] 开始获取用户信息, userId:', userId);
       const res = await fetch('/api/user/profile', { credentials: 'include' });
-      console.log('[profile] 响应状态:', res.status);
       const data = await res.json();
-      console.log('[profile] 响应数据:', JSON.stringify(data, null, 2).slice(0, 500));
       
       // API返回格式: { success: true, data: {...profile直接} }
       let profileData = null;
       if (data.success && data.data) {
-        console.log('[profile] 使用 data.data (success格式)');
         profileData = data.data;
       } else if (data.data) {
-        console.log('[profile] 使用 data.data');
         profileData = data.data;
       }
       
       if (profileData) {
-        console.log('[profile] 解析到的profile:', JSON.stringify(profileData, null, 2).slice(0, 500));
         setProfile(profileData);
       } else {
-        console.log('[profile] 未找到profile数据');
       }
     } catch (e) {
       console.error('获取个人信息失败:', e);
@@ -212,7 +205,6 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
   });
   
   if (Array.isArray(profile.skills) && profile.skills.length > 0) {
-    console.log('[profile] 使用 profile.skills');
     skillsData = profile.skills;
   } else {
     // hard_skills 根据技能名智能分类：Excel/PPT/Word/项目管理→office，其余→professional
@@ -228,12 +220,10 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       };
     });
     const softSkills = convertToSkillForSave(profile.soft_skills, 'soft');
-    console.log('[profile] 从 hard_skills/soft_skills 转换:', { hardSkills, softSkills });
     skillsData = [...hardSkills, ...softSkills];
   }
   const grouped = groupSkillsByCategory(skillsData);
   const hasSkills = grouped.professional.length + grouped.office.length + grouped.soft.length > 0;
-  console.log('[profile] 技能分组结果:', { grouped, hasSkills });
 
   // 字段名映射（数据库列名 → 显示名）
   // 数据库字段：target_city, job_intention；前端展示名：意向城市、求职意向

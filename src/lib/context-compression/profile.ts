@@ -67,7 +67,6 @@ export async function updateUserProfile(
         .from('user_profiles')
         .insert({ user_id: userId, ...updates });
     }
-    console.log('[context-compression] User profile updated:', userId, Object.keys(updates));
   } catch (err) {
     console.error('[context-compression] Failed to update user profile:', err);
   }

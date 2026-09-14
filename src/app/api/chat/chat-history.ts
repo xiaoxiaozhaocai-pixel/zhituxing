@@ -64,14 +64,12 @@ async function insertChatHistory(params: SaveHistoryParams): Promise<string> {
         console.error('[chat] Fallback insert error:', fallbackRes.status, errText);
         return `error:fallback:${fallbackRes.status}`;
       }
-      console.log('[chat] SUCCESS! Saved via fallback REST API');
       return 'success';
     } else if (!response.ok) {
       const errText = await response.text();
       console.error('[chat] SQL exec error:', response.status, errText);
       return `error:${response.status}`;
     }
-    console.log('[chat] SUCCESS! Saved via SQL endpoint');
     return 'success';
   } catch (err) {
     console.error('[chat] Exception saving history:', err);
@@ -113,7 +111,6 @@ export async function saveChatHistory(
   if (assistantResponse && userId) {
     saveResult = await insertChatHistory(params);
   } else {
-    console.log('[chat] Skip saving history: assistantResponse=', !!assistantResponse, 'userId=', !!userId);
   }
 
   // 写入 AI 缓存（fire-and-forget）

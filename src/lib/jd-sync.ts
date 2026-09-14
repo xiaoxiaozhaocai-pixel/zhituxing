@@ -172,7 +172,6 @@ function mapGxrcApiItem(item: any): Record<string, unknown> {
 }
 
 async function syncGxrc(limit: number, dryRun: boolean, supabase: ReturnType<typeof getSupabaseAdmin>, result: JdSyncResult): Promise<void> {
-  console.log('开始同步广西人才网 (gxrc.com via API)...');
   const pageSize = Math.min(limit, 100);
   const maxPages = Math.ceil(limit / pageSize) + 1;
   let fetched = 0;
@@ -354,7 +353,6 @@ async function parseShixisengDetail(url: string, title: string): Promise<Record<
 }
 
 async function syncShixiseng(limit: number, dryRun: boolean, supabase: ReturnType<typeof getSupabaseAdmin>, result: JdSyncResult): Promise<void> {
-  console.log('开始同步实习僧 (shixiseng.com)...');
   const allItems: { url: string; title: string }[] = [];
   let page = 1;
   const maxPages = Math.ceil(limit / 20) + 1;

@@ -124,7 +124,6 @@ export async function POST(request: NextRequest) {
     // DeepSeek + RAG 分支
     // ===========================
     if (USE_DEEPSEEK) {
-      console.log('[career] Using DeepSeek + RAG');
       try {
         const keywords = extractKeywords(queryContent);
         const industry = keywords.industry || major;
@@ -200,7 +199,6 @@ export async function POST(request: NextRequest) {
     const workflowConfig = getWorkflowConfig('career');
 
     if (workflowConfig) {
-      console.log('[career] Using stream_run API');
       try {
         const workflowResponse = await callWorkflowStreamApi({
           botType: 'career',
@@ -231,7 +229,6 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.COZE_API_TOKEN;
 
     if (!apiKey || !botId) {
-      console.log('[career] No Bot API configured, using fallback');
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
@@ -244,7 +241,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!cozeResponse.ok) {
-      console.log('[career] Coze API error:', cozeResponse.status);
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
@@ -254,7 +250,6 @@ export async function POST(request: NextRequest) {
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.code && errorData.code !== 0) {
-          console.log('[career] Coze API error:', errorData.code, errorData.msg);
           return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
         }
       } catch { /* continue */ }

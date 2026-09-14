@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
     let finalUser: any = null;
 
     if (isBypass) {
-      console.log('[verify-otp] 🧪 测试模式旁路验证:', { email, flowType });
       
       if (flowType === 'signup') {
         // 直接创建用户
@@ -36,7 +35,6 @@ export async function POST(request: NextRequest) {
         if (createError) {
           // 用户可能已存在（之前注册过），尝试登录
           if (createError.message?.includes('already') || createError.message?.includes('exists')) {
-            console.log('[verify-otp] 用户已存在，尝试登录');
             const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
               email,
               password: password || 'Test1234',
@@ -60,7 +58,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: '账号创建成功但登录失败，请手动登录' }, { status: 500 });
           }
           authData = signInData;
-          console.log('[verify-otp] 🧪 测试账号创建成功:', email);
         }
       } else {
         // 登录流程旁路：直接用密码登录
@@ -124,7 +121,6 @@ export async function POST(request: NextRequest) {
         console.error('[verify-otp] 设置密码失败:', updateError);
       } else if (updateData.user) {
         finalUser = updateData.user;
-        console.log('[verify-otp] 密码设置成功');
       }
     }
 
@@ -145,7 +141,6 @@ export async function POST(request: NextRequest) {
         console.error('[verify-otp] 创建用户档案失败:', profileError);
         // 不阻止登录流程
       } else {
-        console.log('[verify-otp] 用户档案创建成功:', finalUser.id);
       }
     }
 

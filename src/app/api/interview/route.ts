@@ -161,7 +161,6 @@ export async function POST(request: NextRequest) {
     // DeepSeek + RAG 分支
     // ===========================
     if (USE_DEEPSEEK) {
-      console.log('[interview] Using DeepSeek + RAG');
       try {
         // 提取关键词
         const keywords = extractKeywords(message);
@@ -219,7 +218,6 @@ export async function POST(request: NextRequest) {
     const workflowConfig = getWorkflowConfig('interview');
 
     if (workflowConfig) {
-      console.log('[interview] Using stream_run API');
       try {
         const workflowResponse = await callWorkflowStreamApi({
           botType: 'interview',
@@ -250,7 +248,6 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.COZE_API_TOKEN;
 
     if (!apiKey || !botId) {
-      console.log('[interview] No Bot API configured, using fallback');
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
@@ -263,7 +260,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!cozeResponse.ok) {
-      console.log('[interview] Coze API error:', cozeResponse.status);
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
@@ -273,7 +269,6 @@ export async function POST(request: NextRequest) {
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.code && errorData.code !== 0) {
-          console.log('[interview] Coze API error:', errorData.code, errorData.msg);
           return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
         }
       } catch { /* continue */ }

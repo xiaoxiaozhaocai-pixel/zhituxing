@@ -163,12 +163,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(payload);
     }
 
-    console.log('[Search] Keyword:', query);
 
     const databaseResults = await searchFromDatabase(query);
     const result = formatResults(databaseResults);
 
-    console.log('[Search] Found', databaseResults.length, 'results');
 
     const payload = SearchJdGetResponseSchema.parse({ code: 0, result });
     return NextResponse.json(payload);
@@ -208,7 +206,6 @@ export async function POST(request: NextRequest) {
     const workflowConfig = getWorkflowConfig('jobs');
 
     if (workflowConfig) {
-      console.log('[search-jd] Using stream_run API');
       try {
         const workflowResponse = await callWorkflowStreamApi({
           botType: 'jobs',

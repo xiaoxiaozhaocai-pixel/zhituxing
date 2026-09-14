@@ -209,7 +209,6 @@ export function createWorkflowSSEStream(params: {
           try {
             readResult = await reader.read();
           } catch (readErr: unknown) {
-            console.log('Workflow stream read error:', readErr instanceof Error ? readErr.message : String(readErr));
             break;
           }
           const { done, value } = readResult;
@@ -233,7 +232,6 @@ export function createWorkflowSSEStream(params: {
                 const parsed = JSON.parse(line);
 
                 if (parsed.code && parsed.code !== 0) {
-                  console.log('Workflow stream error:', parsed.code, parsed.msg);
                   hasError = true;
                   break;
                 }
@@ -242,7 +240,6 @@ export function createWorkflowSSEStream(params: {
                   pendingText += parsed.content.answer;
                   pendingText = flushPendingText(controller, pendingText, hasSentAnyData);
                 } else if (parsed.type === 'error') {
-                  console.log('Workflow error event:', parsed);
                   hasError = true;
                   break;
                 }
@@ -267,7 +264,6 @@ export function createWorkflowSSEStream(params: {
           sendDone(controller);
         }
       } catch (streamErr: unknown) {
-        console.log('Workflow stream unexpected error:', streamErr instanceof Error ? streamErr.message : String(streamErr));
         if (!hasSentAnyData.value) sendText(controller, fallbackText);
         else sendError(controller, 'AI生成过程中出现异常');
       } finally {
@@ -339,7 +335,6 @@ export function createCozeSSEStream(params: {
               try {
                 const potentialError = JSON.parse(trimmed);
                 if (potentialError.code && potentialError.code !== 0) {
-                  console.log('Coze API stream error:', potentialError.code, potentialError.msg);
                   sendText(controller, fallbackText);
                   hasSentAnyData.value = true;
                   break;
@@ -410,7 +405,6 @@ export function createCozeSSEStream(params: {
         if (buffer) { sendText(controller, buffer); hasSentAnyData.value = true; }
         sendDone(controller);
       } catch (streamErr: unknown) {
-        console.log('Coze stream unexpected error:', streamErr instanceof Error ? streamErr.message : String(streamErr));
         if (!hasSentAnyData.value) sendText(controller, fallbackText);
       } finally {
         try { reader.releaseLock(); } catch { /* ignore */ }
