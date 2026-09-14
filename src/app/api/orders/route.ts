@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { checkRateLimit } from '@/lib/rate-limit';
 export const dynamic = 'force-dynamic';
 
 export const runtime = 'nodejs';
@@ -48,6 +49,22 @@ export async function POST(request: NextRequest) {
     }
     if (!payment_screenshot_url || typeof payment_screenshot_url !== 'string') {
       return NextResponse.json({ code: 400, message: '请上传付款截图' }, { status: 400 });
+    }
+
+    // 频控：同用户 5 单/10 分钟（防垃圾单刷屏审核后台；全局 400/min 之外的业务级防线）
+    const orderCheck = checkRateLimit(`orders:${user.id}`, { maxRequests: 5, windowMs: 600_000 });
+    if (!orderCheck.success) {
+      return NextResponse.json({
+        code: 429,
+        message: '提交过于频繁，请稍后再试',
+        retryAfter: orderCheck.retryAfter,
+      }, { status: 429 });
+    }
+
+    // 截图凭证校验：必须是本站 Storage 上传路径（{userId}/{timestamp}.{ext}），
+    // 拒绝外链/伪协议——admin 审核后台只渲染站内 Storage 对象
+    if (!/^[A-Za-z0-9_-]+\/\d+\.(jpg|png|webp)$/.test(payment_screenshot_url)) {
+      return NextResponse.json({ code: 400, message: '付款截图无效，请先上传' }, { status: 400 });
     }
 
     const supabase = getSupabaseAdmin();

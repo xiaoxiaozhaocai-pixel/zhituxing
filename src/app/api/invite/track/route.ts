@@ -46,11 +46,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '不能邀请自己' });
     }
 
+    // ignoreDuplicates: 首次归因锁定——已存在归因（DO NOTHING）时不可被后续上报覆盖，
+    // 防止奖励上线后通过"二次上报"抢注他人邀请关系刷奖励
     const { error } = await supabase
       .from('invite_relations')
       .upsert(
         { inviter_id: invite.inviter_id, invitee_id: userId, invite_code: code.toUpperCase() },
-        { onConflict: 'invitee_id' }
+        { onConflict: 'invitee_id', ignoreDuplicates: true }
       );
     if (error) {
       console.error('[invite/track] relations 写入失败:', error.message, error.details, error.hint);
