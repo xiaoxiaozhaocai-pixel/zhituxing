@@ -283,7 +283,7 @@ function NavbarInner() {
                       登录
                     </Button>
                   </Link>
-                  <Link href="/auth">
+                  <Link href="/auth?tab=register">
                     <Button className="btn-gradient rounded-xl font-semibold text-[15px] px-5 py-2">
                       免费注册
                     </Button>

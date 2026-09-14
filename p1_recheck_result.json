@@ -1,0 +1,212 @@
+{
+ "mobile/": {
+  "navH": 72,
+  "h1Top": 136,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/jobs": {
+  "navH": 72,
+  "h1Top": 180,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/insights": {
+  "navH": 72,
+  "h1Top": 160,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/tools": {
+  "navH": 72,
+  "h1Top": 194,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/capability": {
+  "navH": 72,
+  "h1Top": 176,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/match": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/assessment": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/career-planning": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/membership": {
+  "navH": 72,
+  "h1Top": 222,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/about": {
+  "navH": 72,
+  "h1Top": 208,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/contact": {
+  "navH": 72,
+  "h1Top": 216,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/data-source": {
+  "navH": 72,
+  "h1Top": 208,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/resume-optimize": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/learning-path": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "mobile/career-paths": {
+  "navH": 72,
+  "h1Top": 104,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/": {
+  "navH": 72,
+  "h1Top": 242,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/jobs": {
+  "navH": 72,
+  "h1Top": 160,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/insights": {
+  "navH": 72,
+  "h1Top": 176,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/tools": {
+  "navH": 72,
+  "h1Top": 226,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/capability": {
+  "navH": 72,
+  "h1Top": 192,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/match": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/assessment": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/career-planning": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/membership": {
+  "navH": 72,
+  "h1Top": 222,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/about": {
+  "navH": 72,
+  "h1Top": 208,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/contact": {
+  "navH": 72,
+  "h1Top": 216,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/data-source": {
+  "navH": 72,
+  "h1Top": 208,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/resume-optimize": {
+  "navH": 72,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/learning-path": {
+  "navH": null,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ },
+ "desktop/career-paths": {
+  "navH": null,
+  "h1Top": null,
+  "pressed": false,
+  "floatsTop": [],
+  "floatsBottom": []
+ }
+}

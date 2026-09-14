@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { setAuthCookies } from '@/lib/auth-cookies';
+import { SITE_URL } from '@/lib/config';
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  // Zeabur 反代后 request.url.origin 是容器内网地址(0.0.0.0:8080)，redirect 会变成死链；
+  // 优先用反代透传的 host 头还原公网 origin，兜底 SITE_URL
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+  const origin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : SITE_URL;
   const code = searchParams.get('code');
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type');

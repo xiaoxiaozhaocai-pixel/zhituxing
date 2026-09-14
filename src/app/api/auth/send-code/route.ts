@@ -16,12 +16,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请输入正确的邮箱地址' }, { status: 400 });
     }
 
-    // 双层频率限制：邮箱维度 3次/60s + IP 全局维度 10次/小时（防换邮箱轰炸）
+    // 双层频率限制：邮箱维度 3次/60s（键不含IP——防IP池轮换绕过轰炸）+ IP 全局维度 10次/小时
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
       || request.headers.get('x-real-ip') 
       || 'unknown';
     
-    const byEmail = checkRateLimit(`send-code:${clientIp}:${email}`, { maxRequests: 3, windowMs: 60_000 });
+    const byEmail = checkRateLimit(`send-code:email:${email}`, { maxRequests: 3, windowMs: 60_000 });
     const byIp = checkRateLimit(`send-code:ip:${clientIp}`, { maxRequests: 10, windowMs: 3_600_000 });
     if (!byEmail.success || !byIp.success) {
       return NextResponse.json({ 

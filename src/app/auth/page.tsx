@@ -35,7 +35,7 @@ function AuthContent() {
   const { login, verifyEmailCode, sendEmailCode } = useAuth();
   const [nickname, setNickname] = useState('');
 
-  const [tab, setTab] = useState<Tab>('password');
+  const [tab, setTab] = useState<Tab>(params.get('tab') === 'register' ? 'register' : 'password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
@@ -257,7 +257,7 @@ function AuthContent() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
                   <Input
-                    type="email" placeholder="请输入邮箱地址"
+                    type="email" placeholder="请输入邮箱地址" autoComplete="email"
                     value={email} onChange={e => setEmail(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handlePwdLogin()}
                     className="h-12" autoFocus
@@ -267,7 +267,7 @@ function AuthContent() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">密码</label>
                   <div className="relative">
                     <Input
-                      type={showPwd ? 'text' : 'password'} placeholder="请输入密码"
+                      type={showPwd ? 'text' : 'password'} placeholder="请输入密码" autoComplete="current-password"
                       value={password} onChange={e => setPassword(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handlePwdLogin()}
                       className="h-12 pr-10"
@@ -296,7 +296,7 @@ function AuthContent() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
-                  <Input type="email" placeholder="请输入邮箱地址"
+                  <Input type="email" placeholder="请输入邮箱地址" autoComplete="email"
                     value={email} onChange={e => setEmail(e.target.value)}
                     className="h-12" autoFocus
                   />
@@ -304,7 +304,7 @@ function AuthContent() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">验证码</label>
                   <div className="flex gap-2">
-                    <Input ref={codeInputRef} type="text" inputMode="numeric" placeholder="请输入验证码"
+                    <Input ref={codeInputRef} type="text" inputMode="numeric" placeholder="请输入验证码" autoComplete="one-time-code"
                       value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       onKeyDown={e => e.key === 'Enter' && handleCodeLogin()}
                       className="h-12 flex-1" maxLength={6}
@@ -330,7 +330,7 @@ function AuthContent() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">邮箱地址</label>
-                  <Input type="email" placeholder="请输入邮箱地址"
+                  <Input type="email" placeholder="请输入邮箱地址" autoComplete="email"
                     value={email} onChange={e => setEmail(e.target.value)}
                     className="h-12" autoFocus
                   />
@@ -338,8 +338,9 @@ function AuthContent() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">密码</label>
                   <div className="relative">
-                    <Input type={showPwd ? 'text' : 'password'} placeholder="至少8位，含大写+小写+数字"
+                    <Input type={showPwd ? 'text' : 'password'} placeholder="至少8位，含大写+小写+数字" autoComplete="new-password"
                       value={password} onChange={e => setPassword(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleRegister()}
                       className="h-12 pr-10"
                     />
                     <button type="button" onClick={() => setShowPwd(!showPwd)}
@@ -351,8 +352,9 @@ function AuthContent() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">确认密码</label>
                   <div className="relative">
-                    <Input type={showConfirm ? 'text' : 'password'} placeholder="请再次输入密码"
+                    <Input type={showConfirm ? 'text' : 'password'} placeholder="请再次输入密码" autoComplete="new-password"
                       value={confirmPwd} onChange={e => setConfirmPwd(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleRegister()}
                       className="h-12 pr-10"
                     />
                     <button type="button" onClick={() => setShowConfirm(!showConfirm)}
@@ -371,8 +373,9 @@ function AuthContent() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">验证码</label>
                   <div className="flex gap-2">
-                    <Input ref={codeInputRef} type="text" inputMode="numeric" placeholder="请输入验证码"
+                    <Input ref={codeInputRef} type="text" inputMode="numeric" placeholder="请输入验证码" autoComplete="one-time-code"
                       value={code} onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onKeyDown={e => e.key === 'Enter' && handleRegister()}
                       className="h-12 flex-1" maxLength={6}
                     />
                     <Button variant="outline" onClick={handleSendCode} disabled={loading || countdown > 0 || !email || !password}
