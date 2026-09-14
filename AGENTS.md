@@ -94,6 +94,15 @@ SSE解析出结构化数据后，根据type存入对应的Supabase表：
 - 错误处理要有fallback（Coze不可用时返回预设回复）
 - 环境变量：NEXT_PUBLIC_ 前缀的暴露前端，其余仅服务端
 
+## 安全红线（2026-09-14 第三轮审查后固化，违反即打回）
+1. **新 route handler 第一行必须显式鉴权（四选一，禁止静默 public）**：
+   - `getAuthenticatedUser(request)` — C端登录态校验（业务读写默认用这个）
+   - `ADMIN_USER_IDS` 白名单 — 管理端/成本敏感端点（costs、usage等）
+   - `CRON_SECRET` Bearer 校验 — 定时任务触发端点
+   - 显式注释 `// PUBLIC: <公开理由>` — 确需匿名访问时（如 health、jobs 列表、analytics 埋点）
+   注意：`getUserInfoFromRequest` 是"可选用户"模式，userId=null 会继续执行，单独使用不算鉴权，烧 LLM/爬虫的路由必须换 getAuthenticatedUser。
+2. **建表迁移必须紧跟 ENABLE ROW LEVEL SECURITY**：所有 `CREATE TABLE` 后一行 `ALTER TABLE <表名> ENABLE ROW LEVEL SECURITY;`，即使业务全走 service_role（RLS 默认全拒对 service_role 无影响）。新建表后跑 `scripts/check_rls.sql` 验证全库 0 表未启用。
+
 ---
 
 # 阶段二执行手册
