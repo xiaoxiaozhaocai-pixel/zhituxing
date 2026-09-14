@@ -229,7 +229,6 @@ export async function compressConversation(
 
     if (updateError) throw updateError;
 
-    console.log(`[compress] Conversation ${conversationId} compressed: ${messages.length} msgs`);
   } catch (error) {
     console.error('[compress] Error:', error);
   }
@@ -274,7 +273,6 @@ async function callDeepSeekForSummary(prompt: string): Promise<string | null> {
       if (!content) throw new Error('Empty response');
 
       const elapsed = Date.now() - startTime;
-      console.log(`[compress] Summary generated in ${elapsed}ms (attempt ${attempt + 1})`);
 
       // 清理可能的 markdown 代码块标记
       return content

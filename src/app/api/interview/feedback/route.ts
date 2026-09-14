@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     // 构建对话摘要给 AI 分析
     const conversationText = conversation
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((m: any) => `${m.role === 'assistant' ? '面试官' : '候选人'}: ${m.content}`)
+      .map((m) => `${m.role === 'assistant' ? '面试官' : '候选人'}: ${m.content}`)
       .join('\n\n');
 
     const contextInfo = [

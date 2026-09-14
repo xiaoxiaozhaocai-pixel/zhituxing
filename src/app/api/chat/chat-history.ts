@@ -90,7 +90,7 @@ export function writeAICache(cacheKey: string, response: string, model = 'deepse
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ sql }),
-  }).then(() => console.log(`[chat] Cache WRITE: ${cacheKey}`))
+  })
     .catch(e => console.error('[chat] Cache write error:', e));
 }
 
@@ -104,8 +104,6 @@ export async function saveChatHistory(
 ): Promise<SaveHistoryResult> {
   const { userId, conversationId, userMessage: _userMessage, assistantResponse, botType: _botType } = params;
 
-  console.log(`[chat] Before save: fullResponse.length=${assistantResponse?.length || 0}, userId=${userId}, conversationId=${conversationId}`);
-  console.log(`[chat] fullResponse preview: ${assistantResponse?.substring(0, 100) || 'EMPTY'}`);
 
   let saveResult = 'skipped';
   if (assistantResponse && userId) {

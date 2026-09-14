@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const list = (reports || []).map((r: any) => ({
+    const list = (reports || []).map((r) => ({
       id: r.id,
       user_id: r.user_id,
       major: '',

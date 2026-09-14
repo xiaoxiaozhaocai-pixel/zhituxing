@@ -55,7 +55,6 @@ export async function compressConversation(
   conversationId: string,
   userId: string,
 ): Promise<void> {
-  console.log(`[compression] Starting for conversation ${conversationId}`);
 
   try {
     const supabase = getSupabaseAdmin();
@@ -78,7 +77,6 @@ export async function compressConversation(
       .order('created_at', { ascending: true });
 
     if (!newMessages || newMessages.length === 0) {
-      console.log(`[compression] No uncompressed messages, skipping`);
       return;
     }
 
@@ -170,10 +168,6 @@ export async function compressConversation(
       }
     }
 
-    console.log(
-      `[compression] Done: ${compressedIds.length} msgs compressed, ` +
-      `ratio=${((summaryTokens / originalTokens) * 100).toFixed(1)}%`
-    );
   } catch (err) {
     console.error('[compression] Unexpected error:', err);
   }

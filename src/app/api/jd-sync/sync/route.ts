@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const useMock = body.useMock === true;
 
-    console.log(`触发JD同步任务... (useMock: ${useMock})`);
     const results = await syncAllPlatforms(useMock);
 
     const totalFetched = results.reduce((sum, r) => sum + r.total_fetched, 0);

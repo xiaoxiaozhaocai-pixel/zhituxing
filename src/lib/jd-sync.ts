@@ -138,7 +138,16 @@ function stripGxrcResidue(text: string): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapGxrcApiItem(item: any): Record<string, unknown> {
+interface GxrcApiItem {
+  payPackage?: string;
+  description?: string;
+  positionName?: string;
+  enterpriseIndustryName?: string;
+  positionWelfareNames?: string[];
+  [key: string]: unknown;
+}
+
+function mapGxrcApiItem(item: GxrcApiItem): Record<string, unknown> {
   const salaryRange = item.payPackage || '';
   const desc = stripGxrcResidue(item.description || '').substring(0, 2000);
 
@@ -178,7 +187,6 @@ async function syncGxrc(limit: number, dryRun: boolean, supabase: ReturnType<typ
 
   for (let page = 1; page <= maxPages && fetched < limit; page++) {
     const items = await fetchGxrcViaApi(page, pageSize);
-    console.log(`  GXRC API 第${page}页: ${items.length} 条`);
     if (items.length === 0) break;
 
     for (const item of items) {
@@ -236,7 +244,6 @@ async function syncGxrc(limit: number, dryRun: boolean, supabase: ReturnType<typ
     // 避免请求过快
     await new Promise(r => setTimeout(r, 500));
   }
-  console.log(`  GXRC 完成: ${result.inserted} 新增 / ${result.updated} 更新 / ${result.errors.length} 错误`);
 }
 
 // ========================
@@ -358,7 +365,6 @@ async function syncShixiseng(limit: number, dryRun: boolean, supabase: ReturnTyp
   const maxPages = Math.ceil(limit / 20) + 1;
   while (allItems.length < limit && page <= maxPages) {
     const items = await fetchShixisengList(page);
-    console.log(`  实习僧列表页 ${page}: ${items.length} 条`);
     allItems.push(...items);
     if (items.length === 0) break;
     page++;
@@ -370,8 +376,7 @@ async function syncShixiseng(limit: number, dryRun: boolean, supabase: ReturnTyp
     if (!unique.has(item.url)) unique.set(item.url, item);
   }
   const items = [...unique.values()].slice(0, limit);
-  if (items.length === 0) { console.log('  实习僧: 未获取到数据'); return; }
-  console.log(`  实习僧: ${items.length} 个详情页，开始解析...`);
+  if (items.length === 0) {return; }
 
   for (let i = 0; i < items.length; i++) {
     const { url, title } = items[i]!;
@@ -423,7 +428,6 @@ async function syncShixiseng(limit: number, dryRun: boolean, supabase: ReturnTyp
     }
     await sleep(300);
   }
-  console.log(`  实习僧 完成: ${result.inserted} 新增 / ${result.updated} 更新 / ${result.errors.length} 错误`);
 }
 
 // ========================
@@ -445,7 +449,6 @@ export async function syncOfficialJobs(opts: JdSyncOptions = {}): Promise<JdSync
     await syncShixiseng(limit, dryRun, supabase, result);
   }
 
-  console.log(`同步完成: 采集 ${result.fetched} | 新增 ${result.inserted} | 更新 ${result.updated} | 跳过 ${result.skipped} | 错误 ${result.errors.length}`);
   return result;
 }
 // 为通过 --downlevelIteration 检查的兼容写法

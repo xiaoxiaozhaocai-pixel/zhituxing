@@ -64,7 +64,6 @@ async function saveStructuredDataAssessment(
     );
 
     if (res.ok) {
-      console.log(`[assessment] 结构化数据已保存: type=${dataType}, table=${table}`);
     } else {
       console.error('[assessment] 保存结构化数据失败:', res.status, await res.text());
     }

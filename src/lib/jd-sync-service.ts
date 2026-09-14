@@ -276,7 +276,6 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
     pages_total: config.pages
   };
 
-  console.log(`[${config.name}] 开始同步，预计 ${config.pages} 页...`);
 
   for (let page = 1; page <= config.pages; page++) {
     try {
@@ -299,7 +298,6 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       clearTimeout(timeout);
 
       if (!response.ok) {
-        console.log(`[${config.name}] 第${page}页请求失败: HTTP ${response.status}`);
         result.fail_count += 10;
         continue;
       }
@@ -311,7 +309,6 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       try {
         data = JSON.parse(text) as Record<string, unknown>;
       } catch {
-        console.log(`[${config.name}] 第${page}页 JSON解析失败`);
         result.fail_count += 10;
         continue;
       }
@@ -320,7 +317,6 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       const items = extractJobItems(data, config.id);
       
       if (!items || items.length === 0) {
-        console.log(`[${config.name}] 第${page}页无数据，停止分页`);
         break;
       }
 
@@ -373,11 +369,9 @@ async function fetchFromApi(config: ApiConfig): Promise<SyncResult> {
       }
 
       result.pages_completed++;
-      console.log(`[${config.name}] 第${page}/${config.pages}页完成，成功:${result.success_count}，失败:${result.fail_count}`);
 
     } catch (error: unknown) {
       const _error_ = error as Error;
-      console.log(`[${config.name}] 第${page}页请求异常: ${_error_.message}`);
       result.fail_count += 10;
     }
   }
@@ -552,12 +546,10 @@ export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncRe
     const mockResult = await fetchFromMockData('模拟数据源');
     results.push(mockResult);
     await saveSyncLog(mockResult);
-    console.log(`模拟数据: 成功导入 ${mockResult.success_count} 条`);
   } else {
     // 遍历所有启用的API
     for (const config of API_CONFIG) {
       if (!config.enabled) {
-        console.log(`[${config.name}] 已禁用，跳过`);
         continue;
       }
 
@@ -566,7 +558,6 @@ export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncRe
         results.push(result);
         await saveSyncLog(result);
         
-        console.log(`[${config.name}] 同步完成: 总计${result.total_fetched}条, 成功${result.success_count}条, 失败${result.fail_count}条`);
       } catch (error: unknown) {
         const _error_ = error as Error;
         console.error(`[${config.name}] 同步异常:`, _error_.message);
@@ -593,7 +584,6 @@ export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncRe
   const totalSuccess = results.reduce((sum, r) => sum + r.success_count, 0);
   const totalFail = results.reduce((sum, r) => sum + r.fail_count, 0);
 
-  console.log(`JD同步任务完成！总计: ${totalFetched}条, 成功: ${totalSuccess}条, 失败: ${totalFail}条`);
 
   return results;
 }

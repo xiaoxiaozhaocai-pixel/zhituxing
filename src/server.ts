@@ -28,10 +28,5 @@ app.prepare().then(() => {
     process.exit(1);
   });
   server.listen(port, () => {
-    console.log(
-      `> Server listening at http://${hostname}:${port} as ${
-        dev ? 'development' : 'production'
-      }`,
-    );
   });
 });

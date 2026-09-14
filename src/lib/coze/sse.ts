@@ -64,7 +64,6 @@ async function saveStructuredData(
     );
 
     if (res.ok) {
-      console.log(`结构化数据已保存: botType=${botType}, type=${dataType}`);
     } else {
       console.error('保存结构化数据失败:', res.status, await res.text());
     }

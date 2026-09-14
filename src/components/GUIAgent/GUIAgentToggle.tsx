@@ -66,8 +66,8 @@ export default function GUIAgentToggle() {
       });
 
       setLoaded(true);
-    } catch (err: any) {
-      setError(err.message || '加载失败');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '加载失败');
     } finally {
       setLoading(false);
     }
@@ -111,11 +111,11 @@ export default function GUIAgentToggle() {
         },
       });
 
-      agentRef.current.start().catch((err: any) => {
+      agentRef.current.start().catch((err: unknown) => {
         console.error('page-agent 启动失败:', err);
         setError('启动失败，请刷新重试');
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error('page-agent 初始化失败:', err);
       setError('初始化失败');
     }

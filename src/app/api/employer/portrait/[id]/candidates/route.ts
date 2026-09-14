@@ -115,14 +115,14 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
     .from('portrait_evaluations')
     .select('candidate_id, skill_level, exp_level, soft_level, notes')
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .in('candidate_id', (data || []).map((d: any) => d.id));
+    .in('candidate_id', (data || []).map((d) => d.id));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const evalMap: Record<string, any> = {};
   for (const e of evals || []) evalMap[e.candidate_id] = e;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const items = (data || []).map((d: any) => ({
+  const items = (data || []).map((d) => ({
     ...d,
     evaluation: evalMap[d.id] || null,
   }));

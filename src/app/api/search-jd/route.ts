@@ -222,7 +222,6 @@ export async function POST(request: NextRequest) {
           });
           return new Response(stream, { headers: SSE_HEADERS });
         } else {
-          console.log(`[search-jd] stream_run returned ${workflowResponse.status}, falling back`);
         }
       } catch (err) {
         console.error('[search-jd] stream_run error:', err);

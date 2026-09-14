@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
     const platformId = body.platform; // 可选，指定单个平台
     const useMock = body.useMock === true;
 
-    console.log(`手动触发JD同步任务... platform: ${platformId || '全量'}, useMock: ${useMock}`);
     
     let results;
     if (platformId) {

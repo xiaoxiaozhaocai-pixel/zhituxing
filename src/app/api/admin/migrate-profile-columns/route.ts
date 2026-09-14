@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
         
         if (error) {
           // 如果 rpc 不存在，尝试直接用 REST API
-          console.log(`[migrate] RPC failed for ${migration.column}, trying alternative...`);
           
           // 检查列是否已存在
           const _checkSql = `SELECT column_name FROM information_schema.columns WHERE table_name='user_profiles' AND column_name='${migration.column}';`;

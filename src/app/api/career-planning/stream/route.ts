@@ -215,7 +215,6 @@ export async function POST(request: NextRequest) {
           });
           return new Response(stream, { headers: SSE_HEADERS });
         } else {
-          console.log(`[career] stream_run returned ${workflowResponse.status}, falling back`);
         }
       } catch (err) {
         console.error('[career] stream_run error:', err);

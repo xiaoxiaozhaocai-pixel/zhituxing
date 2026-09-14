@@ -77,12 +77,6 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log('[send-code] 准备发送验证码:', {
-      email,
-      type,
-      supabaseUrl: supabaseUrl?.substring(0, 30) + '...',
-      timestamp: new Date().toISOString()
-    });
 
     // 重发邮箱OTP验证码
     // 统一使用 signInWithOtp 方法，更可靠
@@ -96,12 +90,6 @@ export async function POST(request: NextRequest) {
       }
     });
     const error = result.error;
-    console.log('[send-code] signInWithOtp 结果:', {
-      hasError: !!error,
-      errorMessage: error?.message,
-      errorCode: error?.status,
-      hasSession: !!result.data?.session
-    });
 
     if (error) {
       console.error('[send-code] 发送验证码失败:', {

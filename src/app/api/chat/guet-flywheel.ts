@@ -219,7 +219,6 @@ export async function runGuetFlywheel(params: FlywheelParams): Promise<void> {
   
   if (items.length === 0) return;
 
-  console.log(`[guet-flywheel] Extracted ${items.length} items`);
 
   // Step 2: 去重 + 写入
   let saved = 0;
@@ -230,11 +229,9 @@ export async function runGuetFlywheel(params: FlywheelParams): Promise<void> {
     const ok = await insertKnowledge(item);
     if (ok) {
       saved++;
-      console.log(`[guet-flywheel] ✅ Saved: [${item.category}] ${item.content.substring(0, 50)}...`);
     }
   }
 
-  console.log(`[guet-flywheel] Done: ${saved}/${items.length} new items`);
 }
 
 /** 查看飞轮统计 */

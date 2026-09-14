@@ -72,11 +72,11 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
   };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const skillDist = dist(evals?.map((e: any) => e.skill_level));
+  const skillDist = dist(evals?.map((e) => e.skill_level));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const expDist = dist(evals?.map((e: any) => e.exp_level));
+  const expDist = dist(evals?.map((e) => e.exp_level));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const softDist = dist(evals?.map((e: any) => e.soft_level));
+  const softDist = dist(evals?.map((e) => e.soft_level));
 
   // 初步组态线索（仅当 ≥5 人已评）
   const insights: string[] = [];
@@ -84,13 +84,13 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
 
   if (n >= 5) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const skillHigh = evals!.filter((e: any) => e.skill_level >= 4).length;
+    const skillHigh = evals!.filter((e) => e.skill_level >= 4).length;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expHigh = evals!.filter((e: any) => e.exp_level >= 4).length;
+    const expHigh = evals!.filter((e) => e.exp_level >= 4).length;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const softHigh = evals!.filter((e: any) => e.soft_level >= 4).length;
+    const softHigh = evals!.filter((e) => e.soft_level >= 4).length;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allHigh = evals!.filter((e: any) => e.skill_level >= 4 && e.exp_level >= 4 && e.soft_level >= 4).length;
+    const allHigh = evals!.filter((e) => e.skill_level >= 4 && e.exp_level >= 4 && e.soft_level >= 4).length;
 
     if (skillHigh > n * 0.6) insights.push('技能高(Skill≥4)的候选人占多数，技能可能是基础门槛');
     if (expHigh < n * 0.3) insights.push('经验对口的候选人较少，Exp可能是筛选关键');

@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
     const systemPrompt = buildCoursePrompt(topic, { topic, userContext, customPrompt });
 
     if (USE_DEEPSEEK) {
-      console.log(`[courses] Using DeepSeek for topic: ${topic}`);
       const stream = createDeepSeekRAGStream(systemPrompt, message || '开始上课吧', history || []);
       return new Response(stream, { headers: SSE_HEADERS });
     }

@@ -588,7 +588,6 @@ export async function POST(request: NextRequest) {
     // ===========================
     // DeepSeek + RAG 分支（当 DEEPSEEK_ENABLED=true 时优先使用）
     // ===========================
-    console.log(`[chat] USE_DEEPSEEK=${USE_DEEPSEEK}, botType=${botType}, userId=${userId}`);
 
     // ============================================================
     // 小职智能体调度链（botType=xiaozhi 时启用）
@@ -688,11 +687,9 @@ export async function POST(request: NextRequest) {
         // 命中专业意图 → dispatch
         resolvedBotType = topIntent[0];
         useVoiceWrapper = true;
-        console.log(`[xiaozhi] Dispatch detected: ${topIntent[0]} (score=${topIntent[1]})`);
       } else {
         // 没命中 → 小职聊天模式
         resolvedBotType = 'xiaozhi_chat';
-        console.log(`[xiaozhi] No dispatch needed, using chat mode`);
       }
 
       // ============================================================
@@ -719,7 +716,6 @@ export async function POST(request: NextRequest) {
           resolvedBotType = 'career_paths';
         }
         useVoiceWrapper = true;
-        console.log(`[xiaozhi] Confusion fallback -> ${resolvedBotType} (dir=${dirHit},emo=${emoHit})`);
       }
 
       // 职业意向兜底：学生说「我想做/适合当 + 岗位」（如「我适合做产品经理吗」）时，
@@ -733,7 +729,6 @@ export async function POST(request: NextRequest) {
       if (topIntent[1] === 0 && CAREER_INTENT_VERB.test(lowerMsg) && CAREER_INTENT_ROLE.test(lowerMsg) && !CASUAL_HINT.test(lowerMsg)) {
         resolvedBotType = 'career_paths';
         useVoiceWrapper = true;
-        console.log(`[xiaozhi] Career-intent fallback -> career_paths`);
       }
     }
 
@@ -747,7 +742,6 @@ export async function POST(request: NextRequest) {
       
       // [DIAGNOSTIC] 忽略以确认实际值
       const _diag = `DEEPSEEK=${USE_DEEPSEEK}, resolvedBotType=${resolvedBotType}, needsMoreInfo=${engineResult.needsMoreInfo}`;
-      console.log(`[career_paths] ${_diag}`);
       
       if (!engineResult.needsMoreInfo && engineResult.report) {
         // 直接返回引擎结果
@@ -781,7 +775,6 @@ export async function POST(request: NextRequest) {
       // 原因：用户缺学校等关键信息，不需要 AI 介入，引擎自己就能生成追问
       // 降级到 DeepSeek 可能导致 DeepSeek 失败 → 回退 Coze Bot → 默认打招呼消息
       const missingReply = engineResult.reply;
-      console.log(`[career_paths] Incomplete profile: "${missingReply.slice(0, 60)}..."`);
       const encoder = new TextEncoder();
       const segs = missingReply.match(/[^。！？\n]+[。！？\n]?/g) || [missingReply];
       const stream = new ReadableStream({
@@ -1029,7 +1022,6 @@ export async function POST(request: NextRequest) {
 
     if (USE_DEEPSEEK) {
       try {
-        console.log(`[chat] Entering DeepSeek + RAG branch for botType=${effectiveBotType}, resolved=${resolvedBotType}`);
         
         // 提取关键词
         const keywords = extractKeywords(message);
@@ -1123,7 +1115,6 @@ export async function POST(request: NextRequest) {
 
               if (parts.length > 0) {
                 tierMatchContext = `\n\n【pgvector 语义匹配结果 — 基于 24753 条真实 JD 库召回，请基于以下数据生成三档推荐卡片】\n${parts.join('\n\n')}\n`;
-                console.log(`[chat] pgvector tier match: precise=${precise.length}, reach=${reach.length}, safety=${safety.length}`);
               }
             }
           } catch (matchErr) {
@@ -1304,7 +1295,6 @@ export async function POST(request: NextRequest) {
                     ...card,
                   })}\n\n`;
                   controller.enqueue(encoder.encode(dispatchEvent));
-                  console.log(`[xiaozhi] Dispatch event sent: intent=${resolvedBotType}`);
                 }
               }
               
@@ -1404,7 +1394,6 @@ export async function POST(request: NextRequest) {
     const workflowConfig = getWorkflowConfig(botType);
 
     if (workflowConfig) {
-      console.log(`[chat] Using stream_run API for botType=${botType}`);
       try {
         const workflowResponse = await callWorkflowStreamApi({
           botType: botType || 'jobs',
@@ -1421,9 +1410,7 @@ export async function POST(request: NextRequest) {
           });
           return new Response(stream, { headers: SSE_HEADERS });
         } else {
-          console.log(`[chat] stream_run API returned ${workflowResponse.status}, falling back`);
           const errorBody = await workflowResponse.text();
-          console.log(`[chat] stream_run error: ${errorBody.slice(0, 200)}`);
         }
       } catch (err) {
         console.error('[chat] stream_run API error:', err);
@@ -1440,7 +1427,6 @@ export async function POST(request: NextRequest) {
       return new Response(createTextStream(fallbackText), { headers: SSE_HEADERS });
     }
 
-    console.log(`[chat] Using standard Bot API for botType=${botType}, botId=${botId}`);
     const cozeResponse = await callCozeStreamApi({
       botId,
       message,

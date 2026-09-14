@@ -1,3 +1,4 @@
+import type { User, Session } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { setAuthCookies } from '@/lib/auth-cookies';
@@ -16,10 +17,8 @@ export async function POST(request: NextRequest) {
     // 🧪 测试模式：DEV_OTP_BYPASS + 旁路验证码 88888888
     const isBypass = process.env.DEV_OTP_BYPASS === 'true' && token === '88888888';
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let authData: { user: any; session: any } | null = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let finalUser: any = null;
+    let authData: { user: User | null; session: Session | null } | null = null;
+    let finalUser: User | null = null;
 
     if (isBypass) {
       
@@ -102,10 +101,6 @@ export async function POST(request: NextRequest) {
     
     // 正常 OTP 流程：如果是注册且传入了密码，设置密码和昵称
     if (!isBypass && password && flowType === 'signup') {
-      console.log('[verify-otp] 注册流程，设置密码和昵称:', { 
-        userId: authData.user.id, 
-        hasNickname: !!nickname 
-      });
       
       const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
         authData.user.id,

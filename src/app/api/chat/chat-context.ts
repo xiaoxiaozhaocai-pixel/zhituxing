@@ -59,12 +59,10 @@ export async function prepareChatContext(params: ChatContextParams): Promise<Cha
   if (compressionLevel === 'window') {
     systemPrompt = basePrompt + memoryBlock + '\n\n' + ragContext + ragDegradationNote + roleReinforcement;
     history = await getRecentNRounds(effectiveConversationId, 15);
-    console.log(`[chat] Context compression: downgraded to window mode (15 rounds), hasLongTermMemory=${!!historicalMemory}`);
   } else {
     const context = await assembleContext(effectiveConversationId, userId || '', 3);
     systemPrompt = basePrompt + memoryBlock + '\n\n' + ragContext + ragDegradationNote + '\n\n' + context.fullContextText + roleReinforcement;
     history = context.recentMessages;
-    console.log(`[chat] Context compression: hybrid mode, summary=${!!context.summary}, recent=${context.recentMessages.length}msgs, hasLongTermMemory=${!!historicalMemory}`);
   }
 
   // AI 响应缓存查询
@@ -84,7 +82,6 @@ export async function prepareChatContext(params: ChatContextParams): Promise<Cha
         .gte('expires_at', new Date().toISOString())
         .maybeSingle();
       if (cached?.response) {
-        console.log(`[chat] CACHE HIT: ${cacheKey}`);
         cachedResponse = cached.response;
       }
     } catch (cacheErr) {

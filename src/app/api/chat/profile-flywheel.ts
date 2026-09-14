@@ -257,12 +257,10 @@ export async function runProfileFlywheel(params: FlywheelParams): Promise<void> 
   if (Object.keys(profile).length === 0) return;
 
   const fields = Object.keys(profile).join(', ');
-  console.log(`[profile-flywheel] Extracted: ${fields}`);
 
   // Step 2: 合并 + 写入
   const saved = await upsertProfile(userId, profile);
   if (saved) {
-    console.log(`[profile-flywheel] ✅ Profile updated: ${fields}`);
   } else {
   }
 }

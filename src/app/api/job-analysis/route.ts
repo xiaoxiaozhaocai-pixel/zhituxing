@@ -136,12 +136,10 @@ export async function POST(request: NextRequest) {
 
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => {
-      console.log(`[job-analysis] DeepSeek stream timeout 60s, dim=${dimension}`);
       timeoutController.abort();
     }, 60000);
     if (request.signal) {
       request.signal.addEventListener('abort', () => {
-        console.log(`[job-analysis] Client disconnected, dim=${dimension}`);
         timeoutController.abort();
       }, { once: true });
     }

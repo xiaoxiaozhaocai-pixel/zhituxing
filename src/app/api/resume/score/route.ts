@@ -208,8 +208,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
 
     // 10. Build radar data
     const radarData: Record<string, number> = {};
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dimensionsWithWeight = (scoreData.dimensions as Array<Record<string, number>>).map((dim: any) => {
+    const dimensionsWithWeight = (scoreData.dimensions as Array<{ name: string; score: number; comment?: string }>).map((dim) => {
       radarData[dim.name] = dim.score;
       return {
         name: dim.name,
@@ -225,7 +224,7 @@ ${targetJob ? `\n目标岗位：${targetJob}` : ''}
 
     // 11. Calculate weighted overall score (use LLM's if provided, otherwise calculate)
     const overallScore = scoreData.overall_score || 
-      Math.round(dimensionsWithWeight.reduce((sum: number, dim: Record<string, number>) => sum + dim.score * dim.weight, 0) * 10) / 10;
+      Math.round(dimensionsWithWeight.reduce((sum, dim) => sum + dim.score * dim.weight, 0) * 10) / 10;
 
     // 12. Store in database
     const { error: dbError } = await supabase

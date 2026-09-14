@@ -194,15 +194,6 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
 
   // 优先使用 skills 字段，否则从 hard_skills + soft_skills 转换
   let skillsData: SkillForSave[] = [];
-  console.log('[profile] 技能数据检查:', {
-    hasSkillsField: !!profile.skills,
-    hasHardSkills: !!profile.hard_skills,
-    hasSoftSkills: !!profile.soft_skills,
-    hardSkillsType: typeof profile.hard_skills,
-    softSkillsType: typeof profile.hard_skills,
-    hardSkillsValue: profile.hard_skills,
-    softSkillsValue: profile.soft_skills,
-  });
   
   if (Array.isArray(profile.skills) && profile.skills.length > 0) {
     skillsData = profile.skills;

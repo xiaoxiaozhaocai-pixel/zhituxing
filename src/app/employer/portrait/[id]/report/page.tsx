@@ -70,12 +70,19 @@ export default function PortraitReportPage() {
         const cData = await cRes.json();
         
         if (cData.ok) {
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const evaluated = (cData.data.items || []).filter((c: any) => c.evaluation);
+          interface PortraitCandidate {
+            name: string;
+            education: string;
+            edu_level: number | null;
+            experience_summary: string | null;
+            evaluation?: { skill_level: number; exp_level: number; soft_level: number; notes: string | null };
+          }
+          const evaluated = ((cData.data.items || []) as PortraitCandidate[]).filter(
+            (c): c is PortraitCandidate & { evaluation: NonNullable<PortraitCandidate['evaluation']> } => !!c.evaluation
+          );
           setData({
             portrait: pRes.data.item,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-            candidates: evaluated.map((c: any) => ({
+            candidates: evaluated.map((c) => ({
               name: c.name,
               education: c.education,
               edu_level: c.edu_level,

@@ -197,7 +197,6 @@ async function grantRewards(userId: string) {
       WHERE id = '${userId}'
     `);
 
-    console.log(`已向用户 ${userId} 发放奖励：3次AI次数+7天会员`);
   } catch (error) {
     console.error('发放奖励失败:', error);
   }
@@ -207,7 +206,6 @@ async function grantRewards(userId: string) {
 async function sendNotification(userId: string, message: string) {
   try {
     // 记录通知到数据库（如果有无话消息表的话）
-    console.log(`向用户 ${userId} 发送通知: ${message}`);
   } catch (error) {
     console.error('发送通知失败:', error);
   }
