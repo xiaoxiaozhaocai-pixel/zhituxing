@@ -16,3 +16,14 @@ zhituxing/
 
 # 项目使用 pnpm，package-lock.json 不应被纳入版本控制
 package-lock.json
+
+# 审计临时产物
+audit_*.png
+audit_*.py
+auth_audit*.py
+find_wm*.py
+wait_deploy.py
+p1_*.png
+p1_*.py
+p1_*.json
+wm_*.png
