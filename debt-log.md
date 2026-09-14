@@ -12,3 +12,6 @@
 | 2026-09-13 | L6 admin | export/batch-import 读错 env 名 SUPABASE_SERVICE_KEY | 改 SUPABASE_SERVICE_ROLE_KEY 优先+旧名 fallback | ✅ |
 | 2026-09-09 | 安全 | Dependabot 4 漏洞等上游补丁 | 跟踪上游发版 | 🟡 |
 | 2026-09-13 | L6.4 admin | 两套 admin API 并存（app/admin/api/* vs 页面内联） | 待统一方案拍板后执行 | 🔴 |
+| 2026-09-14 | `as any` 19 处残留（supabase 查询转型为主） | 🟡 P2 | 正解=`supabase gen types typescript` 生成 DB 类型统一替换，手工补性价比低 |
+| 2026-09-14 | /api/cron/jd-sync 由 Zeabur cron 外部触发（CRON_SECRET 鉴权），仓库内零引用属正常，死路由扫描豁免 | ✅ 已登记 |
+| 2026-09-14 | chat/page.tsx 仍 1958 行：JSX 770 行可再拆 Header/消息列表/输入区，props 钻取多、回归风险中，留待下次专项 | 🟡 P2 | 本轮已抽 359 行工具+卡片组件 |
