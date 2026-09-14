@@ -78,7 +78,7 @@ export default function AdminDashboardPage() {
       setHealth(prev => ({ ...prev, site: true }));
     } catch { setHealth(prev => ({ ...prev, site: false })); }
     try {
-      const apiRes = await fetch('/api/admin/auth');
+      const apiRes = await fetch('/admin/api/auth');
       setHealth(prev => ({ ...prev, api: apiRes.ok }));
     } catch { setHealth(prev => ({ ...prev, api: false })); }
   };
@@ -200,7 +200,7 @@ export default function AdminDashboardPage() {
                   <div className={`w-2.5 h-2.5 rounded-full ${health.api === null ? 'bg-gray-300' : health.api ? 'bg-green-500' : 'bg-red-500'}`} />
                   <span className="text-sm text-slate-700">API服务</span>
                 </div>
-                <span className="text-xs text-slate-400">/api/admin/auth</span>
+                <span className="text-xs text-slate-400">/admin/api/auth</span>
               </div>
             </div>
           </CardContent>

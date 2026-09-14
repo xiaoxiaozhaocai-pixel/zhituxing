@@ -11,23 +11,11 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-// 简单的管理员验证
-async function verifyAdmin(_request: NextRequest) {
-  const cookieStore = await cookies();
-  const adminToken = cookieStore.get('admin_token')?.value;
-  const expectedToken = process.env.ADMIN_TOKEN || 'admin_token_for_zhituxing';
-  return adminToken === expectedToken;
-}
-
 // 批量导入JD
 export async function POST(request: NextRequest) {
   const _authCheck = requireAdmin(request);
   if (_authCheck) return _authCheck;
   try {
-    // 验证管理员
-    if (!await verifyAdmin(request)) {
-      return NextResponse.json({ code: 401, message: '未授权' }, { status: 401 });
-    }
 
     const body = await request.json();
     const { jobs, duplicateOption } = body;

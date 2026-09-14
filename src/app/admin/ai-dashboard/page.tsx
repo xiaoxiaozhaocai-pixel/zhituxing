@@ -32,7 +32,7 @@ export default function AIDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/dashboard/ai-insights');
+      const res = await fetch('/admin/api/dashboard/ai-insights');
       const json = await res.json();
       if (json.code === 200) {
         setData(json.data);

@@ -28,8 +28,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     // 检查是否已有有效会话（通过 API 验证 cookie）
     const checkSession = async () => {
       try {
-        // 使用 /api/admin/auth 检查管理员状态
-        const response = await fetch('/api/admin/auth', {
+        // 使用 /admin/api/auth 检查管理员状态
+        const response = await fetch('/admin/api/auth', {
           credentials: 'include',
         });
         if (response.ok) {

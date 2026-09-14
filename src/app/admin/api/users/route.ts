@@ -1,217 +1,248 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
 import { requireAdmin } from '@/lib/admin-auth';
+import { execSql } from '@/lib/exec-sql';
+export const dynamic = 'force-dynamic';
 
-const supabase = getSupabaseAdmin();
+export const runtime = 'nodejs';
 
-// 获取用户列表
+// GET /admin/api/users — 用户列表 + 统计 + 详情（圣经 v3.1 L6：admin_token 单鉴权链）
 export async function GET(request: NextRequest) {
   const _authCheck = requireAdmin(request);
   if (_authCheck) return _authCheck;
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '20');
-    const keyword = searchParams.get('keyword');
-    const memberType = searchParams.get('memberType');
-    const filterBlocked = searchParams.get('blocked');
-    const offset = (page - 1) * pageSize;
 
-    // 构建查询
-    let query = supabase
-      .from('user_profiles')
-      .select('user_id, user_type, membership_type, membership_tier, major, grade, job_intention:target_job, city:target_cities, personality_type, created_at', { count: 'exact' });
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
 
-    // 关键词搜索
-    if (keyword) {
-      query = query.or(`user_type.ilike.%${keyword}%`);
+  // action=detail — 单用户详情
+  if (action === 'detail') {
+    const targetUserId = parseInt(searchParams.get('user_id') || '0');
+    if (!targetUserId) {
+      return NextResponse.json({ error: '缺少 user_id' }, { status: 400 });
     }
-
-    // 会员类型筛选 — 优先用 membership_tier（新真相源）筛选
-    if (memberType === 'member') {
-      query = query.not('membership_tier', 'is', null).neq('membership_tier', 'free');
-    } else if (memberType === 'normal') {
-      query = query.or('membership_tier.is.null,membership_tier.eq.free');
-    }
-
-    // 拉黑状态筛选
-    if (filterBlocked === 'true') {
-      query = query.eq('user_type', 'blocked');
-    } else if (filterBlocked === 'false') {
-      query = query.or('user_type.is.null,user_type.neq.blocked');
-    }
-
-    // 获取列表
-    const { data: users, count: total, error } = await query
-      .order('created_at', { ascending: false })
-      .range(offset, offset + pageSize - 1);
-
-    if (error) throw error;
-
-    // 获取统计数据
-    const { count: blockedCount } = await supabase
-      .from('user_profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_type', 'blocked');
-
-    const { count: normalCount } = await supabase
-      .from('user_profiles')
-      .select('*', { count: 'exact', head: true })
-      .or('user_type.is.null,user_type.neq.blocked');
-
-    // 获取每个用户的上传JD数量
-    const usersWithStats = await Promise.all(
-      (users || []).map(async (user) => {
-        const { count } = await supabase
-          .from('job_descriptions')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.user_id);
-        return {
-          user_id: user.user_id,
-          user_type: user.user_type || 'normal',
-          membership_type: user.membership_type,
-          membership_plan: null,
-          major: user.major,
-          grade: user.grade,
-          job_intention: user.job_intention,
-          city: user.city,
-          personality_type: user.personality_type,
-          is_admin: false, // user_profiles 无 is_admin 列，恒 false
-          created_at: user.created_at,
-          skill_count: 0,
-          assessment_count: 0,
-          jd_count: count || 0
-        };
-      })
-    );
-
-    return NextResponse.json({
-      code: 200,
-      data: {
-        list: usersWithStats,
-        stats: {
-          total: total || 0,
-          blocked: blockedCount || 0,
-          normal: normalCount || 0
-        },
-        pagination: { page, pageSize, total: total || 0 }
-      }
-    });
-  } catch (error) {
-    console.error('获取用户列表失败:', error);
-    return NextResponse.json({ code: 500, message: '获取列表失败' }, { status: 500 });
+    return getUserDetail(targetUserId);
   }
+
+  // action=stats — 统计数据
+  if (action === 'stats') {
+    return getStats();
+  }
+
+  // action=growth — 增长趋势
+  if (action === 'growth') {
+    return getGrowthTrend(searchParams.get('days') || '30');
+  }
+
+  // 默认 — 用户列表
+  return getUserList(searchParams);
 }
 
-// 开通/取消会员 / 拉黑/取消拉黑
-export async function POST(request: NextRequest) {
-  const _authCheck = requireAdmin(request);
-  if (_authCheck) return _authCheck;
-  try {
-    const body = await request.json();
-    const { userId, action, memberType, adminId, adminUsername, _blockReason, deleteUserJd } = body;
+async function getStats() {
+  // 总用户数（无参数，使用直接查询）
+  const totalRows = await execSql(
+    `SELECT COUNT(*)::int as total FROM user_profiles`
+  ) as Record<string, unknown>[];
 
-    if (!userId || !action) {
-      return NextResponse.json({ code: 400, message: '参数不完整' }, { status: 400 });
-    }
+  // 会员数（无参数，使用直接查询）
+  const memberRows = await execSql(
+    `SELECT COUNT(*)::int as total FROM user_profiles WHERE membership_tier IS NOT NULL AND membership_tier != 'free'`
+  ) as Record<string, unknown>[];
 
-    let message = '';
+  // 本周新增（无参数，使用直接查询）
+  const weekRows = await execSql(
+    `SELECT COUNT(*)::int as total FROM user_profiles WHERE created_at >= NOW() - INTERVAL '7 days'`
+  ) as Record<string, unknown>[];
 
-    if (action === 'open') {
-      // 开通会员
-      if (memberType === 'lifetime') {
-        const { error } = await supabase
-          .from('user_profiles')
-          .update({
-            membership_type: 'lifetime',
-            membership_plan: 'lifetime',
-            membership_tier: 'lifetime'
-          })
-          .eq('user_id', userId);
-        if (error) throw error;
-        message = '终身会员开通成功';
-      } else {
-        const expireTime = new Date();
-        expireTime.setMonth(expireTime.getMonth() + 1);
-        const { error } = await supabase
-          .from('user_profiles')
-          .update({
-            membership_type: 'monthly',
-            membership_plan: 'monthly',
-            membership_tier: 'monthly'
-          })
-          .eq('user_id', userId);
-        if (error) throw error;
-        message = '月度会员开通成功';
-      }
-    } else if (action === 'cancel') {
-      // 取消会员
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          is_lifetime_member: false,
-          member_type: null,
-          member_expire_time: null,
-          membership_tier: 'free'
-        })
-        .eq('user_id', userId);
-      if (error) throw error;
-      message = '会员已取消';
-    } else if (action === 'block') {
-      // 拉黑用户
-      if (deleteUserJd === true) {
-        // 先将用户上传的JD放入回收站再删除
-        const { data: userJds } = await supabase
-          .from('job_descriptions')
-          .select('*')
-          .eq('submitted_by', userId);
+  const total = (totalRows?.[0]?.total as number) || 0;
+  const members = (memberRows?.[0]?.total as number) || 0;
+  const weeklyNew = (weekRows?.[0]?.total as number) || 0;
+  const conversionRate = total > 0 ? Math.round((members / total) * 100) : 0;
 
-        for (const jd of userJds || []) {
-          await supabase.from('recycle_bin').insert({
-            original_table: 'jd_submissions',
-            original_id: jd.id,
-            deleted_data: JSON.stringify(jd),
-            deleted_by: adminUsername || 'system'
-          });
-        }
-        // 删除用户上传的JD
-        await supabase.from('job_descriptions').delete().eq('user_id', userId);
-      }
+  return NextResponse.json({
+    success: true,
+    data: { total, members, conversionRate, weeklyNew },
+  });
+}
 
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          user_type: 'blocked'
-        })
-        .eq('user_id', userId);
-      if (error) throw error;
-      message = `用户已被拉黑${deleteUserJd ? '，已删除该用户上传的所有JD' : ''}`;
-    } else if (action === 'unblock') {
-      // 取消拉黑
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          user_type: 'normal'
-        })
-        .eq('user_id', userId);
-      if (error) throw error;
-      message = '用户已取消拉黑';
-    }
+async function getGrowthTrend(days: string) {
+  const d = Math.min(parseInt(days) || 30, 90);
+  // 使用参数化查询防止SQL注入
+  const rows = await execSql(
+    `SELECT DATE(created_at) as date, COUNT(*)::int as count
+     FROM user_profiles
+     WHERE created_at >= NOW() - (%L::text || ' days')::interval
+     GROUP BY DATE(created_at)
+     ORDER BY DATE(created_at) ASC`,
+    d
+  ) as Record<string, unknown>[];
 
-    // 记录操作日志
-    await supabase.from('admin_operation_logs').insert({
-      admin_id: adminId || 0,
-      admin_username: adminUsername || 'unknown',
-      operation_type: ['block', 'unblock'].includes(action) ? 'user_block' : 'member_manage',
-      operation_content: `${message}: 用户 #${userId}`
-    });
+  return NextResponse.json({
+    success: true,
+    data: rows || [],
+    days: d,
+  });
+}
 
-    return NextResponse.json({
-      code: 200,
-      message
-    });
-  } catch (error) {
-    console.error('操作失败:', error);
-    return NextResponse.json({ code: 500, message: '操作失败' }, { status: 500 });
+async function getUserDetail(userId: number) {
+  // 使用参数化查询防止SQL注入
+  const profileRows = await execSql(
+    `SELECT user_id, user_type, membership_type, membership_tier, membership_plan, major, grade,
+            job_intention, city, skills, personality_type, ability_background::text,
+            internship_experience, project_experience, awards, is_admin, created_at
+     FROM user_profiles WHERE user_id = %L`,
+    userId
+  ) as Record<string, unknown>[];
+
+  if (!profileRows?.length) {
+    return NextResponse.json({ error: '用户不存在' }, { status: 404 });
   }
+
+  // 使用参数化查询
+  const skillRows = await execSql(
+    `SELECT skill_name, level, proficiency FROM user_skills WHERE user_id = %L ORDER BY level DESC`,
+    userId
+  ) as Record<string, unknown>[];
+
+  // 使用参数化查询
+  const assessmentRows = await execSql(
+    `SELECT id, result_data::text, created_at FROM assessment_results WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
+  ) as Record<string, unknown>[];
+
+  // 使用参数化查询
+  const matchRows = await execSql(
+    `SELECT id, match_data::text, created_at FROM skill_job_match WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
+  ) as Record<string, unknown>[];
+
+  // 使用参数化查询
+  const interviewRows = await execSql(
+    `SELECT id, result_data::text, created_at FROM interview_results WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
+  ) as Record<string, unknown>[];
+
+  // 使用参数化查询
+  const careerRows = await execSql(
+    `SELECT id, plan_data::text, created_at FROM career_plans WHERE user_id = %L ORDER BY created_at DESC LIMIT 5`,
+    userId
+  ) as Record<string, unknown>[];
+
+  // 使用参数化查询
+  const behaviorRows = await execSql(
+    `SELECT event_type, COUNT(*)::int as count FROM analytics_events WHERE user_id = %L GROUP BY event_type ORDER BY count DESC`,
+    userId
+  ) as Record<string, unknown>[];
+
+  const profile = profileRows[0];
+  // 解析 ability_background JSON
+  let abilityBackground = null;
+  try {
+    abilityBackground = profile!.ability_background ? JSON.parse(profile!.ability_background as string) : null;
+  } catch { /* ignore */ }
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      profile: {
+        ...profile,
+        ability_background: abilityBackground,
+      },
+      skills: skillRows || [],
+      assessments: assessmentRows || [],
+      matches: matchRows || [],
+      interviews: interviewRows || [],
+      careerPlans: careerRows || [],
+      behaviorStats: behaviorRows || [],
+    },
+  });
+}
+
+async function getUserList(searchParams: URLSearchParams) {
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+  const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('page_size') || '20')));
+  const keyword = searchParams.get('keyword') || '';
+  const membershipType = searchParams.get('membership_type') || '';
+  const major = searchParams.get('major') || '';
+  const grade = searchParams.get('grade') || '';
+
+  const offset = (page - 1) * pageSize;
+
+  // 构建参数数组和WHERE条件
+  const params: string[] = [];
+  const conditions: string[] = [];
+  
+  if (keyword) {
+    // 转义LIKE通配符
+    const escapedKeyword = keyword.replace(/[%_]/g, '\\$&');
+    conditions.push(`(CAST(user_id AS TEXT) ILIKE '%' || %L || '%' OR major ILIKE '%' || %L || '%' OR job_intention ILIKE '%' || %L || '%')`);
+    params.push(escapedKeyword, escapedKeyword, escapedKeyword);
+  }
+  if (membershipType) {
+    conditions.push(`membership_tier = %L`);
+    params.push(membershipType);
+  }
+  if (major) {
+    conditions.push(`major ILIKE '%' || %L || '%'`);
+    params.push(major);
+  }
+  if (grade) {
+    conditions.push(`grade = %L`);
+    params.push(grade);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  // 查总数
+  const countRows = await execSql(
+    `SELECT COUNT(*)::int as total FROM user_profiles ${whereClause}`,
+    ...params
+  ) as Record<string, unknown>[];
+  const total = (countRows?.[0]?.total as number) || 0;
+
+  // 查列表 - 限制分页参数防止注入
+  const safePageSize = Math.min(100, Math.max(1, pageSize));
+  const safeOffset = Math.max(0, offset);
+  
+  const rows = await execSql(
+    `SELECT user_id, user_type, membership_type, membership_tier, membership_plan, major, grade,
+            job_intention, city, personality_type, is_admin, created_at
+     FROM user_profiles ${whereClause}
+     ORDER BY created_at DESC
+     LIMIT ${safePageSize} OFFSET ${safeOffset}`,
+    ...params
+  ) as Record<string, unknown>[];
+
+  // 查每个用户的技能数量（无参数，使用直接查询）
+  const skillCountRows = await execSql(
+    `SELECT user_id, COUNT(*)::int as skill_count FROM user_skills GROUP BY user_id`
+  ) as Record<string, unknown>[];
+  const skillCountMap: Record<number, number> = {};
+  for (const row of skillCountRows || []) {
+    skillCountMap[row.user_id as number] = row.skill_count as number;
+  }
+
+  // 查每个用户的测评次数（无参数，使用直接查询）
+  const assessCountRows = await execSql(
+    `SELECT user_id, COUNT(*)::int as count FROM assessment_results GROUP BY user_id`
+  ) as Record<string, unknown>[];
+  const assessCountMap: Record<number, number> = {};
+  for (const row of assessCountRows || []) {
+    assessCountMap[row.user_id as number] = row.count as number;
+  }
+
+  const data = (rows || []).map(row => ({
+    ...row,
+    skill_count: skillCountMap[row.user_id as number] || 0,
+    assessment_count: assessCountMap[row.user_id as number] || 0,
+  }));
+
+  return NextResponse.json({
+    success: true,
+    data,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    },
+  });
 }

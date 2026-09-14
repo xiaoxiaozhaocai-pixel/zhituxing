@@ -66,7 +66,7 @@ export default function AdminCareerPlanningPage() {
       if (searchParams.major) params.append('major', searchParams.major);
       if (searchParams.grade) params.append('grade', searchParams.grade);
       
-      const response = await fetch(`/api/admin/career-planning?${params.toString()}`, {
+      const response = await fetch(`/admin/api/career-planning?${params.toString()}`, {
         headers: {
           'x-admin-id': user.id.toString()
         }

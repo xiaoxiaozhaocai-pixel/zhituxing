@@ -76,7 +76,7 @@ export default function AdminUsersPage() {
   // 加载统计
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/users?action=stats');
+      const res = await fetch('/admin/api/users?action=stats');
       const data = await res.json();
       if (data.success) setStats(data.data);
     } catch (e) { console.error('fetchStats error', e); }
@@ -85,7 +85,7 @@ export default function AdminUsersPage() {
   // 加载增长趋势
   const fetchGrowth = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/users?action=growth&days=30');
+      const res = await fetch('/admin/api/users?action=growth&days=30');
       const data = await res.json();
       if (data.success) setGrowthData(data.data || []);
     } catch (e) { console.error('fetchGrowth error', e); }
@@ -102,7 +102,7 @@ export default function AdminUsersPage() {
       if (membershipFilter) params.set('membership_type', membershipFilter);
       if (majorFilter) params.set('major', majorFilter);
 
-      const res = await fetch(`/api/admin/users?${params}`);
+      const res = await fetch(`/admin/api/users?${params}`);
       const data = await res.json();
       if (data.success) {
         setUsers(data.data || []);
@@ -115,7 +115,7 @@ export default function AdminUsersPage() {
   const fetchUserDetail = async (userId: number) => {
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/admin/users?action=detail&user_id=${userId}`);
+      const res = await fetch(`/admin/api/users?action=detail&user_id=${userId}`);
       const data = await res.json();
       if (data.success) setUserDetail(data.data);
     } catch (e) { console.error('fetchUserDetail error', e); }

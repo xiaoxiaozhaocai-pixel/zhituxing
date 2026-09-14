@@ -92,7 +92,7 @@ export default function AdminSkillsPage() {
   const fetchTaxonomy = useCallback(async () => {
     try {
       const params = new URLSearchParams({ page: String(taxonomyPage), page_size: String(pageSize), keyword: taxonomyKeyword });
-      const res = await fetch(`/api/admin/skills?${params}`);
+      const res = await fetch(`/admin/api/skills?${params}`);
       const data = await res.json();
       if (data.success) {
         setTaxonomy(data.data);
@@ -104,7 +104,7 @@ export default function AdminSkillsPage() {
   const fetchRelations = useCallback(async () => {
     try {
       const params = new URLSearchParams({ action: 'relations', page: String(relationsPage), page_size: String(pageSize), relation_type: relationsFilter, keyword: relationsKeyword });
-      const res = await fetch(`/api/admin/skills?${params}`);
+      const res = await fetch(`/admin/api/skills?${params}`);
       const data = await res.json();
       if (data.success) {
         setRelations(data.data);
@@ -115,7 +115,7 @@ export default function AdminSkillsPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/skills?action=stats');
+      const res = await fetch('/admin/api/skills?action=stats');
       const data = await res.json();
       if (data.success) setStats(data.data);
     } catch (e) { console.error('加载统计失败:', e); }
@@ -124,7 +124,7 @@ export default function AdminSkillsPage() {
   const fetchGraph = useCallback(async () => {
     if (!graphSkill.trim()) return;
     try {
-      const res = await fetch(`/api/admin/skills?action=graph&skill_name=${encodeURIComponent(graphSkill)}`);
+      const res = await fetch(`/admin/api/skills?action=graph&skill_name=${encodeURIComponent(graphSkill)}`);
       const data = await res.json();
       if (data.success && data.data) {
         setGraphNodes(data.data.nodes || []);
@@ -142,7 +142,7 @@ export default function AdminSkillsPage() {
   // ============ CRUD操作 ============
   const handleAddTaxonomy = async () => {
     if (!newTaxonomy.skill_name.trim()) return;
-    await fetch('/api/admin/skills', {
+    await fetch('/admin/api/skills', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'add_taxonomy', ...newTaxonomy }),
@@ -155,7 +155,7 @@ export default function AdminSkillsPage() {
 
   const handleAddRelation = async () => {
     if (!newRelation.source_skill.trim() || !newRelation.target_skill.trim()) return;
-    await fetch('/api/admin/skills', {
+    await fetch('/admin/api/skills', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'add_relation', ...newRelation }),
@@ -168,21 +168,21 @@ export default function AdminSkillsPage() {
 
   const handleDeleteTaxonomy = async (id: number) => {
     if (!confirm('确认删除此技能分类？')) return;
-    await fetch(`/api/admin/skills?action=taxonomy&id=${id}`, { method: 'DELETE' });
+    await fetch(`/admin/api/skills?action=taxonomy&id=${id}`, { method: 'DELETE' });
     fetchTaxonomy();
     fetchStats();
   };
 
   const handleDeleteRelation = async (id: number) => {
     if (!confirm('确认删除此技能关系？')) return;
-    await fetch(`/api/admin/skills?action=relation&id=${id}`, { method: 'DELETE' });
+    await fetch(`/admin/api/skills?action=relation&id=${id}`, { method: 'DELETE' });
     fetchRelations();
     fetchStats();
   };
 
   const handleUpdateTaxonomy = async () => {
     if (!editingItem) return;
-    await fetch('/api/admin/skills', {
+    await fetch('/admin/api/skills', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'update_taxonomy', id: editingItem.id, skill_name: editingItem.skill_name, category: editingItem.category, domain: editingItem.domain }),
@@ -193,7 +193,7 @@ export default function AdminSkillsPage() {
 
   const handleUpdateRelation = async () => {
     if (!editingRelation) return;
-    await fetch('/api/admin/skills', {
+    await fetch('/admin/api/skills', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'update_relation', id: editingRelation.id, source_skill: editingRelation.source_skill, target_skill: editingRelation.target_skill, relation_type: editingRelation.relation_type, weight: editingRelation.weight }),
@@ -210,7 +210,7 @@ export default function AdminSkillsPage() {
         return { source_skill: parts[0], target_skill: parts[1], relation_type: parts[2] || 'co_occur', weight: parts[3] ? parseFloat(parts[3]) : 0.5 };
       }).filter(item => item.source_skill && item.target_skill);
 
-      const res = await fetch('/api/admin/skills', {
+      const res = await fetch('/admin/api/skills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'bulk_import', items }),

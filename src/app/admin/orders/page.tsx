@@ -3,10 +3,10 @@
 /**
  * /admin/orders - 会员订单审核工作台
  *
- * 数据：GET /api/admin/orders ?status=
- * 通过：POST /api/admin/orders/[id]/approve { admin_note? }
- * 拒绝：POST /api/admin/orders/[id]/reject  { admin_note }
- * 截图签 URL：GET /api/admin/orders?sign={path}
+ * 数据：GET /admin/api/orders ?status=
+ * 通过：POST /admin/api/orders/[id]/approve { admin_note? }
+ * 拒绝：POST /admin/api/orders/[id]/reject  { admin_note }
+ * 截图签 URL：GET /admin/api/orders?sign={path}
  *
  * 自动刷新 30s；操作 toast；点截图弹 lightbox。
  */
@@ -114,7 +114,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = useCallback(async (isManual = false) => {
     if (isManual) setRefreshing(true);
     try {
-      const res = await fetch(`/api/admin/orders?status=${filter}`, { cache: 'no-store' });
+      const res = await fetch(`/admin/api/orders?status=${filter}`, { cache: 'no-store' });
       if (res.status === 403 || res.status === 401) {
         toast.error('无 admin 权限');
         return;
@@ -134,7 +134,7 @@ export default function AdminOrdersPage() {
           await Promise.all(
             toSign.map(async (p) => {
               try {
-                const r = await fetch(`/api/admin/orders?sign=${encodeURIComponent(p)}`, {
+                const r = await fetch(`/admin/api/orders?sign=${encodeURIComponent(p)}`, {
                   cache: 'no-store',
                 });
                 const j = await r.json();
@@ -187,7 +187,7 @@ export default function AdminOrdersPage() {
     setLightboxLoading(true);
     try {
       const r = await fetch(
-        `/api/admin/orders?sign=${encodeURIComponent(order.payment_screenshot_url)}`,
+        `/admin/api/orders?sign=${encodeURIComponent(order.payment_screenshot_url)}`,
         { cache: 'no-store' },
       );
       const j = await r.json();
@@ -208,7 +208,7 @@ export default function AdminOrdersPage() {
     if (!approveOrder) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/orders/${approveOrder.id}/approve`, {
+      const res = await fetch(`/admin/api/orders/${approveOrder.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ admin_note: approveNote || null }),
@@ -237,7 +237,7 @@ export default function AdminOrdersPage() {
     }
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/orders/${rejectOrder.id}/reject`, {
+      const res = await fetch(`/admin/api/orders/${rejectOrder.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ admin_note: rejectReason }),

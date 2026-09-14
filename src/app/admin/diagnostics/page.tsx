@@ -54,7 +54,7 @@ export default function DiagnosticsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/diagnostics', {
+      const res = await fetch('/admin/api/diagnostics', {
         credentials: 'include',
       });
       const result = await res.json();

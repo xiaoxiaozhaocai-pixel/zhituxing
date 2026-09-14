@@ -40,7 +40,7 @@ describe('calculateCompetencyPercentile 竞争力百分位', () => {
   });
 
   it('常规排名：用户80分在[60,70,90,100]中排第3、百分位50', () => {
-    const peers = [60, 70, 90, 100].map((s) => ({ matchScore: s }));
+    const peers = [60, 70, 90, 100].map((s, i) => ({ userId: `u${i}`, matchScore: s }));
     const r = calculateCompetencyPercentile(80, peers);
     expect(r.totalPeers).toBe(5);
     expect(r.rank).toBe(3);
@@ -51,7 +51,7 @@ describe('calculateCompetencyPercentile 竞争力百分位', () => {
   });
 
   it('同分取最高百分位', () => {
-    const r = calculateCompetencyPercentile(80, [{ matchScore: 80 }]);
+    const r = calculateCompetencyPercentile(80, [{ userId: 'u1', matchScore: 80 }]);
     expect(r.rank).toBe(1);
     expect(r.percentileRank).toBe(100);
   });

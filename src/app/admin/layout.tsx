@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function checkAdmin() {
       try {
-        const res = await fetch('/api/admin/auth', {
+        const res = await fetch('/admin/api/auth', {
           credentials: 'include',
         });
         const data = await res.json();

@@ -76,7 +76,7 @@ export default function AdminJdPage() {
       if (filterCity) params.set('city', filterCity);
       if (filterStatus) params.set('status', filterStatus);
 
-      const res = await fetch(`/api/admin/jd?${params.toString()}`);
+      const res = await fetch(`/admin/api/jd?${params.toString()}`);
       const json = await res.json();
       if (json.success) {
         setData(json.data || []);
@@ -122,7 +122,7 @@ export default function AdminJdPage() {
   const handleBulkAction = async () => {
     if (!bulkAction || selectedIds.length === 0) return;
     try {
-      const res = await fetch('/api/admin/jd', {
+      const res = await fetch('/admin/api/jd', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: selectedIds, status: bulkAction }),
@@ -140,7 +140,7 @@ export default function AdminJdPage() {
 
   const handleStatusChange = async (id: number, newStatus: string) => {
     try {
-      await fetch('/api/admin/jd', {
+      await fetch('/admin/api/jd', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: [id], status: newStatus }),

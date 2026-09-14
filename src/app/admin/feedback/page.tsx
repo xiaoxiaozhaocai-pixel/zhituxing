@@ -71,7 +71,7 @@ export default function AdminFeedbackPage() {
         params.append('status', statusFilter);
       }
 
-      const res = await fetch(`/api/admin/feedback?${params}`);
+      const res = await fetch(`/admin/api/feedback?${params}`);
       const data = await res.json();
       if (data.success) {
         setFeedbacks(data.data.feedbacks);
@@ -89,7 +89,7 @@ export default function AdminFeedbackPage() {
 
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/feedback/${selectedFeedback.id}`, {
+      const res = await fetch(`/admin/api/feedback/${selectedFeedback.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,7 +115,7 @@ export default function AdminFeedbackPage() {
 
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/admin/feedback/${selectedFeedback.id}`, {
+      const res = await fetch(`/admin/api/feedback/${selectedFeedback.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })

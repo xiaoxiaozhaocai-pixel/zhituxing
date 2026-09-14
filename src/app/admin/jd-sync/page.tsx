@@ -83,7 +83,7 @@ export default function JdSyncPage() {
   // 获取同步日志
   const fetchLogs = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/jd-sync/logs?pageSize=50');
+      const response = await fetch('/admin/api/jd-sync/logs?pageSize=50');
       const data = await response.json();
       
       if (data.code === 200) {
@@ -145,7 +145,7 @@ export default function JdSyncPage() {
     setProgress({ platform: platformId, current: 0, total: 1, status: 'syncing' });
     
     try {
-      const response = await fetch('/api/admin/jd-sync/trigger', {
+      const response = await fetch('/admin/api/jd-sync/trigger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platform: platformId })
