@@ -1,33 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { checkRateLimit } from '@/lib/rate-limit';
 export const dynamic = 'force-dynamic';
-
-// 简单内存限流器：60秒内最多3次
-const sendCodeLimiter = new Map<string, { count: number; lastTime: number }>();
-const RATE_LIMIT_WINDOW = 60000; // 60秒
-const RATE_LIMIT_MAX = 3;
-
-function checkRateLimit(key: string): boolean {
-  const now = Date.now();
-  const record = sendCodeLimiter.get(key);
-  
-  if (!record) {
-    sendCodeLimiter.set(key, { count: 1, lastTime: now });
-    return true;
-  }
-  
-  if (now - record.lastTime > RATE_LIMIT_WINDOW) {
-    sendCodeLimiter.set(key, { count: 1, lastTime: now });
-    return true;
-  }
-  
-  if (record.count >= RATE_LIMIT_MAX) {
-    return false;
-  }
-  
-  sendCodeLimiter.set(key, { count: record.count + 1, lastTime: record.lastTime });
-  return true;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,21 +16,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请输入正确的邮箱地址' }, { status: 400 });
     }
 
-    // 频率限制检查
+    // 双层频率限制：邮箱维度 3次/60s + IP 全局维度 10次/小时（防换邮箱轰炸）
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
       || request.headers.get('x-real-ip') 
       || 'unknown';
-    const rateLimitKey = `${clientIp}:${email}`;
     
-    if (!checkRateLimit(rateLimitKey)) {
+    const byEmail = checkRateLimit(`send-code:${clientIp}:${email}`, { maxRequests: 3, windowMs: 60_000 });
+    const byIp = checkRateLimit(`send-code:ip:${clientIp}`, { maxRequests: 10, windowMs: 3_600_000 });
+    if (!byEmail.success || !byIp.success) {
       return NextResponse.json({ 
-        error: '发送过于频繁，请60秒后再试',
-        hint: 'Supabase SMTP 有 60 秒最小发送间隔限制'
+        error: '发送过于频繁，请稍后再试',
+        hint: byIp.success ? 'Supabase SMTP 有 60 秒最小发送间隔限制' : '当前网络发送次数已达上限，请1小时后再试',
+        retryAfter: byEmail.success ? byIp.retryAfter : byEmail.retryAfter
       }, { status: 429 });
     }
 
-    // 🧪 测试模式：DEV_OTP_BYPASS 开启时跳过真实邮件发送
-    if (process.env.DEV_OTP_BYPASS === 'true') {
+    // 🧪 测试模式：DEV_OTP_BYPASS 开启时跳过真实邮件发送。
+    // 安全护栏：生产构建（NODE_ENV=production）强制禁用，即使环境变量误配也无法启用后门
+    if (process.env.DEV_OTP_BYPASS === 'true' && process.env.NODE_ENV !== 'production') {
       return NextResponse.json({
         success: true,
         message: '验证码已发送（测试模式）',

@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, token, _type = 'magiclink', flowType = 'signup', password, nickname } = await request.json();
+    const { email, token, type = 'magiclink', flowType = 'signup', password, nickname } = await request.json();
 
     if (!email || !token) {
       return NextResponse.json({ error: '请提供邮箱和验证码' }, { status: 400 });
@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
-    // 🧪 测试模式：DEV_OTP_BYPASS + 旁路验证码 88888888
-    const isBypass = process.env.DEV_OTP_BYPASS === 'true' && token === '88888888';
+    // 🧪 测试模式：DEV_OTP_BYPASS + 旁路验证码 88888888。
+    // 安全护栏：生产构建（NODE_ENV=production）强制禁用，即使环境变量误配也无法启用后门
+    const isBypass = process.env.DEV_OTP_BYPASS === 'true' && process.env.NODE_ENV !== 'production' && token === '88888888';
     
     let authData: { user: User | null; session: Session | null } | null = null;
     let finalUser: User | null = null;
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
       const result = await supabase.auth.verifyOtp({
         email,
         token,
-        type: 'magiclink',
+        type: (type as 'magiclink'),
       });
 
       if (result.error) {
