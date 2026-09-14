@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
+const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS?.split(',') || [];
 export const dynamic = 'force-dynamic';
 
 const supabase = getSupabaseAdmin();
@@ -12,6 +14,12 @@ const AVG_TOKENS_PER_COURSE = 3500;
 
 export async function GET(request: NextRequest) {
   try {
+  // 内部运营端点：仅管理员白名单可访问（此前匿名暴露成本/统计/同步数据）
+  const __adminUid = await getAuthenticatedUserId(request);
+  if (!__adminUid || !ADMIN_USER_IDS.includes(__adminUid)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
     const days = parseInt(request.nextUrl.searchParams.get('days') || '30');
 
     const endDate = new Date();

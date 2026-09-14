@@ -4,6 +4,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
+
+const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS?.split(',') || [];
 
 interface CostRow {
   collect_date: string;
@@ -16,6 +19,12 @@ interface CostRow {
 
 export async function GET(request: NextRequest) {
   try {
+  // 内部运营端点：仅管理员白名单可访问（此前匿名暴露成本/统计/同步数据）
+  const __adminUid = await getAuthenticatedUserId(request);
+  if (!__adminUid || !ADMIN_USER_IDS.includes(__adminUid)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'daily';
     const days = parseInt(searchParams.get('days') || '7', 10);

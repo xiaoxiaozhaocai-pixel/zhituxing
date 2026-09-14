@@ -9,7 +9,8 @@
  * - SSE 解析器提取结构化数据，存入 career_plans 表
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { parseRequestBody } from '@/lib/api-contracts/_shared';
 import { CareerPlanningStreamRequestSchema } from '@/lib/api-contracts/career-planning';
 import {
@@ -99,6 +100,12 @@ const SSE_HEADERS = {
 
 export async function POST(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     // 契约化：用 zod 校验请求体，失败立即返回 INVALID_REQUEST
     const parsed = await parseRequestBody(request, CareerPlanningStreamRequestSchema);
     if (!parsed.ok) return parsed.response;

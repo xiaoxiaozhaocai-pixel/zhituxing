@@ -1,54 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 
-const supabase = getSupabaseAdmin();
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-
-    const { data: feedback, error } = await supabase
-      .from('feedback')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error || !feedback) {
-      return NextResponse.json({ error: '反馈不存在' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, data: feedback });
-  } catch (error) {
-    console.error('获取反馈失败:', error);
-    return NextResponse.json({ error: '获取失败' }, { status: 500 });
-  }
+/**
+ * /api/feedback/[id] — 已下线（2026-09-14 安全收口）
+ * 原因：GET/PUT 均无鉴权且无前端调用方（PUT 真身在受 admin_token 保护的
+ * /admin/api/feedback/[id]）；裸露的 PUT 曾可匿名冒充官方回复、GET 可读任意反馈。
+ * 用户提交反馈入口保留：POST /api/feedback
+ */
+export async function GET() {
+  return NextResponse.json({ error: '接口已下线' }, { status: 404 });
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
-    const { status, reply } = body;
-
-    const { data: feedback, error } = await supabase
-      .from('feedback')
-      .update({ status, reply, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    return NextResponse.json({ success: true, data: feedback });
-  } catch (error) {
-    console.error('更新反馈失败:', error);
-    return NextResponse.json({ error: '更新失败' }, { status: 500 });
-  }
+export async function PUT() {
+  return NextResponse.json({ error: '接口已下线' }, { status: 404 });
 }

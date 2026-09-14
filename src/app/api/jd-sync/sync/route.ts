@@ -5,6 +5,15 @@ export const dynamic = 'force-dynamic';
 // 触发全量同步
 export async function POST(request: NextRequest) {
   try {
+    // 内部同步触发：与 /api/cron/jd-sync 同款 CRON_SECRET 校验（此前匿名可触发全平台爬取同步）
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      return NextResponse.json({ code: 500, message: 'CRON_SECRET 未配置' }, { status: 500 });
+    }
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ code: 401, message: 'unauthorized' }, { status: 401 });
+    }
     const body = await request.json().catch(() => ({}));
     const useMock = body.useMock === true;
 

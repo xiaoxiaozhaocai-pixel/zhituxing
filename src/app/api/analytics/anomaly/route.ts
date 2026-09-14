@@ -1,10 +1,12 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
 import { detectAnomalies } from '@/lib/analytics/anomaly-detection';
 import {
   AnomalyDetectRequestSchema,
   AnomalyDetectDataSchema,
 } from '@/lib/api-contracts/analytics';
+const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS?.split(',') || [];
 export const dynamic = 'force-dynamic';
 
 export const runtime = 'nodejs';
@@ -17,6 +19,12 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
+  // 内部运营端点：仅管理员白名单可访问（此前匿名暴露统计/成本数据）
+  const __adminUid = await getAuthenticatedUserId(request);
+  if (!__adminUid || !ADMIN_USER_IDS.includes(__adminUid)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
     const parsed = await parseRequestBody(request, AnomalyDetectRequestSchema);
     if (!parsed.ok) return parsed.response;
     const { values, label, baseline, methods, zWarnThreshold, zAlertThreshold } = parsed.data;

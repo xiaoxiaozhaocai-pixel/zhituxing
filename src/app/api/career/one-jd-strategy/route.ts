@@ -10,7 +10,8 @@
  * - 纯规则引擎：毫秒级响应、¥0 成本、结果确定可复现。
  */
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { z } from 'zod';
 import { jsonOk, jsonError, zodErrorToResponse } from '@/lib/api-contracts/_shared';
 import { buildOneJdStrategy } from '@/lib/career-paths/engine/one_jd_strategy';
@@ -66,6 +67,12 @@ const ResponseSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     const body = await request.json().catch(() => null);
     if (!body) {
       return jsonError('INVALID_REQUEST', '请求体不是合法 JSON');

@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createDeepSeekRAGStream } from '@/lib/rag-utils';
 import { buildBarsPrompt, scoreToBarsLevel } from '@/lib/career-paths/engine/interview_bars';
@@ -84,6 +85,12 @@ ${buildBarsPrompt()}
 // POST：生成面试反馈报告
 export async function POST(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     const body = await request.json();
     const { interview_id, conversation, target_job, interview_type } = body;
 
@@ -106,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     // 构建对话摘要给 AI 分析
     const conversationText = conversation
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
       .map((m) => `${m.role === 'assistant' ? '面试官' : '候选人'}: ${m.content}`)
       .join('\n\n');
 

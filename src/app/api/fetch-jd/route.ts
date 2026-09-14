@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 const ALLOWED_HOSTS = [
@@ -64,6 +65,12 @@ function extractText(html: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     const { url } = await request.json();
 
     if (!url || typeof url !== 'string') {

@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { jsonError, parseRequestBody, ErrorCode } from '@/lib/api-contracts/_shared';
 import {
@@ -152,6 +153,12 @@ function getDbFallback(message: string): Promise<string> {
 // GET: 供智能体工具调用（直接搜索数据库）
 export async function GET(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('query') || searchParams.get('keyword') || '';
 
@@ -183,6 +190,12 @@ export async function GET(request: NextRequest) {
 // POST: 供前端直接调用职搭子智能体
 export async function POST(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     const parsed = await parseRequestBody(request, SearchJdPostRequestSchema);
     if (!parsed.ok) return parsed.response;
     const { message, conversationId } = parsed.data;

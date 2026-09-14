@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUserId } from '@/lib/auth';
 import {
   getUserInfoFromRequest,
   getUserProfileContext,
@@ -121,6 +122,12 @@ const SSE_HEADERS = {
 // POST：面试对话
 export async function POST(request: NextRequest) {
   try {
+  // 成本防护：LLM/爬虫调用要求登录（此前匿名可触发，存在 token 被刷风险）
+  const __uid = await getAuthenticatedUserId(request);
+  if (!__uid) {
+    return NextResponse.json({ error: '请先登录' }, { status: 401 });
+  }
+
     const body = await request.json();
     const { message, conversationId, style: reqStyle, mode: reqMode, interview_type: reqInterviewType } = body;
 
