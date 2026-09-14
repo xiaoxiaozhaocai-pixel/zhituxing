@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
       if (error.message?.includes('rate limit') || error.status === 429) {
         userMessage = '发送过于频繁，请60秒后再试';
         hint = 'Supabase SMTP 有发送频率限制';
-      } else if (error.message?.includes('not found') || error.status === 404) {
+      } else if (error.message?.includes('not found') || error.status === 404
+        || error.code === 'otp_disabled' || error.message?.includes('Signups not allowed')) {
         // 防账号枚举：不暴露邮箱是否存在，与成功响应同文案
         return NextResponse.json({
           success: true,
