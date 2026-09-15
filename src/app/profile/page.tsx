@@ -158,7 +158,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
     fetchProfile();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [userId]);
 
   // 监听从info页保存回来的刷新信号
@@ -168,7 +168,7 @@ function ProfileInfoPanel({ userId }: { userId: string }) {
       // 清除URL参数，避免重复刷新
       window.history.replaceState({}, '', '/profile?tab=info');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [searchParams]);
 
 

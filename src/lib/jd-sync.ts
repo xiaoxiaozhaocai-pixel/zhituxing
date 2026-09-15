@@ -137,7 +137,7 @@ function stripGxrcResidue(text: string): string {
   return lines.slice(i).join('\n').trim();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 interface GxrcApiItem {
   payPackage?: string;
   description?: string;
