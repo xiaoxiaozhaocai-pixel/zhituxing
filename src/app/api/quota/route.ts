@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUserId } from '@/lib/auth';
+import { requireAdmin } from '@/lib/admin-auth';
 import {
   jsonOk,
   jsonError,
@@ -96,11 +97,12 @@ export async function GET(request: NextRequest) {
 // 手动重置所有用户配额（管理员专用）
 export async function POST(request: NextRequest) {
   try {
-    const supabase = getSupabaseAdmin();
-    const adminKey = request.headers.get('x-admin-key');
-    if (adminKey !== process.env.ADMIN_SECRET_KEY && adminKey !== 'admin-reset-key') {
+    // 统一走 requireAdmin（ADMIN_TOKEN / admin_token cookie），消除 ADMIN_SECRET_KEY + 硬编码 key 双套 API 技术债
+    const authCheck = requireAdmin(request);
+    if (authCheck) {
       return jsonError(ErrorCode.FORBIDDEN, '无权限');
     }
+    const supabase = getSupabaseAdmin();
 
     // 计算下个月最后一天
     const now = new Date();

@@ -5,12 +5,9 @@ export const dynamic = 'force-dynamic';
 
 // 获取同步日志列表
 export async function GET(request: NextRequest) {
-  // Admin 鉴权
-  const adminToken = request.headers.get('x-admin-token') || 
-                     request.headers.get('Authorization')?.replace('Bearer ', '');
-  if (adminToken !== process.env.ADMIN_SECRET_KEY && adminToken !== process.env.ADMIN_TOKEN) {
-    return NextResponse.json({ code: 401, message: '未授权访问' }, { status: 401 });
-  }
+  // Admin 鉴权（统一走 requireAdmin，消除 ADMIN_SECRET_KEY 双套 API 技术债）
+  const authCheck = requireAdmin(request);
+  if (authCheck) return authCheck;
   
   try {
     const searchParams = request.nextUrl.searchParams;
