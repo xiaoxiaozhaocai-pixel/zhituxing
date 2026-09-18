@@ -18,8 +18,6 @@ export const runtime = 'nodejs';
  *   2. SELECT FOR UPDATE 行锁防 admin 并发审批同一订单导致双开会员
  */
 
-const ADMIN_USER_IDS = process.env.ADMIN_USER_IDS?.split(',').map((id) => id.trim().toLowerCase()) || [];
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

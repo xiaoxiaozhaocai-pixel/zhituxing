@@ -207,7 +207,7 @@ export function createWorkflowSSEStream(params: {
           let readResult: { done: boolean; value?: Uint8Array };
           try {
             readResult = await reader.read();
-          } catch (readErr: unknown) {
+          } catch {
             break;
           }
           const { done, value } = readResult;
@@ -262,7 +262,7 @@ export function createWorkflowSSEStream(params: {
           if (pendingText) sendText(controller, pendingText);
           sendDone(controller);
         }
-      } catch (streamErr: unknown) {
+      } catch {
         if (!hasSentAnyData.value) sendText(controller, fallbackText);
         else sendError(controller, 'AI生成过程中出现异常');
       } finally {
@@ -403,7 +403,7 @@ export function createCozeSSEStream(params: {
 
         if (buffer) { sendText(controller, buffer); hasSentAnyData.value = true; }
         sendDone(controller);
-      } catch (streamErr: unknown) {
+      } catch {
         if (!hasSentAnyData.value) sendText(controller, fallbackText);
       } finally {
         try { reader.releaseLock(); } catch { /* ignore */ }

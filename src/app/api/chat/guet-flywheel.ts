@@ -221,15 +221,11 @@ export async function runGuetFlywheel(params: FlywheelParams): Promise<void> {
 
 
   // Step 2: 去重 + 写入
-  let saved = 0;
   for (const item of items) {
     const dup = await isDuplicate(item.content);
     if (dup) continue;
 
-    const ok = await insertKnowledge(item);
-    if (ok) {
-      saved++;
-    }
+    await insertKnowledge(item);
   }
 
 }

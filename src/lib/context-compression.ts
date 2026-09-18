@@ -272,7 +272,7 @@ async function callDeepSeekForSummary(prompt: string): Promise<string | null> {
       const content = data.choices?.[0]?.message?.content;
       if (!content) throw new Error('Empty response');
 
-      const elapsed = Date.now() - startTime;
+      const _elapsed = Date.now() - startTime;
 
       // 清理可能的 markdown 代码块标记
       return content

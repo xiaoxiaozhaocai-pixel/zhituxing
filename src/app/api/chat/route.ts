@@ -1410,7 +1410,7 @@ export async function POST(request: NextRequest) {
           });
           return new Response(stream, { headers: SSE_HEADERS });
         } else {
-          const errorBody = await workflowResponse.text();
+          const _errorBody = await workflowResponse.text();
         }
       } catch (err) {
         console.error('[chat] stream_run API error:', err);

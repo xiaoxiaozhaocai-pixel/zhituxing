@@ -14,7 +14,7 @@ import { useSSEStream } from '@/hooks/useSSEStream';
 import AIResponseRenderer from '@/components/AIResponseRenderer';
 import { toast } from 'sonner';
 import AgentChainStatus from '@/components/AgentChainStatus';
-import { detectEmotion, ALL_AVATAR_IMAGES, type Emotion } from '@/lib/emotion';
+import { detectEmotion, ALL_AVATAR_IMAGES } from '@/lib/emotion';
 import DispatchCard from '@/components/chat/DispatchCard';
 import ToolResultCard from '@/components/chat/ToolResultCard';
 import { bots, stripDataMarkers, type Message, type DispatchCardData, type ToolResultData } from '@/components/chat/chat-shared';

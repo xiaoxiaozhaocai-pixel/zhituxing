@@ -182,7 +182,7 @@ async function grantRewards(userId: string) {
 }
 
 // 发送通知
-async function sendNotification(userId: string, message: string) {
+async function sendNotification(_userId: string, _message: string) {
   try {
     // 记录通知到数据库（如果有无话消息表的话）
   } catch (error) {

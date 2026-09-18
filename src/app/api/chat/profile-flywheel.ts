@@ -256,7 +256,7 @@ export async function runProfileFlywheel(params: FlywheelParams): Promise<void> 
   const profile = await extractWithDeepSeek(userMessage, assistantResponse);
   if (Object.keys(profile).length === 0) return;
 
-  const fields = Object.keys(profile).join(', ');
+  const _fields = Object.keys(profile).join(', ');
 
   // Step 2: 合并 + 写入
   const saved = await upsertProfile(userId, profile);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
 

@@ -580,9 +580,9 @@ export async function syncAllPlatforms(useMock: boolean = false): Promise<SyncRe
   }
 
   // 汇总统计
-  const totalFetched = results.reduce((sum, r) => sum + r.total_fetched, 0);
-  const totalSuccess = results.reduce((sum, r) => sum + r.success_count, 0);
-  const totalFail = results.reduce((sum, r) => sum + r.fail_count, 0);
+  const _totalFetched = results.reduce((sum, r) => sum + r.total_fetched, 0);
+  const _totalSuccess = results.reduce((sum, r) => sum + r.success_count, 0);
+  const _totalFail = results.reduce((sum, r) => sum + r.fail_count, 0);
 
 
   return results;
