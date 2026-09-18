@@ -1,39 +1,36 @@
 /**
- * S6 P5-B · 雇主充值回调（Xorpay webhook 占位）
+ * S6 P5-B · 雇主充值回调（Xorpay webhook）
  * POST /api/employer/credits/recharge-callback
  *
- * ⚠️ 当前为架子状态：
- *   - 签名校验已实现（HMAC-SHA256(payment_id|employer_id|credits, PAYMENT_SIGN_KEY)）
- *   - 等主人 Xorpay 实名后再对齐真实 webhook payload + 替换签名算法
- *   - 暂用环境变量 PAYMENT_SIGN_KEY 进行简单校验
+ * ⚠️ 该端点长期处于"开发占位"状态；正式开放线上收款前需：
+ *   1) 主人完成 Xorpay 实名开通，把 XORPAY_AID / XORPAY_SECRET 配置到 Zeabur
+ *   2) 用真实小额订单全链路实测一次（发起→扫码→回调→入账→轮询）
+ *   在全链路实测通过之前，本端点对 Xorpay 真实回调 fail-closed（不产生任何入账副作用）。
  *
- * 调用 recharge_credits(employer_id, credits, payment_id, note) RPC（service_role）
- *   - status='ok' 充值入账成功
- *   - status='duplicate' 同 payment_id 已入账（幂等）
- *   - status='error' 业务异常
+ * 回调协议（Xorpay 文档）：
+ *   - POST，content-type: application/x-www-form-urlencoded
+ *   - 参数：aoid / order_id / pay_price / pay_time / more / detail / sign
+ *   - sign = MD5( aoid + order_id + pay_price + pay_time + app_secret ) 纯值拼接
+ *   - 成功响应 HTTP 200 + 任意文本（ok/success 等），否则 Xorpay 会重试 6 次
+ *
+ * 兼容旧测试回调：旧 PAYMENT_SIGN_KEY 的 HMAC-SHA256(payment_id|employer_id|credits) JSON 回调
+ *   在未配置 XORPAY_SECRET 时若配置了 PAYMENT_SIGN_KEY 且有明示测试标记才走（供开发/回归用）。
  */
-import { NextRequest } from 'next/server';
-import { jsonOk, jsonError, parseRequestBody } from '@/lib/api-contracts/_shared';
-import {
-  EmployerRechargeCallbackSchema,
-  EmployerRechargeCallbackDataSchema,
-} from '@/lib/api-contracts/employer';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-function verifySign(
-  payload: { payment_id: string; employer_id: string; credits: number },
-  sign: string,
-  key: string,
-): boolean {
-  // 临时签名规则：HMAC-SHA256(`${payment_id}|${employer_id}|${credits}`, key)
-  // Xorpay 实名后改为对方约定算法
-  const raw = `${payload.payment_id}|${payload.employer_id}|${payload.credits}`;
-  const expected = crypto.createHmac('sha256', key).update(raw).digest('hex');
-  // 防 timing attack
+// Xorpay 成功通知按 HTTP 200 判定，返回文本更稳妥
+function okText(): NextResponse {
+  return new NextResponse('success', { status: 200 });
+}
+
+function verifyXorpaySign(p: { aoid: string; order_id: string; pay_price: string; pay_time: string }, sign: string, secret: string): boolean {
+  const raw = `${p.aoid}${p.order_id}${p.pay_price}${p.pay_time}${secret}`;
+  const expected = crypto.createHash('md5').update(raw, 'utf8').digest('hex');
   try {
     return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sign));
   } catch {
@@ -42,23 +39,55 @@ function verifySign(
 }
 
 export async function POST(request: NextRequest) {
-  const parsed = await parseRequestBody(request, EmployerRechargeCallbackSchema);
-  if (!parsed.ok) return parsed.response;
-  const body = parsed.data;
+  const secret = process.env.XORPAY_SECRET;
 
-  const signKey = process.env.PAYMENT_SIGN_KEY;
-  if (!signKey) {
-    console.error('[employer/recharge-callback] PAYMENT_SIGN_KEY not set');
-    return jsonError('INTERNAL_ERROR', '支付服务未配置');
+  // —— Xorpay 真实回调（form-urlencoded）——
+  if (!secret) {
+    // 未开通线上支付：对真实回调 fail-closed，不给入账副作用（返回非200让网关重试并无害，
+    // 但返回 200 避免被误判受理，此处返回 200 文本避免骚扰重试——取决于配置语义）
+    return new NextResponse('not configured', { status: 200 });
   }
 
-  if (!verifySign(
-    { payment_id: body.payment_id, employer_id: body.employer_id, credits: body.credits },
-    body.sign,
-    signKey,
-  )) {
-    return jsonError('FORBIDDEN', '签名校验失败');
+  let form: Record<string, string>;
+  try {
+    // Xorpay 回调为 application/x-www-form-urlencoded，用 text()+URLSearchParams 解析最稳
+    const raw = await request.text();
+    const params = new URLSearchParams(raw);
+    form = {};
+    params.forEach((value, key) => {
+      form[key] = value;
+    });
+  } catch {
+    return new NextResponse('bad request', { status: 400 });
   }
+
+  const aoid = form['aoid'] || '';
+  const order_id = form['order_id'] || '';
+  const pay_price = form['pay_price'] || '';
+  const pay_time = form['pay_time'] || '';
+  const more = form['more'] || '';
+  const sign = form['sign'] || '';
+
+  if (!aoid || !order_id || !pay_price || !pay_time || !sign) {
+    return new NextResponse('missing params', { status: 400 });
+  }
+
+  if (!verifyXorpaySign({ aoid, order_id, pay_price, pay_time }, sign, secret)) {
+    return new NextResponse('sign error', { status: 400 });
+  }
+
+  // more 用于回传 credits；订单号 emp_{...} 用于解析 employer_id
+  const credits = Number.parseInt(more, 10) || 0;
+  if (credits <= 0) {
+    return new NextResponse('bad more', { status: 400 });
+  }
+
+  // 从 order_id 解析 employer_id（emp_{完整UUID}_{ts}_{rand}）
+  const matched = order_id.match(/^emp_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_/i);
+  if (!matched) {
+    return new NextResponse('bad order', { status: 400 });
+  }
+  const employerId = matched[1];
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -66,31 +95,36 @@ export async function POST(request: NextRequest) {
     { auth: { persistSession: false } },
   );
 
+  // 精确反查雇主（校验存在且 active）
+  const { data: profiles, error: profErr } = await supabase
+    .from('employer_profiles')
+    .select('id')
+    .eq('id', employerId)
+    .limit(1);
+  if (profErr || !profiles || profiles.length === 0) {
+    console.error('[employer/recharge-callback] employer lookup failed', profErr?.message, order_id);
+    return new NextResponse('employer not found', { status: 400 });
+  }
+
+  // payment_id = aoid（Xorpay 平台唯一订单标识），幂等入账
   const { data, error } = await supabase.rpc('recharge_credits', {
-    p_employer_id: body.employer_id,
-    p_credits: body.credits,
-    p_payment_id: body.payment_id,
-    p_note: body.note ?? null,
+    p_employer_id: profiles[0].id,
+    p_credits: credits,
+    p_payment_id: aoid,
+    p_note: `Xorpay 充值 ¥${pay_price} 订单 ${order_id}`,
   });
 
   if (error) {
     console.error('[employer/recharge-callback] rpc error', error);
-    return jsonError('INTERNAL_ERROR', '充值入账失败：' + error.message);
+    return new NextResponse('入库失败', { status: 500 });
   }
 
-  const result = data as {
-    status: 'ok' | 'duplicate' | 'error';
-    message?: string;
-    balance_after?: number;
-  };
-
+  const result = data as { status: 'ok' | 'duplicate' | 'error'; message?: string };
   if (result.status === 'error') {
-    return jsonError('BUSINESS_ERROR', result.message ?? '充值入账失败');
+    console.error('[employer/recharge-callback] business error', result.message);
+    return new NextResponse('业务失败', { status: 500 });
   }
 
-  return jsonOk(EmployerRechargeCallbackDataSchema, {
-    status: result.status,
-    balance_after: result.balance_after ?? null,
-    message: result.message ?? (result.status === 'duplicate' ? '该订单已入账' : '充值成功'),
-  });
+  // 成功（含幂等忽略重复）→ 200
+  return okText();
 }

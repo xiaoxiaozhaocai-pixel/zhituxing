@@ -113,6 +113,38 @@ export const EmployerTransactionsDataSchema = z.object({
 });
 export type EmployerTransactionsData = z.infer<typeof EmployerTransactionsDataSchema>;
 
+// 发起充值订单请求（Xorpay 扫码/NATIVE 支付）
+export const EmployerCreateOrderRequestSchema = z.object({
+  credits: z.number().int().positive(),
+  pay_type: z.enum(['alipay', 'wechat']).optional().default('alipay'),
+});
+export type EmployerCreateOrderRequest = z.infer<typeof EmployerCreateOrderRequestSchema>;
+
+// 发起充值订单响应
+export const EmployerCreateOrderDataSchema = z.object({
+  order_id: z.string().min(1),
+  aoid: z.string().min(1),
+  qr: z.string().min(1),
+  pay_type: z.enum(['alipay', 'wechat']),
+  credits: z.number().int().positive(),
+  price: z.number().nonnegative(), // 元
+  expire_seconds: z.number().int().positive(),
+});
+export type EmployerCreateOrderData = z.infer<typeof EmployerCreateOrderDataSchema>;
+
+// 充值订单轮询（查询 Xorpay 是否已支付）
+export const EmployerOrderStatusRequestSchema = z.object({
+  order_id: z.string().min(1),
+});
+export type EmployerOrderStatusRequest = z.infer<typeof EmployerOrderStatusRequestSchema>;
+
+// 充值订单状态响应
+export const EmployerOrderStatusDataSchema = z.object({
+  status: z.enum(['processing', 'paid']),
+  balance_after: z.number().int().nonnegative().nullable(),
+});
+export type EmployerOrderStatusData = z.infer<typeof EmployerOrderStatusDataSchema>;
+
 // 充值回调请求（Xorpay webhook 占位 schema，等实名后再细化签名验证字段）
 export const EmployerRechargeCallbackSchema = z.object({
   payment_id: z.string().min(1),
