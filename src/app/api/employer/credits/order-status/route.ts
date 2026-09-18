@@ -50,8 +50,8 @@ export async function GET(request: NextRequest) {
     return jsonError('INTERNAL_ERROR', '订单状态查询失败');
   }
   if (data && data.length > 0) {
-    return jsonOk(null, { status: 'paid', balance_after: data[0].balance_after ?? null });
+    return jsonOk(EmployerOrderStatusDataSchema, { status: 'paid', balance_after: data[0].balance_after ?? null });
   }
 
-  return jsonOk(null, { status: 'processing', balance_after: null });
+  return jsonOk(EmployerOrderStatusDataSchema, { status: 'processing', balance_after: null });
 }
