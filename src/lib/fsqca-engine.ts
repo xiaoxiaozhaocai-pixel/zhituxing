@@ -178,11 +178,6 @@ function round(x: number): number {
   return Math.round(x * 1000) / 1000;
 }
 
-/** 条件组合的指数映射：skill=bit0, exp=bit1, soft=bit2, edu=bit3（1=高0=低） */
-function condIndex(k: CondKey): number {
-  return COND_KEYS.indexOf(k);
-}
-
 /**
  * 构造真值表：先按高/低二分把每个校准值离散为真值行，
  * 每行统计"充分性一致性" = Σ min(条件交集, 结果) / Σ(条件交集)。
@@ -269,7 +264,6 @@ function deriveSolutions(
       const diff = a ^ b;
       // 只对「恰好一个条件不同」的两行合并（消去该位）
       if ((diff & (diff - 1)) === 0) {
-        const merged = a & ~diff; // 共享位
         const both = [a, b];
         const term = bitsToTerm(both);
         const consistency = Math.min(high[i].consistency, high[j].consistency);
