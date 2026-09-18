@@ -63,7 +63,12 @@ export async function POST(request: NextRequest) {
 
     // 截图凭证校验：必须是本站 Storage 上传路径（{userId}/{timestamp}.{ext}），
     // 拒绝外链/伪协议——admin 审核后台只渲染站内 Storage 对象
-    if (!/^[A-Za-z0-9_-]+\/\d+\.(jpg|png|webp)$/.test(payment_screenshot_url)) {
+    // 加固：前缀必须等于当前登录用户的 UUID（杜绝越权引用他人截图），并确认该对象存在于 Storage
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/\d+\.(jpg|png|webp)$/i.test(payment_screenshot_url)) {
+      return NextResponse.json({ code: 400, message: '付款截图无效，请先上传' }, { status: 400 });
+    }
+    const ownerId = (payment_screenshot_url.split('/')[0] || '').toLowerCase();
+    if (ownerId !== user.id.toLowerCase()) {
       return NextResponse.json({ code: 400, message: '付款截图无效，请先上传' }, { status: 400 });
     }
 
