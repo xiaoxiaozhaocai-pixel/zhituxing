@@ -244,9 +244,10 @@ export default function PortraitReportPage() {
                 <div className="text-sm font-medium text-slate-900">fsQCA 组态解（{fsqca.n} 人 · 四条件 Skill/Exp/Soft/Edu → Match）</div>
                 <div className="text-xs text-slate-600 mt-1">
                   {fsqca.solutions.map((s, i) => {
-                    const label = ['skill','exp','soft','edu']
-                      .filter(k => (s.term as any)[k])
-                      .map(k => `${k === 'skill' ? 'Skill' : k === 'exp' ? 'Exp' : k === 'soft' ? 'Soft' : 'Edu'}${(s.term as any)[k] === '0' ? '↓' : '↑'}`)
+                    const condKeys = ['skill', 'exp', 'soft', 'edu'] as const;
+                    const label = condKeys
+                      .filter((k) => s.term[k])
+                      .map((k) => `${k === 'skill' ? 'Skill' : k === 'exp' ? 'Exp' : k === 'soft' ? 'Soft' : 'Edu'}${s.term[k] === '0' ? '↓' : '↑'}`)
                       .join(' · ');
                     return (
                       <div key={i} className="flex items-center gap-2 py-1">
@@ -259,7 +260,7 @@ export default function PortraitReportPage() {
                 </div>
                 {fsqca.necessity && (
                   <div className="text-xs text-slate-500 mt-1 pt-1 border-t border-slate-100">
-                    必要条件检验：{['skill','exp','soft','edu'].filter(k => (fsqca.necessity as any)[k] && (fsqca.necessity as any)[k].consistency >= 0.9)
+                    必要条件检验：{(['skill','exp','soft','edu'] as const).filter(k => (fsqca.necessity as Record<'skill'|'exp'|'soft'|'edu', { consistency: number } | undefined>)[k] && (fsqca.necessity as Record<'skill'|'exp'|'soft'|'edu', { consistency: number } | undefined>)[k]!.consistency >= 0.9)
                       .map(k => k === 'skill' ? 'Skill' : k === 'exp' ? 'Exp' : k === 'soft' ? 'Soft' : 'Edu')
                       .join('、') || '暂无一致性≥0.9的必要条件'}
                   </div>
