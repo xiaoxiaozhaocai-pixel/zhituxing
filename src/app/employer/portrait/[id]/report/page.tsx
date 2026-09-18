@@ -18,6 +18,15 @@ interface ReportData {
 
 const LEVEL_SCORES = [0, 10, 30, 55, 75, 95]; // v2 encoding scores
 
+interface FsqcaUi {
+  n: number;
+  sufficient: boolean;
+  missingOutcome: number;
+  hint: string | null;
+  necessity: Partial<Record<'skill' | 'exp' | 'soft' | 'edu', { consistency: number; negConsistency: number }>>;
+  solutions: Array<{ term: Partial<Record<'skill' | 'exp' | 'soft' | 'edu', '1' | '0'>>; consistency: number; rawCoverage: number; uniqueCoverage: number }>;
+}
+
 function DistributionBar({ label, data }: { label: string; data: number[] }) {
   const max = Math.max(...data, 1);
   return (
@@ -56,6 +65,7 @@ export default function PortraitReportPage() {
   const router = useRouter();
   const portraitId = params.id as string;
   const [data, setData] = useState<ReportData | null>(null);
+  const [fsqca, setFsqca] = useState<FsqcaUi | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -68,7 +78,13 @@ export default function PortraitReportPage() {
         
         const cRes = await fetch(`/api/employer/portrait/${portraitId}/candidates`, { credentials: 'include' });
         const cData = await cRes.json();
-        
+
+        const pRes2 = await fetch(`/api/employer/portrait/${portraitId}/progress`, { credentials: 'include' }).catch(() => null);
+        if (pRes2 && pRes2.ok) {
+          const pData = await pRes2.json();
+          if (pData.ok && pData.data?.fsqca) setFsqca(pData.data.fsqca);
+        }
+
         if (cData.ok) {
           interface PortraitCandidate {
             name: string;
@@ -221,12 +237,42 @@ export default function PortraitReportPage() {
               </div>
             </div>
           )}
-          {n >= 10 && (
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <span className="text-lg">📊</span>
+          {fsqca && fsqca.solutions.length > 0 && (
+            <div className="flex items-start gap-3 p-3 bg-[#165DFF]/8 rounded-lg">
+              <span className="text-lg">🔬</span>
               <div>
-                <div className="text-sm font-medium text-slate-900">fsQCA 完整分析</div>
-                <div className="text-xs text-slate-600 mt-0.5">当前 {n} 人，达到 15 人后自动跑完整模糊集定性比较分析（模糊校准→真值表→组态解→决策规则）</div>
+                <div className="text-sm font-medium text-slate-900">fsQCA 组态解（{fsqca.n} 人 · 四条件 Skill/Exp/Soft/Edu → Match）</div>
+                <div className="text-xs text-slate-600 mt-1">
+                  {fsqca.solutions.map((s, i) => {
+                    const label = ['skill','exp','soft','edu']
+                      .filter(k => (s.term as any)[k])
+                      .map(k => `${k === 'skill' ? 'Skill' : k === 'exp' ? 'Exp' : k === 'soft' ? 'Soft' : 'Edu'}${(s.term as any)[k] === '0' ? '↓' : '↑'}`)
+                      .join(' · ');
+                    return (
+                      <div key={i} className="flex items-center gap-2 py-1">
+                        <span className="font-mono text-[#165DFF]">{label}</span>
+                        <span className="text-slate-500">一致性 {Math.round(s.consistency*100)}%</span>
+                        <span className="text-slate-400">原始覆盖 {Math.round(s.rawCoverage*100)}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {fsqca.necessity && (
+                  <div className="text-xs text-slate-500 mt-1 pt-1 border-t border-slate-100">
+                    必要条件检验：{['skill','exp','soft','edu'].filter(k => (fsqca.necessity as any)[k] && (fsqca.necessity as any)[k].consistency >= 0.9)
+                      .map(k => k === 'skill' ? 'Skill' : k === 'exp' ? 'Exp' : k === 'soft' ? 'Soft' : 'Edu')
+                      .join('、') || '暂无一致性≥0.9的必要条件'}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {fsqca && fsqca.solutions.length === 0 && fsqca.n >= 0 && (
+            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+              <span className="text-lg">🔬</span>
+              <div>
+                <div className="text-sm font-medium text-slate-900">fsQCA 分析引擎</div>
+                <div className="text-xs text-slate-600 mt-0.5">{fsqca.hint ?? (fsqca.n < 15 ? `当前有效样本 ${fsqca.n} 人，达到 15 人后可出线索，30 人后可跑完整组态解。` : `当前有效样本 ${fsqca.n} 人，尚未筛出高一致性组态。`)}</div>
               </div>
             </div>
           )}

@@ -40,10 +40,13 @@ export async function POST(request: NextRequest, ctx: RouteContext) {
     return jsonError('NOT_FOUND', '画像项目不存在');
   }
   const body = await request.json();
-  const { skill_level, exp_level, soft_level, notes } = body;
+  const { skill_level, exp_level, soft_level, match_level, notes } = body;
 
   if (![skill_level, exp_level, soft_level].every(v => Number.isInteger(v) && v >= 1 && v <= 5)) {
     return jsonError('INVALID_REQUEST', 'Skill/Exp/Soft 等级须为1-5的整数');
+  }
+  if (!Number.isInteger(match_level) || match_level < 1 || match_level > 5) {
+    return jsonError('INVALID_REQUEST', 'Match 匹配度须为1-5的整数');
   }
 
   // upsert：每人唯一
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest, ctx: RouteContext) {
       skill_level,
       exp_level,
       soft_level,
+      match_level,
       notes: notes || null,
     }, { onConflict: 'candidate_id' })
     .select()
