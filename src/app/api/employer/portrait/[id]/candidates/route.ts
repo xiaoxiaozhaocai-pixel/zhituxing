@@ -113,7 +113,7 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
 
   const { data: evals } = await supabase
     .from('portrait_evaluations')
-    .select('candidate_id, skill_level, exp_level, soft_level, notes')
+    .select('candidate_id, skill_level, exp_level, soft_level, match_level, notes')
  
     .in('candidate_id', (data || []).map((d) => d.id));
 

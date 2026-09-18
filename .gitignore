@@ -17,6 +17,9 @@ zhituxing/
 # 项目使用 pnpm，package-lock.json 不应被纳入版本控制
 package-lock.json
 
+# 依赖目录（本 worktree 以符号链接指向 zhituxing_src，避免提交链接）
+node_modules/
+
 # 审计临时产物
 audit_*.png
 audit_*.py

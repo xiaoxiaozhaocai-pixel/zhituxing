@@ -7,6 +7,7 @@ import { jsonOk, jsonError } from '@/lib/api-contracts/_shared';
 import { z } from 'zod';
 import { getEmployerSession } from '@/lib/employer-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { runFsqca } from '@/lib/fsqca-engine';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -53,13 +54,16 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
   // 归属项目——先取本项目候选人 id，再 in 过滤。9/12 修复：直查全表会跨项目/跨雇主串染）
   const { data: projCands } = await supabase
     .from('portrait_candidates')
-    .select('id')
+    .select('id, edu_level')
     .eq('portrait_id', id);
   const projCandIds = (projCands || []).map((c: { id: string }) => c.id);
+  // edu_level 按 candidate_id 建索引，供 fsQCA 第4条件使用
+  const eduMap: Record<string, number | null> = {};
+  (projCands || []).forEach((c: { id: string; edu_level: number | null }) => { eduMap[c.id] = c.edu_level ?? null; });
   const { data: evals, error: evalsErr } = projCandIds.length
     ? await supabase
         .from('portrait_evaluations')
-        .select('skill_level, exp_level, soft_level')
+        .select('candidate_id, skill_level, exp_level, soft_level, match_level')
         .in('candidate_id', projCandIds)
     : { data: [], error: null };
   if (evalsErr) return jsonError('UPSTREAM_ERROR', '分布查询失败');
@@ -77,6 +81,8 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
   const expDist = dist(evals?.map((e) => e.exp_level));
  
   const softDist = dist(evals?.map((e) => e.soft_level));
+
+  const matchDist = dist(evals?.map((e) => e.match_level as number));
 
   // 初步组态线索（仅当 ≥5 人已评）
   const insights: string[] = [];
@@ -98,15 +104,33 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
     if (allHigh > 0) insights.push(`有 ${allHigh} 人是三维度全面偏强型`);
   }
 
+  // —— fsQCA 引擎：四条件(Skill/Exp/Soft/Edu) + 结果(Match) ——
+  const rows = (evals || []).map((e) => ({
+    skill: e.skill_level,
+    exp: e.exp_level,
+    soft: e.soft_level,
+    edu: eduMap[e.candidate_id] ?? null,
+    match: (e.match_level as number | null) ?? null,
+  }));
+  const fsqca = runFsqca(rows, 30);
+
   return jsonOk(z.object({
     title: z.string(), total: z.number(), evaluated: z.number(), remaining: z.number(),
-    distribution: z.any(), insights: z.array(z.string()),
+    distribution: z.any(), insights: z.array(z.string()), fsqca: z.any(),
   }), {
     title: portrait.title,
     total: portrait.candidate_count,
     evaluated: portrait.evaluated_count,
     remaining: portrait.candidate_count - portrait.evaluated_count,
-    distribution: { skill: skillDist, exp: expDist, soft: softDist },
+    distribution: { skill: skillDist, exp: expDist, soft: softDist, match: matchDist },
     insights,
+    fsqca: {
+      n: fsqca.n,
+      sufficient: fsqca.sufficient,
+      missingOutcome: fsqca.missingOutcome,
+      hint: fsqca.hint,
+      necessity: fsqca.necessity,
+      solutions: fsqca.solutions,
+    },
   });
 }

@@ -15,7 +15,7 @@ interface Candidate {
   id: string; name: string; education: string | null;
   edu_level: number | null; experience_summary: string | null;
   status: string;
-  evaluation: { skill_level: number; exp_level: number; soft_level: number; notes: string | null } | null;
+  evaluation: { skill_level: number; exp_level: number; soft_level: number; match_level: number | null; notes: string | null } | null;
 }
 
 interface Progress {
@@ -39,6 +39,7 @@ const LEVEL_SELECTED = ['ring-2 ring-gray-400 bg-gray-200',
 const SKILL_ANCHORS = ['零经验，仅接触相关领域', '单一工序入门(<1年)', '1-3年，熟悉1-2道工序', '3-5年，多工序+改善案例', '5年+，全工序/大厂背景'];
 const EXP_ANCHORS = ['跨行业/零相关', '锂电行业但方向不匹配', '方向大致对口但深度一般', '对口+独立解决问题记录', '高度对口+大厂经验'];
 const SOFT_ANCHORS = ['拒流水/抱怨/态度消极', '沟通一般/动机不放心', '中规中矩/动机合理', '逻辑清晰/稳定/主动', '眼前一亮/沟通老练/自驱'];
+const MATCH_ANCHORS = ['明显不匹配', '不太匹配', '一般', '比较匹配', '高度匹配（推荐优先跟进）'];
 
 export default function BlindReviewPage() {
   const params = useParams();
@@ -53,6 +54,7 @@ export default function BlindReviewPage() {
   const [skillVal, setSkillVal] = useState<number>(0);
   const [expVal, setExpVal] = useState<number>(0);
   const [softVal, setSoftVal] = useState<number>(0);
+  const [matchVal, setMatchVal] = useState<number>(0);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -89,21 +91,22 @@ export default function BlindReviewPage() {
       setSkillVal(current.evaluation.skill_level);
       setExpVal(current.evaluation.exp_level);
       setSoftVal(current.evaluation.soft_level);
+      setMatchVal(current.evaluation.match_level || 0);
       setNotes(current.evaluation.notes || '');
     } else {
-      setSkillVal(0); setExpVal(0); setSoftVal(0); setNotes('');
+      setSkillVal(0); setExpVal(0); setSoftVal(0); setMatchVal(0); setNotes('');
     }
   }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async () => {
-    if (!current || skillVal === 0 || expVal === 0 || softVal === 0) return;
+    if (!current || skillVal === 0 || expVal === 0 || softVal === 0 || matchVal === 0) return;
     setSubmitting(true);
     try {
       const res = await fetch(`/api/employer/portrait/${portraitId}/candidates/${current.id}/evaluate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ skill_level: skillVal, exp_level: expVal, soft_level: softVal, notes: notes || null }),
+        body: JSON.stringify({ skill_level: skillVal, exp_level: expVal, soft_level: softVal, match_level: matchVal, notes: notes || null }),
       });
       const data = await res.json();
       if (data.ok) {
@@ -277,6 +280,19 @@ export default function BlindReviewPage() {
             </div>
           </div>
 
+          {/* Match（fsQCA 结果变量 Y）*/}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Match（匹配度）
+              <span className="text-slate-400 font-normal ml-1">— 该候选人整体是否匹配本岗位（fsQCA 结果变量）</span>
+            </label>
+            <div className="flex gap-2">
+              {[1,2,3,4,5].map(v => (
+                <LevelButton key={v} val={v} label={LEVEL_LABELS[v-1]} desc={MATCH_ANCHORS[v-1]} selected={matchVal === v} onClick={() => setMatchVal(v)} />
+              ))}
+            </div>
+          </div>
+
           {/* Notes */}
           <div className="mb-4">
             <textarea
@@ -298,7 +314,7 @@ export default function BlindReviewPage() {
             </div>
             <button
               onClick={handleSubmit}
-              disabled={skillVal === 0 || expVal === 0 || softVal === 0 || submitting}
+              disabled={skillVal === 0 || expVal === 0 || softVal === 0 || matchVal === 0 || submitting}
               className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-[#165DFF] to-[#3D7FFF] text-white text-sm font-medium rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
