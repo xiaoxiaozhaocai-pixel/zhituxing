@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   Compass, TrendingUp, Briefcase, CheckCircle2, ArrowRight,
   Sparkles, Building2, Mic, Search, Shield, Zap, FileText,
-  MessageSquare, Target, Layers,
+  MessageSquare, Target, Layers, Map, BookOpen,
 } from 'lucide-react';
 
 // ============================================================
@@ -267,8 +267,32 @@ export default function HomeClient({ industryCount }: { industryCount: number })
             ))}
           </div>
 
+          {/* 热门工具直达（行业地图 / 内容库，避免深藏工具栏） */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
+            <Link href="/industry-map" className="group flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#165DFF]/40 hover:shadow-md transition-all duration-300">
+              <span className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center text-white shadow-md">
+                <Map className="w-5 h-5" />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-[#1E293B]">行业地图</span>
+                <span className="block text-xs text-[#64748B]">全国公司与岗位面试情报，聚合脱敏</span>
+              </span>
+              <ArrowRight className="w-4 h-4 text-[#165DFF] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto" />
+            </Link>
+            <Link href="/insights" className="group flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#165DFF]/40 hover:shadow-md transition-all duration-300">
+              <span className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-[#165DFF] to-[#3D7FFF] flex items-center justify-center text-white shadow-md">
+                <BookOpen className="w-5 h-5" />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-[#1E293B]">判断力内容库</span>
+                <span className="block text-xs text-[#64748B]">行业雷达 / 潜台词 / 认知库 / 能力词典</span>
+              </span>
+              <ArrowRight className="w-4 h-4 text-[#165DFF] opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto" />
+            </Link>
+          </div>
+
           {/* 求职工具库引导（收纳其余能力，入口统一收敛） */}
-          <div className="mt-8 flex justify-center">
+          <div className="mt-4 flex justify-center">
             <Link href="/tools" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-[#64748B] bg-[#F8FAFC] border border-[#E2E8F0] hover:bg-[#F1F5F9] transition-all duration-300">
               <Layers className="w-4 h-4" />
               更多求职工具库
