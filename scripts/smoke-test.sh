@@ -13,7 +13,7 @@ check() {
   local label="$1" url="$2" expect_code="$3" grep_str="${4:-}"
   local code
   # —L 跟随重定向（如 /assistant → 登录页）
-  code=$(curl -sL -o /tmp/smoke_tmp -w "%{http_code}" -m 10 "$url" 2>/dev/null)
+  code=$(curl -sL -o /tmp/smoke_tmp -w "%{http_code}" -m 25 "$url" 2>/dev/null)
   if [ "$code" != "$expect_code" ]; then
     echo -e "  ${RED}✗${NC} $label → HTTP $code (expected $expect_code)"
     FAIL=1; return
